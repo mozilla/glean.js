@@ -1,0 +1,43 @@
+{
+  "name": "glean",
+  "version": "0.1.0",
+  "description": "An implementation of Glean, a modern cross-platform telemetry client, for Javascript environments.",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "mocha",
+    "lint": "eslint . --ext .ts,.js,.json",
+    "fix": "eslint . --ext .ts,.js,.json --fix",
+    "build:browser-static": "webpack --config webpack.config.browser-static.js --mode production",
+    "dev:browser-static": "webpack --watch --config webpack.browser-static.config.js --mode development"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/brizental/glean.js.git"
+  },
+  "keywords": [
+    "telemetry",
+    "glean"
+  ],
+  "author": "The Glean Team <glean-team@mozilla.com>",
+  "license": "MPL-2.0",
+  "bugs": {
+    "url": "https://github.com/brizental/glean.js/issues"
+  },
+  "homepage": "https://github.com/brizental/glean.js#readme",
+  "devDependencies": {
+    "@types/assert": "^1.5.2",
+    "@types/mocha": "^8.0.3",
+    "@typescript-eslint/eslint-plugin": "^4.6.1",
+    "@typescript-eslint/parser": "^4.6.1",
+    "eslint": "^7.12.1",
+    "eslint-plugin-json": "^2.1.2",
+    "eslint-plugin-mocha": "^8.0.0",
+    "eslint-plugin-notice": "^0.9.10",
+    "mocha": "^8.2.1",
+    "ts-loader": "^8.0.9",
+    "ts-node": "^9.0.0",
+    "typescript": "^4.0.5",
+    "webpack": "^5.4.0",
+    "webpack-cli": "^4.2.0"
+  }
+}

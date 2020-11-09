@@ -1,0 +1,36 @@
+* {
+  font-family: 'Fira Sans', sans-serif;
+  font-size: 1rem;
+}
+
+body {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-direction: column;
+  height: 100vh;
+  background-color: #f3f3f3;
+}
+
+#glean {
+  display: inline-block;
+  padding: 20px 15px;
+  border: none;
+  background: #ff5000;
+  color: white;
+  box-shadow: 7px -7px 0px 0px #0059ab;
+  cursor: pointer;
+  font-weight: 800;
+}
+
+#console-warn {
+  display: none;
+  text-align: center;
+  margin-top: 2rem;
+  width: 100%;
+  font-size: 1rem;
+}
+
+#console-warn.visible {
+  display: block;
+}
