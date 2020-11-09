@@ -1,0 +1,59 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "browser": true
+  },
+  "rules": {
+    "indent": ["error", 2],
+    "quotes": ["error", "double"],
+    "no-var": "error",
+    "prefer-const": "error",
+    "strict": ["error", "global"],
+    "notice/notice":[ "error", {
+      "mustMatch": "This Source Code Form is subject to the terms of the Mozilla Public",
+      "templateFile": "copyright.template.txt"
+      }
+    ]
+  },
+  "parser": "@typescript-eslint/parser",
+  "plugins": [
+    "@typescript-eslint",
+    "json",
+    "notice",
+    "mocha"
+  ],
+  "overrides": [
+    {
+      "files": "tests/**",
+      "env": {
+        "mocha": true
+      },
+      "extends": [
+        "plugin:mocha/recommended"
+      ]
+    },
+    {
+      "files": "*.json",
+      "extends": [
+        "plugin:json/recommended"
+      ],
+      "rules": {
+        "notice/notice": "off"
+      }
+    },
+    {
+      "files": "*.js",
+      "extends": [
+        "eslint:recommended"
+      ]
+    },
+    {
+      "files": "*.ts",
+      "extends": [
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
+      ]
+    }
+  ]
+}
