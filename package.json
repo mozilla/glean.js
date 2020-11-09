@@ -7,8 +7,8 @@
     "test": "mocha",
     "lint": "eslint . --ext .ts,.js,.json",
     "fix": "eslint . --ext .ts,.js,.json --fix",
-    "build:browser-static": "webpack --config webpack.config.browser-static.js --mode production",
-    "dev:browser-static": "webpack --watch --config webpack.browser-static.config.js --mode development"
+    "build:browser": "webpack --config webpack.config.browser.js --mode production",
+    "dev:browser": "webpack --watch --config webpack.config.browser.js --mode development"
   },
   "repository": {
     "type": "git",

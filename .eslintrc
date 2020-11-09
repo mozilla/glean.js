@@ -12,7 +12,7 @@
     "strict": ["error", "global"],
     "notice/notice":[ "error", {
       "mustMatch": "This Source Code Form is subject to the terms of the Mozilla Public",
-      "templateFile": "copyright.txt"
+      "templateFile": "copyright.template.txt"
       }
     ]
   },
@@ -22,10 +22,6 @@
     "json",
     "notice",
     "mocha"
-  ],
-  "extends": [
-    "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended"
   ],
   "overrides": [
     {
@@ -50,6 +46,13 @@
       "files": "*.js",
       "extends": [
         "eslint:recommended"
+      ]
+    },
+    {
+      "files": "*.ts",
+      "extends": [
+        "plugin:@typescript-eslint/eslint-recommended",
+        "plugin:@typescript-eslint/recommended"
       ]
     }
   ]
