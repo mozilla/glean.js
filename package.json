@@ -1,7 +1,7 @@
 {
   "name": "glean",
   "version": "0.1.0",
-  "description": "An implementation of Glean, a modern cross-platform telemetry client, for Javascript environments.",
+  "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "main": "./dist/index.js",
   "scripts": {
     "test": "mocha",
