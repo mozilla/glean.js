@@ -1,4 +1,4 @@
-# Qt/QML app sample
+# Glean.js - Qt/QML app sample
 
 1. Build Glean.js for Qt.
 
