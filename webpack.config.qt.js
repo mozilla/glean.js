@@ -10,6 +10,6 @@ module.exports = {
   ...baseConfig,
   output: {
     ...baseConfig.output,
-    libraryTarget: "umd",
+    libraryTarget: "var",
   }
 };
