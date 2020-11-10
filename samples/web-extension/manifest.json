@@ -1,0 +1,21 @@
+{
+  "description": "Glean.js sample web extension",
+  "author": "The Glean Team <glean-team@mozilla.com>",
+  "manifest_version": 2,
+  "name": "gleanjs-test-addon",
+  "version": "0.0.1",
+  "background": {
+    "scripts": [
+      "./dist/bundle.js"
+    ]
+  },
+  "browser_action": {
+    "browser_style": true,
+    "default_icon": {
+      "19": "icons/glean-19.png",
+      "38": "icons/glean-38.png"
+    },
+    "default_title": "Glean.js",
+    "default_popup": "popup.html"
+  }
+}
