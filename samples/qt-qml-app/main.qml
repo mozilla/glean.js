@@ -48,6 +48,10 @@ Rectangle {
 
   Component.onCompleted: {
       // Initialize Glean when the application starts.
-      Glean.Glean.initialize("qt-qml-app", true);
+      try {
+        Glean.Glean.initialize("qt-qml-app", true);
+      } catch(err) {
+        console.error(`Some Javascript error occured.\n${err}`);
+      }
   }
 }
