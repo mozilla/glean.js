@@ -2,7 +2,7 @@
 
 This sample contains a simple static website that will initialize Glean on page load.
 
-It contains a button that when clicked will trigger Glean.js events.
+The website will display a button that when clicked should trigger Glean.js events.
 
 ## How to run this sample
 
