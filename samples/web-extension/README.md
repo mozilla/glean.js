@@ -4,6 +4,8 @@ This sample contains a webextension that will initialize Glean.js when loaded.
 
 Whenever this webextensions popup is opened it will trigger Glean.js events.
 
+> **Note** This sample uses webpack to bundle the Glean.js script with the web extension code.
+
 ## How to run this sample
 
 1. Build Glean.js for the browser. On the root folder of this repository run:
