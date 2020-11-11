@@ -6,10 +6,10 @@ The website will display a button that when clicked should trigger Glean.js even
 
 ## How to run this sample
 
-1. Build Glean.js for loading as a script tag on the browser.
+1. Build Glean.js for the browser.
 
 ```bash
-npm run build:browser-static
+npm run build:browser
 ```
 
 2. Open the file [`index.html`](./index.html) on your browser of choice.
