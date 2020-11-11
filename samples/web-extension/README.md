@@ -28,7 +28,7 @@ npm run build
     4. Click on `Inspect`;
     5. Try clicking on the little Glean logo that should have been added to your browsers toolbar.
 
-  - **Chrome**
+  - **Chromium-based browsers**
     1. Go to [chrome://extensions](chrome://extensions);
     2. Click on `Load unpacked`;
     3. Choose this `web-extension` folder;
