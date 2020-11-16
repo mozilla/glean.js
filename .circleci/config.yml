@@ -1,0 +1,70 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+---
+
+version: 2.1
+
+jobs:
+  lint:
+    docker:
+      - image: circleci/node:latest
+    steps:
+      - checkout
+      - run:
+          name: Install Javascript dependencies
+          command: npm install
+      - run:
+          name: Run linter
+          command: npm run lint
+
+  unit-tests:
+    docker:
+      - image: circleci/node:latest
+    steps:
+      - checkout
+      - run:
+          name: Install Javascript dependencies
+          command: npm install
+      - run:
+          name: Run unit tests
+          command: npm run test
+
+  check-size:
+    docker:
+      - image: circleci/node:latest
+    steps:
+      - checkout
+      - run:
+          name: Get and post build sizes to GitHub PR
+          command: bin/build-size-check.sh
+
+  check-qt-js:
+    docker:
+      - image: circleci/python:latest
+    steps:
+      - checkout
+      - run:
+          name: Install Javascript dependencies and build Glean.js for Qt
+          command: |
+            # We are on the CircleCI python docker image, so let's install npm and node.
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.37.0/install.sh | bash
+            export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
+            [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+            nvm install node
+            npm install
+            npm run build:qt
+      - run:
+          name: Verify no Javascript errors found in Qt
+          command: bin/qt-js-check.sh
+
+
+workflows:
+  version: 2
+  ci:
+    jobs:
+      - lint
+      - unit-tests
+      - check-size
+      - check-qt-js
