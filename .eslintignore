@@ -1,1 +1,3 @@
 dist
+venv
+node_modules
