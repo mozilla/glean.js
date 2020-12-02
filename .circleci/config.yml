@@ -66,5 +66,8 @@ workflows:
     jobs:
       - lint
       - unit-tests
-      - check-size
       - check-qt-js
+      - check-size:
+          filters:
+            branches:
+              ignore: main
