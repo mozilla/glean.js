@@ -4,7 +4,8 @@
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "main": "./dist/glean.js",
   "scripts": {
-    "test": "mocha",
+    "test": "ts-mocha --paths -p ./tsconfig.json",
+    "test:debug": "ts-mocha --paths -p ./tsconfig.json --inspect-brk",
     "lint": "eslint . --ext .ts,.js,.json",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:browser": "webpack --config webpack.config.browser.js --mode production",
@@ -37,6 +38,7 @@
     "eslint-plugin-notice": "^0.9.10",
     "mocha": "^8.2.1",
     "ts-loader": "^8.0.9",
+    "ts-mocha": "^8.0.0",
     "ts-node": "^9.0.0",
     "typescript": "^4.0.5",
     "webpack": "^5.4.0",

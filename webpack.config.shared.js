@@ -20,6 +20,9 @@ module.exports = {
   },
   resolve: {
     extensions: [ ".tsx", ".ts", ".js" ],
+    alias: {
+      storage: path.resolve(__dirname, "src/storage/"),
+    }
   },
   output: {
     filename: "glean.js",

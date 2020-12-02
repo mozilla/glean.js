@@ -6,9 +6,15 @@
     "esModuleInterop": true,
     "skipLibCheck": true,
     "sourceMap": true,
-    "forceConsistentCasingInFileNames": true
+    "forceConsistentCasingInFileNames": true,
+    "typeRoots": [ "node_modules/@types" ],
+    "baseUrl": "./src",
+    "rootDir": ".",
+    "paths": {
+      "storage": ["storage"]
+    }
   },
-  "include": ["**/*.ts", "**/*.tsx"],
+  "include": ["**/*.ts", "**/*.tsx", "tests/index.spec.js"],
   "exclude": ["node_modules"],
   "$schema": "https://json.schemastore.org/tsconfig"
 }
