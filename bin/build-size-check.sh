@@ -16,7 +16,7 @@ npm run build:browser
 browser_size=$(wc -c ./dist/glean.js | awk '{print $1}')
 browser_size_pretty=$(wc -c ./dist/glean.js | awk '{printf "%0.2f\n",$1/1024"."substr($2,1,2)}')
 
-git checkout main
+git checkout -t origin/main
 
 npm install
 

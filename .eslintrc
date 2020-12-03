@@ -14,14 +14,16 @@
       "mustMatch": "This Source Code Form is subject to the terms of the Mozilla Public",
       "templateFile": "copyright.template.txt"
       }
-    ]
+    ],
+    "semi": ["error", "always"]
   },
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
     "json",
     "notice",
-    "mocha"
+    "mocha",
+    "jsdoc"
   ],
   "overrides": [
     {
