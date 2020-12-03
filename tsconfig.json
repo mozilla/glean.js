@@ -13,10 +13,7 @@
     "preserveConstEnums": true,
     "typeRoots": [ "node_modules/@types" ],
     "baseUrl": "./src",
-    "rootDir": ".",
-    "paths": {
-      "storage": ["storage"]
-    }
+    "rootDir": "."
   },
   "include": ["**/*.ts", "**/*.tsx", "tests/index.spec.js"],
   "exclude": ["node_modules"],

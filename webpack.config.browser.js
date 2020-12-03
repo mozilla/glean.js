@@ -4,7 +4,7 @@
 
 "use strict";
 
-const baseConfig = require("./webpack.config.shared")
+const baseConfig = require("./webpack.config.shared");
 
 module.exports = {
   ...baseConfig,

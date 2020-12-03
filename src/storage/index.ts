@@ -33,26 +33,33 @@ export interface StorageObject {
 
 export interface Store {
   /**
+   * **Test-only API**
+   *
+   * Gets the whole store.
+   *
+   * @returns An object representing all the data recorded in the store.
+   */
+  _testOnly_getWholeStore(): Promise<StorageObject>;
+
+  /**
    * Gets the value recorded to the given index on the store.
    *
-   * @param index [optional] The index  of the entry we want to delete.
+   * @param index The index  of the entry to get.
    *
    * @returns The value found for the given index on the storage.
-   *          If no index is given, the whole store is returned.
+   *          In case nothing has been recorded on the given index, returns `undefined`.
+   *
+   * @throws In case the index is an empty array.
    */
-  get(index?: StorageIndex): Promise<StorageValue>;
+  get(index: StorageIndex): Promise<StorageValue>;
 
   /**
    * Updates a specific entry from the store.
    *
-   * # Rejects
-   *
-   * - In case the index in an empty array.
-   *
    * # Note
    *
-   * If intermediary steps of the given index already contain stored (string or undefined),
-   * this data will be overwritten.
+   * If intermediary steps of the given index already contains a string,
+   * it will be overwritten.
    *
    * For example, if you attempt to update something under the index ["foo", "bar"]
    * and the storage currently contains the following data:
@@ -72,8 +79,10 @@ export interface Store {
    * }
    * ```
    *
-   * @param index The index  of the entry we want to delete.
+   * @param index The index  of the entry to update.
    * @param transformFn A transformation function to apply to the currently persisted value.
+   *
+   * @throws In case the index is an empty array.
    */
   update(
     index: StorageIndex,
@@ -84,7 +93,7 @@ export interface Store {
    * Deletes a specific entry from the store.
    *
    * @param index The index of the entry we want to delete.
-   *              If given an empty index, will delete all entries on the store.
+   *        If given an empty array as index, will delete all entries on the store.
    */
   delete(index: StorageIndex): Promise<void>;
 }

@@ -2,6 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// Importing this here just so the size increase will show on the PR comments,
+// once everything is implemented we remove it.
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+import * as storage from "storage";
+
 export = {
   /**
    * Initializes Glean.
