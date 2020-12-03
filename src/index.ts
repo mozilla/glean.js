@@ -5,7 +5,7 @@
 // Importing this here just so the size increase will show on the PR comments,
 // once everything is implemented we remove it.
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
-import * as storage from "storage";
+import StorageWeak from "storage/weak";
 
 export = {
   /**
