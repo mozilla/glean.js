@@ -2,8 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { isString, isUndefined, isObject } from "utils";
+
 /**
- * The storage index is an ordered list of keys to navigate on the store
+ * The storage index in the ordered list of keys to navigate on the store
  * to reach a specific entry.
  *
  * # Example
@@ -26,9 +28,22 @@ export type StorageIndex = string[];
 /**
  * The possible values to be retrievd from storage.
  */
-export type StorageValue = undefined | string | StorageObject;
+export type StorageValue = null | undefined | string | StorageObject;
 export interface StorageObject {
   [key: string]: StorageValue;
+}
+
+export function isStorageValue(v: unknown): v is StorageValue {
+  if (isUndefined(v) || isString(v)) {
+    return true;
+  } else if (isObject(v)) {
+    for (const key in v) {
+      return isStorageValue(v[key]);
+    }
+  } else {
+    return false;
+  }
+  return true;
 }
 
 export interface Store {
@@ -49,7 +64,8 @@ export interface Store {
    * @returns The value found for the given index on the storage.
    *          In case nothing has been recorded on the given index, returns `undefined`.
    *
-   * @throws In case the index is an empty array.
+   * @throws - In case the index is an empty array.
+   *         - In case a value that is not `string` or `object` is found.
    */
   get(index: StorageIndex): Promise<StorageValue>;
 

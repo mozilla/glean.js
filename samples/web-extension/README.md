@@ -10,10 +10,10 @@ Whenever this web extensions popup is opened it will trigger Glean.js events.
 
 ## How to run this sample
 
-1. Build Glean.js for the browser. On the root folder of this repository run:
+1. Build Glean.js for web extensions. On the root folder of this repository run:
 
 ```bash
-npm run build:browser
+npm run build:webext
 ```
 
 2. Build this sample. On this `web-extension` folder run:
