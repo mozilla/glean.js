@@ -16,7 +16,11 @@ npm run build:webext
 webext_size=$(wc -c ./dist/glean.js | awk '{print $1}')
 webext_size_pretty=$(wc -c ./dist/glean.js | awk '{printf "%0.2f\n",$1/1024"."substr($2,1,2)}')
 
-git checkout -b original-main origin/main
+git branch -f original-main origin/main
+# TODO: This is done in case there were changes to the package.json,
+# we should find a better way to deal with that though.
+git reset --hard HEAD
+git checkout original-main
 
 npm install
 

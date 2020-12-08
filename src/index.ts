@@ -9,6 +9,10 @@ import StorageWeak from "storage/weak";
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 import StoragePersistent from "storage/persistent";
 
+console.log(
+  StorageWeak,
+  StoragePersistent
+);
 
 export = {
   /**
