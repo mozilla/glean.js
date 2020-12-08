@@ -11,7 +11,7 @@ import { isObject } from "utils";
  * [storage API](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage)
  * for web extensions.
  *
- * To make sure this implementation works on Chrome, the user must install the peer dependency
+ * To make sure this implementation works on Chromium based browsers, the user must install the peer dependency
  * [`mozilla/webextension-polyfill`](https://github.com/mozilla/webextension-polyfill).
  */
 class WebExtStore implements Store {
