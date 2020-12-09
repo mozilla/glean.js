@@ -13,16 +13,15 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        use: "ts-loader",
+        loader: "ts-loader",
         exclude: /node_modules/,
+        options: { onlyCompileBundledFiles: true }
       },
     ],
   },
   resolve: {
-    extensions: [ ".tsx", ".ts", ".js" ],
-    alias: {
-      storage: path.resolve(__dirname, "src/storage/"),
-    }
+    modules: ["node_modules", "src"],
+    extensions: [ ".tsx", ".ts", ".js" ]
   },
   output: {
     filename: "glean.js",

@@ -4,6 +4,8 @@
 
 "use strict";
 
+const path = require("path");
+
 const baseConfig = require("./webpack.config.shared");
 
 module.exports = {
@@ -11,5 +13,13 @@ module.exports = {
   output: {
     ...baseConfig.output,
     libraryTarget: "var",
+  },
+  resolve: {
+    ...baseConfig.resolve,
+    alias: {
+      // TODO: This is temporary until we actually have a persistent storage impl for Qt.
+      // See: [Bug 1681483](https://bugzilla.mozilla.org/show_bug.cgi?id=1681483)
+      "storage/persistent": path.resolve(__dirname, "src/storage/weak"),
+    }
   }
 };

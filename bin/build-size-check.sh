@@ -12,11 +12,16 @@ npm run build:qt
 qt_size=$(wc -c ./dist/glean.js | awk '{print $1}')
 qt_size_pretty=$(wc -c ./dist/glean.js | awk '{printf "%0.2f\n",$1/1024"."substr($2,1,2)}')
 
-npm run build:browser
-browser_size=$(wc -c ./dist/glean.js | awk '{print $1}')
-browser_size_pretty=$(wc -c ./dist/glean.js | awk '{printf "%0.2f\n",$1/1024"."substr($2,1,2)}')
+npm run build:webext
+webext_size=$(wc -c ./dist/glean.js | awk '{print $1}')
+webext_size_pretty=$(wc -c ./dist/glean.js | awk '{printf "%0.2f\n",$1/1024"."substr($2,1,2)}')
 
-git checkout -t origin/main
+git branch -f original-main origin/main
+# TODO: This is done in case there were changes to the package.json,
+# we should find a better way to deal with that though.
+# See: [Bug 1681484](https://bugzilla.mozilla.org/show_bug.cgi?id=1681484)
+git reset --hard HEAD
+git checkout original-main
 
 npm install
 
@@ -24,32 +29,32 @@ npm run build:qt
 qt_size_main=$(wc -c ./dist/glean.js | awk '{print $1}')
 qt_size_main_pretty=$(wc -c ./dist/glean.js | awk '{printf "%0.2f\n",$1/1024"."substr($2,1,2)}')
 
-npm run build:browser
-browser_size_main=$(wc -c ./dist/glean.js | awk '{print $1}')
-browser_size_main_pretty=$(wc -c ./dist/glean.js | awk '{printf "%0.2f\n",$1/1024"."substr($2,1,2)}')
+npm run build:webext
+webext_size_main=$(wc -c ./dist/glean.js | awk '{print $1}')
+webext_size_main_pretty=$(wc -c ./dist/glean.js | awk '{printf "%0.2f\n",$1/1024"."substr($2,1,2)}')
 
 qt_diff=$(((($qt_size-$qt_size_main)%$qt_size_main)*100))
-browser_diff=$(((($browser_size-$browser_size_main)%$browser_size_main)*100))
+webext_diff=$(((($webext_size-$webext_size_main)%$webext_size_main)*100))
 
 [[ $qt_diff -ge 0 ]] && qt_emoji="📈" || qt_emoji="📉"
 [[ $qt_diff -ge 0 ]] && qt_result="Increase" || qt_result="Decrease"
 
-[[ $browser_diff -ge 0 ]] && browser_emoji="📈" || browser_emoji="📉"
-[[ $browser_diff -ge 0 ]] && browser_result="Increase" || browser_result="Decrease"
+[[ $webext_diff -ge 0 ]] && webext_emoji="📈" || webext_emoji="📉"
+[[ $webext_diff -ge 0 ]] && webext_result="Increase" || webext_result="Decrease"
 
 content="
   # Build size report
 
   Merging $CIRCLE_PULL_REQUEST into [main](https://github.com/brizental/glean.js) will:
 
-  * **$browser_result** the size of the browser build (\`npm run build:browser\`) by \`${browser_diff}%\`.
+  * **$webext_result** the size of the webext build (\`npm run build:webext\`) by \`${webext_diff}%\`.
   * **$qt_result** the size of the Qt build (\`npm run build:qt\`) by \`${qt_diff}%\`.
 
   ---
 
   | Build | Current size | New size | Size increase |
   |--:|:---:|:---:|:---:|
-  | browser | ${browser_size_main_pretty}K | ${browser_size_pretty}K | $browser_emoji ${browser_diff}% |
+  | webext | ${webext_size_main_pretty}K | ${webext_size_pretty}K | $webext_emoji ${webext_diff}% |
   | qt | ${qt_size_main_pretty}K | ${qt_size_pretty}K | $qt_emoji ${qt_diff}% |
 "
 

@@ -4,6 +4,8 @@
 
 "use strict";
 
+const path = require("path");
+
 const baseConfig = require("./webpack.config.shared");
 
 module.exports = {
@@ -11,5 +13,11 @@ module.exports = {
   output: {
     ...baseConfig.output,
     libraryTarget: "umd",
+  },
+  resolve: {
+    ...baseConfig.resolve,
+    alias: {
+      "storage/persistent": path.resolve(__dirname, "src/storage/persistent/webext"),
+    }
   }
 };

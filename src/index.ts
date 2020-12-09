@@ -4,8 +4,13 @@
 
 // Importing this here just so the size increase will show on the PR comments,
 // once everything is implemented we remove it.
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import StorageWeak from "storage/weak";
+import StoragePersistent from "storage/persistent";
+// If we leave the above imports unused they will not be added to the final webpack bundle.
+console.log(
+  StorageWeak,
+  StoragePersistent
+);
 
 export = {
   /**

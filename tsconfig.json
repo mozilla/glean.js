@@ -11,7 +11,10 @@
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
-    "typeRoots": [ "node_modules/@types" ],
+    "typeRoots": [
+      "node_modules/@types",
+      "node_modules/web-ext-types"
+    ],
     "baseUrl": "./src",
     "rootDir": "."
   },
