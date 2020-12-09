@@ -6,9 +6,6 @@
 
 version: 2.1
 
-orbs:
-  browser-tools: circleci/browser-tools@1.1.1
-
 jobs:
   lint:
     docker:
@@ -27,6 +24,9 @@ jobs:
       - image: circleci/node:latest
     steps:
       - checkout
+      - run:
+          name: Install Firefox related dependencies
+          command: sudo add-apt-repository ppa:ubuntu-mozilla-daily/ppa && sudo apt update && sudo apt install firefox-trunk
       - run:
           name: Install Javascript dependencies
           command: npm install
