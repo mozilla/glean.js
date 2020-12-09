@@ -26,7 +26,12 @@ jobs:
       - checkout
       - run:
           name: Install Firefox related dependencies
-          command: sudo add-apt-repository ppa:ubuntu-mozilla-daily/ppa && sudo apt update && sudo apt install firefox-trunk
+          command: |
+            sudo apt-get install software-properties-common
+            sudo apt update
+            sudo add-apt-repository ppa:ubuntu-mozilla-daily/ppa
+            sudo apt update
+            sudo apt install firefox-trunk
       - run:
           name: Install Javascript dependencies
           command: npm install
