@@ -104,7 +104,6 @@ export function deleteKeyFromNestedObject(obj: StorageObject, index: StorageInde
   for (const key of index.slice(0, index.length - 1)) {
     const value = target[key];
     if (!isObject(value)) {
-      console.warn("Attempted to delete an entry from an invalid index. Ignoring.");
       throw Error("Attempted to delete an entry from an invalid index.");
     } else {
       target = value;

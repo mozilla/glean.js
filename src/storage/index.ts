@@ -28,7 +28,7 @@ export type StorageIndex = string[];
 /**
  * The possible values to be retrievd from storage.
  */
-export type StorageValue = null | undefined | string | StorageObject;
+export type StorageValue = undefined | string | StorageObject;
 export interface StorageObject {
   [key: string]: StorageValue;
 }
@@ -47,6 +47,9 @@ export function isStorageValue(v: unknown): v is StorageValue {
   }
   
   if (isObject(v)) {
+    if (Object.keys(v).length === 0) {
+      return true;
+    }
     for (const key in v) {
       return isStorageValue(v[key]);
     }

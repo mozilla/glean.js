@@ -4,7 +4,9 @@
 
 import { Store, StorageIndex, StorageValue, StorageObject, isStorageValue } from "storage";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "storage/utils";
-import { isObject } from "utils";
+import { isString, isUndefined } from "utils";
+
+type WebExtStoreQuery = { [x: string]: { [x: string]: null; } | null; };
 
 /**
  * Persistent storage implementation based on the Promise-based
@@ -44,7 +46,7 @@ class WebExtStore implements Store {
    *
    * @return The query object.
    */
-  private _buildQuery(index: StorageIndex): StorageObject {
+  private _buildQuery(index: StorageIndex): WebExtStoreQuery {
     let partialQuery = null;
     for (const key of index) {
       partialQuery = { [key]: partialQuery };
@@ -54,38 +56,36 @@ class WebExtStore implements Store {
   }
 
   /**
-   * Retrieves the full storage and builds a query object on top of it.
+   * Retrieves the full store and builds a query object on top of it.
    *
-   * @param index The index to the given entry on the storage.
    * @param transformFn The transformation function to apply to the store.
    *
    * @returns The query object with the modified store.
    */
-  private async _buildQueryFromStore(index: StorageIndex, transformFn: (s: StorageObject) => StorageObject) {
+  private async _buildQueryFromStore(transformFn: (s: StorageObject) => StorageObject): Promise<StorageObject> {
     const store = await this._testOnly_getWholeStore();
-    if (isStorageValue(store) && isObject(store)) {
-      return { [this.rootKey]: transformFn(store) };
-    } else {
-      return this._buildQuery(index);
-    }
+    return { [this.rootKey]: transformFn(store) };
   }
 
   async get(index: StorageIndex): Promise<StorageValue> {
     const query = this._buildQuery(index);
-    const response = await this.store.get(query);
+    const response: browser.storage.StorageObject = await this.store.get(query);
     if (!response) {
       return;
     }
 
     if (isStorageValue(response)) {
-      if (isObject(response)) {
+      if (!isUndefined(response) && !isString(response)) {
         return getValueFromNestedObject(response, [ this.rootKey, ...index ]);
       } else {
         return response;
       }
     }
 
-    throw new Error(`Unexpected value found in storage for index ${index}. Ignoring.\n${response}`);
+    throw new Error(
+      `Unexpected value found in storage for index ${index}. Ignoring.
+      ${JSON.stringify(response, null, 2)}`
+    );
   }
 
   async update(
@@ -100,7 +100,6 @@ class WebExtStore implements Store {
     // This is necessary, because if we try to set a key to an inside object on the storage,
     // it will erase any sibling keys that are not mentioned.
     const query = await this._buildQueryFromStore(
-      index,
       store => updateNestedObject(store, index, transformFn)
     );
     return this.store.set(query);
@@ -113,7 +112,6 @@ class WebExtStore implements Store {
     // make the necessary changes to it locally and then reset it.
     try {
       const query = await this._buildQueryFromStore(
-        index,
         store => deleteKeyFromNestedObject(store, index)
       );
       return this.store.set(query);
