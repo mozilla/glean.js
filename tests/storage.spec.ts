@@ -20,7 +20,7 @@ const stores: {
   [store: string]: {
     initializeStore: () => Store,
     before?: () => Promise<void>,
-    after?: () => Promise<void>
+    afterAll?: () => Promise<void>
   }
 } = {
   "WeakStore": {
@@ -29,47 +29,49 @@ const stores: {
   "WebExtStore": {
     initializeStore: (): WebExtStore => new WebExtStore("test"),
     before: async () => {
-      firefox = await setupFirefox();
-      // Browser needs to be global so that WebExtStore will be built and able to use it.
-      global.browser = {
-        storage: {
-          // We need to ignore type checks because TS will complain about
-          // not defining the `clear` methods,
-          // but these are not necessary for our tests.
-          //
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          local: {
-            // We need to ignore type checks for the following properties because they do not
-            // match perfectly with what is decribed by out web ext types package.
-            // Moreover, it will also complain about not defining the `clear` and `remove`
-            // methods, but these are not necessary for our tests.
+      if (!firefox) {
+        firefox = await setupFirefox();
+        // Browser needs to be global so that WebExtStore will be built and able to use it.
+        global.browser = {
+          storage: {
+            // We need to ignore type checks because TS will complain about
+            // not defining the `remove` method, which is not necessary for our tests.
             //
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            get: webExtensionAPIProxyBuilder(firefox, ["storage", "local", "get"]),
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            set: webExtensionAPIProxyBuilder(firefox, ["storage", "local", "set"]),
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            clear: webExtensionAPIProxyBuilder(firefox, ["storage", "local", "clear"])
+            local: {
+              // We need to ignore type checks for the following properties because they do not
+              // match perfectly with what is decribed by out web ext types package.
+              // Moreover, it will also complain about not defining the `clear` and `remove`
+              // methods, but these are not necessary for our tests.
+              //
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              get: webExtensionAPIProxyBuilder(firefox, ["storage", "local", "get"]),
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              set: webExtensionAPIProxyBuilder(firefox, ["storage", "local", "set"]),
+              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+              // @ts-ignore
+              clear: webExtensionAPIProxyBuilder(firefox, ["storage", "local", "clear"])
+            }
           }
-        }
-      };
+        };
+      }
       await browser.storage.local.clear();
     },
-    after: async () => {
-      // Comment this if you want to check on the state of Firefox after the tests,
-      // (useful for local testing).
-      await firefox.quit();
-    }
+    afterAll: async () => await firefox.quit()
   }
 };
 
 for (const store in stores) {
   const currentStore = stores[store];
+
   describe(`storage/${store}`, function () {
+    after(async function () {
+      !isUndefined(currentStore.afterAll) && await currentStore.afterAll();
+    });
+
     describe("get", function () {
       let store: Store;
       const expected = {
@@ -100,10 +102,6 @@ for (const store in stores) {
         await store.update(["bump"], () => "not quite!");
       });
 
-      after(async function () {
-        !isUndefined(currentStore.after) && await currentStore.after();
-      });
-  
       it("Attempting to get the whole store works", async function () {
         const value = await store._getWholeStore();
         assert.deepStrictEqual(value, expected);
@@ -140,10 +138,6 @@ for (const store in stores) {
         store = currentStore.initializeStore();
       });
 
-      after(async function () {
-        !isUndefined(currentStore.after) && await currentStore.after();
-      });
-  
       it("Attempting to update a non-existent entry works", async function () {
         await store.update(index, () => value);
         assert.strictEqual(value, await store.get(index));
@@ -184,10 +178,6 @@ for (const store in stores) {
         store = currentStore.initializeStore();
       });
 
-      after(async function () {
-        !isUndefined(currentStore.after) && await currentStore.after();
-      });
-  
       it("Attempting to delete an existing index works", async function () {
         await store.update(index, () => value);
         assert.strictEqual(value, await store.get(index));
@@ -224,5 +214,4 @@ for (const store in stores) {
       });
     });
   });
-
 }

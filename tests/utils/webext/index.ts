@@ -16,6 +16,13 @@ export async function setupFirefox(): Promise<WebDriver> {
   // Unset this to run the UI (useful for local testing).
   firefoxOptions.headless();
 
+  // This is the path to Firefox Nightly on Ubuntu with the Mozilla PPA.
+  if (process.platform === "linux") {
+    firefoxOptions.setBinary("/usr/bin/firefox-trunk");
+  } else if (process.platform === "darwin") {
+    firefoxOptions.setBinary("/Applications/Firefox Nightly.app/Contents/MacOS/firefox");
+  }
+
   const browser = await new Builder()
     .forBrowser("firefox")
     .setFirefoxOptions(firefoxOptions)
@@ -71,6 +78,7 @@ export function webExtensionAPIProxyBuilder(browser: WebDriver, method: string[]
         console.log("Caught a new test response", event.detail);
         document.removeEventListener("testResponse", handleTestResponse, false);
         // This callback will resolve the execution of the current script.
+        console.log(JSON.stringify(JSON.parse(event.detail), null, 2));
         callback(JSON.parse(event.detail));
       };
 
