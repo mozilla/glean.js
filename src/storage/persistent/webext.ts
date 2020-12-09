@@ -34,7 +34,7 @@ class WebExtStore implements Store {
     this.rootKey = rootKey;
   }
 
-  async _testOnly_getWholeStore(): Promise<StorageObject> {
+  async _getWholeStore(): Promise<StorageObject> {
     const result = await this.store.get({ [this.rootKey]: {} });
     return  result[this.rootKey];
   }
@@ -63,7 +63,7 @@ class WebExtStore implements Store {
    * @returns The query object with the modified store.
    */
   private async _buildQueryFromStore(transformFn: (s: StorageObject) => StorageObject): Promise<StorageObject> {
-    const store = await this._testOnly_getWholeStore();
+    const store = await this._getWholeStore();
     return { [this.rootKey]: transformFn(store) };
   }
 

@@ -65,7 +65,7 @@ export interface Store {
    *
    * @returns An object representing all the data recorded in the store.
    */
-  _testOnly_getWholeStore(): Promise<StorageObject>;
+  _getWholeStore(): Promise<StorageObject>;
 
   /**
    * Gets the value recorded to the given index on the store.
