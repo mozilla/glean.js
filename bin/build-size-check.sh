@@ -19,6 +19,7 @@ webext_size_pretty=$(wc -c ./dist/glean.js | awk '{printf "%0.2f\n",$1/1024"."su
 git branch -f original-main origin/main
 # TODO: This is done in case there were changes to the package.json,
 # we should find a better way to deal with that though.
+# See: [Bug 1681484](https://bugzilla.mozilla.org/show_bug.cgi?id=1681484)
 git reset --hard HEAD
 git checkout original-main
 

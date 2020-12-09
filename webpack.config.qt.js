@@ -18,6 +18,7 @@ module.exports = {
     ...baseConfig.resolve,
     alias: {
       // TODO: This is temporary until we actually have a persistent storage impl for Qt.
+      // See: [Bug 1681483](https://bugzilla.mozilla.org/show_bug.cgi?id=1681483)
       "storage/persistent": path.resolve(__dirname, "src/storage/weak"),
     }
   }
