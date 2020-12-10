@@ -17,7 +17,7 @@ class WeakStore implements Store {
     this.store = {};
   }
 
-  async _testOnly_getWholeStore(): Promise<StorageObject> {
+  async _getWholeStore(): Promise<StorageObject> {
     return this.store;
   }
 

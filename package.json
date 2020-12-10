@@ -4,14 +4,15 @@
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "main": "./dist/glean.js",
   "scripts": {
-    "test": "ts-mocha --paths -p ./tsconfig.json",
+    "test": "npm run build:test-webext && ts-mocha tests/**/*.spec.ts --paths -p ./tsconfig.json  --timeout 0",
     "test:debug": "ts-mocha --paths -p ./tsconfig.json --inspect-brk",
     "lint": "eslint . --ext .ts,.js,.json",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:webext": "webpack --config webpack.config.webext.js --mode production",
     "dev:webext": "webpack --watch --config webpack.config.webext.js --mode development",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
-    "dev:qt": "webpack --watch --config webpack.config.qt.js --mode development"
+    "dev:qt": "webpack --watch --config webpack.config.qt.js --mode development",
+    "build:test-webext": "cd tests/utils/webext/sample/ && npm install && npm run build:xpi"
   },
   "repository": {
     "type": "git",
@@ -30,6 +31,7 @@
   "devDependencies": {
     "@types/assert": "^1.5.2",
     "@types/mocha": "^8.0.3",
+    "@types/selenium-webdriver": "^4.0.10",
     "@typescript-eslint/eslint-plugin": "^4.6.1",
     "@typescript-eslint/parser": "^4.6.1",
     "eslint": "^7.12.1",
@@ -37,7 +39,9 @@
     "eslint-plugin-json": "^2.1.2",
     "eslint-plugin-mocha": "^8.0.0",
     "eslint-plugin-notice": "^0.9.10",
+    "geckodriver": "^1.21.0",
     "mocha": "^8.2.1",
+    "selenium-webdriver": "^4.0.0-alpha.8",
     "ts-loader": "^8.0.9",
     "ts-mocha": "^8.0.0",
     "ts-node": "^9.0.0",

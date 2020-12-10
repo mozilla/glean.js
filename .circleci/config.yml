@@ -9,7 +9,7 @@ version: 2.1
 jobs:
   lint:
     docker:
-      - image: circleci/node:latest
+      - image: cimg/node:14.13.1
     steps:
       - checkout
       - run:
@@ -21,19 +21,25 @@ jobs:
 
   unit-tests:
     docker:
-      - image: circleci/node:latest
+      - image: cimg/node:14.13.1
     steps:
       - checkout
+      - run:
+          name: Install Firefox related dependencies
+          command: |
+            sudo add-apt-repository ppa:ubuntu-mozilla-daily/ppa
+            sudo apt update
+            sudo apt install firefox-trunk
       - run:
           name: Install Javascript dependencies
           command: npm install
       - run:
           name: Run unit tests
-          command: npm run test
+          command: export PATH=.:$PATH && npm run test
 
   check-size:
     docker:
-      - image: circleci/node:latest
+      - image: cimg/node:14.13.1
     steps:
       - checkout
       - run:
