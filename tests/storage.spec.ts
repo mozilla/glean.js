@@ -30,7 +30,7 @@ const stores: {
     initializeStore: (): WebExtStore => new WebExtStore("test"),
     before: async () => {
       if (!firefox) {
-        firefox = await setupFirefox();
+        firefox = await setupFirefox(true);
         // Browser needs to be global so that WebExtStore will be built and able to use it.
         global.browser = {
           storage: {

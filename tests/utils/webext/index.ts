@@ -8,13 +8,19 @@ import path from "path";
 
 /**
  * Setup firefox for testing.
+ *
+ * @param headless Wether or not to run Firefox on headless mode.
+ *        Headless mode should be preferred as it is faster and doesn't open extra windows.
+ *        Nevertheless, running the UI may be useful for local testing.
+ *
+ * @returns The firefox instance thsa was just setup.
  */
-export async function setupFirefox(): Promise<WebDriver> {
+export async function setupFirefox(headless: boolean): Promise<WebDriver> {
   const firefoxOptions = new firefox.Options();
   firefoxOptions.setPreference("xpinstall.signatures.required", false);
 
   // Unset this to run the UI (useful for local testing).
-  firefoxOptions.headless();
+  headless && firefoxOptions.headless();
 
   // This is the path to Firefox Nightly on Ubuntu with the Mozilla PPA.
   if (process.platform === "linux") {
@@ -45,7 +51,7 @@ export async function setupFirefox(): Promise<WebDriver> {
     throw new Error(
       `Error while trying to read the sample Firefox web extensions.
       Make sure you built it before running this test.
-      In order to so com into the tests/utils/webext/sample folder and run \`npm run build:xpi\``
+      In order to so go into the tests/utils/webext/sample folder and run \`npm run build:xpi\``
     );
   }
 

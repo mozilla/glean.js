@@ -4,6 +4,31 @@
 
 "use strict";
 
+// Listens for messages from the content script.
+// Such messages will contain an object with the following interface:
+//
+// {
+//   // The fnIndex is the index on the API we want to access on the browser object.
+//   // It works exactly like the `StorageIndex`. See src/storage/index.ts
+//   fnIndex: string[],
+//   // The args which we want to pass to the function found on `fnIndex`
+//   args: any[]
+// }
+//
+// This object describes a given API the caller wants to access on the `browser` object,
+// and with which arguments they want to call it.
+//
+// Once such a message is received, this listener runs the requested API with the given arguments
+// and returns the response of the call in a message with the following data:
+//
+// {
+//   // This property is always the same.
+//   // The caller should check for it to know that this is the response for their request.
+//   action: "testResponse",
+//   // A JSON encoded string containing the response of the API request.
+//   // This must be string encoded otherwise we run into permission errors.
+//   data: string
+// }
 browser.runtime.onMessage.addListener((data, _sender, sendResponse) => {
   console.debug("New message received.", data);
   if (data.test) {
@@ -22,7 +47,7 @@ browser.runtime.onMessage.addListener((data, _sender, sendResponse) => {
         });
       });
     } catch(e) {
-      console.error("Something went wrong while interacting with the storage.", e);
+      console.error("Something went wrong while interacting with `browser`.", e);
     }
   }
   // This return guarantees that the code above will not be killed before it is done.
