@@ -73,7 +73,8 @@ workflows:
       - lint
       - unit-tests
       - check-qt-js
-      - check-size:
-          filters:
-            branches:
-              ignore: main
+      # Comment this job away until Bug 1681899 is resolved.
+      # - check-size:
+      #     filters:
+      #       branches:
+      #         ignore: main
