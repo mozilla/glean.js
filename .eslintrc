@@ -16,7 +16,8 @@
       "templateFile": "copyright.template.txt"
       }
     ],
-    "semi": ["error", "always"]
+    "semi": ["error", "always"],
+    "no-debugger":  ["error"]
   },
   "parser": "@typescript-eslint/parser",
   "plugins": [

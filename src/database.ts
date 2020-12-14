@@ -99,7 +99,6 @@ class Database {
    * @param value The value we want to record to the given metric.
    */
   async record(metric: Metric, value: string): Promise<void> {
-    debugger;
     if (metric.disabled) {
       return;
     }
