@@ -99,15 +99,7 @@ class Database {
    * @param value The value we want to record to the given metric.
    */
   async record(metric: Metric, value: string): Promise<void> {
-    if (metric.disabled) {
-      return;
-    }
-
-    const store = this._chooseStore(metric.lifetime);
-    const storageKey = metric.identifier;
-    for (const ping of metric.sendInPings) {
-      await store.update([ping, metric.type, storageKey], () => value);
-    }
+    this.transform(metric, () => value);
   }
 
   /**
