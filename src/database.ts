@@ -50,7 +50,7 @@ export function isValidPingPayload(v: StorageValue): v is PingPayload {
  * {
  *  "pingName": {
  *    "metricType (i.e. boolean)": {
- *      "metricCategory?.metricName": metricPayload
+ *      "metricIdentifier": metricPayload
  *    }
  *  }
  * }
