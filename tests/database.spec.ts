@@ -6,6 +6,8 @@ import assert from "assert";
 
 import Database, { isValidPingPayload } from "database";
 import Metric, { Lifetime } from "metrics";
+import { MetricPayload } from "metrics/payload";
+import { isString } from "utils";
 
 describe("Database", function() {
   describe("record", function() {
@@ -109,7 +111,7 @@ describe("Database", function() {
         lifetime: Lifetime.User,
         disabled: false
       });
-      await db.transform(userMetric, (v?: string) => v ? `USER_${v}` : "USER");
+      await db.transform(userMetric, (v?: MetricPayload) => v ? `USER_${v}` : "USER");
       assert.strictEqual(
         await db["userStore"].get(["aPing", "aMetricType", "user.aMetric"]),
         "USER"
@@ -122,7 +124,7 @@ describe("Database", function() {
         lifetime: Lifetime.Ping,
         disabled: false
       });
-      await db.transform(pingMetric,(v?: string) => v ? `PING_${v}` : "PING");
+      await db.transform(pingMetric,(v?: MetricPayload) => v ? `PING_${v}` : "PING");
       assert.strictEqual(
         await db["pingStore"].get(["aPing", "aMetricType", "ping.aMetric"]),
         "PING"
@@ -135,7 +137,7 @@ describe("Database", function() {
         lifetime: Lifetime.Application,
         disabled: false
       });
-      await db.transform(appMetric, (v?: string) => v ? `APP_${v}` : "APP");
+      await db.transform(appMetric, (v?: MetricPayload) => v ? `APP_${v}` : "APP");
       assert.strictEqual(
         await db["appStore"].get(["aPing", "aMetricType", "app.aMetric"]),
         "APP"
@@ -151,7 +153,7 @@ describe("Database", function() {
         disabled: false
       });
 
-      await db.transform(metric, (v?: string) => v ? `EXTRA_${v}` : "EXTRA");
+      await db.transform(metric, (v?: MetricPayload) => v ? `EXTRA_${v}` : "EXTRA");
       const recorded1 = await db["appStore"].get(["aPing", "aMetricType", "aMetric"]);
       assert.strictEqual(recorded1, "EXTRA");
       const recorded2 = await db["appStore"].get(["otherPing", "aMetricType", "aMetric"]);
@@ -174,7 +176,7 @@ describe("Database", function() {
         () => ({ "out": "of place" })
       );
 
-      await db.transform(metric, (v?: string) => v ? `EXTRA_${v}` : "EXTRA");
+      await db.transform(metric, (v?: MetricPayload) => v ? `EXTRA_${v}` : "EXTRA");
       const recorded = await db["appStore"].get(["aPing", "aMetricType", "aMetric"]);
       assert.strictEqual(recorded, "EXTRA");
     });
@@ -188,7 +190,7 @@ describe("Database", function() {
         disabled: true
       });
 
-      await db.transform(metric, (v?: string) => v ? `EXTRA_${v}` : "EXTRA");
+      await db.transform(metric, (v?: MetricPayload) => v ? `EXTRA_${v}` : "EXTRA");
       const recorded = await db["appStore"].get(["aPing", "aMetricType", "aMetric"]);
       assert.strictEqual(recorded, undefined);
     });
@@ -205,7 +207,7 @@ describe("Database", function() {
       });
 
       await db.record(metric, "aValue");
-      assert.strictEqual(await db.getMetric("aPing", metric), "aValue");
+      assert.strictEqual(await db.getMetric("aPing", isString, metric), "aValue");
     });
 
     it("doesn't error if trying to get a metric that hasn't been recorded yet", async function() {
@@ -217,7 +219,7 @@ describe("Database", function() {
         disabled: false
       });
 
-      assert.strictEqual(await db.getMetric("aPing", metric), undefined);
+      assert.strictEqual(await db.getMetric("aPing", isString, metric), undefined);
     });
 
     it("deletes entry in case an unexpected value in encountered", async function() {
@@ -234,7 +236,7 @@ describe("Database", function() {
         () => ({ "out": "of place" })
       );
 
-      assert.strictEqual(await db.getMetric("aPing", metric), undefined);
+      assert.strictEqual(await db.getMetric("aPing", isString, metric), undefined);
       assert.strictEqual(await db["appStore"].get(["aPing", "aMetricType", "aMetric"]), undefined);
     });
   });

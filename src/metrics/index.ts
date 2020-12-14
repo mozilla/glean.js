@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import Glean from "glean";
+
 /**
  * An enum representing the possible metric lifetimes.
  */
@@ -17,7 +19,7 @@ export const enum Lifetime {
 /**
  * The common set of data shared across all different metric types.
  */
-interface CommonMetricData {
+export interface CommonMetricData {
   // The metric's name.
   readonly name: string,
   // The metric's category.
@@ -64,6 +66,17 @@ class Metric implements CommonMetricData {
     } else {
       return this.name;
     }
+  }
+
+  /**
+   * Verify if whether or not this metric instance should be recorded to a given Glean instance.
+   *
+   * @param glean The Glean instance to verify against.
+   *
+   * @returns Whether or not this metric instance should be recorded.
+   */
+  shouldRecord(glean: Glean): boolean {
+    return (glean.uploadEnabled && !this.disabled);
   }
 }
 
