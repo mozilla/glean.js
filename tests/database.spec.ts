@@ -430,7 +430,7 @@ describe("Database", function() {
       });
       await db.record(appMetric, "appValue");
 
-      await db.clear();
+      await db.clearAll();
       assert.deepStrictEqual(await db["userStore"]._getWholeStore(), {});
       assert.deepStrictEqual(await db["pingStore"]._getWholeStore(), {});
       assert.deepStrictEqual(await db["appStore"]._getWholeStore(), {});

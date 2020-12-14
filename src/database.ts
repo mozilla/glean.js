@@ -17,6 +17,8 @@ export interface PingPayload {
  * Verifies if a given value is a valid PingPayload.
  *
  * @param v The value to verify
+ *
+ * @returns Whether or not `v` is a valid PingPayload.
  */
 export function isValidPingPayload(v: StorageValue): v is PingPayload {
   if (isObject(v)) {
@@ -62,22 +64,9 @@ class Database {
   private appStore: Store;
 
   constructor() {
-    this.userStore = new PersistentStore("user");
-    this.pingStore = new PersistentStore("ping");
-    this.appStore = new PersistentStore("app");
-  }
-
-  /**
-   * The key under which to save a metrics value.
-   *
-   * @param metric The metric for which to build the storage key
-   */
-  private _buildStorageKey(metric: Metric): string {
-    if (metric.category) {
-      return `${metric.category}.${metric.name}`;
-    } else {
-      return metric.name;
-    }
+    this.userStore = new PersistentStore("userLifetimeMetrics");
+    this.pingStore = new PersistentStore("pingLifetimeMetrics");
+    this.appStore = new PersistentStore("appLifetimeMetrics");
   }
 
   /**
@@ -111,11 +100,13 @@ class Database {
    */
   async record(metric: Metric, value: string): Promise<void> {
     if (!metric.disabled) {
-      const store = this._chooseStore(metric.lifetime);
-      const storageKey = this._buildStorageKey(metric);
-      for (const ping of metric.sendInPings) {
-        await store.update([ping, metric.type, storageKey], () => value);
-      }
+      return;
+    }
+
+    const store = this._chooseStore(metric.lifetime);
+    const storageKey = metric.identifier;
+    for (const ping of metric.sendInPings) {
+      await store.update([ping, metric.type, storageKey], () => value);
     }
   }
 
@@ -128,17 +119,19 @@ class Database {
    */
   async transform(metric: Metric, transformFn: (v?: string) => string): Promise<void> {
     if (!metric.disabled) {
-      const store = this._chooseStore(metric.lifetime);
-      const storageKey = this._buildStorageKey(metric);
-      for (const ping of metric.sendInPings) {
-        const finalTransformFn = (v: StorageValue): string => {
-          if (isObject(v)) {
-            throw new Error(`Unexpected value found for metric ${metric}: ${JSON.stringify(v)}.`);
-          }
-          return transformFn(v);
-        };
-        await store.update([ping, metric.type, storageKey], finalTransformFn);
-      }
+      return;
+    }
+
+    const store = this._chooseStore(metric.lifetime);
+    const storageKey = metric.identifier;
+    for (const ping of metric.sendInPings) {
+      const finalTransformFn = (v: StorageValue): string => {
+        if (isObject(v)) {
+          throw new Error(`Unexpected value found for metric ${metric}: ${JSON.stringify(v)}.`);
+        }
+        return transformFn(v);
+      };
+      await store.update([ping, metric.type, storageKey], finalTransformFn);
     }
   }
 
@@ -153,7 +146,7 @@ class Database {
    */
   async getMetric(ping: string, metric: Metric): Promise<string | undefined> {
     const store = this._chooseStore(metric.lifetime);
-    const storageKey = this._buildStorageKey(metric);
+    const storageKey = metric.identifier;
     const value = await store.get([ping, metric.type, storageKey]);
     if (isObject(value)) {
       console.error(`Unexpected value found for metric ${metric}: ${JSON.stringify(value)}. Clearing.`);
@@ -165,12 +158,38 @@ class Database {
   }
 
   /**
-   * Gets all of the persisted metrics related to a given ping.
+   * Helper function to validate and get a specific lifetime data
+   * related to a ping from the underlying storage.
    *
    * # Note
    *
-   * If the value in storage for any of the metrics in a ping is of an unexpected type,
+   * If the value in storage for any of the metrics in the ping is of an unexpected type,
    * the whole ping payload for that lifetime will be thrown away.
+   *
+   * @param ping The ping we want to get the data from
+   * @param lifetime The lifetime of the data we want to retrieve
+   *
+   * @returns The ping payload found for the given parameters or an empty object
+   *          in case no data was found or the data that was found, was invalid.
+   */
+  private async getAndValidatePingData(ping: string, lifetime: Lifetime): Promise<PingPayload> {
+    const store = this._chooseStore(lifetime);
+    const data = await store.get([ping]);
+    if (isUndefined(data)) {
+      return {};
+    }
+
+    if (!isValidPingPayload(data)) {
+      console.error(`Unexpected value found for ping ${ping} in ${lifetime} store: ${JSON.stringify(data)}. Clearing.`);
+      await store.delete([ping]);
+      return {};
+    }
+
+    return data;
+  }
+
+  /**
+   * Gets all of the persisted metrics related to a given ping.
    *
    * @param ping The name of the ping to retrieve.
    * @param clearPingLifetimeData Whether or not to clear the ping lifetime metrics retrieved.
@@ -179,33 +198,15 @@ class Database {
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
   async getPing(ping: string, clearPingLifetimeData: boolean): Promise<PingPayload | undefined> {
-    const getAndValidatePingData = async (storeName: string, store: Store): Promise<PingPayload> => {
-      const data = await store.get([ping]);
-      if (isUndefined(data)) {
-        return {};
-      }
-
-      if (!isValidPingPayload(data)) {
-        console.error(`Unexpected value found for ping ${ping} in ${storeName} store: ${JSON.stringify(data)}. Clearing.`);
-        await store.delete([ping]);
-        return {};
-      }
-
-      return data;
-    };
-
-    const userData = await getAndValidatePingData("user", this.userStore);
-    const pingData = await getAndValidatePingData("ping", this.pingStore);
-    const appData = await getAndValidatePingData("app", this.appStore);
+    const userData = await this.getAndValidatePingData(ping, Lifetime.User);
+    const pingData = await this.getAndValidatePingData(ping, Lifetime.Ping);
+    const appData = await this.getAndValidatePingData(ping, Lifetime.Application);
 
     if (clearPingLifetimeData) {
       await this.clear(Lifetime.Ping);
     }
 
-    // Start out with the ping lifetime data,
-    // because it is the one that will probably have more data since it is the default.
     const response: PingPayload = { ...pingData };
-    // Merge the other two lifetimes data with it.
     for (const data of [userData, appData]) {
       for (const metricType in data) {
         response[metricType] = {
@@ -226,17 +227,19 @@ class Database {
    * Clears currently persisted data for a given lifetime.
    *
    * @param lifetime The lifetime to clear.
-   *        If not provided, data for all lifetimes will be cleared.
    */
-  async clear(lifetime?: Lifetime): Promise<void> {
-    if (lifetime) {
-      const store = this._chooseStore(lifetime);
-      await store.delete([]);
-    } else {
-      await this.userStore.delete([]);
-      await this.pingStore.delete([]);
-      await this.appStore.delete([]);
-    }
+  async clear(lifetime: Lifetime): Promise<void> {
+    const store = this._chooseStore(lifetime);
+    await store.delete([]);
+  }
+
+  /**
+   * Clears all persisted metrics data.
+   */
+  async clearAll(): Promise<void> {
+    await this.userStore.delete([]);
+    await this.pingStore.delete([]);
+    await this.appStore.delete([]);
   }
 }
 

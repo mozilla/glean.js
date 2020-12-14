@@ -52,6 +52,19 @@ class Metric implements CommonMetricData {
       this.category = meta.category;
     }
   }
+
+  /**
+   * This metric's unique identifier, including the category and name.
+   *
+   * @returns The generated identifier.
+   */
+  get identifier(): string {
+    if (this.category) {
+      return `${this.category}.${this.name}`;
+    } else {
+      return this.name;
+    }
+  }
 }
 
 export default Metric;
