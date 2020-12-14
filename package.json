@@ -5,7 +5,7 @@
   "main": "./dist/glean.js",
   "scripts": {
     "test": "npm run build:test-webext && ts-mocha tests/**/*.spec.ts --paths -p ./tsconfig.json  --timeout 0",
-    "test:debug": "ts-mocha --paths -p ./tsconfig.json --inspect-brk",
+    "test:debug": "ts-mocha tests/**/*.spec.ts --paths -p ./tsconfig.json --inspect-brk",
     "lint": "eslint . --ext .ts,.js,.json",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:webext": "webpack --config webpack.config.webext.js --mode production",

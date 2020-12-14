@@ -99,7 +99,8 @@ class Database {
    * @param value The value we want to record to the given metric.
    */
   async record(metric: Metric, value: string): Promise<void> {
-    if (!metric.disabled) {
+    debugger;
+    if (metric.disabled) {
       return;
     }
 
@@ -118,7 +119,7 @@ class Database {
    * @param transformFn The transformation function to apply to the currently persisted value.
    */
   async transform(metric: Metric, transformFn: (v?: string) => string): Promise<void> {
-    if (!metric.disabled) {
+    if (metric.disabled) {
       return;
     }
 
