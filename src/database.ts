@@ -53,7 +53,7 @@ export function isValidPingPayload(v: StorageValue): v is PingPayload {
  *  }
  * }
  *
- * We have one store such in format for each lifetime: user, ping and application.
+ * We have one store in this format for each lifetime: user, ping and application.
  *
  */
 class Database {

@@ -48,7 +48,9 @@ class Metric implements CommonMetricData {
     this.lifetime = meta.lifetime;
     this.disabled = meta.disabled;
 
-    if (meta.category) this.category = meta.category;
+    if (meta.category) {
+      this.category = meta.category;
+    }
   }
 }
 
