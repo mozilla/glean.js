@@ -75,8 +75,15 @@ export function updateNestedObject(
 
   const finalKey = index[index.length - 1];
   const current = target[finalKey];
-  target[finalKey] = transformFn(current);
-  return returnObject;
+  try {
+    const value = transformFn(current);
+    target[finalKey] = value;
+    return returnObject;
+  } catch(e) {
+    console.error("Error while transforming stored value. Ignoring old value.", e.message);
+    target[finalKey] = transformFn(undefined);
+    return returnObject;
+  }
 }
 
 /**
