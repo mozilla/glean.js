@@ -17,8 +17,14 @@
       }
     ],
     "semi": ["error", "always"],
-    "no-debugger":  ["error"]
+    "no-debugger":  ["error"],
+    "jsdoc/no-types": "off",
+    "jsdoc/require-param-type": "off",
+    "jsdoc/require-returns-type": "off"
   },
+  "extends": [
+    "plugin:jsdoc/recommended"
+  ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
