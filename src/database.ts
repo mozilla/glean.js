@@ -147,6 +147,13 @@ class Database {
     const storageKey = metric.identifier;
     const value = await store.get([ping, metric.type, storageKey]);
     if (!isUndefined(value) && !validateFn(value)) {
+      // The following behaviour is not consistent with what the Glean SDK does, but this is on purpose.
+      // On the Glean SDK we panic when we can't serialize the given,
+      // that is because this is a extremely unlikely situation for that environment.
+      //
+      // Since Glean.js will run on the browser, it is easy for a user to mess with the persisted data
+      // which makes this sort of errors plausible. That is why we choose to not panic and
+      // simply delete the corrupted data here.
       console.error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(value)}. Clearing.`);
       await store.delete([ping, metric.type, storageKey]);
       return;

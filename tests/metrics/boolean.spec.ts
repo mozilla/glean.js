@@ -59,7 +59,7 @@ describe("BooleanMetric", function() {
     });
   });
 
-  it("set properly sets the value in all ping", async function() {
+  it("set properly sets the value in all pings", async function() {
     const glean = new Glean();
     const metric = new BooleanMetric({
       category: "aCategory",
