@@ -5,6 +5,14 @@
 import { BooleanMetricPayload, isBooleanMetricPayload } from "metrics/boolean";
 import { isString } from "utils";
 
+/**
+ * Validates that a given value is the correct type of payload for a metric of a given type.
+ *
+ * @param type The type of the metric to validate
+ * @param v The value to verify
+ *
+ * @returns Whether or not `v` is of the correct type.
+ */
 export function isMetricPayload(type: string, v: unknown): v is MetricPayload {
   switch (type) {
   case "boolean":

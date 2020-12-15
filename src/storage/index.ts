@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { isString, isUndefined, isObject, isBoolean, isNumber } from "utils";
+import { isString, isUndefined, isObject, isBoolean } from "utils";
 
 /**
  * The storage index in the ordered list of keys to navigate on the store
@@ -45,7 +45,7 @@ export function isStorageValue(v: unknown): v is StorageValue {
   if (isUndefined(v) || isString(v) || isBoolean(v)) {
     return true;
   }
-  
+
   if (isObject(v)) {
     if (Object.keys(v).length === 0) {
       return true;

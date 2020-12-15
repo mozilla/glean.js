@@ -11,7 +11,7 @@
  *          stating wether `v` is a valid data object.
  */
 export function isObject(v: unknown): v is Record<string | number | symbol, unknown> {
-  return !!(v && typeof v === "object" && v.constructor === Object);
+  return (typeof v === "object" && v !== null  && v.constructor === Object);
 }
 
 /**
@@ -35,9 +35,9 @@ export function isUndefined(v: unknown): v is undefined {
  *          stating wether `v` is a string.
  */
 export function isString(v: unknown): v is string {
-  return !!(v && (typeof v === "string" || (v === "object" && v.constructor === String)));
+  return (typeof v === "string" || (typeof v === "object" && v !== null  && v.constructor === String));
 }
 
 export function isBoolean(v: unknown): v is string {
-  return !!(v && (typeof v === "boolean" || (v === "object" && v.constructor === Boolean)));
+  return (typeof v === "boolean" || (typeof v === "object" && v !== null && v.constructor === Boolean));
 }
