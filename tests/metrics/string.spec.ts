@@ -5,10 +5,10 @@
 import assert from "assert";
 
 import Glean from "glean";
-import BooleanMetric from "metrics/boolean";
+import StringMetric, { MAX_LENGTH_VALUE } from "metrics/string";
 import { Lifetime } from "metrics";
-
-describe("BooleanMetric", function() {
+ 
+describe("StringMetric", function() {
   beforeEach(async function() {
     // TODO: Replace this code with a resetGlean function, after Bug 1682769 is resolved.
 
@@ -19,9 +19,9 @@ describe("BooleanMetric", function() {
   });
 
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
-    const metric = new BooleanMetric({
+    const metric = new StringMetric({
       category: "aCategory",
-      name: "aBooleanMetric",
+      name: "aStringMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
       lifetime: Lifetime.Ping,
       disabled: false
@@ -29,54 +29,72 @@ describe("BooleanMetric", function() {
 
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
-
+ 
   it("attemping to set when glean upload is disabled is a no-op", async function() {
     Glean.uploadEnabled = false;
 
-    const metric = new BooleanMetric({
+    const metric = new StringMetric({
       category: "aCategory",
-      name: "aBooleanMetric",
+      name: "aStringMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
       lifetime: Lifetime.Ping,
       disabled: false
     });
-
-    await metric.set(true);
+ 
+    await metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
   it("ping payload is correct", async function() {
-    const metric = new BooleanMetric({
+    const metric = new StringMetric({
       category: "aCategory",
-      name: "aBooleanMetric",
+      name: "aStringMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+ 
+    await metric.set("test_string_value");
+    assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
+ 
+    const snapshot = await Glean.db.getPing("aPing", true);
+    assert.deepStrictEqual(snapshot, {
+      "string": {
+        "aCategory.aStringMetric": "test_string_value"
+      }
+    });
+  });
+ 
+  it("set properly sets the value in all pings", async function() {
+    const metric = new StringMetric({
+      category: "aCategory",
+      name: "aStringMetric",
+      sendInPings: ["aPing", "twoPing", "threePing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    await metric.set("test_string_value");
+    assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
+    assert.strictEqual(await metric.testGetValue("twoPing"), "test_string_value");
+    assert.strictEqual(await metric.testGetValue("threePing"), "test_string_value");
+  });
+
+  it("long string values are truncated", async function() {
+    const metric = new StringMetric({
+      category: "aCategory",
+      name: "aStringMetric",
       sendInPings: ["aPing"],
       lifetime: Lifetime.Ping,
       disabled: false
     });
 
-    await metric.set(true);
-    assert.strictEqual(await metric.testGetValue("aPing"), true);
+    const testString = "01234567890".repeat(20);
+    await metric.set(testString);
 
-    const snapshot = await Glean.db.getPing("aPing", true);
-    assert.deepStrictEqual(snapshot, {
-      "boolean": {
-        "aCategory.aBooleanMetric": true
-      }
-    });
-  });
-
-  it("set properly sets the value in all pings", async function() {
-    const metric = new BooleanMetric({
-      category: "aCategory",
-      name: "aBooleanMetric",
-      sendInPings: ["aPing", "twoPing", "threePing"],
-      lifetime: Lifetime.Ping,
-      disabled: false
-    });
-
-    await metric.set(true);
-    assert.strictEqual(await metric.testGetValue("aPing"), true);
-    assert.strictEqual(await metric.testGetValue("twoPing"), true);
-    assert.strictEqual(await metric.testGetValue("threePing"), true);
+    assert.strictEqual(
+      await metric.testGetValue("aPing"),
+      testString.substring(0, MAX_LENGTH_VALUE)
+    );
   });
 });
