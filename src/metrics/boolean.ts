@@ -35,7 +35,7 @@ class BooleanMetric extends Metric {
       return;
     }
 
-    glean.db.record(this, value);
+    await glean.db.record(this, value);
   }
 
   /**

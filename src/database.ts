@@ -100,7 +100,7 @@ class Database {
    * @param value The value we want to record to the given metric.
    */
   async record(metric: Metric, value: MetricPayload): Promise<void> {
-    this.transform(metric, () => value);
+    await this.transform(metric, () => value);
   }
 
   /**
