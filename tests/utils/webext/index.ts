@@ -65,6 +65,8 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
  * @param browser A Webdriver where we will run this proxied script
  * @param method The method which we want to execute.
  *        This array will work exactly like the StorageIndex.
+ *
+ * @returns A proxy function for the given browser method.
  */
 export function webExtensionAPIProxyBuilder(browser: WebDriver, method: string[]) {
   return async function (...args: never[]): Promise<any> {

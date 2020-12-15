@@ -44,7 +44,7 @@ class WebExtStore implements Store {
    *
    * @param index The index to the given entry on the storage.
    *
-   * @return The query object.
+   * @returns The query object.
    */
   private _buildQuery(index: StorageIndex): WebExtStoreQuery {
     let partialQuery = null;
