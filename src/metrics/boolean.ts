@@ -7,6 +7,14 @@ import Glean from "glean";
 import { isBoolean } from "utils";
 
 export type BooleanMetricPayload = boolean;
+/**
+ * Checks whether or not `v` is a valid boolean metric payload.
+ *
+ * @param v The value to verify.
+ *
+ * @returns A special Typescript value (which compiles down to a boolean)
+ *          stating wether `v` is a valid boolean metric payload.
+ */
 export function isBooleanMetricPayload(v: unknown): v is BooleanMetricPayload {
   return isBoolean(v);
 }

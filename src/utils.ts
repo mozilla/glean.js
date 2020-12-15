@@ -38,6 +38,14 @@ export function isString(v: unknown): v is string {
   return (typeof v === "string" || (typeof v === "object" && v !== null  && v.constructor === String));
 }
 
+/**
+ * Checks whether or not `v` is a boolean.
+ *
+ * @param v The value to verify.
+ *
+ * @returns A special Typescript value (which compiles down to a boolean)
+ *          stating wether `v` is a boolean.
+ */
 export function isBoolean(v: unknown): v is string {
   return (typeof v === "boolean" || (typeof v === "object" && v !== null && v.constructor === Boolean));
 }
