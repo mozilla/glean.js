@@ -17,7 +17,7 @@ export type CounterMetricPayload = number;
  * # Note
  *
  * Not only will this verify if `v` is a number,
- * it will also check if its length is less than > 0.
+ * it will also check if it is greater than 0.
  *
  * @param v The value to verify.
  *
@@ -69,17 +69,12 @@ class CounterMetric extends Metric {
     }
 
     const transformFn = ((amount) => {
-      return (v?: MetricPayload): CounterMetricPayload =>  {
-        if (isCounterMetricPayload(v)) {
-          let result = v + amount;
-          if (result > Number.MAX_SAFE_INTEGER) {
-            result = Number.MAX_SAFE_INTEGER;
-          }
-          return result;
-        } else {
-          // Ignore whatever is in the storage if it is not a valid counter metric payload.
-          return amount;
+      return (v?: CounterMetricPayload): CounterMetricPayload =>  {
+        let result = v ? v + amount : amount;
+        if (result > Number.MAX_SAFE_INTEGER) {
+          result = Number.MAX_SAFE_INTEGER;
         }
+        return result;
       };
     })(amount);
 
@@ -100,7 +95,7 @@ class CounterMetric extends Metric {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<CounterMetricPayload | undefined> {
-    return Glean.db.getMetric(ping, isCounterMetricPayload, this);
+    return Glean.db.getMetric(ping, this);
   }
 }
 

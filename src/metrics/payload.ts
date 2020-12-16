@@ -14,7 +14,7 @@ import { StringMetricPayload, isStringMetricPayload } from "metrics/string";
  *
  * @returns Whether or not `v` is of the correct type.
  */
-export function isMetricPayload(type: string, v: unknown): v is MetricPayload {
+export function isMetricPayload<T>(type: string, v: unknown): v is T {
   switch (type) {
   case "boolean":
     return isBooleanMetricPayload(v);

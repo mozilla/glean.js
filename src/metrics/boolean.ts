@@ -52,7 +52,7 @@ class BooleanMetric extends Metric {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<BooleanMetricPayload | undefined> {
-    return Glean.db.getMetric(ping, isBooleanMetricPayload, this);
+    return Glean.db.getMetric(ping, this);
   }
 }
 

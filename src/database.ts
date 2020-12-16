@@ -110,7 +110,7 @@ class Database {
    * @param metric The metric to record to.
    * @param transformFn The transformation function to apply to the currently persisted value.
    */
-  async transform(metric: Metric, transformFn: (v?: MetricPayload) => MetricPayload): Promise<void> {
+  async transform<T extends MetricPayload>(metric: Metric, transformFn: (v?: T) => T): Promise<void> {
     if (metric.disabled) {
       return;
     }
@@ -119,7 +119,7 @@ class Database {
     const storageKey = metric.identifier;
     for (const ping of metric.sendInPings) {
       const finalTransformFn = (v: StorageValue): Exclude<StorageValue, undefined> => {
-        if (!isUndefined(v) && !isMetricPayload(metric.type, v)) {
+        if (!isUndefined(v) && !isMetricPayload<T>(metric.type, v)) {
           throw new Error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(v)}.`);
         }
         return transformFn(v);
@@ -146,7 +146,6 @@ class Database {
    * Currently Glean.js does not include mechanisms to reliably prevent that.
    *
    * @param ping The ping from which we want to retrieve the given metric.
-   * @param validateFn A validation function to verify if persisted payload is in the correct format.
    * @param metric An object containing the information about the metric to retrieve.
    *
    * @returns The payload persisted for the given metric,
@@ -154,13 +153,12 @@ class Database {
    */
   async getMetric<T>(
     ping: string,
-    validateFn: (v: unknown) => v is T,
     metric: Metric
   ): Promise<T | undefined> {
     const store = this._chooseStore(metric.lifetime);
     const storageKey = metric.identifier;
     const value = await store.get([ping, metric.type, storageKey]);
-    if (!isUndefined(value) && !validateFn(value)) {
+    if (!isUndefined(value) && !isMetricPayload<T>(metric.type, value)) {
       console.error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(value)}. Clearing.`);
       await store.delete([ping, metric.type, storageKey]);
       return;
