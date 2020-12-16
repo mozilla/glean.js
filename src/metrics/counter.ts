@@ -5,7 +5,6 @@
 import Metric, { CommonMetricData } from "metrics";
 import Glean from "glean";
 import { isNumber, isUndefined } from "utils";
-import { MetricPayload } from "./payload";
 
 export const MAX_LENGTH_VALUE = 100;
 

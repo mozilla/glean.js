@@ -8,7 +8,6 @@ import Database, { isValidPingPayload } from "database";
 import { Lifetime } from "metrics";
 import StringMetric from "metrics/string";
 import { MetricPayload } from "metrics/payload";
-import { isString } from "utils";
 
 describe("Database", function() {
   describe("record", function() {

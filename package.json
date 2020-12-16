@@ -6,7 +6,7 @@
   "scripts": {
     "test": "npm run build:test-webext && ts-mocha \"tests/**/*.spec.ts\" --paths -p ./tsconfig.json  --recursive --timeout 0",
     "test:debug": "ts-mocha \"tests/**/*.spec.ts\" --paths -p ./tsconfig.json --recursive --inspect-brk",
-    "lint": "eslint . --ext .ts,.js,.json",
+    "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:webext": "webpack --config webpack.config.webext.js --mode production",
     "dev:webext": "webpack --watch --config webpack.config.webext.js --mode development",
