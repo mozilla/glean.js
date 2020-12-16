@@ -20,6 +20,11 @@ export function isBooleanMetricPayload(v: unknown): v is BooleanMetricPayload {
   return isBoolean(v);
 }
 
+/**
+ *  A boolean metric.
+ *
+ * Records a simple flag.
+ */
 class BooleanMetric extends Metric {
   constructor(meta: CommonMetricData) {
     super("boolean", meta);

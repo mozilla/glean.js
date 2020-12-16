@@ -36,6 +36,12 @@ export function isCounterMetricPayload(v: unknown): v is CounterMetricPayload {
   return true;
 }
 
+/**
+ * A counter metric.
+ *
+ * Used to count things.
+ * The value can only be incremented, not decremented.
+ */
 class CounterMetric extends Metric {
   constructor(meta: CommonMetricData) {
     super("counter", meta);

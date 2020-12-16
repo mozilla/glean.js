@@ -35,6 +35,12 @@ export function isStringMetricPayload(v: unknown): v is StringMetricPayload {
   return true;
 }
 
+/**
+ * A string metric.
+ *
+ * Record an Unicode string value with arbitrary content.
+ * Strings are length-limited to `MAX_LENGTH_VALUE` bytes.
+ */
 class StringMetric extends Metric {
   constructor(meta: CommonMetricData) {
     super("string", meta);
