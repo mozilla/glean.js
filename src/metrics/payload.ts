@@ -4,7 +4,6 @@
 
 import { BooleanMetricPayload, isBooleanMetricPayload } from "metrics/boolean";
 import { StringMetricPayload, isStringMetricPayload } from "metrics/string";
-import { isString } from "utils";
 
 /**
  * Validates that a given value is the correct type of payload for a metric of a given type.
@@ -21,13 +20,12 @@ export function isMetricPayload(type: string, v: unknown): v is MetricPayload {
   case "string":
     return isStringMetricPayload(v);
   default:
-    return isString(v);
+    return false;
   }
 }
 
 // Leaving the `string` as a valid metric payload here so that tests keep working for now.
 export type MetricPayload =
   BooleanMetricPayload |
-  StringMetricPayload |
-  string;
+  StringMetricPayload;
 
