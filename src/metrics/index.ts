@@ -75,8 +75,8 @@ class Metric implements CommonMetricData {
    *
    * @returns Whether or not this metric instance should be recorded.
    */
-  shouldRecord(glean: Glean): boolean {
-    return (glean.uploadEnabled && !this.disabled);
+  shouldRecord(): boolean {
+    return (Glean.uploadEnabled && !this.disabled);
   }
 }
 

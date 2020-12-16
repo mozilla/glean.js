@@ -10,7 +10,6 @@ import { Lifetime } from "metrics";
 
 describe("BooleanMetric", function() {
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
-    const glean = new Glean();
     const metric = new BooleanMetric({
       category: "aCategory",
       name: "aBooleanMetric",
@@ -19,12 +18,11 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    assert.strictEqual(await metric.testGetValue(glean, "aPing"), undefined);
+    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
   it("attemping to set when glean upload is disabled is a no-op", async function() {
-    const glean = new Glean();
-    glean.uploadEnabled = false;
+    Glean.uploadEnabled = false;
 
     const metric = new BooleanMetric({
       category: "aCategory",
@@ -34,12 +32,15 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    await metric.set(glean, true);
-    assert.strictEqual(await metric.testGetValue(glean, "aPing"), undefined);
+    await metric.set(true);
+    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+
+    // Reset upload enabled state, not to inerfere with other tests.
+    // TODO: Remove this after Bug 1682769 is resolved.
+    Glean.uploadEnabled = true;
   });
 
   it("ping payload is correct", async function() {
-    const glean = new Glean();
     const metric = new BooleanMetric({
       category: "aCategory",
       name: "aBooleanMetric",
@@ -48,10 +49,10 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    await metric.set(glean, true);
-    assert.strictEqual(await metric.testGetValue(glean, "aPing"), true);
+    await metric.set(true);
+    assert.strictEqual(await metric.testGetValue("aPing"), true);
 
-    const snapshot = await glean.db.getPing("aPing", true);
+    const snapshot = await Glean.db.getPing("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "boolean": {
         "aCategory.aBooleanMetric": true
@@ -60,7 +61,6 @@ describe("BooleanMetric", function() {
   });
 
   it("set properly sets the value in all pings", async function() {
-    const glean = new Glean();
     const metric = new BooleanMetric({
       category: "aCategory",
       name: "aBooleanMetric",
@@ -69,9 +69,9 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    await metric.set(glean, true);
-    assert.strictEqual(await metric.testGetValue(glean, "aPing"), true);
-    assert.strictEqual(await metric.testGetValue(glean, "twoPing"), true);
-    assert.strictEqual(await metric.testGetValue(glean, "threePing"), true);
+    await metric.set(true);
+    assert.strictEqual(await metric.testGetValue("aPing"), true);
+    assert.strictEqual(await metric.testGetValue("twoPing"), true);
+    assert.strictEqual(await metric.testGetValue("threePing"), true);
   });
 });

@@ -27,15 +27,14 @@ class BooleanMetric extends Metric {
   /**
    * Sets to the specified boolean value.
    *
-   * @param glean the Glean instance this metric belongs to.
    * @param value the value to set.
    */
-  async set(glean: Glean, value: BooleanMetricPayload): Promise<void> {
-    if (!this.shouldRecord(glean)) {
+  async set(value: BooleanMetricPayload): Promise<void> {
+    if (!this.shouldRecord()) {
       return;
     }
 
-    await glean.db.record(this, value);
+    await Glean.db.record(this, value);
   }
 
   /**
@@ -45,13 +44,14 @@ class BooleanMetric extends Metric {
    *
    * This doesn't clear the stored value.
    *
-   * @param glean the Glean instance this metric belongs to.
+   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
+   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(glean: Glean, ping: string): Promise<BooleanMetricPayload | undefined> {
-    return glean.db.getMetric(ping, isBooleanMetricPayload, this);
+  async testGetValue(ping: string): Promise<BooleanMetricPayload | undefined> {
+    return Glean.db.getMetric(ping, isBooleanMetricPayload, this);
   }
 }
 
