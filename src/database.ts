@@ -120,7 +120,7 @@ class Database {
     for (const ping of metric.sendInPings) {
       const finalTransformFn = (v: StorageValue): Exclude<StorageValue, undefined> => {
         if (!isUndefined(v) && !isMetricPayload(metric.type, v)) {
-          throw new Error(`Unexpected value found for metric ${metric}: ${JSON.stringify(v)}.`);
+          throw new Error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(v)}.`);
         }
         return transformFn(v);
       };

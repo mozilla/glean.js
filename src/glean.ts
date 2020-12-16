@@ -26,7 +26,7 @@ class Glean {
     this._uploadEnabled = true;
   }
 
-  static get instance(): Glean {
+  private static get instance(): Glean {
     if (!Glean._instance) {
       Glean._instance = new Glean();
     }
