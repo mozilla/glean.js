@@ -7,6 +7,7 @@ import Glean from "glean";
 import { isBoolean } from "utils";
 
 export type BooleanMetricPayload = boolean;
+
 /**
  * Checks whether or not `v` is a valid boolean metric payload.
  *
@@ -38,7 +39,7 @@ class BooleanMetric extends Metric {
   }
 
   /**
-   * **Test-only API (exported for FFI purposes).**
+   * **Test-only API**
    *
    * Gets the currently stored value as a boolean.
    *

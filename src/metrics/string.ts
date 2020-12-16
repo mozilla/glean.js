@@ -9,6 +9,7 @@ import { isString } from "utils";
 export const MAX_LENGTH_VALUE = 100;
 
 export type StringMetricPayload = string;
+
 /**
  * Checks whether or not `v` is a valid string metric payload.
  *
@@ -63,11 +64,13 @@ class StringMetric extends Metric {
   }
 
   /**
-   * **Test-only API (exported for FFI purposes).**
+   * **Test-only API**
    *
    * Gets the currently stored value as a string.
    *
    * This doesn't clear the stored value.
+   *
+   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *

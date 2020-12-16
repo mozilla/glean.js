@@ -10,12 +10,7 @@ import { Lifetime } from "metrics";
 
 describe("BooleanMetric", function() {
   beforeEach(async function() {
-    // TODO: Replace this code with a resetGlean function, after Bug 1682769 is resolved.
-
-    // Reset upload enabled state, not to inerfere with other tests.
-    Glean.uploadEnabled = true;
-    // Clear the database.
-    await Glean.db.clearAll();
+    await Glean.resetGlean();
   });
 
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
