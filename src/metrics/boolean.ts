@@ -13,7 +13,7 @@ export type BooleanMetricPayload = boolean;
  * @param v The value to verify.
  *
  * @returns A special Typescript value (which compiles down to a boolean)
- *          stating wether `v` is a valid boolean metric payload.
+ *          stating whether `v` is a valid boolean metric payload.
  */
 export function isBooleanMetricPayload(v: unknown): v is BooleanMetricPayload {
   return isBoolean(v);
