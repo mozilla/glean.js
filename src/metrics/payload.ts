@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { BooleanMetricPayload, isBooleanMetricPayload } from "metrics/boolean";
-import { isString } from "utils";
+import { StringMetricPayload, isStringMetricPayload } from "metrics/string";
 
 /**
  * Validates that a given value is the correct type of payload for a metric of a given type.
@@ -17,11 +17,15 @@ export function isMetricPayload(type: string, v: unknown): v is MetricPayload {
   switch (type) {
   case "boolean":
     return isBooleanMetricPayload(v);
+  case "string":
+    return isStringMetricPayload(v);
   default:
-    return isString(v);
+    return false;
   }
 }
 
 // Leaving the `string` as a valid metric payload here so that tests keep working for now.
-export type MetricPayload = BooleanMetricPayload | string;
+export type MetricPayload =
+  BooleanMetricPayload |
+  StringMetricPayload;
 

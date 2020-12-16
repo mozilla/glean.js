@@ -39,7 +39,7 @@ export interface StorageObject {
  * @param v The value to verify
  *
  * @returns A special Typescript value (which compiles down to a boolean)
- *          stating wether `v` is a valid StorageValue.
+ *          stating whether `v` is a valid StorageValue.
  */
 export function isStorageValue(v: unknown): v is StorageValue {
   if (isUndefined(v) || isString(v) || isBoolean(v)) {

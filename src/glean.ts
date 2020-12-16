@@ -47,6 +47,20 @@ class Glean {
   static set uploadEnabled(value: boolean) {
     Glean.instance._uploadEnabled = value;
   }
+
+  /**
+   * **Test-only API**
+   *
+   * Resets the Glean singleton to its initial state.
+   *
+   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
+   */
+  static async resetGlean(): Promise<void> {
+    // Reset upload enabled state, not to inerfere with other tests.
+    Glean.uploadEnabled = true;
+    // Clear the database.
+    await Glean.db.clearAll();
+  }
 }
 
 export default Glean;

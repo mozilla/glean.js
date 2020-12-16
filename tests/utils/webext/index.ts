@@ -9,7 +9,7 @@ import path from "path";
 /**
  * Setup firefox for testing.
  *
- * @param headless Wether or not to run Firefox on headless mode.
+ * @param headless whether or not to run Firefox on headless mode.
  *        Headless mode should be preferred as it is faster and doesn't open extra windows.
  *        Nevertheless, running the UI may be useful for local testing.
  *

@@ -129,14 +129,28 @@ class Database {
   }
 
   /**
-   * Gets the persisted payload of a given metric in a given ping.
+   * Gets  and validates the persisted payload of a given metric in a given ping.
+   *
+   * If the persisted value is invalid for the metric we are attempting to retrieve,
+   * the persisted value is deleted and `undefined is returned.
+   *
+   * This behaviour is not consistent with what the Glean SDK does, but this is on purpose.
+   * On the Glean SDK we panic when we can't serialize the persisted value,
+   * that is because this is an extremely unlikely situation for that environment.
+   *
+   * Since Glean.js will run on the browser, it is easy for a consumers / developers
+   * to mess with the storage which makes this sort of errors plausible.
+   * That is why we choose to not panic and simply delete the corrupted data here.
+   *
+   * Note: This is not a strong guard against consumers / developers messing with the storage on their own.
+   * Currently Glean.js does not include mechanisms to reliably prevent that.
    *
    * @param ping The ping from which we want to retrieve the given metric.
-   * @param validateFn A validation function to verify if persisted payload is of the correct type.
+   * @param validateFn A validation function to verify if persisted payload is in the correct format.
    * @param metric An object containing the information about the metric to retrieve.
    *
    * @returns The payload persisted for the given metric,
-   *          `undefined` in case the metric has not been recorded yet.
+   *          `undefined` in case the metric has not been recorded yet or the found valus in invalid.
    */
   async getMetric<T>(
     ping: string,
@@ -147,13 +161,6 @@ class Database {
     const storageKey = metric.identifier;
     const value = await store.get([ping, metric.type, storageKey]);
     if (!isUndefined(value) && !validateFn(value)) {
-      // The following behaviour is not consistent with what the Glean SDK does, but this is on purpose.
-      // On the Glean SDK we panic when we can't serialize the given,
-      // that is because this is a extremely unlikely situation for that environment.
-      //
-      // Since Glean.js will run on the browser, it is easy for a user to mess with the persisted data
-      // which makes this sort of errors plausible. That is why we choose to not panic and
-      // simply delete the corrupted data here.
       console.error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(value)}. Clearing.`);
       await store.delete([ping, metric.type, storageKey]);
       return;

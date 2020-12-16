@@ -8,7 +8,7 @@
  * @param v The value to verify.
  *
  * @returns A special Typescript value (which compiles down to a boolean)
- *          stating wether `v` is a valid data object.
+ *          stating whether `v` is a valid data object.
  */
 export function isObject(v: unknown): v is Record<string | number | symbol, unknown> {
   return (typeof v === "object" && v !== null  && v.constructor === Object);
@@ -20,7 +20,7 @@ export function isObject(v: unknown): v is Record<string | number | symbol, unkn
  * @param v The value to verify.
  *
  * @returns A special Typescript value (which compiles down to a boolean)
- *          stating wether `v` is undefined.
+ *          stating whether `v` is undefined.
  */
 export function isUndefined(v: unknown): v is undefined {
   return typeof v === "undefined";
@@ -32,7 +32,7 @@ export function isUndefined(v: unknown): v is undefined {
  * @param v The value to verify.
  *
  * @returns A special Typescript value (which compiles down to a boolean)
- *          stating wether `v` is a string.
+ *          stating whether `v` is a string.
  */
 export function isString(v: unknown): v is string {
   return (typeof v === "string" || (typeof v === "object" && v !== null  && v.constructor === String));
@@ -44,7 +44,7 @@ export function isString(v: unknown): v is string {
  * @param v The value to verify.
  *
  * @returns A special Typescript value (which compiles down to a boolean)
- *          stating wether `v` is a boolean.
+ *          stating whether `v` is a boolean.
  */
 export function isBoolean(v: unknown): v is string {
   return (typeof v === "boolean" || (typeof v === "object" && v !== null && v.constructor === Boolean));
