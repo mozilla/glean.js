@@ -71,8 +71,6 @@ class Metric implements CommonMetricData {
   /**
    * Verify if whether or not this metric instance should be recorded to a given Glean instance.
    *
-   * @param glean The Glean instance to verify against.
-   *
    * @returns Whether or not this metric instance should be recorded.
    */
   shouldRecord(): boolean {

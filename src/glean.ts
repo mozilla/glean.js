@@ -34,10 +34,12 @@ class Glean {
     return Glean._instance;
   }
 
+
   static get db(): Database {
     return Glean.instance._db;
   }
 
+  // TODO: Make the following functions `private` once Bug 1682769 is resolved.
   static get uploadEnabled(): boolean {
     return Glean.instance._uploadEnabled;
   }
