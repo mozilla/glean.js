@@ -76,6 +76,7 @@ for (const store in stores) {
       let store: Store;
       const expected = {
         bip: {
+          bling: false,
           bop: {
             blip: "something, something!",
             blergh: "don't panic!",
@@ -93,6 +94,7 @@ for (const store in stores) {
       before(async function () {
         !isUndefined(currentStore.before) && await currentStore.before();
         store = currentStore.initializeStore();
+        await store.update(["bip", "bling"], () => false);
         await store.update(["bip", "bop", "blip"], () => "something, something!");
         await store.update(["bip", "bop", "blergh"], () => "don't panic!");
         await store.update(["bip", "bop", "burp"], () => "you are doing great!");
@@ -116,7 +118,7 @@ for (const store in stores) {
         const value = await store.get(["bip", "bop", "inexistent"]);
         assert.strictEqual(value, undefined);
       });
-  
+
       it("Attempting to get an index that contains an object works", async function () {
         const value = await store.get(["bip", "bok"]);
         assert.deepStrictEqual(value, expected["bip"]["bok"]);
@@ -125,6 +127,11 @@ for (const store in stores) {
       it("Attempting to get an index that contains a string works", async function () {
         const value = await store.get(["bump"]);
         assert.deepStrictEqual(value, expected["bump"]);
+      });
+
+      it("Attempting to get an index that contains a boolean works", async function () {
+        const value = await store.get(["bip", "bling"]);
+        assert.strictEqual(value, expected["bip"]["bling"]);
       });
     });
 

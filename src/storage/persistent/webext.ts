@@ -4,7 +4,7 @@
 
 import { Store, StorageIndex, StorageValue, StorageObject, isStorageValue } from "storage";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "storage/utils";
-import { isString, isUndefined } from "utils";
+import { isObject } from "utils";
 
 type WebExtStoreQuery = { [x: string]: { [x: string]: null; } | null; };
 
@@ -75,7 +75,7 @@ class WebExtStore implements Store {
     }
 
     if (isStorageValue(response)) {
-      if (!isUndefined(response) && !isString(response)) {
+      if (isObject(response)) {
         return getValueFromNestedObject(response, [ this.rootKey, ...index ]);
       } else {
         return response;

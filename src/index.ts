@@ -2,16 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Importing this here just so the size increase will show on the PR comments,
-// once everything is implemented we remove it.
-import StorageWeak from "storage/weak";
-import StoragePersistent from "storage/persistent";
-// If we leave the above imports unused they will not be added to the final webpack bundle.
-console.log(
-  StorageWeak,
-  StoragePersistent
-);
-
 export = {
   /**
    * Initializes Glean.

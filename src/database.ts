@@ -5,11 +5,12 @@
 import { StorageValue, Store } from "storage";
 import PersistentStore from "storage/persistent";
 import Metric, { Lifetime } from "metrics";
-import { isObject, isString, isUndefined } from "utils";
+import { MetricPayload, isMetricPayload } from "metrics/payload";
+import { isObject, isUndefined } from "utils";
 
 export interface PingPayload {
   [aMetricType: string]: {
-    [aMetricIdentifier: string]: string
+    [aMetricIdentifier: string]: MetricPayload
   }
 }
 
@@ -20,14 +21,14 @@ export interface PingPayload {
  *
  * @returns Whether or not `v` is a valid PingPayload.
  */
-export function isValidPingPayload(v: StorageValue): v is PingPayload {
+export function isValidPingPayload(v: unknown): v is PingPayload {
   if (isObject(v)) {
     // The root keys should all be metric types.
     for (const metricType in v) {
       const metrics = v[metricType];
       if (isObject(metrics)) {
         for (const metricIdentifier in metrics) {
-          if (!isString(metrics[metricIdentifier])) {
+          if (!isMetricPayload(metricType, metrics[metricIdentifier])) {
             return false;
           }
         }
@@ -98,16 +99,8 @@ class Database {
    * @param metric The metric to record to.
    * @param value The value we want to record to the given metric.
    */
-  async record(metric: Metric, value: string): Promise<void> {
-    if (metric.disabled) {
-      return;
-    }
-
-    const store = this._chooseStore(metric.lifetime);
-    const storageKey = metric.identifier;
-    for (const ping of metric.sendInPings) {
-      await store.update([ping, metric.type, storageKey], () => value);
-    }
+  async record(metric: Metric, value: MetricPayload): Promise<void> {
+    await this.transform(metric, () => value);
   }
 
   /**
@@ -117,7 +110,7 @@ class Database {
    * @param metric The metric to record to.
    * @param transformFn The transformation function to apply to the currently persisted value.
    */
-  async transform(metric: Metric, transformFn: (v?: string) => string): Promise<void> {
+  async transform(metric: Metric, transformFn: (v?: MetricPayload) => MetricPayload): Promise<void> {
     if (metric.disabled) {
       return;
     }
@@ -125,9 +118,9 @@ class Database {
     const store = this._chooseStore(metric.lifetime);
     const storageKey = metric.identifier;
     for (const ping of metric.sendInPings) {
-      const finalTransformFn = (v: StorageValue): string => {
-        if (isObject(v)) {
-          throw new Error(`Unexpected value found for metric ${metric}: ${JSON.stringify(v)}.`);
+      const finalTransformFn = (v: StorageValue): Exclude<StorageValue, undefined> => {
+        if (!isUndefined(v) && !isMetricPayload(metric.type, v)) {
+          throw new Error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(v)}.`);
         }
         return transformFn(v);
       };
@@ -139,17 +132,29 @@ class Database {
    * Gets the persisted payload of a given metric in a given ping.
    *
    * @param ping The ping from which we want to retrieve the given metric.
+   * @param validateFn A validation function to verify if persisted payload is of the correct type.
    * @param metric An object containing the information about the metric to retrieve.
    *
-   * @returns The string encoded payload persisted for the given metric,
+   * @returns The payload persisted for the given metric,
    *          `undefined` in case the metric has not been recorded yet.
    */
-  async getMetric(ping: string, metric: Metric): Promise<string | undefined> {
+  async getMetric<T>(
+    ping: string,
+    validateFn: (v: unknown) => v is T,
+    metric: Metric
+  ): Promise<T | undefined> {
     const store = this._chooseStore(metric.lifetime);
     const storageKey = metric.identifier;
     const value = await store.get([ping, metric.type, storageKey]);
-    if (isObject(value)) {
-      console.error(`Unexpected value found for metric ${metric}: ${JSON.stringify(value)}. Clearing.`);
+    if (!isUndefined(value) && !validateFn(value)) {
+      // The following behaviour is not consistent with what the Glean SDK does, but this is on purpose.
+      // On the Glean SDK we panic when we can't serialize the given,
+      // that is because this is a extremely unlikely situation for that environment.
+      //
+      // Since Glean.js will run on the browser, it is easy for a user to mess with the persisted data
+      // which makes this sort of errors plausible. That is why we choose to not panic and
+      // simply delete the corrupted data here.
+      console.error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(value)}. Clearing.`);
       await store.delete([ping, metric.type, storageKey]);
       return;
     } else {
