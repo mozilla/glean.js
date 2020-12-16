@@ -49,3 +49,15 @@ export function isString(v: unknown): v is string {
 export function isBoolean(v: unknown): v is string {
   return (typeof v === "boolean" || (typeof v === "object" && v !== null && v.constructor === Boolean));
 }
+
+/**
+ * Checks whether or not `v` is a number.
+ *
+ * @param v The value to verify.
+ *
+ * @returns A special Typescript value (which compiles down to a boolean)
+ *          stating whether `v` is a number.
+ */
+export function isNumber(v: unknown): v is number {
+  return (typeof v === "number" || (typeof v === "object" && v !== null && v.constructor === Number));
+}
