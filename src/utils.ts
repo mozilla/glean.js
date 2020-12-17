@@ -59,5 +59,5 @@ export function isBoolean(v: unknown): v is string {
  *          stating whether `v` is a number.
  */
 export function isNumber(v: unknown): v is number {
-  return (typeof v === "number" || (typeof v === "object" && v !== null && v.constructor === Number));
+  return ((typeof v === "number" || (typeof v === "object" && v !== null && v.constructor === Number)) && !isNaN(v));
 }

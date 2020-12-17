@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import { isBoolean, isObject, isString, isUndefined } from "utils";
+import { isBoolean, isNumber, isObject, isString, isUndefined } from "utils";
 
 describe("utils", function() {
   it("isObject validates correctly", function() {
@@ -63,5 +63,18 @@ describe("utils", function() {
     assert.strictEqual(isBoolean(false), true);
     assert.strictEqual(isBoolean(new Boolean(true)), true);
     assert.strictEqual(isBoolean(!!"something else"), true);
+  });
+
+  it("isNumber validates correctly", function() {
+    // Invalid values
+    assert.strictEqual(isNumber(undefined), false);
+    assert.strictEqual(isNumber("10"), false);
+    assert.strictEqual(isNumber({}), false);
+    assert.strictEqual(isNumber(NaN), false);
+
+    // Valid values
+    assert.strictEqual(isNumber(10), true);
+    assert.strictEqual(isNumber(-10), true);
+    assert.strictEqual(isNumber(new Number(10)), true);
   });
 });
