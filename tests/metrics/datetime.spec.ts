@@ -9,24 +9,21 @@ import Glean from "glean";
 import DatetimeMetric from "metrics/datetime";
 import { Lifetime } from "metrics";
 
-describe("DatetimeMetric", function() {
-  beforeEach(async function() {
-    await Glean.resetGlean();
+const sandbox = sinon.createSandbox();
 
-    // Monkeypatch the `getTimezoneOffset` function
-    // to have a deterministic return value anywhere in the world.
-    sinon.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
+describe("DatetimeMetric", function() {
+  before(async function () {
+    // Monkeypatch Date functions to have a deterministic return value anywhere in the world.
+    sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
+    sandbox.stub(Date.prototype, "toISOString").callsFake(() => "1995-05-25T08:15:45.385Z");
   });
 
-  afterEach(function () {
-    // Undo the monkeypatch.
-    //
-    // Need to @ts-ignore here because the `getTimezoneOffset` type
-    // doesn't mention anything about the `restore` method,
-    //
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    Date.prototype.getTimezoneOffset.restore();
+  after(function () {
+    sandbox.restore();
+  });
+
+  beforeEach(async function() {
+    await Glean.resetGlean();
   });
 
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
@@ -66,12 +63,12 @@ describe("DatetimeMetric", function() {
     }, "millisecond");
 
     await metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
-    assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T06:15:45.385+05:00");
+    assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385+05:00");
 
     const snapshot = await Glean.db.getPing("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "datetime": {
-        "aCategory.aDatetimeMetric": "1995-05-25T06:15:45.385+05:00"
+        "aCategory.aDatetimeMetric": "1995-05-25T08:15:45.385+05:00"
       }
     });
   });
@@ -86,8 +83,8 @@ describe("DatetimeMetric", function() {
     }, "millisecond");
 
     await metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
-    assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T06:15:45.385+05:00");
-    assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1995-05-25T06:15:45.385+05:00");
-    assert.strictEqual(await metric.testGetValueAsString("threePing"), "1995-05-25T06:15:45.385+05:00");
+    assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(await metric.testGetValueAsString("threePing"), "1995-05-25T08:15:45.385+05:00");
   });
 });

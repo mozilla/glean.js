@@ -43,7 +43,7 @@ class DatetimeMetric extends Metric {
   /**
    * Sets the metric to a date/time which including the timezone offset.
    *
-   * @param value Some Data value, with offset, to set the metric to.
+   * @param value Some Date value to set the metric to.
    *              If none, the current local time is used.
    */
   async set(value?: Date): Promise<void> {

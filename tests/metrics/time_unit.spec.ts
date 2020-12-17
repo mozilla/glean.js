@@ -7,22 +7,11 @@ import sinon from "sinon";
 
 import TimeUnit, { timeUnitFromString, buildTruncatedDateString, validateDateString, dateStringToDateObject } from "metrics/time_unit";
 
-describe("TimeUnit", function() {
-  beforeEach(async function() {
-    // Monkeypatch the `getTimezoneOffset` function
-    // to have a deterministic return value anywhere in the world.
-    sinon.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
-  });
+const sandbox = sinon.createSandbox();
 
+describe("TimeUnit", function() {
   afterEach(function () {
-    // Undo the monkeypatch.
-    //
-    // Need to @ts-ignore here because the `getTimezoneOffset` type
-    // doesn't mention anything about the `restore` method,
-    //
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    Date.prototype.getTimezoneOffset.restore();
+    sandbox.restore();
   });
 
   it("returns correct time unit from time unit string", function() {
@@ -36,6 +25,10 @@ describe("TimeUnit", function() {
   });
 
   it("correctly builds truncated date string", function() {
+    // Monkeypatch Date functions to have a deterministic return value anywhere in the world.
+    sinon.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
+    sinon.stub(Date.prototype, "toISOString").callsFake(() => "1995-05-25T06:15:45.385Z");
+
     const testDate = new Date(1995, 4, 25, 8, 15, 45, 385);
     assert.strictEqual(buildTruncatedDateString(testDate, TimeUnit.Nanosecond), "1995-05-25T06:15:45.385000000+05:00");
     assert.strictEqual(buildTruncatedDateString(testDate, TimeUnit.Microsecond), "1995-05-25T06:15:45.385000+05:00");
