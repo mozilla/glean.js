@@ -26,8 +26,8 @@ describe("TimeUnit", function() {
 
   it("correctly builds truncated date string", function() {
     // Monkeypatch Date functions to have a deterministic return value anywhere in the world.
-    sinon.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
-    sinon.stub(Date.prototype, "toISOString").callsFake(() => "1995-05-25T06:15:45.385Z");
+    sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
+    sandbox.stub(Date.prototype, "toISOString").callsFake(() => "1995-05-25T06:15:45.385Z");
 
     const testDate = new Date(1995, 4, 25, 8, 15, 45, 385);
     assert.strictEqual(buildTruncatedDateString(testDate, TimeUnit.Nanosecond), "1995-05-25T06:15:45.385000000+05:00");
@@ -69,6 +69,9 @@ describe("TimeUnit", function() {
   });
 
   it("correctly transforms a date string into a Date object", function() {
+    // Monkeypatch Date functions to have a deterministic return value anywhere in the world.
+    sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
+
     const resultSameTimezone = dateStringToDateObject("1995-05-25T06:15:45.385000000+05:00");
     assert.strictEqual(resultSameTimezone.getFullYear(), 1995);
     assert.strictEqual(resultSameTimezone.getMonth(), 4);
