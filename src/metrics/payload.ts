@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { BooleanMetricPayload, isBooleanMetricPayload } from "metrics/boolean";
+import { CounterMetricPayload, isCounterMetricPayload } from "metrics/counter";
 import { StringMetricPayload, isStringMetricPayload } from "metrics/string";
 
 /**
@@ -13,10 +14,12 @@ import { StringMetricPayload, isStringMetricPayload } from "metrics/string";
  *
  * @returns Whether or not `v` is of the correct type.
  */
-export function isMetricPayload(type: string, v: unknown): v is MetricPayload {
+export function isMetricPayload<T>(type: string, v: unknown): v is T {
   switch (type) {
   case "boolean":
     return isBooleanMetricPayload(v);
+  case "counter":
+    return isCounterMetricPayload(v);
   case "string":
     return isStringMetricPayload(v);
   default:
@@ -27,5 +30,6 @@ export function isMetricPayload(type: string, v: unknown): v is MetricPayload {
 // Leaving the `string` as a valid metric payload here so that tests keep working for now.
 export type MetricPayload =
   BooleanMetricPayload |
+  CounterMetricPayload |
   StringMetricPayload;
 

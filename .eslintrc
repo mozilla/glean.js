@@ -20,8 +20,7 @@
     "no-debugger":  ["error"],
     "jsdoc/no-types": "off",
     "jsdoc/require-param-type": "off",
-    "jsdoc/require-returns-type": "off",
-    "jsdoc/check-param-names": ["error"]
+    "jsdoc/require-returns-type": "off"
   },
   "extends": [
     "plugin:jsdoc/recommended"

@@ -69,8 +69,8 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
  * @returns A proxy function for the given browser method.
  */
 export function webExtensionAPIProxyBuilder(browser: WebDriver, method: string[]) {
-  return async function (...args: never[]): Promise<any> {
-    return browser.executeAsyncScript((args: never[], method: string[], callback: any) => {
+  return async function (...args: never[]): Promise<never> {
+    return browser.executeAsyncScript((args: never[], method: string[], callback: (arg: string) => void) => {
       console.log(`Executing proxy ${method} with the following args:`, args);
 
       console.log("Dispatching a new test event!");

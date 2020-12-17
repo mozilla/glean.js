@@ -8,7 +8,6 @@ import Database, { isValidPingPayload } from "database";
 import { Lifetime } from "metrics";
 import StringMetric from "metrics/string";
 import { MetricPayload } from "metrics/payload";
-import { isString } from "utils";
 
 describe("Database", function() {
   describe("record", function() {
@@ -208,7 +207,7 @@ describe("Database", function() {
       });
 
       await db.record(metric, "aValue");
-      assert.strictEqual(await db.getMetric("aPing", isString, metric), "aValue");
+      assert.strictEqual(await db.getMetric("aPing", metric), "aValue");
     });
 
     it("doesn't error if trying to get a metric that hasn't been recorded yet", async function() {
@@ -220,7 +219,7 @@ describe("Database", function() {
         disabled: false
       });
 
-      assert.strictEqual(await db.getMetric("aPing", isString, metric), undefined);
+      assert.strictEqual(await db.getMetric("aPing", metric), undefined);
     });
 
     it("deletes entry in case an unexpected value in encountered", async function() {
@@ -237,7 +236,7 @@ describe("Database", function() {
         () => ({ "out": "of place" })
       );
 
-      assert.strictEqual(await db.getMetric("aPing", isString, metric), undefined);
+      assert.strictEqual(await db.getMetric("aPing", metric), undefined);
       assert.strictEqual(await db["appStore"].get(["aPing", "string", "aMetric"]), undefined);
     });
   });

@@ -20,6 +20,11 @@ export function isBooleanMetricPayload(v: unknown): v is BooleanMetricPayload {
   return isBoolean(v);
 }
 
+/**
+ *  A boolean metric.
+ *
+ * Records a simple flag.
+ */
 class BooleanMetric extends Metric {
   constructor(meta: CommonMetricData) {
     super("boolean", meta);
@@ -52,7 +57,7 @@ class BooleanMetric extends Metric {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<BooleanMetricPayload | undefined> {
-    return Glean.db.getMetric(ping, isBooleanMetricPayload, this);
+    return Glean.db.getMetric(ping, this);
   }
 }
 

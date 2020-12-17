@@ -35,6 +35,12 @@ export function isStringMetricPayload(v: unknown): v is StringMetricPayload {
   return true;
 }
 
+/**
+ * A string metric.
+ *
+ * Record an Unicode string value with arbitrary content.
+ * Strings are length-limited to `MAX_LENGTH_VALUE` bytes.
+ */
 class StringMetric extends Metric {
   constructor(meta: CommonMetricData) {
     super("string", meta);
@@ -77,7 +83,7 @@ class StringMetric extends Metric {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<StringMetricPayload | undefined> {
-    return Glean.db.getMetric(ping, isStringMetricPayload, this);
+    return Glean.db.getMetric(ping, this);
   }
 }
 
