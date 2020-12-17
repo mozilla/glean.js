@@ -4,6 +4,7 @@
 
 import { BooleanMetricPayload, isBooleanMetricPayload } from "metrics/boolean";
 import { CounterMetricPayload, isCounterMetricPayload } from "metrics/counter";
+import { DatetimeMetricPayload, isDatetimeMetricPayload } from "metrics/datetime";
 import { StringMetricPayload, isStringMetricPayload } from "metrics/string";
 
 /**
@@ -20,6 +21,8 @@ export function isMetricPayload<T>(type: string, v: unknown): v is T {
     return isBooleanMetricPayload(v);
   case "counter":
     return isCounterMetricPayload(v);
+  case "datetime":
+    return isDatetimeMetricPayload(v);
   case "string":
     return isStringMetricPayload(v);
   default:
@@ -31,5 +34,6 @@ export function isMetricPayload<T>(type: string, v: unknown): v is T {
 export type MetricPayload =
   BooleanMetricPayload |
   CounterMetricPayload |
+  DatetimeMetricPayload |
   StringMetricPayload;
 
