@@ -43,7 +43,7 @@ class UUIDMetric extends Metric {
    *
    * @throws In case `value` is not a valid UUID.
    */
-  async set(value?: string): Promise<void> {
+  async set(value: string): Promise<void> {
     if (!this.shouldRecord()) {
       return;
     }
@@ -59,6 +59,22 @@ class UUIDMetric extends Metric {
     }
 
     await Glean.db.record(this, value);
+  }
+
+  /**
+   * Generates a new random uuid and sets the metric to it.
+   *
+   * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
+   */
+  async generateAndSet(): Promise<UUIDMetricPayload | undefined> {
+    if (!this.shouldRecord()) {
+      return;
+    }
+
+    const value = UUIDv4();
+    await this.set(value);
+
+    return value;
   }
  
   /**

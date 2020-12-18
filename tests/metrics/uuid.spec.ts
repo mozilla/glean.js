@@ -37,7 +37,7 @@ describe("UUIDMetric", function() {
       disabled: false
     });
 
-    await metric.set();
+    await metric.generateAndSet();
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
@@ -102,7 +102,7 @@ describe("UUIDMetric", function() {
       disabled: false
     });
 
-    await metric.set();
+    await metric.generateAndSet();
     assert(isUUIDMetricPayload(await metric.testGetValue("aPing")));
   });
 });
