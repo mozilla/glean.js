@@ -35,7 +35,7 @@ class BooleanMetric extends Metric {
    *
    * @param value the value to set.
    */
-  async set(value: BooleanMetricPayload): Promise<void> {
+  async set(value: boolean): Promise<void> {
     if (!this.shouldRecord()) {
       return;
     }

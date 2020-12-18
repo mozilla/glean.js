@@ -5,6 +5,7 @@
 import { BooleanMetricPayload, isBooleanMetricPayload } from "metrics/boolean";
 import { CounterMetricPayload, isCounterMetricPayload } from "metrics/counter";
 import { StringMetricPayload, isStringMetricPayload } from "metrics/string";
+import { UUIDMetricPayload, isUUIDMetricPayload } from "metrics/uuid";
 
 /**
  * Validates that a given value is the correct type of payload for a metric of a given type.
@@ -22,6 +23,8 @@ export function isMetricPayload<T>(type: string, v: unknown): v is T {
     return isCounterMetricPayload(v);
   case "string":
     return isStringMetricPayload(v);
+  case "uuid":
+    return isUUIDMetricPayload(v);
   default:
     return false;
   }
@@ -31,5 +34,6 @@ export function isMetricPayload<T>(type: string, v: unknown): v is T {
 export type MetricPayload =
   BooleanMetricPayload |
   CounterMetricPayload |
-  StringMetricPayload;
+  StringMetricPayload |
+  UUIDMetricPayload;
 
