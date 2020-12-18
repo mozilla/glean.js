@@ -11,7 +11,7 @@ import { Lifetime } from "metrics";
  
 describe("UUIDMetric", function() {
   beforeEach(async function() {
-    await Glean.resetGlean();
+    await Glean.testRestGlean();
   });
  
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {

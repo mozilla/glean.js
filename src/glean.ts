@@ -55,7 +55,7 @@ class Glean {
    *
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    */
-  static async resetGlean(): Promise<void> {
+  static async testRestGlean(): Promise<void> {
     // Reset upload enabled state, not to inerfere with other tests.
     Glean.uploadEnabled = true;
     // Clear the database.
