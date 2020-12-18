@@ -11,13 +11,13 @@ import { isString } from "utils";
 export type UUIDMetricPayload = string;
 
 /**
-  * Checks whether or not `v` is a valid UUID metric payload.
-  *
-  * @param v The value to verify.
-  *
-  * @returns A special Typescript value (which compiles down to a boolean)
-  *          stating whether `v` is a valid boolean metric payload.
-  */
+ * Checks whether or not `v` is a valid UUID metric payload.
+ *
+ * @param v The value to verify.
+ *
+ * @returns A special Typescript value (which compiles down to a boolean)
+ *          stating whether `v` is a valid boolean metric payload.
+ */
 export function isUUIDMetricPayload(v: unknown): v is UUIDMetricPayload {
   if (!isString(v)) {
     return false;
