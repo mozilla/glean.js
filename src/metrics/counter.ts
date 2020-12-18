@@ -69,7 +69,7 @@ class CounterMetric extends Metric {
 
     if (amount <= 0) {
       // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`Attempted to add an invalid amount ${amount}. `);
+      console.warn(`Attempted to add an invalid amount ${amount}. Ignoring.`);
       return;
     }
 
