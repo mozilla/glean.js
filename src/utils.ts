@@ -2,6 +2,37 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// We will intentionaly leave `null` out even though it is a valid JSON primitive.
+export type JSONPrimitive = string | number | boolean;
+export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
+export type JSONObject = { [member: string]: JSONValue };
+export type JSONArray = JSONValue[];
+
+/**
+ * Verifies if a given value is a valid JSONValue.
+ *
+ * @param v The value to verify
+ *
+ * @returns A special Typescript value (which compiles down to a boolean)
+ *          stating whether `v` is a valid JSONValue.
+ */
+export function isJSONValue(v: unknown): v is JSONValue {
+  if (isString(v) || isBoolean(v)  || isNumber(v)) {
+    return true;
+  }
+
+  if (isObject(v)) {
+    if (Object.keys(v).length === 0) {
+      return true;
+    }
+    for (const key in v) {
+      return isJSONValue(v[key]);
+    }
+  }
+
+  return false;
+}
+
 /**
  * Checks whether or not `v` is a simple data object.
  *

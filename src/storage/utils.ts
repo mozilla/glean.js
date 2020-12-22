@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { StorageIndex, StorageObject, StorageValue } from "storage";
-import { isObject } from "utils";
+import { StorageIndex } from "storage";
+import { isObject, JSONObject, JSONValue } from "utils";
 
 /**
  * Gets an entry in a given object on a given index.
@@ -15,12 +15,12 @@ import { isObject } from "utils";
  *
  * @throws In case the index is an empty array.
  */
-export function getValueFromNestedObject(obj: StorageObject, index: StorageIndex): StorageValue {
+export function getValueFromNestedObject(obj: JSONObject, index: StorageIndex): JSONValue | undefined {
   if (index.length === 0) {
     throw Error("The index must contain at least one property to get.");
   }
 
-  let target: StorageValue = obj;
+  let target: JSONValue = obj;
   for (const key of index) {
     if (isObject(target) && key in target) {
       target = target[key];
@@ -45,10 +45,10 @@ export function getValueFromNestedObject(obj: StorageObject, index: StorageIndex
  * @throws In case the index is an empty array.
  */
 export function updateNestedObject(
-  obj: StorageObject,
+  obj: JSONObject,
   index: StorageIndex,
-  transformFn: (v: StorageValue) => Exclude<StorageValue, undefined>
-): StorageObject {
+  transformFn: (v?: JSONValue) => JSONValue
+): JSONObject {
   if (index.length === 0) {
     throw Error("The index must contain at least one property to update.");
   }
@@ -64,8 +64,8 @@ export function updateNestedObject(
     }
 
     // Typescript throws an error below about not being able to
-    // set target to target[key] because it may not be a StorageObject.
-    // We make sure by the above conditional that target[key] is a StorageObject,
+    // set target to target[key] because it may not be a JSONObject.
+    // We make sure by the above conditional that target[key] is a JSONObject,
     // thus we can safely ignore Typescripts concerns.
     //
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -98,7 +98,7 @@ export function updateNestedObject(
  *
  * @throws In case the index is invalid i.e. doesn't contain an entry or doesn't exist.
  */
-export function deleteKeyFromNestedObject(obj: StorageObject, index: StorageIndex): StorageObject {
+export function deleteKeyFromNestedObject(obj: JSONObject, index: StorageIndex): JSONObject {
   if (index.length === 0) {
     return {};
   }

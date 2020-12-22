@@ -2,11 +2,11 @@
 //  * License, v. 2.0. If a copy of the MPL was not distributed with this
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { StorageValue, Store } from "storage";
+import { Store } from "storage";
 import PersistentStore from "storage/persistent";
 import Metric, { Lifetime } from "metrics";
 import { MetricPayload, isMetricPayload } from "metrics/payload";
-import { isObject, isUndefined } from "utils";
+import { isObject, isUndefined, JSONValue } from "utils";
 
 export interface PingPayload {
   [aMetricType: string]: {
@@ -118,7 +118,7 @@ class Database {
     const store = this._chooseStore(metric.lifetime);
     const storageKey = metric.identifier;
     for (const ping of metric.sendInPings) {
-      const finalTransformFn = (v: StorageValue): Exclude<StorageValue, undefined> => {
+      const finalTransformFn = (v?: JSONValue): JSONValue => {
         if (!isUndefined(v) && !isMetricPayload<T>(metric.type, v)) {
           throw new Error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(v)}.`);
         }
