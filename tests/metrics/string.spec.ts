@@ -5,7 +5,7 @@
 import assert from "assert";
 
 import Glean from "glean";
-import StringMetric, { MAX_LENGTH_VALUE } from "metrics/string";
+import StringMetricType, { MAX_LENGTH_VALUE } from "metrics/string";
 import { Lifetime } from "metrics";
  
 describe("StringMetric", function() {
@@ -14,7 +14,7 @@ describe("StringMetric", function() {
   });
 
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
-    const metric = new StringMetric({
+    const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -28,7 +28,7 @@ describe("StringMetric", function() {
   it("attemping to set when glean upload is disabled is a no-op", async function() {
     Glean.uploadEnabled = false;
 
-    const metric = new StringMetric({
+    const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -41,7 +41,7 @@ describe("StringMetric", function() {
   });
 
   it("ping payload is correct", async function() {
-    const metric = new StringMetric({
+    const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
       sendInPings: ["aPing"],
@@ -61,7 +61,7 @@ describe("StringMetric", function() {
   });
  
   it("set properly sets the value in all pings", async function() {
-    const metric = new StringMetric({
+    const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -76,7 +76,7 @@ describe("StringMetric", function() {
   });
 
   it("long string values are truncated", async function() {
-    const metric = new StringMetric({
+    const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
       sendInPings: ["aPing"],

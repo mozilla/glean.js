@@ -5,7 +5,7 @@
 import assert from "assert";
 
 import Glean from "glean";
-import BooleanMetric from "metrics/boolean";
+import BooleanMetricType from "metrics/boolean";
 import { Lifetime } from "metrics";
 
 describe("BooleanMetric", function() {
@@ -14,7 +14,7 @@ describe("BooleanMetric", function() {
   });
 
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
-    const metric = new BooleanMetric({
+    const metric = new BooleanMetricType({
       category: "aCategory",
       name: "aBooleanMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -28,7 +28,7 @@ describe("BooleanMetric", function() {
   it("attemping to set when glean upload is disabled is a no-op", async function() {
     Glean.uploadEnabled = false;
 
-    const metric = new BooleanMetric({
+    const metric = new BooleanMetricType({
       category: "aCategory",
       name: "aBooleanMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -41,7 +41,7 @@ describe("BooleanMetric", function() {
   });
 
   it("ping payload is correct", async function() {
-    const metric = new BooleanMetric({
+    const metric = new BooleanMetricType({
       category: "aCategory",
       name: "aBooleanMetric",
       sendInPings: ["aPing"],
@@ -61,7 +61,7 @@ describe("BooleanMetric", function() {
   });
 
   it("set properly sets the value in all pings", async function() {
-    const metric = new BooleanMetric({
+    const metric = new BooleanMetricType({
       category: "aCategory",
       name: "aBooleanMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],

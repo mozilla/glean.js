@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Metric, { CommonMetricData } from "metrics";
-import Glean from "glean";
+import { MetricType, CommonMetricData } from "metrics";
 import { isNumber, isUndefined } from "utils";
+import Glean from "glean";
 
 export const MAX_LENGTH_VALUE = 100;
 
@@ -41,7 +41,7 @@ export function isCounterMetricPayload(v: unknown): v is CounterMetricPayload {
  * Used to count things.
  * The value can only be incremented, not decremented.
  */
-class CounterMetric extends Metric {
+class CounterMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("counter", meta);
   }
@@ -104,4 +104,4 @@ class CounterMetric extends Metric {
   }
 }
 
-export default CounterMetric;
+export default CounterMetricType;

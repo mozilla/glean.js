@@ -6,14 +6,14 @@ import assert from "assert";
 
 import Database, { isValidPingPayload } from "database";
 import { Lifetime } from "metrics";
-import StringMetric from "metrics/string";
+import StringMetricType from "metrics/string";
 import { MetricPayload } from "metrics/payload";
 
 describe("Database", function() {
   describe("record", function() {
     it("records to the correct place at the underlying store", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "aMetric",
         sendInPings: ["aPing"],
@@ -26,7 +26,7 @@ describe("Database", function() {
         "userValue"
       );
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "aMetric",
         sendInPings: ["aPing"],
@@ -39,7 +39,7 @@ describe("Database", function() {
         "pingValue"
       );
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "aMetric",
         sendInPings: ["aPing"],
@@ -55,7 +55,7 @@ describe("Database", function() {
 
     it("records at all the pings defined in a metric", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing", "otherPing", "oneMorePing"],
         lifetime: Lifetime.Application,
@@ -73,7 +73,7 @@ describe("Database", function() {
 
     it("overwrites old value if necessary", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
@@ -88,7 +88,7 @@ describe("Database", function() {
 
     it("doesn't record if metric is disabled", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
@@ -104,7 +104,7 @@ describe("Database", function() {
   describe("transform", function() {
     it("transforms to the correct place at the underlying store", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "aMetric",
         sendInPings: ["aPing"],
@@ -117,7 +117,7 @@ describe("Database", function() {
         "USER"
       );
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "aMetric",
         sendInPings: ["aPing"],
@@ -130,7 +130,7 @@ describe("Database", function() {
         "PING"
       );
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "aMetric",
         sendInPings: ["aPing"],
@@ -146,7 +146,7 @@ describe("Database", function() {
 
     it("transforms at all the pings defined in a metric", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing", "otherPing", "oneMorePing"],
         lifetime: Lifetime.Application,
@@ -164,7 +164,7 @@ describe("Database", function() {
 
     it("ignores old value in case object is found on a metrics index", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing", "otherPing", "oneMorePing"],
         lifetime: Lifetime.Application,
@@ -183,7 +183,7 @@ describe("Database", function() {
 
     it("doesn't transform if metric is disabled", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
@@ -199,7 +199,7 @@ describe("Database", function() {
   describe("getMetric", function() {
     it("gets correct metric from correct ping", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
@@ -212,7 +212,7 @@ describe("Database", function() {
 
     it("doesn't error if trying to get a metric that hasn't been recorded yet", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
@@ -224,7 +224,7 @@ describe("Database", function() {
 
     it("deletes entry in case an unexpected value in encountered", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
@@ -362,7 +362,7 @@ describe("Database", function() {
 
     it("ping lifetime data is cleared when clearPingLifetimeData is passed", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "metric",
         sendInPings: ["aPing"],
@@ -371,7 +371,7 @@ describe("Database", function() {
       });
       await db.record(userMetric, "userValue");
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "metric",
         sendInPings: ["aPing"],
@@ -380,7 +380,7 @@ describe("Database", function() {
       });
       await db.record(pingMetric, "pingValue");
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "metric",
         sendInPings: ["aPing"],
@@ -399,7 +399,7 @@ describe("Database", function() {
   describe("clear", function() {
     it("clear all stores works correctly", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "metric",
         sendInPings: ["aPing"],
@@ -408,7 +408,7 @@ describe("Database", function() {
       });
       await db.record(userMetric, "userValue");
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "metric",
         sendInPings: ["aPing"],
@@ -417,7 +417,7 @@ describe("Database", function() {
       });
       await db.record(pingMetric, "pingValue");
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "metric",
         sendInPings: ["aPing"],
@@ -434,7 +434,7 @@ describe("Database", function() {
 
     it("clears separate stores correctly", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "metric",
         sendInPings: ["aPing"],
@@ -443,7 +443,7 @@ describe("Database", function() {
       });
       await db.record(userMetric, "userValue");
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "metric",
         sendInPings: ["aPing"],
@@ -452,7 +452,7 @@ describe("Database", function() {
       });
       await db.record(pingMetric, "pingValue");
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "metric",
         sendInPings: ["aPing"],

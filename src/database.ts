@@ -4,7 +4,7 @@
 
 import { Store } from "storage";
 import PersistentStore from "storage/persistent";
-import Metric, { Lifetime } from "metrics";
+import { MetricType, Lifetime } from "metrics";
 import { MetricPayload, isMetricPayload } from "metrics/payload";
 import { isObject, isUndefined, JSONValue } from "utils";
 
@@ -99,7 +99,7 @@ class Database {
    * @param metric The metric to record to.
    * @param value The value we want to record to the given metric.
    */
-  async record(metric: Metric, value: MetricPayload): Promise<void> {
+  async record(metric: MetricType, value: MetricPayload): Promise<void> {
     await this.transform(metric, () => value);
   }
 
@@ -110,7 +110,7 @@ class Database {
    * @param metric The metric to record to.
    * @param transformFn The transformation function to apply to the currently persisted value.
    */
-  async transform<T extends MetricPayload>(metric: Metric, transformFn: (v?: T) => T): Promise<void> {
+  async transform<T extends MetricPayload>(metric: MetricType, transformFn: (v?: T) => T): Promise<void> {
     if (metric.disabled) {
       return;
     }
@@ -153,7 +153,7 @@ class Database {
    */
   async getMetric<T>(
     ping: string,
-    metric: Metric
+    metric: MetricType
   ): Promise<T | undefined> {
     const store = this._chooseStore(metric.lifetime);
     const storageKey = metric.identifier;

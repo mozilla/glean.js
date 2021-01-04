@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Metric, { CommonMetricData } from "metrics";
-import Glean from "glean";
+import { MetricType, CommonMetricData } from "metrics";
 import { isString } from "utils";
+import Glean from "glean";
 
 export const MAX_LENGTH_VALUE = 100;
 
@@ -41,7 +41,7 @@ export function isStringMetricPayload(v: unknown): v is StringMetricPayload {
  * Record an Unicode string value with arbitrary content.
  * Strings are length-limited to `MAX_LENGTH_VALUE` bytes.
  */
-class StringMetric extends Metric {
+class StringMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("string", meta);
   }
@@ -87,4 +87,4 @@ class StringMetric extends Metric {
   }
 }
 
-export default StringMetric;
+export default StringMetricType;

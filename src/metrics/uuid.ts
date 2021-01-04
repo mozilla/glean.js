@@ -4,9 +4,9 @@
 
 import { v4 as UUIDv4, validate as UUIDvalidate } from "uuid";
 
-import Metric, { CommonMetricData } from "metrics";
-import Glean from "glean";
+import { MetricType, CommonMetricData } from "metrics";
 import { isString } from "utils";
+import Glean from "glean";
 
 export type UUIDMetricPayload = string;
 
@@ -31,7 +31,7 @@ export function isUUIDMetricPayload(v: unknown): v is UUIDMetricPayload {
  *
  * Stores UUID v4 (randomly generated) values.
  */
-class UUIDMetric extends Metric {
+class UUIDMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("uuid", meta);
   }
@@ -95,4 +95,4 @@ class UUIDMetric extends Metric {
   }
 }
  
-export default UUIDMetric;
+export default UUIDMetricType;

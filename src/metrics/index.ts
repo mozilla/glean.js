@@ -34,7 +34,10 @@ export interface CommonMetricData {
   readonly disabled: boolean
 }
 
-class Metric implements CommonMetricData {
+/**
+ * A MetricType describes common behavior across all metrics.
+ */
+export abstract class MetricType implements CommonMetricData {
   readonly type: string;
   readonly name: string;
   readonly category?: string;
@@ -77,5 +80,3 @@ class Metric implements CommonMetricData {
     return (Glean.uploadEnabled && !this.disabled);
   }
 }
-
-export default Metric;

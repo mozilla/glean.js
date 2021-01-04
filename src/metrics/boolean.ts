@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Metric, { CommonMetricData } from "metrics";
-import Glean from "glean";
+import { MetricType, CommonMetricData } from "metrics";
 import { isBoolean } from "utils";
+import Glean from "glean";
 
 export type BooleanMetricPayload = boolean;
 
@@ -25,7 +25,7 @@ export function isBooleanMetricPayload(v: unknown): v is BooleanMetricPayload {
  *
  * Records a simple flag.
  */
-class BooleanMetric extends Metric {
+class BooleanMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("boolean", meta);
   }
@@ -61,4 +61,4 @@ class BooleanMetric extends Metric {
   }
 }
 
-export default BooleanMetric;
+export default BooleanMetricType;
