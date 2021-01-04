@@ -2,22 +2,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { MetricType, CommonMetricData } from "metrics";
+import { Metric, MetricType, CommonMetricData } from "metrics";
 import { isBoolean } from "utils";
 import Glean from "glean";
 
-export type BooleanMetricPayload = boolean;
+export class BooleanMetric extends Metric<boolean, boolean> {
+  constructor(v: unknown) {
+    super(v);
+  }
 
-/**
- * Checks whether or not `v` is a valid boolean metric payload.
- *
- * @param v The value to verify.
- *
- * @returns A special Typescript value (which compiles down to a boolean)
- *          stating whether `v` is a valid boolean metric payload.
- */
-export function isBooleanMetricPayload(v: unknown): v is BooleanMetricPayload {
-  return isBoolean(v);
+  validate(v: unknown): v is boolean {
+    return isBoolean(v);
+  }
+  payload(): boolean {
+    return this._inner;
+  }
 }
 
 /**
@@ -40,7 +39,8 @@ class BooleanMetricType extends MetricType {
       return;
     }
 
-    await Glean.db.record(this, value);
+    const metric =  new BooleanMetric(value);
+    await Glean.db.record(this, metric);
   }
 
   /**
@@ -56,8 +56,8 @@ class BooleanMetricType extends MetricType {
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string): Promise<BooleanMetricPayload | undefined> {
-    return Glean.db.getMetric(ping, this);
+  async testGetValue(ping: string): Promise<boolean | undefined> {
+    return Glean.db.getMetric<boolean>(ping, this);
   }
 }
 

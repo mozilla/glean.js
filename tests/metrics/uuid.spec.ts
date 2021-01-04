@@ -6,7 +6,7 @@ import assert from "assert";
 import { v4 as UUIDv4 } from "uuid";
 
 import Glean from "glean";
-import UUIDMetricType, { isUUIDMetricPayload } from "metrics/uuid";
+import UUIDMetricType from "metrics/uuid";
 import { Lifetime } from "metrics";
  
 describe("UUIDMetric", function() {
@@ -102,7 +102,7 @@ describe("UUIDMetric", function() {
       disabled: false
     });
 
-    await metric.generateAndSet();
-    assert(isUUIDMetricPayload(await metric.testGetValue("aPing")));
+    const value = await metric.generateAndSet();
+    assert.strictEqual(value, await metric.testGetValue("aPing"));
   });
 });

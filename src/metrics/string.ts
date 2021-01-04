@@ -2,37 +2,32 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { MetricType, CommonMetricData } from "metrics";
+import { Metric, MetricType, CommonMetricData } from "metrics";
 import { isString } from "utils";
 import Glean from "glean";
 
 export const MAX_LENGTH_VALUE = 100;
 
-export type StringMetricPayload = string;
-
-/**
- * Checks whether or not `v` is a valid string metric payload.
- *
- * # Note
- *
- * Not only will this verify if `v` is a string,
- * it will also check if its length is less than `MAX_LENGTH_VALUE`.
- *
- * @param v The value to verify.
- *
- * @returns A special Typescript value (which compiles down to a boolean)
- *          stating wether `v` is a valid string metric payload.
- */
-export function isStringMetricPayload(v: unknown): v is StringMetricPayload {
-  if (!isString(v)) {
-    return false;
+export class StringMetric extends Metric<string, string> {
+  constructor(v: unknown) {
+    super(v);
   }
 
-  if (v.length > MAX_LENGTH_VALUE) {
-    return false;
+  validate(v: unknown): v is string {
+    if (!isString(v)) {
+      return false;
+    }
+
+    if (v.length > MAX_LENGTH_VALUE) {
+      return false;
+    }
+
+    return true;
   }
 
-  return true;
+  payload(): string {
+    return this._inner;
+  }
 }
 
 /**
@@ -66,7 +61,8 @@ class StringMetricType extends MetricType {
       console.warn(`String ${value} is longer than ${MAX_LENGTH_VALUE} chars. Truncating.`);
     }
 
-    await Glean.db.record(this, value.substring(0, MAX_LENGTH_VALUE));
+    const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
+    await Glean.db.record(this, metric);
   }
 
   /**
@@ -82,8 +78,8 @@ class StringMetricType extends MetricType {
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string): Promise<StringMetricPayload | undefined> {
-    return Glean.db.getMetric(ping, this);
+  async testGetValue(ping: string): Promise<string | undefined> {
+    return Glean.db.getMetric<string>(ping, this);
   }
 }
 
