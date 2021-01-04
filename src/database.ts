@@ -4,8 +4,8 @@
 
 import { Store } from "storage";
 import PersistentStore from "storage/persistent";
-import { Metric, MetricType, Lifetime } from "metrics";
-import validateMetricInternalRepresentation from "metrics/validation";
+import { MetricType, Lifetime, Metric } from "metrics";
+import { createMetric, validateMetricInternalRepresentation } from "metrics/utils";
 import { isObject, isUndefined, JSONValue } from "utils";
 
 export interface MetricsPayload {
@@ -40,6 +40,30 @@ export function isValidInternalMetricsPayload(v: unknown): v is MetricsPayload {
   } else {
     return false;
   }
+}
+
+/**
+ * Creates an external metrics payload from an internal metrics payload.
+ *
+ * Metrics are stored in an internal representation format,
+ * but pings must be sent with metrics in their external format
+ * (i.e. the format described in the Glean schema).
+ *
+ * @param v The ping payload to transform.
+ *
+ * @returns The ping payload in its external format.
+ */
+function createExternalMetricsPayload(v: MetricsPayload): MetricsPayload {
+  const result: MetricsPayload = {};
+  for (const metricType in v) {
+    const metrics = v[metricType];
+    result[metricType] = {};
+    for (const metricIdentifier in metrics) {
+      const metric = createMetric(metricType, metrics[metricIdentifier]);
+      result[metricType][metricIdentifier] = metric.payload();
+    }
+  }
+  return result;
 }
 
 /**
@@ -223,7 +247,7 @@ class Database {
     if (Object.keys(response).length === 0) {
       return;
     } else {
-      return response;
+      return createExternalMetricsPayload(response);
     }
   }
 

@@ -23,6 +23,26 @@ const METRIC_MAP: {
 });
 
 /**
+ * A metric factory function.
+ *
+ * @param type The type of the metric to create.
+ * @param v The value with which to instantiate the metric.
+ *
+ * @returns A metric instance.
+ *
+ * @throws
+ * - In case type is not listed in the `METRIC_MAP`;
+ * - In case `v` is not in the correct representation for the wanted metric type.
+ */
+export function createMetric(type: string, v: unknown): Metric<JSONValue, JSONValue> {
+  if (!(type in METRIC_MAP)) {
+    throw new Error(`Unable to create metric of unknown type ${type}`);
+  }
+
+  return new METRIC_MAP[type](v);
+}
+
+/**
  * Validates that a given value is in the correct
  * internal representation format for a metric of a given type.
  *
@@ -31,16 +51,12 @@ const METRIC_MAP: {
  *
  * @returns Whether or not `v` is of the correct type.
  */
-export default function validateMetricInternalRepresentation<T extends JSONValue>(
+export function validateMetricInternalRepresentation<T extends JSONValue>(
   type: string,
   v: unknown
 ): v is T {
-  if (!(type in METRIC_MAP)) {
-    return false;
-  }
-
   try {
-    new METRIC_MAP[type](v);
+    createMetric(type, v);
     return true;
   } catch {
     return false;
