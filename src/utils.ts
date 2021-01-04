@@ -77,7 +77,7 @@ export function isString(v: unknown): v is string {
  * @returns A special Typescript value (which compiles down to a boolean)
  *          stating whether `v` is a boolean.
  */
-export function isBoolean(v: unknown): v is string {
+export function isBoolean(v: unknown): v is boolean {
   return (typeof v === "boolean" || (typeof v === "object" && v !== null && v.constructor === Boolean));
 }
 
