@@ -8,20 +8,20 @@ import { MetricType, Lifetime, Metric } from "metrics";
 import { createMetric, validateMetricInternalRepresentation } from "metrics/utils";
 import { isObject, isUndefined, JSONValue } from "utils";
 
-export interface MetricsPayload {
+export interface Metrics {
   [aMetricType: string]: {
     [aMetricIdentifier: string]: JSONValue
   }
 }
 
 /**
- * Verifies if a given value is a valid MetricsPayload.
+ * Verifies if a given value is a valid Metrics object.
  *
  * @param v The value to verify
  *
- * @returns Whether or not `v` is a valid MetricsPayload.
+ * @returns Whether or not `v` is a valid Metrics object.
  */
-export function isValidInternalMetricsPayload(v: unknown): v is MetricsPayload {
+export function isValidInternalMetricsRepresentation(v: unknown): v is Metrics {
   if (isObject(v)) {
     // The root keys should all be metric types.
     for (const metricType in v) {
@@ -53,8 +53,8 @@ export function isValidInternalMetricsPayload(v: unknown): v is MetricsPayload {
  *
  * @returns The ping payload in its external format.
  */
-function createExternalMetricsPayload(v: MetricsPayload): MetricsPayload {
-  const result: MetricsPayload = {};
+function createMetricsPayload(v: Metrics): Metrics {
+  const result: Metrics = {};
   for (const metricType in v) {
     const metrics = v[metricType];
     result[metricType] = {};
@@ -200,14 +200,14 @@ class Database {
    * @returns The ping payload found for the given parameters or an empty object
    *          in case no data was found or the data that was found, was invalid.
    */
-  private async getAndValidatePingData(ping: string, lifetime: Lifetime): Promise<MetricsPayload> {
+  private async getAndValidatePingData(ping: string, lifetime: Lifetime): Promise<Metrics> {
     const store = this._chooseStore(lifetime);
     const data = await store.get([ping]);
     if (isUndefined(data)) {
       return {};
     }
 
-    if (!isValidInternalMetricsPayload(data)) {
+    if (!isValidInternalMetricsRepresentation(data)) {
       console.error(`Unexpected value found for ping ${ping} in ${lifetime} store: ${JSON.stringify(data)}. Clearing.`);
       await store.delete([ping]);
       return {};
@@ -225,7 +225,7 @@ class Database {
    * @returns An object containing all the metrics recorded to the given ping,
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
-  async getPing(ping: string, clearPingLifetimeData: boolean): Promise<MetricsPayload | undefined> {
+  async getPing(ping: string, clearPingLifetimeData: boolean): Promise<Metrics | undefined> {
     const userData = await this.getAndValidatePingData(ping, Lifetime.User);
     const pingData = await this.getAndValidatePingData(ping, Lifetime.Ping);
     const appData = await this.getAndValidatePingData(ping, Lifetime.Application);
@@ -234,7 +234,7 @@ class Database {
       await this.clear(Lifetime.Ping);
     }
 
-    const response: MetricsPayload = { ...pingData };
+    const response: Metrics = { ...pingData };
     for (const data of [userData, appData]) {
       for (const metricType in data) {
         response[metricType] = {
@@ -247,7 +247,7 @@ class Database {
     if (Object.keys(response).length === 0) {
       return;
     } else {
-      return createExternalMetricsPayload(response);
+      return createMetricsPayload(response);
     }
   }
 

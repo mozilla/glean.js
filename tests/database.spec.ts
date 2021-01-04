@@ -4,7 +4,7 @@
 
 import assert from "assert";
 
-import Database, { isValidInternalMetricsPayload } from "database";
+import Database, { isValidInternalMetricsRepresentation } from "database";
 import { Lifetime } from "metrics";
 import StringMetricType, { StringMetric } from "metrics/string";
 import { JSONValue } from "utils";
@@ -233,29 +233,29 @@ describe("Database", function() {
   });
 
   describe("getPing", function() {
-    it("isValidInternalMetricsPayload validates correctly", function() {
+    it("isValidInternalMetricsRepresentation validates correctly", function() {
       // Invalids
-      assert.strictEqual(false, isValidInternalMetricsPayload("not even an object"));
-      assert.strictEqual(false, isValidInternalMetricsPayload({ 1: "an array-like object in not a ping!" }));
-      assert.strictEqual(false, isValidInternalMetricsPayload({
+      assert.strictEqual(false, isValidInternalMetricsRepresentation("not even an object"));
+      assert.strictEqual(false, isValidInternalMetricsRepresentation({ 1: "an array-like object in not a ping!" }));
+      assert.strictEqual(false, isValidInternalMetricsRepresentation({
         "aPing": {
           "string": {
             "too.nested": "not quite"
           }
         }
       }));
-      assert.strictEqual(false, isValidInternalMetricsPayload({ "string": "almost!" }));
+      assert.strictEqual(false, isValidInternalMetricsRepresentation({ "string": "almost!" }));
       // Valids
-      assert.strictEqual(true, isValidInternalMetricsPayload({ "string": {} }));
-      assert.strictEqual(true, isValidInternalMetricsPayload({ "string": { "there.we": "go" } }));
-      assert.strictEqual(true, isValidInternalMetricsPayload({
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({ "string": {} }));
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({ "string": { "there.we": "go" } }));
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({
         "string": {
           "string.one": "foo",
           "string.two": "bar",
           "string.three": "baz",
         }
       }));
-      assert.strictEqual(true, isValidInternalMetricsPayload({
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({
         "string": {
           "string.one": "foo",
           "string.two": "bar",
@@ -267,7 +267,7 @@ describe("Database", function() {
           "looks": true
         }
       }));
-      assert.strictEqual(true, isValidInternalMetricsPayload({}));
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({}));
     });
 
     it("when incorrect data is found on the storage, it is deleted", async function() {
