@@ -9,6 +9,7 @@ import { BooleanMetric } from "metrics/boolean";
 import { CounterMetric } from "metrics/counter";
 import { StringMetric } from "metrics/string";
 import { UUIDMetric } from "metrics/uuid";
+import { DatetimeMetric } from "./datetime";
 
 /**
  * A map containing all supported internal metrics and its constructors.
@@ -18,6 +19,7 @@ const METRIC_MAP: {
 } = Object.freeze({
   "boolean": BooleanMetric,
   "counter": CounterMetric,
+  "datetime": DatetimeMetric,
   "string": StringMetric,
   "uuid": UUIDMetric,
 });
