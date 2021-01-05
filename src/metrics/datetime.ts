@@ -60,7 +60,7 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
   }
 
   private get timeUnit(): TimeUnit {
-    return this._inner.timeUnit as TimeUnit;
+    return this._inner.timeUnit;
   }
 
   validate(v: unknown): v is DatetimeInternalRepresentation {
@@ -125,9 +125,10 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
 }
 
 /**
- *  A boolean metric.
+ * A datetime metric.
  *
- * Records a simple flag.
+ * Used to record an absolute date and time, such as the time the user first ran
+ * the application.
  */
 class DatetimeMetricType extends MetricType {
   private timeUnit: TimeUnit;
