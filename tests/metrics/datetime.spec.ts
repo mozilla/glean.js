@@ -8,16 +8,12 @@ import sinon from "sinon";
 import Glean from "glean";
 import DatetimeMetricType, { DatetimeMetric } from "metrics/datetime";
 import { Lifetime } from "metrics";
+import TimeUnit from "metrics/time_unit";
 
 const sandbox = sinon.createSandbox();
 
 describe("DatetimeMetric", function() {
-  before(async function () {
-    // Monkeypatch this function to have a deterministic return value anywhere in the world.
-    sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
-  });
-
-  after(function () {
+  afterEach(function () {
     sandbox.restore();
   });
 
@@ -81,149 +77,38 @@ describe("DatetimeMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  describe("ping payload is correct", function() {
-    it("nanosecond", async function () {
-      const metric = new DatetimeMetricType({
-        category: "aCategory",
-        name: "aDatetimeMetric",
-        sendInPings: ["aPing"],
-        lifetime: Lifetime.Ping,
-        disabled: false
-      }, "nanosecond");
+  it("ping payload is correct", async function() {
+    // Monkeypatch this functions to have a deterministic return value anywhere in the world.
+    sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
+    sandbox.stub(Date.prototype, "toISOString").callsFake(() => "1995-05-25T03:15:45.385Z");
 
-      await metric.set(new Date(1995, 5, 25, 8, 15, 45, 385));
-      assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385000000+05:00");
+    const metric = new DatetimeMetricType({
+      category: "aCategory",
+      name: "aDatetimeMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, "minute");
 
-      const snapshot = await Glean.db.getPing("aPing", true);
-      assert.deepStrictEqual(snapshot, {
-        "datetime": {
-          "aCategory.aDatetimeMetric": "1995-05-25T08:15:45.385000000+05:00"
-        }
-      });
-    });
+    await metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
+    assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15+05:00");
 
-    it("microsecond", async function () {
-      const metric = new DatetimeMetricType({
-        category: "aCategory",
-        name: "aDatetimeMetric",
-        sendInPings: ["aPing"],
-        lifetime: Lifetime.Ping,
-        disabled: false
-      }, "microsecond");
-
-      await metric.set(new Date(1995, 5, 25, 8, 15, 45, 385));
-      assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385000+05:00");
-
-      const snapshot = await Glean.db.getPing("aPing", true);
-      assert.deepStrictEqual(snapshot, {
-        "datetime": {
-          "aCategory.aDatetimeMetric": "1995-05-25T08:15:45.385000+05:00"
-        }
-      });
-    });
-
-    it("millisecond", async function () {
-      const metric = new DatetimeMetricType({
-        category: "aCategory",
-        name: "aDatetimeMetric",
-        sendInPings: ["aPing"],
-        lifetime: Lifetime.Ping,
-        disabled: false
-      }, "millisecond");
-
-      await metric.set(new Date(1995, 5, 25, 8, 15, 45, 385));
-      assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385+05:00");
-
-      const snapshot = await Glean.db.getPing("aPing", true);
-      assert.deepStrictEqual(snapshot, {
-        "datetime": {
-          "aCategory.aDatetimeMetric": "1995-05-25T08:15:45.385+05:00"
-        }
-      });
-    });
-
-    it("second", async function () {
-      const metric = new DatetimeMetricType({
-        category: "aCategory",
-        name: "aDatetimeMetric",
-        sendInPings: ["aPing"],
-        lifetime: Lifetime.Ping,
-        disabled: false
-      }, "second");
-
-      await metric.set(new Date(1995, 5, 25, 8, 15, 45, 385));
-      assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45+05:00");
-
-      const snapshot = await Glean.db.getPing("aPing", true);
-      assert.deepStrictEqual(snapshot, {
-        "datetime": {
-          "aCategory.aDatetimeMetric": "1995-05-25T08:15:45+05:00"
-        }
-      });
-    });
-
-    it("minute", async function () {
-      const metric = new DatetimeMetricType({
-        category: "aCategory",
-        name: "aDatetimeMetric",
-        sendInPings: ["aPing"],
-        lifetime: Lifetime.Ping,
-        disabled: false
-      }, "minute");
-
-      await metric.set(new Date(1995, 5, 25, 8, 15, 45, 385));
-      assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15+05:00");
-
-      const snapshot = await Glean.db.getPing("aPing", true);
-      assert.deepStrictEqual(snapshot, {
-        "datetime": {
-          "aCategory.aDatetimeMetric": "1995-05-25T08:15+05:00"
-        }
-      });
-    });
-
-    it("hour", async function () {
-      const metric = new DatetimeMetricType({
-        category: "aCategory",
-        name: "aDatetimeMetric",
-        sendInPings: ["aPing"],
-        lifetime: Lifetime.Ping,
-        disabled: false
-      }, "hour");
-
-      await metric.set(new Date(1995, 5, 25, 8, 15, 45, 385));
-      assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08+05:00");
-
-      const snapshot = await Glean.db.getPing("aPing", true);
-      assert.deepStrictEqual(snapshot, {
-        "datetime": {
-          "aCategory.aDatetimeMetric": "1995-05-25T08+05:00"
-        }
-      });
-    });
-
-    it("day", async function () {
-      const metric = new DatetimeMetricType({
-        category: "aCategory",
-        name: "aDatetimeMetric",
-        sendInPings: ["aPing"],
-        lifetime: Lifetime.Ping,
-        disabled: false
-      }, "day");
-
-      await metric.set(new Date(1995, 5, 25, 8, 15, 45, 385));
-      assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25+05:00");
-
-      const snapshot = await Glean.db.getPing("aPing", true);
-      assert.deepStrictEqual(snapshot, {
-        "datetime": {
-          "aCategory.aDatetimeMetric": "1995-05-25+05:00"
-        }
-      });
+    const snapshot = await Glean.db.getPing("aPing", true);
+    assert.deepStrictEqual(snapshot, {
+      "datetime": {
+        "aCategory.aDatetimeMetric": "1995-05-25T08:15+05:00"
+      }
     });
   });
 
   it("set properly sets the value in all pings", async function() {
+    // Monkeypatch this functions to have a deterministic return value anywhere in the world.
+    sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
+    sandbox.stub(Date.prototype, "toISOString")
+      .onFirstCall().returns("1995-05-25T03:15:45.385Z")
+      .onSecondCall().returns("1895-05-25T03:15:45.385Z")
+      .onThirdCall().returns("2995-05-25T03:15:45.385Z");
+
     const metric = new DatetimeMetricType({
       category: "aCategory",
       name: "aDatetimeMetric",
@@ -232,21 +117,99 @@ describe("DatetimeMetric", function() {
       disabled: false
     }, "millisecond");
 
-    await metric.set(new Date(1995, 5, 25, 8, 15, 45, 385));
+    await metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("threePing"), "1995-05-25T08:15:45.385+05:00");
 
     // A date prior to the UNIX epoch
-    await metric.set(new Date(1895, 5, 25, 8, 15, 45, 385));
+    await metric.set(new Date(1895, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "1895-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1895-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("threePing"), "1895-05-25T08:15:45.385+05:00");
 
     // A date following 2038 (the extent of signed 32-bits after UNIX epoch)
-    await metric.set(new Date(2995, 5, 25, 8, 15, 45, 385));
+    await metric.set(new Date(2995, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "2995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("twoPing"), "2995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("threePing"), "2995-05-25T08:15:45.385+05:00");
+  });
+
+  it("truncation works", async function() {
+    // Monkeypatch this functions to have a deterministic return value anywhere in the world.
+    sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
+    sandbox.stub(Date.prototype, "toISOString").callsFake(() => "1985-07-03T07:09:14.001Z");
+
+    const testCases = [
+      {
+        unit: TimeUnit.Nanosecond,
+        expected: "1985-07-03T12:09:14.001000000+05:00",
+      },
+      {
+        unit: TimeUnit.Microsecond,
+        expected: "1985-07-03T12:09:14.001000+05:00",
+      },
+      {
+        unit: TimeUnit.Millisecond,
+        expected: "1985-07-03T12:09:14.001+05:00",
+      },
+      {
+        unit: TimeUnit.Second,
+        expected: "1985-07-03T12:09:14+05:00",
+      },
+      {
+        unit: TimeUnit.Minute,
+        expected: "1985-07-03T12:09+05:00",
+      },
+      {
+        unit: TimeUnit.Hour,
+        expected: "1985-07-03T12+05:00",
+      },
+      {
+        unit: TimeUnit.Day,
+        expected: "1985-07-03+05:00",
+      },
+    ];
+
+    const date = new Date(1985, 6, 3, 12, 9, 14, 1);
+    for (const testCase of testCases) {
+      const metric = new DatetimeMetricType({
+        category: "aCategory",
+        name: "aDatetimeMetric",
+        sendInPings: ["aPing"],
+        lifetime: Lifetime.Ping,
+        disabled: false
+      }, testCase.unit);
+
+      await metric.set(date);
+      assert.strictEqual(await metric.testGetValueAsString("aPing"), testCase.expected);
+    }
+  });
+
+  it("get from different timezone than recording timezone keeps the original time intact", async function() {
+    // Monkeypatch this functions to have a deterministic return value anywhere in the world.
+    sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
+
+    const metric = new DatetimeMetricType({
+      category: "aCategory",
+      name: "aDatetimeMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, TimeUnit.Millisecond);
+
+    const concreteMetric = new DatetimeMetric({
+      timeUnit: TimeUnit.Millisecond,
+      timezone: 60,
+      date: "2021-01-07T14:41:26.312Z"
+    });
+    await Glean.db.record(metric, concreteMetric);
+
+    // 1. The monkeypatched timezone it -300 (+05:00)
+    // 2. The timezone manually set on the metric above is 60 (-01:00)
+    // 3. `date` is in UTC
+    // 4. This means that the real time at the time of recording is 13:41
+    const recorded = await metric.testGetValueAsString("aPing");
+    assert.strictEqual(recorded, "2021-01-07T13:41:26.312-01:00");
   });
 });

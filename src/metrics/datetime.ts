@@ -63,6 +63,10 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
     return this._inner.timeUnit;
   }
 
+  private get dateISOString(): string {
+    return this._inner.date;
+  }
+
   validate(v: unknown): v is DatetimeInternalRepresentation {
     if (!isObject(v) || Object.keys(v).length !== 3) {
       return false;
@@ -84,34 +88,53 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
    * For this metric, the payload is the timezone aware ISO date string truncated to the time unit
    * given at the time of recording.
    *
+   * # Note
+   *
+   * The timezone of the final string is the timezone at the time of recording.
+   *
    * @returns The metric value.
    */
   payload(): string {
-    const timezone = formatTimezoneOffset(this.timezone);
+    const extractedDateInfo = this.dateISOString.match(/\d+/g);
+    if (!extractedDateInfo || extractedDateInfo.length < 0) {
+      // This is impossible because the date is always validated before setting
+      throw new Error("IMPOSSIBLE: Unable to extract date information from DatetimeMetric.");
+    }
+    const correctedDate = new Date(
+      /* year */ parseInt(extractedDateInfo[0]),
+      /* month */ parseInt(extractedDateInfo[1]) - 1,
+      /* day */ parseInt(extractedDateInfo[2]),
+      /* hour */ parseInt(extractedDateInfo[3]) - (this.timezone / 60),
+      /* minute */ parseInt(extractedDateInfo[4]),
+      /* second */ parseInt(extractedDateInfo[5]),
+      /* millisecond */ parseInt(extractedDateInfo[6])
+    );
 
-    const year = this.date.getFullYear().toString().padStart(2, "0");
-    const month = this.date.getMonth().toString().padStart(2, "0");
-    const day = this.date.getDate().toString().padStart(2, "0");
+    const timezone = formatTimezoneOffset(this.timezone);
+    const year = correctedDate.getFullYear().toString().padStart(2, "0");
+    // `Date.prototype.getMonth` returns the month starting at 0.
+    const month = (correctedDate.getMonth() + 1).toString().padStart(2, "0");
+    const day = correctedDate.getDate().toString().padStart(2, "0");
     if (this.timeUnit === TimeUnit.Day) {
       return `${year}-${month}-${day}${timezone}`;
     }
 
-    const hours = this.date.getHours().toString().padStart(2, "0");
+    const hours = correctedDate.getHours().toString().padStart(2, "0");
     if (this.timeUnit === TimeUnit.Hour) {
       return `${year}-${month}-${day}T${hours}${timezone}`;
     }
 
-    const minutes = this.date.getMinutes().toString().padStart(2, "0");
+    const minutes = correctedDate.getMinutes().toString().padStart(2, "0");
     if (this.timeUnit === TimeUnit.Minute) {
       return `${year}-${month}-${day}T${hours}:${minutes}${timezone}`;
     }
 
-    const seconds = this.date.getSeconds().toString().padStart(2, "0");
+    const seconds = correctedDate.getSeconds().toString().padStart(2, "0");
     if (this.timeUnit === TimeUnit.Second) {
       return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}${timezone}`;
     }
 
-    const milliseconds = this.date.getMilliseconds().toString().padStart(3, "0");
+    const milliseconds = correctedDate.getMilliseconds().toString().padStart(3, "0");
     if (this.timeUnit === TimeUnit.Millisecond) {
       return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}.${milliseconds}${timezone}`;
     }
