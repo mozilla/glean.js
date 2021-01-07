@@ -53,7 +53,7 @@ export function updateNestedObject(
     throw Error("The index must contain at least one property to update.");
   }
 
-  const returnObject =  { ...obj };
+  const returnObject = { ...obj };
   let target = returnObject;
 
   // Loops through all the keys but the last.
@@ -103,7 +103,7 @@ export function deleteKeyFromNestedObject(obj: JSONObject, index: StorageIndex):
     return {};
   }
 
-  const returnObject =  { ...obj };
+  const returnObject = { ...obj };
   let target = returnObject;
 
   // Loops through all the keys but the last.

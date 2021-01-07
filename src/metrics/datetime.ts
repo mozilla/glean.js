@@ -156,7 +156,7 @@ class DatetimeMetricType extends MetricType {
       value = new Date();
     }
 
-    const metric =  new DatetimeMetric({
+    const metric = new DatetimeMetric({
       timeUnit: this.timeUnit,
       timezone: value.getTimezoneOffset(),
       date: value.toISOString(),

@@ -36,7 +36,7 @@ class WebExtStore implements Store {
 
   async _getWholeStore(): Promise<JSONObject> {
     const result = await this.store.get({ [this.rootKey]: {} });
-    return  result[this.rootKey];
+    return result[this.rootKey];
   }
 
   /**

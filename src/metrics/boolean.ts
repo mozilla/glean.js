@@ -39,7 +39,7 @@ class BooleanMetricType extends MetricType {
       return;
     }
 
-    const metric =  new BooleanMetric(value);
+    const metric = new BooleanMetric(value);
     await Glean.db.record(this, metric);
   }
 

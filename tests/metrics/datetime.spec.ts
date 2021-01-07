@@ -32,7 +32,7 @@ describe("DatetimeMetric", function() {
     assert.throws(() => new DatetimeMetric({}));
     assert.throws(() => new DatetimeMetric({ rubbish: "garbage" }));
     assert.throws(() => new DatetimeMetric({ rubbish: "garbage", timeUnit: "milliseconds", timezone: 0, date: "2021-01-04T16:37:21.828Z" }));
-    assert.throws(() => new DatetimeMetric({  timezone: 0, date: "2021-01-04T16:37:21.828Z" }));
+    assert.throws(() => new DatetimeMetric({ timezone: 0, date: "2021-01-04T16:37:21.828Z" }));
 
     // Invalid time units
     assert.throws(() => new DatetimeMetric({ timeUnit: "garbage", timezone: 0, date: "2021-01-04T16:37:21.828Z" }));

@@ -17,7 +17,7 @@ export type JSONArray = JSONValue[];
  *          stating whether `v` is a valid JSONValue.
  */
 export function isJSONValue(v: unknown): v is JSONValue {
-  if (isString(v) || isBoolean(v)  || isNumber(v)) {
+  if (isString(v) || isBoolean(v) || isNumber(v)) {
     return true;
   }
 
@@ -42,7 +42,7 @@ export function isJSONValue(v: unknown): v is JSONValue {
  *          stating whether `v` is a valid data object.
  */
 export function isObject(v: unknown): v is Record<string | number | symbol, unknown> {
-  return (typeof v === "object" && v !== null  && v.constructor === Object);
+  return (typeof v === "object" && v !== null && v.constructor === Object);
 }
 
 /**
@@ -66,7 +66,7 @@ export function isUndefined(v: unknown): v is undefined {
  *          stating whether `v` is a string.
  */
 export function isString(v: unknown): v is string {
-  return (typeof v === "string" || (typeof v === "object" && v !== null  && v.constructor === String));
+  return (typeof v === "string" || (typeof v === "object" && v !== null && v.constructor === String));
 }
 
 /**
