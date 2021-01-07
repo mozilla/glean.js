@@ -6,7 +6,7 @@ import assert from "assert";
 import { v4 as UUIDv4 } from "uuid";
 
 import Glean from "glean";
-import UUIDMetric, { isUUIDMetricPayload } from "metrics/uuid";
+import UUIDMetricType from "metrics/uuid";
 import { Lifetime } from "metrics";
  
 describe("UUIDMetric", function() {
@@ -15,7 +15,7 @@ describe("UUIDMetric", function() {
   });
  
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
-    const metric = new UUIDMetric({
+    const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -29,7 +29,7 @@ describe("UUIDMetric", function() {
   it("attemping to set when glean upload is disabled is a no-op", async function() {
     Glean.uploadEnabled = false;
 
-    const metric = new UUIDMetric({
+    const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -44,7 +44,7 @@ describe("UUIDMetric", function() {
   it("attemping to set an invalid uuid is a no-op", async function() {
     Glean.uploadEnabled = false;
 
-    const metric = new UUIDMetric({
+    const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -57,7 +57,7 @@ describe("UUIDMetric", function() {
   });
 
   it("ping payload is correct", async function() {
-    const metric = new UUIDMetric({
+    const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
       sendInPings: ["aPing"],
@@ -78,7 +78,7 @@ describe("UUIDMetric", function() {
   });
  
   it("set properly sets the value in all pings", async function() {
-    const metric = new UUIDMetric({
+    const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -94,7 +94,7 @@ describe("UUIDMetric", function() {
   });
 
   it("uuid is generated and stored", async function() {
-    const metric = new UUIDMetric({
+    const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
       sendInPings: ["aPing"],
@@ -102,7 +102,7 @@ describe("UUIDMetric", function() {
       disabled: false
     });
 
-    await metric.generateAndSet();
-    assert(isUUIDMetricPayload(await metric.testGetValue("aPing")));
+    const value = await metric.generateAndSet();
+    assert.strictEqual(value, await metric.testGetValue("aPing"));
   });
 });

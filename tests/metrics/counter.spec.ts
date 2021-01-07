@@ -5,7 +5,7 @@
 import assert from "assert";
 
 import Glean from "glean";
-import CounterMetric from "metrics/counter";
+import CounterMetricType from "metrics/counter";
 import { Lifetime } from "metrics";
   
 describe("CounterMetric", function() {
@@ -14,7 +14,7 @@ describe("CounterMetric", function() {
   });
  
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
-    const metric = new CounterMetric({
+    const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -28,7 +28,7 @@ describe("CounterMetric", function() {
   it("attemping to add when glean upload is disabled is a no-op", async function() {
     Glean.uploadEnabled = false;
 
-    const metric = new CounterMetric({
+    const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -41,7 +41,7 @@ describe("CounterMetric", function() {
   });
 
   it("ping payload is correct", async function() {
-    const metric = new CounterMetric({
+    const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
       sendInPings: ["aPing"],
@@ -61,7 +61,7 @@ describe("CounterMetric", function() {
   });
   
   it("set properly sets the value in all pings", async function() {
-    const metric = new CounterMetric({
+    const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -76,7 +76,7 @@ describe("CounterMetric", function() {
   });
 
   it("must not increment when passed zero or negative", async function() {
-    const metric = new CounterMetric({
+    const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
       sendInPings: ["aPing"],
@@ -95,7 +95,7 @@ describe("CounterMetric", function() {
   });
 
   it("transformation works", async function() {
-    const metric = new CounterMetric({
+    const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
       sendInPings: ["aPing", "twoPing", "threePing"],
@@ -120,7 +120,7 @@ describe("CounterMetric", function() {
   });
 
   it("saturates at boundary", async function() {
-    const metric = new CounterMetric({
+    const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
       sendInPings: ["aPing"],

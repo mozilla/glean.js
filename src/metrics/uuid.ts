@@ -4,26 +4,26 @@
 
 import { v4 as UUIDv4, validate as UUIDvalidate } from "uuid";
 
-import Metric, { CommonMetricData } from "metrics";
-import Glean from "glean";
+import { Metric, MetricType, CommonMetricData } from "metrics";
 import { isString } from "utils";
+import Glean from "glean";
 
-export type UUIDMetricPayload = string;
-
-/**
- * Checks whether or not `v` is a valid UUID metric payload.
- *
- * @param v The value to verify.
- *
- * @returns A special Typescript value (which compiles down to a boolean)
- *          stating whether `v` is a valid boolean metric payload.
- */
-export function isUUIDMetricPayload(v: unknown): v is UUIDMetricPayload {
-  if (!isString(v)) {
-    return false;
+export class UUIDMetric extends Metric<string, string> {
+  constructor(v: unknown) {
+    super(v);
   }
 
-  return UUIDvalidate(v);
+  validate(v: unknown): v is string {
+    if (!isString(v)) {
+      return false;
+    }
+  
+    return UUIDvalidate(v);
+  }
+
+  payload(): string {
+    return this._inner;
+  }
 }
 
 /**
@@ -31,7 +31,7 @@ export function isUUIDMetricPayload(v: unknown): v is UUIDMetricPayload {
  *
  * Stores UUID v4 (randomly generated) values.
  */
-class UUIDMetric extends Metric {
+class UUIDMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("uuid", meta);
   }
@@ -52,13 +52,16 @@ class UUIDMetric extends Metric {
       value = UUIDv4();
     }
 
-    if (!isUUIDMetricPayload(value)) {
+    let metric: UUIDMetric;
+    try {
+      metric = new UUIDMetric(value);
+    } catch {
       // TODO: record error once Bug 1682574 is resolved.
       console.warn(`"${value}" is not a valid UUID. Ignoring`);
       return;
     }
 
-    await Glean.db.record(this, value);
+    await Glean.db.record(this, metric);
   }
 
   /**
@@ -66,7 +69,7 @@ class UUIDMetric extends Metric {
    *
    * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
    */
-  async generateAndSet(): Promise<UUIDMetricPayload | undefined> {
+  async generateAndSet(): Promise<string | undefined> {
     if (!this.shouldRecord()) {
       return;
     }
@@ -90,9 +93,9 @@ class UUIDMetric extends Metric {
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string): Promise<UUIDMetricPayload | undefined> {
-    return Glean.db.getMetric(ping, this);
+  async testGetValue(ping: string): Promise<string | undefined> {
+    return Glean.db.getMetric<string>(ping, this);
   }
 }
  
-export default UUIDMetric;
+export default UUIDMetricType;

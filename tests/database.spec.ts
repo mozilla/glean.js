@@ -4,49 +4,49 @@
 
 import assert from "assert";
 
-import Database, { isValidPingPayload } from "database";
+import Database, { isValidInternalMetricsRepresentation } from "database";
 import { Lifetime } from "metrics";
-import StringMetric from "metrics/string";
-import { MetricPayload } from "metrics/payload";
+import StringMetricType, { StringMetric } from "metrics/string";
+import { JSONValue } from "utils";
 
 describe("Database", function() {
   describe("record", function() {
     it("records to the correct place at the underlying store", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.User,
         disabled: false
       });
-      await db.record(userMetric, "userValue");
+      await db.record(userMetric, new StringMetric("userValue"));
       assert.strictEqual(
         await db["userStore"].get(["aPing", "string", "user.aMetric"]),
         "userValue"
       );
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Ping,
         disabled: false
       });
-      await db.record(pingMetric, "pingValue");
+      await db.record(pingMetric, new StringMetric("pingValue"));
       assert.strictEqual(
         await db["pingStore"].get(["aPing", "string", "ping.aMetric"]),
         "pingValue"
       );
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
       });
-      await db.record(appMetric, "appValue");
+      await db.record(appMetric, new StringMetric("appValue"));
       assert.strictEqual(
         await db["appStore"].get(["aPing", "string", "app.aMetric"]),
         "appValue"
@@ -55,14 +55,14 @@ describe("Database", function() {
 
     it("records at all the pings defined in a metric", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing", "otherPing", "oneMorePing"],
         lifetime: Lifetime.Application,
         disabled: false
       });
 
-      await db.record(metric, "aValue");
+      await db.record(metric, new StringMetric("aValue"));
       const recorded1 = await db["appStore"].get(["aPing", "string", "aMetric"]);
       assert.strictEqual(recorded1, "aValue");
       const recorded2 = await db["appStore"].get(["otherPing", "string", "aMetric"]);
@@ -73,29 +73,29 @@ describe("Database", function() {
 
     it("overwrites old value if necessary", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
       });
 
-      await db.record(metric, "aValue");
-      await db.record(metric, "overwrittenValue");
+      await db.record(metric, new StringMetric("aValue"));
+      await db.record(metric, new StringMetric("overwrittenValue"));
       const recorded = await db["appStore"].get(["aPing", "string", "aMetric"]);
       assert.strictEqual(recorded, "overwrittenValue");
     });
 
     it("doesn't record if metric is disabled", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: true
       });
 
-      await db.record(metric, "aValue");
+      await db.record(metric, new StringMetric("aValue"));
       const recorded = await db["appStore"].get(["aPing", "string", "aMetric"]);
       assert.strictEqual(recorded, undefined);
     });
@@ -104,40 +104,46 @@ describe("Database", function() {
   describe("transform", function() {
     it("transforms to the correct place at the underlying store", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.User,
         disabled: false
       });
-      await db.transform(userMetric, (v?: MetricPayload) => v ? `USER_${v}` : "USER");
+      await db.transform(userMetric, (v?: JSONValue) => (
+        v ? new StringMetric(`USER_${v}`) : new StringMetric("USER")
+      ));
       assert.strictEqual(
         await db["userStore"].get(["aPing", "string", "user.aMetric"]),
         "USER"
       );
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Ping,
         disabled: false
       });
-      await db.transform(pingMetric,(v?: MetricPayload) => v ? `PING_${v}` : "PING");
+      await db.transform(pingMetric,(v?: JSONValue) => (
+        v ? new StringMetric(`PING_${v}`) : new StringMetric("PING")
+      ));
       assert.strictEqual(
         await db["pingStore"].get(["aPing", "string", "ping.aMetric"]),
         "PING"
       );
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
       });
-      await db.transform(appMetric, (v?: MetricPayload) => v ? `APP_${v}` : "APP");
+      await db.transform(appMetric, (v?: JSONValue) => (
+        v ? new StringMetric(`APP_${v}`) : new StringMetric("APP")
+      ));
       assert.strictEqual(
         await db["appStore"].get(["aPing", "string", "app.aMetric"]),
         "APP"
@@ -146,14 +152,16 @@ describe("Database", function() {
 
     it("transforms at all the pings defined in a metric", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing", "otherPing", "oneMorePing"],
         lifetime: Lifetime.Application,
         disabled: false
       });
 
-      await db.transform(metric, (v?: MetricPayload) => v ? `EXTRA_${v}` : "EXTRA");
+      await db.transform(metric, (v?: JSONValue) => (
+        v ? new StringMetric(`EXTRA_${v}`) : new StringMetric("EXTRA")
+      ));
       const recorded1 = await db["appStore"].get(["aPing", "string", "aMetric"]);
       assert.strictEqual(recorded1, "EXTRA");
       const recorded2 = await db["appStore"].get(["otherPing", "string", "aMetric"]);
@@ -162,35 +170,18 @@ describe("Database", function() {
       assert.strictEqual(recorded3, "EXTRA");
     });
 
-    it("ignores old value in case object is found on a metrics index", async function() {
-      const db = new Database();
-      const metric = new StringMetric({
-        name: "aMetric",
-        sendInPings: ["aPing", "otherPing", "oneMorePing"],
-        lifetime: Lifetime.Application,
-        disabled: false
-      });
-
-      await db["appStore"].update(
-        ["aPing", "string", "aMetric"],
-        () => ({ "out": "of place" })
-      );
-
-      await db.transform(metric, (v?: MetricPayload) => v ? `EXTRA_${v}` : "EXTRA");
-      const recorded = await db["appStore"].get(["aPing", "string", "aMetric"]);
-      assert.strictEqual(recorded, "EXTRA");
-    });
-
     it("doesn't transform if metric is disabled", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: true
       });
 
-      await db.transform(metric, (v?: MetricPayload) => v ? `EXTRA_${v}` : "EXTRA");
+      await db.transform(metric, (v?: JSONValue) => (
+        v ? new StringMetric(`EXTRA_${v}`) : new StringMetric("EXTRA")
+      ));
       const recorded = await db["appStore"].get(["aPing", "string", "aMetric"]);
       assert.strictEqual(recorded, undefined);
     });
@@ -199,20 +190,20 @@ describe("Database", function() {
   describe("getMetric", function() {
     it("gets correct metric from correct ping", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
       });
 
-      await db.record(metric, "aValue");
+      await db.record(metric, new StringMetric("aValue"));
       assert.strictEqual(await db.getMetric("aPing", metric), "aValue");
     });
 
     it("doesn't error if trying to get a metric that hasn't been recorded yet", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
@@ -224,7 +215,7 @@ describe("Database", function() {
 
     it("deletes entry in case an unexpected value in encountered", async function() {
       const db = new Database();
-      const metric = new StringMetric({
+      const metric = new StringMetricType({
         name: "aMetric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
@@ -242,29 +233,29 @@ describe("Database", function() {
   });
 
   describe("getPing", function() {
-    it("isValidPingPayload validates correctly", function() {
+    it("isValidInternalMetricsRepresentation validates correctly", function() {
       // Invalids
-      assert.strictEqual(false, isValidPingPayload("not even an object"));
-      assert.strictEqual(false, isValidPingPayload({ 1: "an array-like object in not a ping!" }));
-      assert.strictEqual(false, isValidPingPayload({
+      assert.strictEqual(false, isValidInternalMetricsRepresentation("not even an object"));
+      assert.strictEqual(false, isValidInternalMetricsRepresentation({ 1: "an array-like object in not a ping!" }));
+      assert.strictEqual(false, isValidInternalMetricsRepresentation({
         "aPing": {
           "string": {
             "too.nested": "not quite"
           }
         }
       }));
-      assert.strictEqual(false, isValidPingPayload({ "string": "almost!" }));
+      assert.strictEqual(false, isValidInternalMetricsRepresentation({ "string": "almost!" }));
       // Valids
-      assert.strictEqual(true, isValidPingPayload({ "string": {} }));
-      assert.strictEqual(true, isValidPingPayload({ "string": { "there.we": "go" } }));
-      assert.strictEqual(true, isValidPingPayload({
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({ "string": {} }));
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({ "string": { "there.we": "go" } }));
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({
         "string": {
           "string.one": "foo",
           "string.two": "bar",
           "string.three": "baz",
         }
       }));
-      assert.strictEqual(true, isValidPingPayload({
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({
         "string": {
           "string.one": "foo",
           "string.two": "bar",
@@ -276,7 +267,7 @@ describe("Database", function() {
           "looks": true
         }
       }));
-      assert.strictEqual(true, isValidPingPayload({}));
+      assert.strictEqual(true, isValidInternalMetricsRepresentation({}));
     });
 
     it("when incorrect data is found on the storage, it is deleted", async function() {
@@ -362,32 +353,32 @@ describe("Database", function() {
 
     it("ping lifetime data is cleared when clearPingLifetimeData is passed", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "metric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.User,
         disabled: false
       });
-      await db.record(userMetric, "userValue");
+      await db.record(userMetric, new StringMetric("userValue"));
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "metric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Ping,
         disabled: false
       });
-      await db.record(pingMetric, "pingValue");
+      await db.record(pingMetric, new StringMetric("pingValue"));
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "metric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
       });
-      await db.record(appMetric, "appValue");
+      await db.record(appMetric, new StringMetric("appValue"));
 
       await db.getPing("aPing", true);
       assert.notDeepStrictEqual(await db["userStore"]._getWholeStore(), {});
@@ -399,32 +390,32 @@ describe("Database", function() {
   describe("clear", function() {
     it("clear all stores works correctly", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "metric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.User,
         disabled: false
       });
-      await db.record(userMetric, "userValue");
+      await db.record(userMetric, new StringMetric("userValue"));
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "metric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Ping,
         disabled: false
       });
-      await db.record(pingMetric, "pingValue");
+      await db.record(pingMetric, new StringMetric("pingValue"));
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "metric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
       });
-      await db.record(appMetric, "appValue");
+      await db.record(appMetric, new StringMetric("appValue"));
 
       await db.clearAll();
       assert.deepStrictEqual(await db["userStore"]._getWholeStore(), {});
@@ -434,32 +425,32 @@ describe("Database", function() {
 
     it("clears separate stores correctly", async function() {
       const db = new Database();
-      const userMetric = new StringMetric({
+      const userMetric = new StringMetricType({
         category: "user",
         name: "metric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.User,
         disabled: false
       });
-      await db.record(userMetric, "userValue");
+      await db.record(userMetric, new StringMetric("userValue"));
 
-      const pingMetric = new StringMetric({
+      const pingMetric = new StringMetricType({
         category: "ping",
         name: "metric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Ping,
         disabled: false
       });
-      await db.record(pingMetric, "pingValue");
+      await db.record(pingMetric, new StringMetric("pingValue"));
 
-      const appMetric = new StringMetric({
+      const appMetric = new StringMetricType({
         category: "app",
         name: "metric",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
       });
-      await db.record(appMetric, "appValue");
+      await db.record(appMetric, new StringMetric("appValue"));
 
       await db.clear(Lifetime.User);
       assert.deepStrictEqual(await db["userStore"]._getWholeStore(), {});

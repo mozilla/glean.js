@@ -2,8 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Store, StorageIndex, StorageValue, StorageObject } from "storage";
+import { Store, StorageIndex } from "storage";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "storage/utils";
+import { JSONObject, JSONValue } from "utils";
 
 /**
  * A weak implementation for the Store interface.
@@ -11,23 +12,23 @@ import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject
  * This means the data saved in this store does not persist throughout application runs.
  */
 class WeakStore implements Store {
-  private store: StorageObject;
+  private store: JSONObject;
 
   constructor() {
     this.store = {};
   }
 
-  async _getWholeStore(): Promise<StorageObject> {
+  async _getWholeStore(): Promise<JSONObject> {
     return this.store;
   }
 
-  async get(index: StorageIndex): Promise<StorageValue> {
+  async get(index: StorageIndex): Promise<JSONValue | undefined> {
     return getValueFromNestedObject(this.store, index);
   }
 
   async update(
     index: StorageIndex,
-    transformFn: (v: StorageValue) => Exclude<StorageValue, undefined>
+    transformFn: (v?: JSONValue) => JSONValue
   ): Promise<void> {
     this.store = updateNestedObject(this.store, index, transformFn);
   }

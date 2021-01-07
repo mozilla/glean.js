@@ -2,37 +2,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Metric, { CommonMetricData } from "metrics";
+import { Metric, MetricType, CommonMetricData } from "metrics";
+import { isNumber, isUndefined, JSONValue } from "utils";
 import Glean from "glean";
-import { isNumber, isUndefined } from "utils";
 
-export const MAX_LENGTH_VALUE = 100;
-
-export type CounterMetricPayload = number;
-
-/**
- * Checks whether or not `v` is a valid counter metric payload.
- *
- * # Note
- *
- * Not only will this verify if `v` is a number,
- * it will also check if it is greater than 0.
- *
- * @param v The value to verify.
- *
- * @returns A special Typescript value (which compiles down to a boolean)
- *          stating wether `v` is a valid string metric payload.
- */
-export function isCounterMetricPayload(v: unknown): v is CounterMetricPayload {
-  if (!isNumber(v)) {
-    return false;
+export class CounterMetric extends Metric<number, number> {
+  constructor(v: unknown) {
+    super(v);
   }
 
-  if (v <= 0) {
-    return false;
+  validate(v: unknown): v is number {
+    if (!isNumber(v)) {
+      return false;
+    }
+
+    if (v <= 0) {
+      return false;
+    }
+
+    return true;
   }
 
-  return true;
+  payload(): number {
+    return this._inner;
+  }
 }
 
 /**
@@ -41,7 +34,7 @@ export function isCounterMetricPayload(v: unknown): v is CounterMetricPayload {
  * Used to count things.
  * The value can only be incremented, not decremented.
  */
-class CounterMetric extends Metric {
+class CounterMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("counter", meta);
   }
@@ -74,12 +67,23 @@ class CounterMetric extends Metric {
     }
 
     const transformFn = ((amount) => {
-      return (v?: CounterMetricPayload): CounterMetricPayload =>  {
-        let result = v ? v + amount : amount;
+      return (v?: JSONValue): CounterMetric =>  {
+        let metric: CounterMetric;
+        let result: number;
+        try {
+          metric = new CounterMetric(v);
+          result = metric.get() + amount;
+        } catch {
+          metric = new CounterMetric(amount);
+          result = amount;
+        }
+
         if (result > Number.MAX_SAFE_INTEGER) {
           result = Number.MAX_SAFE_INTEGER;
         }
-        return result;
+
+        metric.set(result);
+        return metric;
       };
     })(amount);
 
@@ -99,9 +103,9 @@ class CounterMetric extends Metric {
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string): Promise<CounterMetricPayload | undefined> {
-    return Glean.db.getMetric(ping, this);
+  async testGetValue(ping: string): Promise<number | undefined> {
+    return Glean.db.getMetric<number>(ping, this);
   }
 }
 
-export default CounterMetric;
+export default CounterMetricType;

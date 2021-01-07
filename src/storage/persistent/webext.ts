@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Store, StorageIndex, StorageValue, StorageObject, isStorageValue } from "storage";
+import { Store, StorageIndex } from "storage";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "storage/utils";
-import { isObject } from "utils";
+import { isJSONValue, isObject, JSONObject, JSONValue } from "utils";
 
 type WebExtStoreQuery = { [x: string]: { [x: string]: null; } | null; };
 
@@ -34,7 +34,7 @@ class WebExtStore implements Store {
     this.rootKey = rootKey;
   }
 
-  async _getWholeStore(): Promise<StorageObject> {
+  async _getWholeStore(): Promise<JSONObject> {
     const result = await this.store.get({ [this.rootKey]: {} });
     return  result[this.rootKey];
   }
@@ -62,19 +62,19 @@ class WebExtStore implements Store {
    *
    * @returns The query object with the modified store.
    */
-  private async _buildQueryFromStore(transformFn: (s: StorageObject) => StorageObject): Promise<StorageObject> {
+  private async _buildQueryFromStore(transformFn: (s: JSONObject) => JSONObject): Promise<JSONObject> {
     const store = await this._getWholeStore();
     return { [this.rootKey]: transformFn(store) };
   }
 
-  async get(index: StorageIndex): Promise<StorageValue> {
+  async get(index: StorageIndex): Promise<JSONValue | undefined> {
     const query = this._buildQuery(index);
-    const response: browser.storage.StorageObject = await this.store.get(query);
+    const response = await this.store.get(query);
     if (!response) {
       return;
     }
 
-    if (isStorageValue(response)) {
+    if (isJSONValue(response)) {
       if (isObject(response)) {
         return getValueFromNestedObject(response, [ this.rootKey, ...index ]);
       } else {
@@ -90,7 +90,7 @@ class WebExtStore implements Store {
 
   async update(
     index: StorageIndex,
-    transformFn: (v: StorageValue) => Exclude<StorageValue, undefined>
+    transformFn: (v?: JSONValue) => JSONValue
   ): Promise<void> {
     if (index.length === 0) {
       throw Error("The index must contain at least one property to update.");

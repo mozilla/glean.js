@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { isString, isUndefined, isObject, isBoolean, isNumber } from "utils";
+import { JSONObject, JSONValue } from "utils";
 
 /**
  * The storage index in the ordered list of keys to navigate on the store
@@ -25,38 +25,6 @@ import { isString, isUndefined, isObject, isBoolean, isNumber } from "utils";
  */
 export type StorageIndex = string[];
 
-/**
- * The possible values to be retrievd from storage.
- */
-export type StorageValue = undefined | string | boolean | number | StorageObject;
-export interface StorageObject {
-  [key: string]: StorageValue;
-}
-
-/**
- * Verifies if a given value is a valid StorageValue.
- *
- * @param v The value to verify
- *
- * @returns A special Typescript value (which compiles down to a boolean)
- *          stating whether `v` is a valid StorageValue.
- */
-export function isStorageValue(v: unknown): v is StorageValue {
-  if (isUndefined(v) || isString(v) || isBoolean(v)  || isNumber(v)) {
-    return true;
-  }
-
-  if (isObject(v)) {
-    if (Object.keys(v).length === 0) {
-      return true;
-    }
-    for (const key in v) {
-      return isStorageValue(v[key]);
-    }
-  }
-  return false;
-}
-
 export interface Store {
   /**
    * **Test-only API**
@@ -65,7 +33,7 @@ export interface Store {
    *
    * @returns An object representing all the data recorded in the store.
    */
-  _getWholeStore(): Promise<StorageObject>;
+  _getWholeStore(): Promise<JSONObject>;
 
   /**
    * Gets the value recorded to the given index on the store.
@@ -78,7 +46,7 @@ export interface Store {
    * @throws - In case the index is an empty array.
    *         - In case a value that is not `string` or `object` is found.
    */
-  get(index: StorageIndex): Promise<StorageValue>;
+  get(index: StorageIndex): Promise<JSONValue | undefined>;
 
   /**
    * Updates a specific entry from the store.
@@ -113,7 +81,7 @@ export interface Store {
    */
   update(
     index: StorageIndex,
-    transformFn: (v: StorageValue) => Exclude<StorageValue, undefined>
+    transformFn: (v?: JSONValue) => JSONValue
   ): Promise<void>;
 
   /**

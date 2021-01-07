@@ -2,33 +2,33 @@
 //  * License, v. 2.0. If a copy of the MPL was not distributed with this
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { StorageValue, Store } from "storage";
+import { Store } from "storage";
 import PersistentStore from "storage/persistent";
-import Metric, { Lifetime } from "metrics";
-import { MetricPayload, isMetricPayload } from "metrics/payload";
-import { isObject, isUndefined } from "utils";
+import { MetricType, Lifetime, Metric } from "metrics";
+import { createMetric, validateMetricInternalRepresentation } from "metrics/utils";
+import { isObject, isUndefined, JSONValue } from "utils";
 
-export interface PingPayload {
+export interface Metrics {
   [aMetricType: string]: {
-    [aMetricIdentifier: string]: MetricPayload
+    [aMetricIdentifier: string]: JSONValue
   }
 }
 
 /**
- * Verifies if a given value is a valid PingPayload.
+ * Verifies if a given value is a valid Metrics object.
  *
  * @param v The value to verify
  *
- * @returns Whether or not `v` is a valid PingPayload.
+ * @returns Whether or not `v` is a valid Metrics object.
  */
-export function isValidPingPayload(v: unknown): v is PingPayload {
+export function isValidInternalMetricsRepresentation(v: unknown): v is Metrics {
   if (isObject(v)) {
     // The root keys should all be metric types.
     for (const metricType in v) {
       const metrics = v[metricType];
       if (isObject(metrics)) {
         for (const metricIdentifier in metrics) {
-          if (!isMetricPayload(metricType, metrics[metricIdentifier])) {
+          if (!validateMetricInternalRepresentation(metricType, metrics[metricIdentifier])) {
             return false;
           }
         }
@@ -40,7 +40,26 @@ export function isValidPingPayload(v: unknown): v is PingPayload {
   } else {
     return false;
   }
+}
 
+/**
+ * Creates the metrics payload from a metrics object with metrics in their internal representation.
+ *
+ * @param v The Metrics object to transform.
+ *
+ * @returns A metrics object with metrics in their payload format.
+ */
+function createMetricsPayload(v: Metrics): Metrics {
+  const result: Metrics = {};
+  for (const metricType in v) {
+    const metrics = v[metricType];
+    result[metricType] = {};
+    for (const metricIdentifier in metrics) {
+      const metric = createMetric(metricType, metrics[metricIdentifier]);
+      result[metricType][metricIdentifier] = metric.payload();
+    }
+  }
+  return result;
 }
 
 /**
@@ -99,7 +118,7 @@ class Database {
    * @param metric The metric to record to.
    * @param value The value we want to record to the given metric.
    */
-  async record(metric: Metric, value: MetricPayload): Promise<void> {
+  async record(metric: MetricType, value: Metric<JSONValue, JSONValue>): Promise<void> {
     await this.transform(metric, () => value);
   }
 
@@ -110,7 +129,7 @@ class Database {
    * @param metric The metric to record to.
    * @param transformFn The transformation function to apply to the currently persisted value.
    */
-  async transform<T extends MetricPayload>(metric: Metric, transformFn: (v?: T) => T): Promise<void> {
+  async transform(metric: MetricType, transformFn: (v?: JSONValue) => Metric<JSONValue, JSONValue>): Promise<void> {
     if (metric.disabled) {
       return;
     }
@@ -118,12 +137,7 @@ class Database {
     const store = this._chooseStore(metric.lifetime);
     const storageKey = metric.identifier;
     for (const ping of metric.sendInPings) {
-      const finalTransformFn = (v: StorageValue): Exclude<StorageValue, undefined> => {
-        if (!isUndefined(v) && !isMetricPayload<T>(metric.type, v)) {
-          throw new Error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(v)}.`);
-        }
-        return transformFn(v);
-      };
+      const finalTransformFn = (v?: JSONValue): JSONValue => transformFn(v).get();
       await store.update([ping, metric.type, storageKey], finalTransformFn);
     }
   }
@@ -151,14 +165,14 @@ class Database {
    * @returns The payload persisted for the given metric,
    *          `undefined` in case the metric has not been recorded yet or the found valus in invalid.
    */
-  async getMetric<T>(
+  async getMetric<T extends JSONValue>(
     ping: string,
-    metric: Metric
+    metric: MetricType
   ): Promise<T | undefined> {
     const store = this._chooseStore(metric.lifetime);
     const storageKey = metric.identifier;
     const value = await store.get([ping, metric.type, storageKey]);
-    if (!isUndefined(value) && !isMetricPayload<T>(metric.type, value)) {
+    if (!isUndefined(value) && !validateMetricInternalRepresentation<T>(metric.type, value)) {
       console.error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(value)}. Clearing.`);
       await store.delete([ping, metric.type, storageKey]);
       return;
@@ -182,14 +196,14 @@ class Database {
    * @returns The ping payload found for the given parameters or an empty object
    *          in case no data was found or the data that was found, was invalid.
    */
-  private async getAndValidatePingData(ping: string, lifetime: Lifetime): Promise<PingPayload> {
+  private async getAndValidatePingData(ping: string, lifetime: Lifetime): Promise<Metrics> {
     const store = this._chooseStore(lifetime);
     const data = await store.get([ping]);
     if (isUndefined(data)) {
       return {};
     }
 
-    if (!isValidPingPayload(data)) {
+    if (!isValidInternalMetricsRepresentation(data)) {
       console.error(`Unexpected value found for ping ${ping} in ${lifetime} store: ${JSON.stringify(data)}. Clearing.`);
       await store.delete([ping]);
       return {};
@@ -207,7 +221,7 @@ class Database {
    * @returns An object containing all the metrics recorded to the given ping,
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
-  async getPing(ping: string, clearPingLifetimeData: boolean): Promise<PingPayload | undefined> {
+  async getPing(ping: string, clearPingLifetimeData: boolean): Promise<Metrics | undefined> {
     const userData = await this.getAndValidatePingData(ping, Lifetime.User);
     const pingData = await this.getAndValidatePingData(ping, Lifetime.Ping);
     const appData = await this.getAndValidatePingData(ping, Lifetime.Application);
@@ -216,7 +230,7 @@ class Database {
       await this.clear(Lifetime.Ping);
     }
 
-    const response: PingPayload = { ...pingData };
+    const response: Metrics = { ...pingData };
     for (const data of [userData, appData]) {
       for (const metricType in data) {
         response[metricType] = {
@@ -229,7 +243,7 @@ class Database {
     if (Object.keys(response).length === 0) {
       return;
     } else {
-      return response;
+      return createMetricsPayload(response);
     }
   }
 
