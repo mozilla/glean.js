@@ -10,10 +10,12 @@ import Glean from "glean";
  *
  * A concrete metric will always have two possible representations:
  *
- * - `InternalRepresentation`: is the format in which this metric will be stored in memory.
- * This format may contain extra metadata, in order to allow deserializing of this data for testing purposes.
- * - `PayloadRepresentation`: is the format in which this metric will be represented in the ping payload.
- * This format must be the exact same as described in [the Glean schema](https://github.com/mozilla-services/mozilla-pipeline-schemas/blob/master/schemas/glean/glean/glean.1.schema.json).
+ * - `InternalRepresentation`
+ *    - Is the format in which this metric will be stored in memory.
+ *    - This format may contain extra metadata, in order to allow deserializing of this data for testing purposes.
+ * - `PayloadRepresentation`
+ *    - Is the format in which this metric will be represented in the ping payload.
+ *    - This format must be the exact same as described in [the Glean schema](https://github.com/mozilla-services/mozilla-pipeline-schemas/blob/master/schemas/glean/glean/glean.1.schema.json).
  */
 export abstract class Metric<
   InternalRepresentation extends JSONValue,

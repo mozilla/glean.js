@@ -43,15 +43,11 @@ export function isValidInternalMetricsRepresentation(v: unknown): v is Metrics {
 }
 
 /**
- * Creates an external metrics payload from an internal metrics payload.
+ * Creates the metrics payload from a metrics object with metrics in their internal representation.
  *
- * Metrics are stored in an internal representation format,
- * but pings must be sent with metrics in their external format
- * (i.e. the format described in the Glean schema).
+ * @param v The Metrics object to transform.
  *
- * @param v The ping payload to transform.
- *
- * @returns The ping payload in its external format.
+ * @returns A metrics object with metrics in their payload format.
  */
 function createMetricsPayload(v: Metrics): Metrics {
   const result: Metrics = {};
