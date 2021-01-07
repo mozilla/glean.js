@@ -162,11 +162,7 @@ class DatetimeMetricType extends MetricType {
   }
 
   /**
-   * Set a datetime value.
-   *
-   * # Note
-   *
-   * This value will be truncated to this metric's resolution at the time of submission.
+   * Set a datetime value, truncating it to the metric's resolution.
    *
    * @param value The Date value to set. If not provided, will record the current time.
    */
@@ -177,6 +173,29 @@ class DatetimeMetricType extends MetricType {
 
     if (!value) {
       value = new Date();
+    }
+
+    // We always save a milliseconds precision ISO string on the database,
+    // regardless of the time unit. So we zero out information that
+    // is not necessary for the current time unit of this metric.
+    const truncatedDate = value;
+    switch(this.timeUnit) {
+    case (TimeUnit.Day):
+      truncatedDate.setMilliseconds(0);
+      truncatedDate.setSeconds(0);
+      truncatedDate.setMinutes(0);
+      truncatedDate.setMilliseconds(0);
+    case (TimeUnit.Hour):
+      truncatedDate.setMilliseconds(0);
+      truncatedDate.setSeconds(0);
+      truncatedDate.setMinutes(0);
+    case (TimeUnit.Minute):
+      truncatedDate.setMilliseconds(0);
+      truncatedDate.setSeconds(0);
+    case (TimeUnit.Second):
+      truncatedDate.setMilliseconds(0);
+    default:
+      break;
     }
 
     const metric = new DatetimeMetric({
