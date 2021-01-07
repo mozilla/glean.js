@@ -7,19 +7,19 @@
  * metric types (e.g. DatetimeMetric).
  */
 enum TimeUnit {
-  // Truncate to nanosecond precision.
+  // Represents nanosecond precision.
   Nanosecond = "nanosecond",
-  // Truncate to microsecond precision.
+  // Represents microsecond precision.
   Microsecond = "microsecond",
-  // Truncate to millisecond precision.
+  // Represents millisecond precision.
   Millisecond = "millisecond",
-  // Truncate to second precision.
+  // Represents second precision.
   Second = "second",
-  // Truncate to minute precision.
+  // Represents minute precision.
   Minute = "minute",
-  // Truncate to hour precision.
+  // Represents hour precision.
   Hour = "hour",
-  // Truncate to day precision.
+  // Represents day precision.
   Day = "day",
 }
 

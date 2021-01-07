@@ -127,8 +127,8 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
 /**
  * A datetime metric.
  *
- * Used to record an absolute date and time, such as the time the user first ran
- * the application.
+ * Used to record an absolute date and time,
+ * such as the time the user first ran the application.
  */
 class DatetimeMetricType extends MetricType {
   private timeUnit: TimeUnit;
@@ -139,9 +139,13 @@ class DatetimeMetricType extends MetricType {
   }
 
   /**
-   * Sets to the specified datetime value.
+   * Set a datetime value.
    *
-   * @param value the value to set.
+   * # Note
+   *
+   * This value will be truncated to this metric's resolution at the time of submission.
+   *
+   * @param value The Date value to set. If not provided, will record the current time.
    */
   async set(value?: Date): Promise<void> {
     if (!this.shouldRecord()) {

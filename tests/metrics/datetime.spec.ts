@@ -236,5 +236,17 @@ describe("DatetimeMetric", function() {
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("threePing"), "1995-05-25T08:15:45.385+05:00");
+
+    // A date prior to the UNIX epoch
+    await metric.set(new Date(1895, 5, 25, 8, 15, 45, 385));
+    assert.strictEqual(await metric.testGetValueAsString("aPing"), "1895-05-25T08:15:45.385+05:00");
+    assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1895-05-25T08:15:45.385+05:00");
+    assert.strictEqual(await metric.testGetValueAsString("threePing"), "1895-05-25T08:15:45.385+05:00");
+
+    // A date following 2038 (the extent of signed 32-bits after UNIX epoch)
+    await metric.set(new Date(2995, 5, 25, 8, 15, 45, 385));
+    assert.strictEqual(await metric.testGetValueAsString("aPing"), "2995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(await metric.testGetValueAsString("twoPing"), "2995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(await metric.testGetValueAsString("threePing"), "2995-05-25T08:15:45.385+05:00");
   });
 });
