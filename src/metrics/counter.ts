@@ -67,7 +67,7 @@ class CounterMetricType extends MetricType {
     }
 
     const transformFn = ((amount) => {
-      return (v?: JSONValue): CounterMetric =>  {
+      return (v?: JSONValue): CounterMetric => {
         let metric: CounterMetric;
         let result: number;
         try {
