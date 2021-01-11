@@ -5,7 +5,7 @@
 // We will intentionaly leave `null` out even though it is a valid JSON primitive.
 export type JSONPrimitive = string | number | boolean;
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
-export type JSONObject = { [member: string]: JSONValue };
+export type JSONObject = { [member: string]: JSONValue | undefined };
 export type JSONArray = JSONValue[];
 
 /**

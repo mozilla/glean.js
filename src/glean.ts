@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import MetricsDatabase from "metrics/database";
+import PingsDatabase from "pings/database";
 import { isUndefined, sanitizeApplicationId } from "utils";
 
 /**
@@ -20,6 +21,7 @@ class Glean {
   // The metrics and pings databases.
   private _db: {
     metrics: MetricsDatabase,
+    pings: PingsDatabase
   }
   // Whether or not to record metrics.
   private _uploadEnabled: boolean;
@@ -39,6 +41,7 @@ class Glean {
     this._initialized = false;
     this._db = {
       metrics: new MetricsDatabase(),
+      pings: new PingsDatabase()
     };
     // Temporarily setting this to true always, until Bug 1677444 is resolved.
     this._uploadEnabled = true;
@@ -75,8 +78,13 @@ class Glean {
     return Glean.instance._db.metrics;
   }
 
-  static get db(): Database {
-    return Glean.instance._db;
+  /**
+   * Gets this Glean's instance pings database.
+   *
+   * @returns This Glean's instance pings database.
+   */
+  static get pingsDatabase(): PingsDatabase {
+    return Glean.instance._db.pings;
   }
 
   // TODO: Make the following functions `private` once Bug 1682769 is resolved.
@@ -106,8 +114,9 @@ class Glean {
   static async testRestGlean(): Promise<void> {
     // Reset upload enabled state, not to inerfere with other tests.
     Glean.uploadEnabled = true;
-    // Clear the database.
+    // Clear the databases.
     await Glean.metricsDatabase.clearAll();
+    await Glean.pingsDatabase.clearAll();
   }
 }
 

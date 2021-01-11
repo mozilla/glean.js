@@ -9,7 +9,7 @@ import { Lifetime } from "metrics";
 import StringMetricType, { StringMetric } from "metrics/types/string";
 import { JSONValue } from "utils";
 
-describe("Database", function() {
+describe("MetricsDatabase", function() {
   describe("record", function() {
     it("records to the correct place at the underlying store", async function() {
       const db = new Database();
