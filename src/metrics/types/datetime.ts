@@ -203,7 +203,7 @@ class DatetimeMetricType extends MetricType {
       timezone: value.getTimezoneOffset(),
       date: value.toISOString(),
     });
-    await Glean.db.record(this, metric);
+    await Glean.metricsDatabase.record(this, metric);
   }
 
   /**
@@ -220,7 +220,7 @@ class DatetimeMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
-    const value = await Glean.db.getMetric<DatetimeInternalRepresentation>(ping, this);
+    const value = await Glean.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
     if (value) {
       return new DatetimeMetric(value);
     }

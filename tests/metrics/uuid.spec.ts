@@ -6,7 +6,7 @@ import assert from "assert";
 import { v4 as UUIDv4 } from "uuid";
 
 import Glean from "glean";
-import UUIDMetricType from "metrics/uuid";
+import UUIDMetricType from "metrics/types/uuid";
 import { Lifetime } from "metrics";
  
 describe("UUIDMetric", function() {
@@ -69,7 +69,7 @@ describe("UUIDMetric", function() {
     await metric.set(expected);
     assert.strictEqual(await metric.testGetValue("aPing"), expected);
 
-    const snapshot = await Glean.db.getPing("aPing", true);
+    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "uuid": {
         "aCategory.aUUIDMetric": expected

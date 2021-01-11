@@ -4,9 +4,9 @@
 
 import assert from "assert";
 
-import Database, { isValidInternalMetricsRepresentation } from "database";
+import Database, { isValidInternalMetricsRepresentation } from "metrics/database";
 import { Lifetime } from "metrics";
-import StringMetricType, { StringMetric } from "metrics/string";
+import StringMetricType, { StringMetric } from "metrics/types/string";
 import { JSONValue } from "utils";
 
 describe("Database", function() {
@@ -232,7 +232,7 @@ describe("Database", function() {
     });
   });
 
-  describe("getPing", function() {
+  describe("getPingMetrics", function() {
     it("isValidInternalMetricsRepresentation validates correctly", function() {
       // Invalids
       assert.strictEqual(false, isValidInternalMetricsRepresentation("not even an object"));
@@ -273,7 +273,7 @@ describe("Database", function() {
     it("when incorrect data is found on the storage, it is deleted", async function() {
       const db = new Database();
       await db["appStore"].update(["aPing"], () => "not even a string");
-      assert.strictEqual(await db.getPing("aPing", false), undefined);
+      assert.strictEqual(await db.getPingMetrics("aPing", false), undefined);
       assert.strictEqual(await db["appStore"].get(["aPing"]), undefined);
     });
 
@@ -292,7 +292,7 @@ describe("Database", function() {
         }
       }));
 
-      assert.deepStrictEqual(await db.getPing("aPing", false), {
+      assert.deepStrictEqual(await db.getPingMetrics("aPing", false), {
         "string": {
           "string.one": "foo",
           "string.two": "bar",
@@ -334,7 +334,7 @@ describe("Database", function() {
         },
       }));
 
-      assert.deepStrictEqual(await db.getPing("aPing", false), {
+      assert.deepStrictEqual(await db.getPingMetrics("aPing", false), {
         "boolean": {
           "client_info.client_id": false,
           "this.is": true,
@@ -380,7 +380,7 @@ describe("Database", function() {
       });
       await db.record(appMetric, new StringMetric("appValue"));
 
-      await db.getPing("aPing", true);
+      await db.getPingMetrics("aPing", true);
       assert.notDeepStrictEqual(await db["userStore"]._getWholeStore(), {});
       assert.deepStrictEqual(await db["pingStore"]._getWholeStore(), {});
       assert.notDeepStrictEqual(await db["appStore"]._getWholeStore(), {});

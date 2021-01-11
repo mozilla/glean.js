@@ -5,7 +5,7 @@
 import assert from "assert";
 
 import Glean from "glean";
-import BooleanMetricType from "metrics/boolean";
+import BooleanMetricType from "metrics/types/boolean";
 import { Lifetime } from "metrics";
 
 describe("BooleanMetric", function() {
@@ -52,7 +52,7 @@ describe("BooleanMetric", function() {
     await metric.set(true);
     assert.strictEqual(await metric.testGetValue("aPing"), true);
 
-    const snapshot = await Glean.db.getPing("aPing", true);
+    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "boolean": {
         "aCategory.aBooleanMetric": true

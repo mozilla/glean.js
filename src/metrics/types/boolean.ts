@@ -40,7 +40,7 @@ class BooleanMetricType extends MetricType {
     }
 
     const metric = new BooleanMetric(value);
-    await Glean.db.record(this, metric);
+    await Glean.metricsDatabase.record(this, metric);
   }
 
   /**
@@ -57,7 +57,7 @@ class BooleanMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<boolean | undefined> {
-    return Glean.db.getMetric<boolean>(ping, this);
+    return Glean.metricsDatabase.getMetric<boolean>(ping, this);
   }
 }
 

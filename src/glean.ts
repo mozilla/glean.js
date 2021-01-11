@@ -2,15 +2,17 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Database from "database";
+import MetricsDatabase from "metrics/database";
 import { isUndefined } from "utils";
 
 class Glean {
   // The Glean singleton.
   private static _instance?: Glean;
 
-  // The metrics database.
-  private _db: Database;
+  // The metrics and pings databases.
+  private _db: {
+    metrics: MetricsDatabase,
+  }
   // Whether or not to record metrics.
   private _uploadEnabled: boolean;
 
@@ -21,7 +23,9 @@ class Glean {
         Use Glean.instance instead to access the Glean singleton.`);
     }
 
-    this._db = new Database();
+    this._db = {
+      metrics: new MetricsDatabase(),
+    };
     // Temporarily setting this to true always, until Bug 1677444 is resolved.
     this._uploadEnabled = true;
   }
@@ -34,6 +38,14 @@ class Glean {
     return Glean._instance;
   }
 
+  /**
+   * Gets this Glean's instance metrics database.
+   *
+   * @returns This Glean's instance metrics database.
+   */
+  static get metricsDatabase(): MetricsDatabase {
+    return Glean.instance._db.metrics;
+  }
 
   static get db(): Database {
     return Glean.instance._db;
@@ -59,7 +71,7 @@ class Glean {
     // Reset upload enabled state, not to inerfere with other tests.
     Glean.uploadEnabled = true;
     // Clear the database.
-    await Glean.db.clearAll();
+    await Glean.metricsDatabase.clearAll();
   }
 }
 

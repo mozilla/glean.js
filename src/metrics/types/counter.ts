@@ -87,7 +87,7 @@ class CounterMetricType extends MetricType {
       };
     })(amount);
 
-    await Glean.db.transform(this, transformFn);
+    await Glean.metricsDatabase.transform(this, transformFn);
   }
 
   /**
@@ -104,7 +104,7 @@ class CounterMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<number | undefined> {
-    return Glean.db.getMetric<number>(ping, this);
+    return Glean.metricsDatabase.getMetric<number>(ping, this);
   }
 }
 

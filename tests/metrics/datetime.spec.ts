@@ -6,7 +6,7 @@ import assert from "assert";
 import sinon from "sinon";
 
 import Glean from "glean";
-import DatetimeMetricType, { DatetimeMetric } from "metrics/datetime";
+import DatetimeMetricType, { DatetimeMetric } from "metrics/types/datetime";
 import { Lifetime } from "metrics";
 import TimeUnit from "metrics/time_unit";
 
@@ -93,7 +93,7 @@ describe("DatetimeMetric", function() {
     await metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15+05:00");
 
-    const snapshot = await Glean.db.getPing("aPing", true);
+    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "datetime": {
         "aCategory.aDatetimeMetric": "1995-05-25T08:15+05:00"
@@ -203,7 +203,7 @@ describe("DatetimeMetric", function() {
       timezone: 60,
       date: "2021-01-07T14:41:26.312Z"
     });
-    await Glean.db.record(metric, concreteMetric);
+    await Glean.metricsDatabase.record(metric, concreteMetric);
 
     // 1. The monkeypatched timezone it -300 (+05:00)
     // 2. The timezone manually set on the metric above is 60 (-01:00)

@@ -2,13 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { v4 as UUIDv4, validate as UUIDvalidate } from "uuid";
-
 import { Metric, MetricType, CommonMetricData } from "metrics";
 import { isString } from "utils";
 import Glean from "glean";
 
-export class UUIDMetric extends Metric<string, string> {
+export const MAX_LENGTH_VALUE = 100;
+
+export class StringMetric extends Metric<string, string> {
   constructor(v: unknown) {
     super(v);
   }
@@ -17,8 +17,12 @@ export class UUIDMetric extends Metric<string, string> {
     if (!isString(v)) {
       return false;
     }
-  
-    return UUIDvalidate(v);
+
+    if (v.length > MAX_LENGTH_VALUE) {
+      return false;
+    }
+
+    return true;
   }
 
   payload(): string {
@@ -27,59 +31,40 @@ export class UUIDMetric extends Metric<string, string> {
 }
 
 /**
- *  An UUID metric.
+ * A string metric.
  *
- * Stores UUID v4 (randomly generated) values.
+ * Record an Unicode string value with arbitrary content.
+ * Strings are length-limited to `MAX_LENGTH_VALUE` bytes.
  */
-class UUIDMetricType extends MetricType {
+class StringMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("uuid", meta);
+    super("string", meta);
   }
 
   /**
-   * Sets to the specified value.
+   * Sets to the specified string value.
+   *
+   * # Note
+   *
+   * Truncates the value if it is longer than `MAX_STRING_LENGTH` bytes
+   * and logs an error.
    *
    * @param value the value to set.
-   *
-   * @throws In case `value` is not a valid UUID.
    */
   async set(value: string): Promise<void> {
     if (!this.shouldRecord()) {
       return;
     }
 
-    if (!value) {
-      value = UUIDv4();
-    }
-
-    let metric: UUIDMetric;
-    try {
-      metric = new UUIDMetric(value);
-    } catch {
+    if (value.length > MAX_LENGTH_VALUE) {
       // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`"${value}" is not a valid UUID. Ignoring`);
-      return;
+      console.warn(`String ${value} is longer than ${MAX_LENGTH_VALUE} chars. Truncating.`);
     }
 
-    await Glean.db.record(this, metric);
+    const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
+    await Glean.metricsDatabase.record(this, metric);
   }
 
-  /**
-   * Generates a new random uuid and sets the metric to it.
-   *
-   * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
-   */
-  async generateAndSet(): Promise<string | undefined> {
-    if (!this.shouldRecord()) {
-      return;
-    }
-
-    const value = UUIDv4();
-    await this.set(value);
-
-    return value;
-  }
- 
   /**
    * **Test-only API**
    *
@@ -94,8 +79,8 @@ class UUIDMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<string | undefined> {
-    return Glean.db.getMetric<string>(ping, this);
+    return Glean.metricsDatabase.getMetric<string>(ping, this);
   }
 }
- 
-export default UUIDMetricType;
+
+export default StringMetricType;

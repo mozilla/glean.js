@@ -5,7 +5,7 @@
 import assert from "assert";
 
 import Glean from "glean";
-import CounterMetricType from "metrics/counter";
+import CounterMetricType from "metrics/types/counter";
 import { Lifetime } from "metrics";
   
 describe("CounterMetric", function() {
@@ -52,7 +52,7 @@ describe("CounterMetric", function() {
     await metric.add(10);
     assert.strictEqual(await metric.testGetValue("aPing"), 10);
   
-    const snapshot = await Glean.db.getPing("aPing", true);
+    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "counter": {
         "aCategory.aCounterMetric": 10

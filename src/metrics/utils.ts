@@ -5,11 +5,11 @@
 import { Metric } from "metrics";
 import { JSONValue } from "utils";
 
-import { BooleanMetric } from "metrics/boolean";
-import { CounterMetric } from "metrics/counter";
-import { StringMetric } from "metrics/string";
-import { UUIDMetric } from "metrics/uuid";
-import { DatetimeMetric } from "./datetime";
+import { BooleanMetric } from "metrics/types/boolean";
+import { CounterMetric } from "metrics/types/counter";
+import { StringMetric } from "metrics/types/string";
+import { UUIDMetric } from "metrics/types/uuid";
+import { DatetimeMetric } from "./types/datetime";
 
 /**
  * A map containing all supported internal metrics and its constructors.
