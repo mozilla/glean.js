@@ -25,6 +25,8 @@ class Glean {
   }
   // Whether or not to record metrics.
   private _uploadEnabled: boolean;
+  // The time the Glean object was initialized.
+  private _startTime: Date;
   // Whether or not Glean has been initialized.
   private _initialized: boolean;
 
@@ -38,6 +40,7 @@ class Glean {
         Use Glean.instance instead to access the Glean singleton.`);
     }
 
+    this._startTime = new Date();
     this._initialized = false;
     this._db = {
       metrics: new MetricsDatabase(),
@@ -94,6 +97,15 @@ class Glean {
 
   static set uploadEnabled(value: boolean) {
     Glean.instance._uploadEnabled = value;
+  }
+
+  /**
+   * Gets the time this Glean instance was created.
+   *
+   * @returns The Date object representing the time this Glean instance was created.
+   */
+  static get startTime(): Date {
+    return Glean.instance._startTime;
   }
 
   static get applicationId(): string | undefined {

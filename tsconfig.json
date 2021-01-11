@@ -11,6 +11,7 @@
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
+    "resolveJsonModule": true,
     "typeRoots": [
       "node_modules/@types",
       "node_modules/web-ext-types"
