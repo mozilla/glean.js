@@ -3,7 +3,15 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import MetricsDatabase from "metrics/database";
-import { isUndefined } from "utils";
+import { isUndefined, sanitizeApplicationId } from "utils";
+
+/**
+ * The Glean configuration.
+ */
+interface Configuration {
+  // The application ID (will be sanitized during initialization).
+  applicationId: string,
+}
 
 class Glean {
   // The Glean singleton.
@@ -15,6 +23,11 @@ class Glean {
   }
   // Whether or not to record metrics.
   private _uploadEnabled: boolean;
+  // Whether or not Glean has been initialized.
+  private _initialized: boolean;
+
+  // Properties that will only be set on `initialize`.
+  private _applicationId?: string;
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -23,6 +36,7 @@ class Glean {
         Use Glean.instance instead to access the Glean singleton.`);
     }
 
+    this._initialized = false;
     this._db = {
       metrics: new MetricsDatabase(),
     };
@@ -36,6 +50,20 @@ class Glean {
     }
 
     return Glean._instance;
+  }
+
+  /**
+   * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
+   *
+   * @param config The Glean configuration.
+   */
+  static initialize(config: Configuration): void {
+    if (Glean.instance._initialized) {
+      console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
+      return;
+    }
+
+    Glean.instance._applicationId = sanitizeApplicationId(config.applicationId);
   }
 
   /**
@@ -58,6 +86,14 @@ class Glean {
 
   static set uploadEnabled(value: boolean) {
     Glean.instance._uploadEnabled = value;
+  }
+
+  static get applicationId(): string | undefined {
+    if (!Glean.instance._initialized) {
+      console.error("Attempted to access the Glean.applicationId before Glean was initialized.");
+    }
+
+    return Glean.instance._applicationId;
   }
 
   /**

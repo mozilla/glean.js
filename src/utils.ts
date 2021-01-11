@@ -92,3 +92,26 @@ export function isBoolean(v: unknown): v is boolean {
 export function isNumber(v: unknown): v is number {
   return ((typeof v === "number" || (typeof v === "object" && v !== null && v.constructor === Number)) && !isNaN(v));
 }
+
+/**
+ * Generates a pipeline-friendly string
+ * that replaces non alphanumeric characters with dashes.
+ *
+ * @param applicationId The application if to sanitize.
+ *
+ * @returns The sanitized applicaiton id.
+ */
+export function sanitizeApplicationId(applicationId: string): string {
+  let result = "";
+  const tester = /([a-z0-9])/i;
+  for (let i = 0; i < applicationId.length; i++) {
+    if (tester.test(applicationId[i])) {
+      result += applicationId[i].toLowerCase();
+    } else {
+      if (result[result.length - 1] !== "-") {
+        result += "-";
+      }
+    }
+  }
+  return result;
+}
