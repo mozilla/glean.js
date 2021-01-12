@@ -5,7 +5,7 @@
 // We will intentionaly leave `null` out even though it is a valid JSON primitive.
 export type JSONPrimitive = string | number | boolean;
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
-export type JSONObject = { [member: string]: JSONValue };
+export type JSONObject = { [member: string]: JSONValue | undefined };
 export type JSONArray = JSONValue[];
 
 /**
@@ -91,4 +91,16 @@ export function isBoolean(v: unknown): v is boolean {
  */
 export function isNumber(v: unknown): v is number {
   return ((typeof v === "number" || (typeof v === "object" && v !== null && v.constructor === Number)) && !isNaN(v));
+}
+
+/**
+ * Generates a pipeline-friendly string
+ * that replaces non alphanumeric characters with dashes.
+ *
+ * @param applicationId The application if to sanitize.
+ *
+ * @returns The sanitized applicaiton id.
+ */
+export function sanitizeApplicationId(applicationId: string): string {
+  return applicationId.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
 }

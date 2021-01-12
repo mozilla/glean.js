@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import { isBoolean, isNumber, isObject, isString, isUndefined } from "utils";
+import { isBoolean, isNumber, isObject, isString, isUndefined, sanitizeApplicationId } from "utils";
 
 describe("utils", function() {
   it("isObject validates correctly", function() {
@@ -76,5 +76,12 @@ describe("utils", function() {
     assert.strictEqual(isNumber(10), true);
     assert.strictEqual(isNumber(-10), true);
     assert.strictEqual(isNumber(new Number(10)), true);
+  });
+
+  it("sanitizeApplicationId works correctly", function() {
+    assert.strictEqual(sanitizeApplicationId("org.mozilla.test-app"), "org-mozilla-test-app");
+    assert.strictEqual(sanitizeApplicationId("org.mozilla..test---app"), "org-mozilla-test-app");
+    assert.strictEqual(sanitizeApplicationId("org-mozilla-test-app"), "org-mozilla-test-app");
+    assert.strictEqual(sanitizeApplicationId("org.mozilla.Test.App"), "org-mozilla-test-app");
   });
 });

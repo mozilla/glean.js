@@ -40,6 +40,14 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
     super(v);
   }
 
+  static fromDate(v: Date, timeUnit: TimeUnit): DatetimeMetric {
+    return new DatetimeMetric({
+      timeUnit,
+      timezone: v.getTimezoneOffset(),
+      date: v.toISOString()
+    });
+  }
+
   /**
    * Gets the datetime data as a Date object.
    *
@@ -198,12 +206,8 @@ class DatetimeMetricType extends MetricType {
       break;
     }
 
-    const metric = new DatetimeMetric({
-      timeUnit: this.timeUnit,
-      timezone: value.getTimezoneOffset(),
-      date: value.toISOString(),
-    });
-    await Glean.db.record(this, metric);
+    const metric = DatetimeMetric.fromDate(value, this.timeUnit);
+    await Glean.metricsDatabase.record(this, metric);
   }
 
   /**
@@ -220,7 +224,7 @@ class DatetimeMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
-    const value = await Glean.db.getMetric<DatetimeInternalRepresentation>(ping, this);
+    const value = await Glean.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
     if (value) {
       return new DatetimeMetric(value);
     }

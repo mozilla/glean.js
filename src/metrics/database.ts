@@ -78,7 +78,7 @@ function createMetricsPayload(v: Metrics): Metrics {
  * We have one store in this format for each lifetime: user, ping and application.
  *
  */
-class Database {
+class MetricsDatabase {
   private userStore: Store;
   private pingStore: Store;
   private appStore: Store;
@@ -221,7 +221,7 @@ class Database {
    * @returns An object containing all the metrics recorded to the given ping,
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
-  async getPing(ping: string, clearPingLifetimeData: boolean): Promise<Metrics | undefined> {
+  async getPingMetrics(ping: string, clearPingLifetimeData: boolean): Promise<Metrics | undefined> {
     const userData = await this.getAndValidatePingData(ping, Lifetime.User);
     const pingData = await this.getAndValidatePingData(ping, Lifetime.Ping);
     const appData = await this.getAndValidatePingData(ping, Lifetime.Application);
@@ -267,4 +267,4 @@ class Database {
   }
 }
 
-export default Database;
+export default MetricsDatabase;

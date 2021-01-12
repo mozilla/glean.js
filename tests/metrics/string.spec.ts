@@ -5,7 +5,7 @@
 import assert from "assert";
 
 import Glean from "glean";
-import StringMetricType, { MAX_LENGTH_VALUE } from "metrics/string";
+import StringMetricType, { MAX_LENGTH_VALUE } from "metrics/types/string";
 import { Lifetime } from "metrics";
  
 describe("StringMetric", function() {
@@ -52,7 +52,7 @@ describe("StringMetric", function() {
     await metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
  
-    const snapshot = await Glean.db.getPing("aPing", true);
+    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "string": {
         "aCategory.aStringMetric": "test_string_value"

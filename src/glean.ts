@@ -2,17 +2,26 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Database from "database";
-import { isUndefined } from "utils";
+import MetricsDatabase from "metrics/database";
+import PingsDatabase from "pings/database";
+import { isUndefined, sanitizeApplicationId } from "utils";
 
 class Glean {
   // The Glean singleton.
   private static _instance?: Glean;
 
-  // The metrics database.
-  private _db: Database;
+  // The metrics and pings databases.
+  private _db: {
+    metrics: MetricsDatabase,
+    pings: PingsDatabase
+  }
   // Whether or not to record metrics.
   private _uploadEnabled: boolean;
+  // Whether or not Glean has been initialized.
+  private _initialized: boolean;
+
+  // Properties that will only be set on `initialize`.
+  private _applicationId?: string;
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -21,7 +30,11 @@ class Glean {
         Use Glean.instance instead to access the Glean singleton.`);
     }
 
-    this._db = new Database();
+    this._initialized = false;
+    this._db = {
+      metrics: new MetricsDatabase(),
+      pings: new PingsDatabase()
+    };
     // Temporarily setting this to true always, until Bug 1677444 is resolved.
     this._uploadEnabled = true;
   }
@@ -34,9 +47,36 @@ class Glean {
     return Glean._instance;
   }
 
+  /**
+   * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
+   *
+   * @param applicationId The application ID (will be sanitized during initialization).
+   */
+  static initialize(applicationId: string): void {
+    if (Glean.instance._initialized) {
+      console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
+      return;
+    }
 
-  static get db(): Database {
-    return Glean.instance._db;
+    Glean.instance._applicationId = sanitizeApplicationId(applicationId);
+  }
+
+  /**
+   * Gets this Glean's instance metrics database.
+   *
+   * @returns This Glean's instance metrics database.
+   */
+  static get metricsDatabase(): MetricsDatabase {
+    return Glean.instance._db.metrics;
+  }
+
+  /**
+   * Gets this Glean's instance pings database.
+   *
+   * @returns This Glean's instance pings database.
+   */
+  static get pingsDatabase(): PingsDatabase {
+    return Glean.instance._db.pings;
   }
 
   // TODO: Make the following functions `private` once Bug 1682769 is resolved.
@@ -46,6 +86,14 @@ class Glean {
 
   static set uploadEnabled(value: boolean) {
     Glean.instance._uploadEnabled = value;
+  }
+
+  static get applicationId(): string | undefined {
+    if (!Glean.instance._initialized) {
+      console.error("Attempted to access the Glean.applicationId before Glean was initialized.");
+    }
+
+    return Glean.instance._applicationId;
   }
 
   /**
@@ -58,8 +106,9 @@ class Glean {
   static async testRestGlean(): Promise<void> {
     // Reset upload enabled state, not to inerfere with other tests.
     Glean.uploadEnabled = true;
-    // Clear the database.
-    await Glean.db.clearAll();
+    // Clear the databases.
+    await Glean.metricsDatabase.clearAll();
+    await Glean.pingsDatabase.clearAll();
   }
 }
 
