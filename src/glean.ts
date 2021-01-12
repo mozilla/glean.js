@@ -6,14 +6,6 @@ import MetricsDatabase from "metrics/database";
 import PingsDatabase from "pings/database";
 import { isUndefined, sanitizeApplicationId } from "utils";
 
-/**
- * The Glean configuration.
- */
-interface Configuration {
-  // The application ID (will be sanitized during initialization).
-  applicationId: string,
-}
-
 class Glean {
   // The Glean singleton.
   private static _instance?: Glean;
@@ -25,8 +17,6 @@ class Glean {
   }
   // Whether or not to record metrics.
   private _uploadEnabled: boolean;
-  // The time the Glean object was initialized.
-  private _startTime: Date;
   // Whether or not Glean has been initialized.
   private _initialized: boolean;
 
@@ -40,7 +30,6 @@ class Glean {
         Use Glean.instance instead to access the Glean singleton.`);
     }
 
-    this._startTime = new Date();
     this._initialized = false;
     this._db = {
       metrics: new MetricsDatabase(),
@@ -61,15 +50,15 @@ class Glean {
   /**
    * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
    *
-   * @param config The Glean configuration.
+   * @param applicationId The application ID (will be sanitized during initialization).
    */
-  static initialize(config: Configuration): void {
+  static initialize(applicationId: string): void {
     if (Glean.instance._initialized) {
       console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
       return;
     }
 
-    Glean.instance._applicationId = sanitizeApplicationId(config.applicationId);
+    Glean.instance._applicationId = sanitizeApplicationId(applicationId);
   }
 
   /**
@@ -97,15 +86,6 @@ class Glean {
 
   static set uploadEnabled(value: boolean) {
     Glean.instance._uploadEnabled = value;
-  }
-
-  /**
-   * Gets the time this Glean instance was created.
-   *
-   * @returns The Date object representing the time this Glean instance was created.
-   */
-  static get startTime(): Date {
-    return Glean.instance._startTime;
   }
 
   static get applicationId(): string | undefined {

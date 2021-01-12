@@ -11,6 +11,9 @@ import { ClientInfo, PingInfo, PingHeaders, PingPayload } from "pings/database";
 import PingType from "pings";
 import Glean from "glean";
 
+// The moment the current Glean.js session started.
+const GLEAN_START_TIME = new Date();
+
 /**
  * Gets, and then increments, the sequence number for a given ping.
  *
@@ -67,7 +70,7 @@ export async function getStartEndTimes(ping: PingType): Promise<{ startTime: str
   if (startTimeData) {
     startTime = new DatetimeMetric(startTimeData);
   } else {
-    startTime = DatetimeMetric.fromDate(Glean.startTime, TimeUnit.Minute);
+    startTime = DatetimeMetric.fromDate(GLEAN_START_TIME, TimeUnit.Minute);
   }
 
   // Update the start time with the current time.

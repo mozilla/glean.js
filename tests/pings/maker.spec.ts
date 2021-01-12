@@ -39,7 +39,7 @@ describe("PingMaker", function() {
     assert.ok("telemetry_sdk_build" in clientInfo);
   });
 
-  it("collectPing must return `undefined` if pings that must not be sent if empty, is empty", async function() {
+  it("collectPing must return `undefined` if ping that must not be sent if empty, is empty", async function() {
     const ping = new PingType("custom", true, false, []);
     assert.strictEqual(await PingMaker.collectPing(ping), undefined);
   });
