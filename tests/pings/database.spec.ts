@@ -4,7 +4,7 @@
 
 import assert from "assert";
 
-import Database from "pings/database";
+import Database, { Observer } from "pings/database";
 
 describe("PingsDatabase", function() {
   it("records correctly to the correct place at the underlying storage", async function() {
@@ -58,5 +58,32 @@ describe("PingsDatabase", function() {
 
     await db.clearAll();
     assert.strictEqual(Object.keys(await db["store"]._getWholeStore()).length, 0);
+  });
+
+  it("observer is notified when a new ping is added to the database", async function() {
+    let wasNotified = false;
+    const identifier = "THE IDENTIFIER";
+    const observer: Observer = {
+      update: (id: string): void => {
+        wasNotified = true;
+        assert.strictEqual(id, identifier);
+      }
+    };
+
+    const db = new Database(observer);
+    const path = "some/random/path/doesnt/matter";
+
+    const payload = {
+      ping_info: {
+        seq: 1,
+        start_time: "2020-01-11+01:00",
+        end_time: "2020-01-12+01:00",
+      },
+      client_info: {
+        telemetry_sdk_build: "32.0.0"
+      }
+    };
+    await db.recordPing(path, identifier, payload);
+    assert.ok(wasNotified);
   });
 });

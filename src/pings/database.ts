@@ -51,6 +51,18 @@ export interface PingHeaders extends JSONObject {
   "X-Source-Tags"?: string,
 }
 
+/**
+ * An interfae to be implemented by classes that wish to observe the pings database.
+ */
+export interface Observer {
+  /**
+   * Updates an observer about a new ping of a given id
+   * that has just been recorded to the pings database.
+   *
+   * @param identifier The id of the ping that was just recorded.
+   */
+  update(identifier: string): void;
+}
 
 /**
  * The pings database is an abstraction layer on top of the underlying storage.
@@ -67,9 +79,11 @@ export interface PingHeaders extends JSONObject {
  */
 class PingsDatabase {
   private store: Store;
+  private observer?: Observer;
 
-  constructor() {
+  constructor(observer?: Observer) {
     this.store = new PersistentStore("pings");
+    this.observer = observer;
   }
 
   /**
@@ -93,6 +107,9 @@ class PingsDatabase {
       };
       return headers ? { ...base, headers } : base;
     });
+
+    // Notify the observer that a new ping has been added to the pings database.
+    this.observer && this.observer.update(identifier);
   }
 
   /**
