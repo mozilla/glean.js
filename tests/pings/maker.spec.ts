@@ -34,9 +34,22 @@ describe("PingMaker", function() {
 
   it("buildClientInfo must report all the available data", async function() {
     const ping = new PingType("custom", true, false, []);
-    const clientInfo = await PingMaker.buildClientInfoSection(ping);
+    const clientInfo1 = await PingMaker.buildClientInfoSection(ping);
+    assert.ok("telemetry_sdk_build" in clientInfo1);
 
-    assert.ok("telemetry_sdk_build" in clientInfo);
+    // Initialize will also initialize core metrics that are part of the client info.
+    await Glean.initialize("something something", "build", "display version");
+
+    const clientInfo2 = await PingMaker.buildClientInfoSection(ping);
+    assert.ok("telemetry_sdk_build" in clientInfo2);
+    assert.ok("client_id" in clientInfo2);
+    assert.ok("first_run_date" in clientInfo2);
+    assert.ok("os" in clientInfo2);
+    assert.ok("os_version" in clientInfo2);
+    assert.ok("architecture" in clientInfo2);
+    assert.ok("locale" in clientInfo2);
+    assert.ok("app_build" in clientInfo2);
+    assert.ok("app_display_version" in clientInfo2);
   });
 
   it("collectPing must return `undefined` if ping that must not be sent if empty, is empty", async function() {

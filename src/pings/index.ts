@@ -45,6 +45,11 @@ class PingType {
    * @returns Whether or not the ping was successfully submitted.
    */
   async submit(reason?: string): Promise<boolean> {
+    if (!Glean.initialized) {
+      console.info("Glean must be initialized before submitting pings.");
+      return false;
+    }
+
     if (!Glean.uploadEnabled) {
       console.info("Glean disabled: not submitting any pings.");
       return false;
