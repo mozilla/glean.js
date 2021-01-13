@@ -6,6 +6,7 @@ import MetricsDatabase from "metrics/database";
 import PingsDatabase from "pings/database";
 import { isUndefined, sanitizeApplicationId } from "utils";
 import { CoreMetrics } from "internal_metrics";
+import { Lifetime } from "metrics";
 
 class Glean {
   // The Glean singleton.
@@ -121,11 +122,26 @@ class Glean {
   /**
    * **Test-only API**
    *
-   * Resets the Glean singleton to its initial state.
+   * Resets the Glean to an uninitialized state and clear app lifetime metrics.
    *
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    */
-  static async testRestGlean(): Promise<void> {
+  static async testUninitialize(): Promise<void> {
+    Glean.instance._initialized = false;
+    await Glean.metricsDatabase.clear(Lifetime.Application);
+  }
+
+  /**
+   * **Test-only API**
+   *
+   * Resets the Glean singleton to its initial state and re-initializes it.
+   *
+   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
+   *
+   * @param applicationId The application ID (will be sanitized during initialization).
+   * @param optionalInitializeArgs Optional arguments to be passed to `initialize`.
+   */
+  static async testRestGlean(applicationId: string, ...optionalInitializeArgs: never[]): Promise<void> {
     // Get back to an uninitialized state.
     Glean.instance._initialized = false;
     // Reset upload enabled state, not to inerfere with other tests.
@@ -133,6 +149,9 @@ class Glean {
     // Clear the databases.
     await Glean.metricsDatabase.clearAll();
     await Glean.pingsDatabase.clearAll();
+
+    // Initialize Glean.
+    await Glean.initialize(applicationId, ...optionalInitializeArgs);
   }
 }
 

@@ -11,8 +11,7 @@ import Glean from "glean";
 
 describe("PingType", function() {
   beforeEach(async function() {
-    await Glean.testRestGlean();
-    await Glean.initialize("something something");
+    await Glean.testRestGlean("something something");
   });
 
   it("collects and stores ping on submit", async function () {
@@ -60,7 +59,7 @@ describe("PingType", function() {
   });
 
   it("no pings are submitted if Glean has not been initialized", async function() {
-    await Glean.testRestGlean();
+    await Glean.testUninitialize();
 
     const ping = new PingType("custom", true, false, []);
     assert.strictEqual(await ping.submit(), false);

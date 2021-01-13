@@ -10,7 +10,7 @@ import Glean from "glean";
 
 describe("PingMaker", function() {
   beforeEach(async function() {
-    await Glean.testRestGlean();
+    await Glean.testRestGlean("something something");
   });
 
   it("ping info must contain a non-empty start and end time", async function() {
@@ -33,6 +33,7 @@ describe("PingMaker", function() {
   });
 
   it("buildClientInfo must report all the available data", async function() {
+    await Glean.testUninitialize();
     const ping = new PingType("custom", true, false, []);
     const clientInfo1 = await PingMaker.buildClientInfoSection(ping);
     assert.ok("telemetry_sdk_build" in clientInfo1);

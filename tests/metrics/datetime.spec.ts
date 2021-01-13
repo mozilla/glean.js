@@ -18,7 +18,7 @@ describe("DatetimeMetric", function() {
   });
 
   beforeEach(async function() {
-    await Glean.testRestGlean();
+    await Glean.testRestGlean("something something");
   });
 
   it("datetime internal representation validation works as expected", function () {

@@ -41,7 +41,7 @@ const WebExtPlatformInfo: PlatformInfo = {
   },
 
   async locale(): Promise<string> {
-    return Promise.resolve(navigator.language || "Unknown");
+    return Promise.resolve(navigator.language || "und");
   }
 };
 export default WebExtPlatformInfo;
