@@ -29,3 +29,6 @@ export const PING_INFO_STORAGE = "glean_ping_info";
 //
 // See: https://mozilla.github.io/glean/book/dev/core/internal/reserved-ping-names.html
 export const CLIENT_INFO_STORAGE = "glean_client_info";
+
+// We will set the client id to this client id in case upload is disabled.
+export const KNOWN_CLIENT_ID = "c0ffeec0-ffee-c0ff-eec0-ffeec0ffeec0";

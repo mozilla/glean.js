@@ -11,7 +11,7 @@ import Glean from "glean";
 
 describe("PingType", function() {
   beforeEach(async function() {
-    await Glean.testRestGlean();
+    await Glean.testRestGlean("something something");
   });
 
   it("collects and stores ping on submit", async function () {
@@ -36,7 +36,6 @@ describe("PingType", function() {
     const ping1 = new PingType("ping1", true, false, []);
     const ping2 = new PingType("ping2", true, true, []);
 
-
     // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
     // possibly once Bug 1677440 is resolved.
     assert.ok(await ping1.submit());
@@ -50,6 +49,17 @@ describe("PingType", function() {
 
   it("no pings are submitted if upload is disabled", async function() {
     Glean.uploadEnabled = false;
+
+    const ping = new PingType("custom", true, false, []);
+    assert.strictEqual(await ping.submit(), false);
+    // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
+    // possibly once Bug 1677440 is resolved.
+    const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    assert.strictEqual(Object.keys(storedPings).length, 0);
+  });
+
+  it("no pings are submitted if Glean has not been initialized", async function() {
+    await Glean.testUninitialize();
 
     const ping = new PingType("custom", true, false, []);
     assert.strictEqual(await ping.submit(), false);
