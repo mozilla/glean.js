@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { JSONObject } from "utils";
-
 /**
  * Uploader interface, actualy uploading logic varies per platform.
  */
@@ -18,7 +16,7 @@ export interface UploadAdapter {
    */
   post(url: URL, options: {
     headers?: Record<string, string>,
-    body: JSONObject
+    body: string
   }): Promise<number>;
 }
 

@@ -6,6 +6,7 @@ import { DEFAULT_TELEMETRY_ENDPOINT } from "./constants";
 import Configuration from "config";
 import MetricsDatabase from "metrics/database";
 import PingsDatabase from "pings/database";
+import PingUploader from "upload";
 import { isUndefined, sanitizeApplicationId } from "utils";
 import { CoreMetrics } from "internal_metrics";
 import { Lifetime } from "metrics";
@@ -25,6 +26,8 @@ class Glean {
   private _initialized: boolean;
   // Instances of Glean's core metrics.
   private _coreMetrics: CoreMetrics;
+  // The ping uploader.
+  private _pingUploader: PingUploader
 
   // Properties that will only be set on `initialize`.
   private _applicationId?: string;
@@ -37,14 +40,19 @@ class Glean {
         Use Glean.instance instead to access the Glean singleton.`);
     }
 
+    this._pingUploader = new PingUploader();
     this._coreMetrics = new CoreMetrics();
     this._initialized = false;
     this._db = {
       metrics: new MetricsDatabase(),
-      pings: new PingsDatabase()
+      pings: new PingsDatabase(this._pingUploader)
     };
     // Temporarily setting this to true always, until Bug 1677444 is resolved.
     this._uploadEnabled = true;
+  }
+
+  private static get pingUploader(): PingUploader {
+    return Glean.instance._pingUploader;
   }
 
   private static get coreMetrics(): CoreMetrics {
@@ -77,6 +85,10 @@ class Glean {
     await Glean.coreMetrics.initialize(config?.appBuild, config?.appDisplayVersion);
 
     Glean.instance._initialized = true;
+
+    await Glean.pingUploader.scanPendingPings();
+    // Even though this returns a promise, there is no need to block on it returning.
+    Glean.pingUploader.triggerUpload();
   }
 
   /**
@@ -158,11 +170,15 @@ class Glean {
     Glean.instance._initialized = false;
     // Reset upload enabled state, not to inerfere with other tests.
     Glean.uploadEnabled = true;
+
+    // Stop ongoing jobs and clear pending pings queue.
+    await Glean.pingUploader.clearPendingPingsQueue();
+
     // Clear the databases.
     await Glean.metricsDatabase.clearAll();
     await Glean.pingsDatabase.clearAll();
 
-    // Initialize Glean.
+    // Re-Initialize Glean.
     await Glean.initialize(applicationId, config);
   }
 }
