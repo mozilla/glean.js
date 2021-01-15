@@ -124,10 +124,11 @@ class PingUploader implements PingsDatabaseObserver {
     }
 
     const finalPing = this.preparePingForUpload(ping);
-    const status = await UploadAdapter.post(new URL(ping.path, Glean.serverEndpoint), {
-      headers: finalPing.headers,
-      body: finalPing.payload
-    });
+    const status = await UploadAdapter.post(
+      new URL(ping.path, Glean.serverEndpoint),
+      finalPing.payload,
+      finalPing.headers
+    );
 
     return status;
   }
@@ -170,19 +171,20 @@ class PingUploader implements PingsDatabaseObserver {
    * @returns Whether or not to retry the upload attempt.
    */
   private async processPingUploadResponse(identifier: string, status?: number): Promise<boolean> {
-    switch(true) {
-    case (status && status >= 200 && status < 300):
+    if (status && status >= 200 && status < 300) {
       console.info(`Ping ${identifier} succesfully sent ${status}.`);
       await Glean.pingsDatabase.deletePing(identifier);
       return false;
-    case (status && status >= 400 && status < 500):
+    }
+
+    if (status && status >= 400 && status < 500) {
       console.warn(`Unrecoverable upload failure while attempting to send ping ${identifier}. Error was ${status}.`);
       await Glean.pingsDatabase.deletePing(identifier);
       return false;
-    default:
-      console.warn(`Recoverable upload failure while attempting to send ping ${identifier}, will retry. Error was ${status}.`);
-      return true;
     }
+
+    console.warn(`Recoverable upload failure while attempting to send ping ${identifier}, will retry. Error was ${status}.`);
+    return true;
   }
 
   private async triggerUploadInternal(): Promise<void> {
@@ -222,10 +224,12 @@ class PingUploader implements PingsDatabaseObserver {
     }
 
     this.status = PingUploaderStatus.Uploading;
-    this.currentJob = this.triggerUploadInternal();
-    await this.currentJob;
-
-    this.status = PingUploaderStatus.Idle;
+    try {
+      this.currentJob = this.triggerUploadInternal();
+      await this.currentJob;
+    } finally {
+      this.status = PingUploaderStatus.Idle;
+    }
   }
 
   /**

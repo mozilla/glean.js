@@ -10,14 +10,12 @@ export interface UploadAdapter {
    * Makes a POST request to a given url, with the given headers and body.
    *
    * @param url The URL to make the POST request
-   * @param options The optional headers and body to include in the request.
+   * @param body The stringified body of this post request
+   * @param headers Optional header to include in the request
    *
    * @returns The status code of the response.
    */
-  post(url: URL, options: {
-    headers?: Record<string, string>,
-    body: string
-  }): Promise<number>;
+  post(url: URL, body: string, headers?: Record<string, string>): Promise<number>;
 }
 
 // Default export for tests sake.
