@@ -71,7 +71,7 @@ export function isValidPingInternalRepresentation(v: unknown): v is PingInternal
 }
 
 /**
- * An interfae to be implemented by classes that wish to observe the pings database.
+ * An interface to be implemented by classes that wish to observe the pings database.
  */
 export interface Observer {
   /**

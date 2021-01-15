@@ -39,7 +39,11 @@ describe("PingMaker", function() {
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
     // Initialize will also initialize core metrics that are part of the client info.
-    await Glean.initialize("something something", "build", "display version");
+    await Glean.initialize("something something", {
+      appBuild:"build",
+      appDisplayVersion: "display version",
+      serverEndpoint: new URL("localhost:8080")
+    });
 
     const clientInfo2 = await PingMaker.buildClientInfoSection(ping);
     assert.ok("telemetry_sdk_build" in clientInfo2);
