@@ -2,13 +2,46 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import "jsdom-global/register";
 import assert from "assert";
 import sinon from "sinon";
 
 import { UploadResultStatus } from "upload";
 import BrowserUploadAdapter from "upload/adapter/browser";
+import { JSONObject } from "utils";
 
 const sandbox = sinon.createSandbox();
+
+global.fetch = sinon.stub();
+
+class MockResponse {
+  status: number;
+
+  constructor(_blob: never, init: { status: number }) {
+    this.status = init.status;
+  }
+
+  json(): Promise<JSONObject> {
+    return Promise.resolve({ status: this.status });
+  }
+}
+// Disable typescript checking here, for it not to complain about the fact that our MockResponse is not complete.
+// For out intents and purposes it is complete enough.
+//
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+global.Response = MockResponse;
+
+class MockAbortController {
+  abort() {
+    throw new Error("Shouldn't get here.");
+  }
+}
+// Disable typescript checking here, for the same reasons as above.
+//
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+global.AbortController = MockAbortController;
 
 /**
  * Creates a Response object with the given status.
@@ -18,7 +51,7 @@ const sandbox = sinon.createSandbox();
  * @returns The created Response object.
  */
 function createResponse(status: number): Response {
-  return new Response(new Blob(), { status });
+  return new Response("", { status });
 }
 
 describe("UploadAdapter/browser", function () {

@@ -39,6 +39,7 @@ class BrowserUploadAdapter extends UploadAdapter {
         console.error("Unknown error while attempting to upload ping.", e);
       }
 
+      clearTimeout(timeout);
       return { result: UploadResultStatus.RecoverableFailure };
     }
 
