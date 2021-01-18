@@ -6,11 +6,11 @@ import { WebDriver } from "selenium-webdriver";
 import assert from "assert";
 
 import { setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
-import { StorageValue, Store } from "storage";
+import { Store } from "storage";
 
 import WeakStore from "storage/weak";
 import WebExtStore from "storage/persistent/webext";
-import { isUndefined } from "utils";
+import { isUndefined, JSONValue } from "utils";
 
 let firefox: WebDriver;
 
@@ -151,7 +151,7 @@ for (const store in stores) {
       });
   
       it("Attempting to update an existing entry doesn't error ", async function () {
-        const updater = (v?: StorageValue): string => `${v} new and improved!`;
+        const updater = (v?: JSONValue): string => `${v} new and improved!`;
         await store.update(index, updater);
         assert.strictEqual(updater(value), await store.get(index));
       });
