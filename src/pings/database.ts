@@ -5,7 +5,7 @@
 import { Metrics as MetricsPayload } from "metrics/database";
 import { Store } from "storage";
 import PersistentStore from "storage/persistent";
-import { JSONObject } from "utils";
+import { isObject, isJSONValue, JSONObject, isString } from "utils";
 
 export interface PingInfo extends JSONObject {
   seq: number,
@@ -43,14 +43,46 @@ export interface PingPayload extends JSONObject {
   events?: JSONObject,
 }
 
-/**
- * Debug headers to be added to a ping.
- */
-export interface PingHeaders extends JSONObject {
-  "X-Debug-Id"?: string,
-  "X-Source-Tags"?: string,
+export interface PingInternalRepresentation extends JSONObject {
+  path: string,
+  payload: PingPayload,
+  headers?: Record<string, string>
 }
 
+/**
+ * Checks whether or not `v` is in the correct ping internal representation
+ *
+ * @param v The value to verify.
+ *
+ * @returns A special Typescript value (which compiles down to a boolean)
+ *          stating whether `v` is in the correct ping internal representation.
+ */
+export function isValidPingInternalRepresentation(v: unknown): v is PingInternalRepresentation {
+  if (isObject(v) && (Object.keys(v).length === 2 || Object.keys(v).length === 3)) {
+    const hasValidPath = "path" in v && isString(v.path);
+    const hasValidPayload = "payload" in v && isJSONValue(v.payload) && isObject(v.payload);
+    const hasValidHeaders = (!("headers" in v)) || (isJSONValue(v.headers) && isObject(v.headers));
+    if (!hasValidPath || !hasValidPayload || !hasValidHeaders) {
+      return false;
+    }
+    return true;
+  }
+  return false;
+}
+
+/**
+ * An interface to be implemented by classes that wish to observe the pings database.
+ */
+export interface Observer {
+  /**
+   * Updates an observer about a new ping of a given id
+   * that has just been recorded to the pings database.
+   *
+   * @param identifier The id of the ping that was just recorded.
+   * @param ping An object containing the newly recorded ping path, payload and optionally headers.
+   */
+  update(identifier: string, ping: PingInternalRepresentation): void;
+}
 
 /**
  * The pings database is an abstraction layer on top of the underlying storage.
@@ -67,9 +99,11 @@ export interface PingHeaders extends JSONObject {
  */
 class PingsDatabase {
   private store: Store;
+  private observer?: Observer;
 
-  constructor() {
+  constructor(observer?: Observer) {
     this.store = new PersistentStore("pings");
+    this.observer = observer;
   }
 
   /**
@@ -84,15 +118,51 @@ class PingsDatabase {
     path: string,
     identifier: string,
     payload: PingPayload,
-    headers?: PingHeaders
+    headers?: Record<string, string>
   ): Promise<void> {
-    await this.store.update([identifier], () => {
-      const base = {
-        path,
-        payload
-      };
-      return headers ? { ...base, headers } : base;
-    });
+    const ping: PingInternalRepresentation = {
+      path,
+      payload
+    };
+
+    if (headers) {
+      ping.headers = headers;
+    }
+
+    await this.store.update([identifier], () => ping);
+
+    // Notify the observer that a new ping has been added to the pings database.
+    this.observer && this.observer.update(identifier, ping);
+  }
+
+  /**
+   * Deletes a specific ping from the database.
+   *
+   * @param identifier The identififer of the ping to delete.
+   */
+  async deletePing(identifier: string): Promise<void> {
+    await this.store.delete([identifier]);
+  }
+
+  /**
+   * Gets all pings from the pings database. Deletes any data in unexpected format that is found.
+   *
+   * @returns List of all currently stored pings.
+   */
+  async getAllPings(): Promise<{ [id: string]: PingInternalRepresentation }> {
+    const allStoredPings = await this.store._getWholeStore();
+    const finalPings: { [ident: string]: PingInternalRepresentation } = {};
+    for (const identifier in allStoredPings) {
+      const ping = allStoredPings[identifier];
+      if (isValidPingInternalRepresentation(ping)) {
+        finalPings[identifier] = ping;
+      } else {
+        console.warn("Unexpected data found in pings database. Deleting.");
+        await this.store.delete([identifier]);
+      }
+    }
+
+    return finalPings;
   }
 
   /**

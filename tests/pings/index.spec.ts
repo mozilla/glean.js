@@ -3,18 +3,28 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import sinon from "sinon";
 
 import PingType from "pings";
 import CounterMetricType from "metrics/types/counter";
 import { Lifetime } from "metrics";
 import Glean from "glean";
 
+const sandbox = sinon.createSandbox();
+
 describe("PingType", function() {
+  afterEach(function () {
+    sandbox.restore();
+  });
+
   beforeEach(async function() {
     await Glean.testRestGlean("something something");
   });
 
   it("collects and stores ping on submit", async function () {
+    // Disable ping uploading for it not to interfere with this tests.
+    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+
     const ping = new PingType("custom", true, false, []);
     const counter = new CounterMetricType({
       category: "aCategory",
@@ -33,6 +43,9 @@ describe("PingType", function() {
   });
 
   it("empty pings with send if emtpy flag are submitted", async function () {
+    // Disable ping uploading for it not to interfere with this tests.
+    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+
     const ping1 = new PingType("ping1", true, false, []);
     const ping2 = new PingType("ping2", true, true, []);
 
