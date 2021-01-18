@@ -2,10 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { UploadResult, UploadResultStatus } from "upload";
+
 /**
  * Uploader interface, actualy uploading logic varies per platform.
  */
-export interface UploadAdapter {
+export abstract class UploadAdapter {
+  // The timeout, in seconds, to use for all operations with the server.
+  protected defaultTimeout = 10_000;
+
   /**
    * Makes a POST request to a given url, with the given headers and body.
    *
@@ -15,14 +20,18 @@ export interface UploadAdapter {
    *
    * @returns The status code of the response.
    */
-  post(url: URL, body: string, headers?: Record<string, string>): Promise<number>;
+  abstract post(url: URL, body: string, headers?: Record<string, string>): Promise<UploadResult>;
 }
 
 // Default export for tests sake.
-const MockUploadAdapter: UploadAdapter = {
-  post(): Promise<number> {
-    return Promise.resolve(200);
+class MockUploadAdapter extends UploadAdapter {
+  post(): Promise<UploadResult> {
+    const result: UploadResult = {
+      result: UploadResultStatus.Success,
+      status: 200
+    };
+    return Promise.resolve(result);
   }
-};
+}
 
-export default MockUploadAdapter;
+export default new MockUploadAdapter();

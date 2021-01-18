@@ -24,6 +24,36 @@ const enum PingUploaderStatus {
 }
 
 /**
+ * The resulting status of an attempted ping upload.
+ */
+export const enum UploadResultStatus {
+  // A recoverable failure.
+  //
+  // During upload something went wrong,
+  // e.g. the network connection failed.
+  // The upload should be retried at a later time.
+  RecoverableFailure,
+  // An unrecoverable upload failure.
+  //
+  // A possible cause might be a malformed URL.
+  UnrecoverableFailure,
+  // Request was successfull.
+  //
+  // This can still indicate an error, depending on the status code.
+  Success,
+}
+
+/**
+ * The result of an attempted ping upload.
+ */
+export interface UploadResult {
+  // The status is only present if `result` is UploadResultStatus.Success
+  status?: number,
+  // The status of an upload attempt
+  result: UploadResultStatus
+}
+
+/**
  * A ping uploader. Manages a queue of pending pings to upload.
  *
  * Observes the pings database
@@ -117,20 +147,20 @@ class PingUploader implements PingsDatabaseObserver {
    *
    * @returns The status number of the response or `undefined` if unable to attempt upload.
    */
-  private async attemptPingUpload(ping: QueuedPing): Promise<number | undefined> {
+  private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
     if (!Glean.initialize) {
       console.warn("Attempted to upload a ping, but Glean is not initialized yet. Ignoring.");
-      return;
+      return { result: UploadResultStatus.RecoverableFailure };
     }
 
     const finalPing = this.preparePingForUpload(ping);
-    const status = await UploadAdapter.post(
+    const result = await UploadAdapter.post(
       new URL(ping.path, Glean.serverEndpoint),
       finalPing.payload,
       finalPing.headers
     );
 
-    return status;
+    return result;
   }
 
   /**
@@ -166,24 +196,27 @@ class PingUploader implements PingsDatabaseObserver {
    *   * 500 - internal error
    *
    * @param identifier The identifier of the ping uploaded.
-   * @param status The status of a ping upload attempt.
+   * @param response The response of a ping upload attempt.
    *
    * @returns Whether or not to retry the upload attempt.
    */
-  private async processPingUploadResponse(identifier: string, status?: number): Promise<boolean> {
+  private async processPingUploadResponse(identifier: string, response: UploadResult): Promise<boolean> {
+    const { status, result } = response;
     if (status && status >= 200 && status < 300) {
       console.info(`Ping ${identifier} succesfully sent ${status}.`);
       await Glean.pingsDatabase.deletePing(identifier);
       return false;
     }
 
-    if (status && status >= 400 && status < 500) {
-      console.warn(`Unrecoverable upload failure while attempting to send ping ${identifier}. Error was ${status}.`);
+    if (result === UploadResultStatus.UnrecoverableFailure || (status && status >= 400 && status < 500)) {
+      console.warn(
+        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was ${status}.`);
       await Glean.pingsDatabase.deletePing(identifier);
       return false;
     }
 
-    console.warn(`Recoverable upload failure while attempting to send ping ${identifier}, will retry. Error was ${status}.`);
+    console.warn(
+      `Recoverable upload failure while attempting to send ping ${identifier}, will retry. Error was ${status}.`);
     return true;
   }
 

@@ -7,7 +7,7 @@ import sinon from "sinon";
 import { v4 as UUIDv4 } from "uuid";
 
 import Glean from "glean";
-import PingUploader from "upload";
+import PingUploader, { UploadResultStatus } from "upload";
 import UploadAdapter from "upload/adapter";
 
 const sandbox = sinon.createSandbox();
@@ -121,8 +121,8 @@ describe("PingUploader", function() {
   });
 
   it("correctly deletes pings when upload is successfull", async function() {
-    // Always return succes response from upload attempt.
-    sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve(200));
+    // There is no need to stub the upload adapter here,
+    // as the default exported mock already returns a success response always.
     await fillUpPingsDatabase(10);
 
     await waitForGleanUploader();
@@ -132,9 +132,12 @@ describe("PingUploader", function() {
 
   it("correctly deletes pings when upload is unrecoverably unsuccesfull", async function() {
     // Always return unrecoverable failure response from upload attempt.
-    sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve(400));
+    sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve({
+      status: 400,
+      result: UploadResultStatus.Success
+    }));
     await fillUpPingsDatabase(10);
-    
+
     await waitForGleanUploader();
     assert.deepStrictEqual(await Glean.pingsDatabase.getAllPings(), {});
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 0);
@@ -142,7 +145,10 @@ describe("PingUploader", function() {
 
   it("correctly re-enqueues pings when upload is recovarbly unsuccesfull", async function() {
     // Always return recoverable failure response from upload attempt.
-    sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve(500));
+    sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve({
+      status: 500,
+      result: UploadResultStatus.Success
+    }));
     await fillUpPingsDatabase(1);
 
     await waitForGleanUploader();
@@ -176,7 +182,10 @@ describe("PingUploader", function() {
 
   it("maximum of recoverable errors is enforced", async function () {
     // Always return recoverable failure response from upload attempt.
-    const stub = sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve(500));
+    const stub = sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve({
+      status: 500,
+      result: UploadResultStatus.Success
+    }));
     await fillUpPingsDatabase(1);
 
     await waitForGleanUploader();
