@@ -12,7 +12,9 @@ import { JSONObject } from "utils";
 
 const sandbox = sinon.createSandbox();
 
-global.fetch = sinon.stub();
+global.fetch = function() {
+  throw new Error("The `fetch` function should be mocked for each test run individually.");
+};
 
 class MockResponse {
   status: number;
