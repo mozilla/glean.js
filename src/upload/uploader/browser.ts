@@ -3,9 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { UploadResult, UploadResultStatus } from "upload";
-import { UploadAdapter } from ".";
+import { Uploader } from ".";
 
-class BrowserUploadAdapter extends UploadAdapter {
+class BrowserUploader extends Uploader {
   async post(url: URL, body: string, headers: Record<string, string> = {}): Promise<UploadResult> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.defaultTimeout);
@@ -51,4 +51,4 @@ class BrowserUploadAdapter extends UploadAdapter {
   }
 }
 
-export default new BrowserUploadAdapter();
+export default new BrowserUploader();

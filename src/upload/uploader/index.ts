@@ -7,7 +7,7 @@ import { UploadResult, UploadResultStatus } from "upload";
 /**
  * Uploader interface, actualy uploading logic varies per platform.
  */
-export abstract class UploadAdapter {
+export abstract class Uploader {
   // The timeout, in seconds, to use for all operations with the server.
   protected defaultTimeout = 10_000;
 
@@ -24,7 +24,7 @@ export abstract class UploadAdapter {
 }
 
 // Default export for tests sake.
-class MockUploadAdapter extends UploadAdapter {
+class MockUploader extends Uploader {
   post(): Promise<UploadResult> {
     const result: UploadResult = {
       result: UploadResultStatus.Success,
@@ -34,4 +34,4 @@ class MockUploadAdapter extends UploadAdapter {
   }
 }
 
-export default new MockUploadAdapter();
+export default new MockUploader();

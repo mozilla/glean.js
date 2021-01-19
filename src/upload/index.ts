@@ -5,7 +5,7 @@
 import { GLEAN_VERSION } from "../constants";
 import Glean from "glean";
 import { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "pings/database";
-import UploadAdapter from "upload/adapter";
+import Uploader from "upload/uploader";
 
 interface QueuedPing extends PingInternalRepresentation {
   identifier: string
@@ -154,7 +154,7 @@ class PingUploader implements PingsDatabaseObserver {
     }
 
     const finalPing = this.preparePingForUpload(ping);
-    const result = await UploadAdapter.post(
+    const result = await Uploader.post(
       new URL(ping.path, Glean.serverEndpoint),
       finalPing.payload,
       finalPing.headers

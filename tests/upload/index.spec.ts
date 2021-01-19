@@ -8,7 +8,7 @@ import { v4 as UUIDv4 } from "uuid";
 
 import Glean from "glean";
 import PingUploader, { UploadResultStatus } from "upload";
-import UploadAdapter from "upload/adapter";
+import Uploader from "upload/uploader";
 
 const sandbox = sinon.createSandbox();
 
@@ -97,7 +97,7 @@ describe("PingUploader", function() {
   });
 
   it("if multiple pings are enqueued subsequently, we don't attempt to upload each ping more than once", async function () {
-    const spy = sandbox.spy(UploadAdapter, "post");
+    const spy = sandbox.spy(Uploader, "post");
     await fillUpPingsDatabase(100);
     await waitForGleanUploader();
     assert.strictEqual(spy.callCount, 100);
@@ -132,7 +132,7 @@ describe("PingUploader", function() {
 
   it("correctly deletes pings when upload is unrecoverably unsuccesfull", async function() {
     // Always return unrecoverable failure response from upload attempt.
-    sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve({
+    sandbox.stub(Uploader, "post").callsFake(() => Promise.resolve({
       status: 400,
       result: UploadResultStatus.Success
     }));
@@ -145,7 +145,7 @@ describe("PingUploader", function() {
 
   it("correctly re-enqueues pings when upload is recovarbly unsuccesfull", async function() {
     // Always return recoverable failure response from upload attempt.
-    sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve({
+    sandbox.stub(Uploader, "post").callsFake(() => Promise.resolve({
       status: 500,
       result: UploadResultStatus.Success
     }));
@@ -182,7 +182,7 @@ describe("PingUploader", function() {
 
   it("maximum of recoverable errors is enforced", async function () {
     // Always return recoverable failure response from upload attempt.
-    const stub = sandbox.stub(UploadAdapter, "post").callsFake(() => Promise.resolve({
+    const stub = sandbox.stub(Uploader, "post").callsFake(() => Promise.resolve({
       status: 500,
       result: UploadResultStatus.Success
     }));

@@ -7,7 +7,7 @@ import assert from "assert";
 import sinon from "sinon";
 
 import { UploadResultStatus } from "upload";
-import BrowserUploadAdapter from "upload/adapter/browser";
+import BrowserUploader from "upload/uploader/browser";
 import { JSONObject } from "utils";
 
 const sandbox = sinon.createSandbox();
@@ -54,7 +54,7 @@ function createResponse(status: number): Response {
   return new Response("", { status });
 }
 
-describe("UploadAdapter/browser", function () {
+describe("Uploader/browser", function () {
   afterEach(async function () {
     sandbox.restore();
   });
@@ -64,7 +64,7 @@ describe("UploadAdapter/browser", function () {
     for (const [index, status] of [200, 400, 500].entries()) {
       stub.onCall(index).returns(Promise.resolve(createResponse(status)));
       assert.deepStrictEqual(
-        await BrowserUploadAdapter.post(new URL("htpps://localhost:8080"), ""),
+        await BrowserUploader.post(new URL("htpps://localhost:8080"), ""),
         { status: status, result: UploadResultStatus.Success });
     }
   });
@@ -72,7 +72,7 @@ describe("UploadAdapter/browser", function () {
   it("doesn't throw if upload action throws", async function () {
     sandbox.stub(global, "fetch").callsFake(() => Promise.reject());
     assert.deepStrictEqual(
-      await BrowserUploadAdapter.post(new URL("htpps://localhost:8080"), ""),
+      await BrowserUploader.post(new URL("htpps://localhost:8080"), ""),
       { result: UploadResultStatus.RecoverableFailure }
     );
   });
