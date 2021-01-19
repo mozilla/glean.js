@@ -42,6 +42,8 @@
     "eslint-plugin-mocha": "^8.0.0",
     "eslint-plugin-notice": "^0.9.10",
     "geckodriver": "^1.21.0",
+    "jsdom": "16.4.0",
+    "jsdom-global": "3.0.2",
     "mocha": "^8.2.1",
     "selenium-webdriver": "^4.0.0-alpha.8",
     "sinon": "^9.2.2",
