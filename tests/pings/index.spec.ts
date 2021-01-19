@@ -61,7 +61,7 @@ describe("PingType", function() {
   });
 
   it("no pings are submitted if upload is disabled", async function() {
-    Glean.uploadEnabled = false;
+    await Glean.setUploadEnabled(false);
 
     const ping = new PingType("custom", true, false, []);
     assert.strictEqual(await ping.submit(), false);

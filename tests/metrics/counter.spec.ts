@@ -26,7 +26,7 @@ describe("CounterMetric", function() {
   });
   
   it("attemping to add when glean upload is disabled is a no-op", async function() {
-    Glean.uploadEnabled = false;
+    await Glean.setUploadEnabled(false);
 
     const metric = new CounterMetricType({
       category: "aCategory",
