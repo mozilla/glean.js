@@ -4,6 +4,7 @@
 
 import { v4 as UUIDv4, validate as UUIDvalidate } from "uuid";
 
+import { KNOWN_CLIENT_ID } from "../../constants";
 import { Metric, MetricType, CommonMetricData } from "metrics";
 import { isString } from "utils";
 import Glean from "glean";
@@ -17,7 +18,11 @@ export class UUIDMetric extends Metric<string, string> {
     if (!isString(v)) {
       return false;
     }
-  
+
+    if (v === KNOWN_CLIENT_ID) {
+      return true;
+    }
+
     return UUIDvalidate(v);
   }
 
