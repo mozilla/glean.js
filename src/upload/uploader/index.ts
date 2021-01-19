@@ -24,6 +24,15 @@ export abstract class Uploader {
 }
 
 // Default export for tests sake.
+//
+// This is necessary, because when building for release we will not use this index file.
+// Instead, each platform should have their own Uploader implementation and alias the "upload/adapter"
+// import to point to the their specific file.
+//
+// The aliasing is done in the webpack configuration, but tests don't use webpack and expect
+// this file to have a default export.
+//
+// TODO: remove this comment once Bug 1687516 is resolved.
 class MockUploader extends Uploader {
   post(): Promise<UploadResult> {
     const result: UploadResult = {
