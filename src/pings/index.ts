@@ -50,7 +50,7 @@ class PingType {
       return false;
     }
 
-    if (!Glean.uploadEnabled) {
+    if (!Glean.isUploadEnabled()) {
       console.info("Glean disabled: not submitting any pings.");
       return false;
     }

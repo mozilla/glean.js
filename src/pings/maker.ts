@@ -7,7 +7,7 @@ import CounterMetricType, { CounterMetric } from "metrics/types/counter";
 import DatetimeMetricType, { DatetimeMetric } from "metrics/types/datetime";
 import { Lifetime } from "metrics";
 import TimeUnit from "metrics/time_unit";
-import { ClientInfo, PingInfo, PingHeaders, PingPayload } from "pings/database";
+import { ClientInfo, PingInfo, PingPayload } from "pings/database";
 import PingType from "pings";
 import Glean from "glean";
 
@@ -151,7 +151,7 @@ export async function buildClientInfoSection(ping: PingType): Promise<ClientInfo
  * @returns An object with the headers to include
  *          or `undefined` if there are no headers to include.
  */
-export async function getPingHeaders(): Promise<PingHeaders | undefined> {
+export async function getPingHeaders(): Promise<Record<string, string> | undefined> {
   // TODO: Returning nothing for now until Bug 1685718 is resolved.
   return;
 }
