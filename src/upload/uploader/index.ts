@@ -34,7 +34,11 @@ export abstract class Uploader {
 //
 // TODO: remove this comment once Bug 1687516 is resolved.
 class MockUploader extends Uploader {
-  post(): Promise<UploadResult> {
+  // If we don't include these arguments here, the typescript checker will raise
+  // `TS2554: Expected 0 arguments, but got 3.`.
+  //
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  post(_url: URL, _body: string, _headers?: Record<string, string>): Promise<UploadResult> {
     const result: UploadResult = {
       result: UploadResultStatus.Success,
       status: 200
