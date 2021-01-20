@@ -9,9 +9,9 @@
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:webext": "webpack --config webpack.config.webext.js --mode production",
-    "dev:webext": "webpack --watch --config webpack.config.webext.js --mode development",
+    "dev:webext": "webpack --watch --config webpack.config.webext.js --mode development --devtool inline-source-map",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
-    "dev:qt": "webpack --watch --config webpack.config.qt.js --mode development",
+    "dev:qt": "webpack --watch --config webpack.config.qt.js --mode development  --devtool inline-source-map",
     "build:test-webext": "cd tests/utils/webext/sample/ && npm install && npm run build:xpi"
   },
   "repository": {
