@@ -18,7 +18,7 @@ module.exports = {
     ...baseConfig.resolve,
     alias: {
       "storage/persistent": path.resolve(__dirname, "src/storage/persistent/webext"),
-      "upload/adapter": path.resolve(__dirname, "src/upload/adapter/browser"),
+      "upload/uploader": path.resolve(__dirname, "src/upload/uploader/browser"),
       "platform_info": path.resolve(__dirname, "src/platform_info/webext"),
     }
   }

@@ -69,7 +69,7 @@ class WebExtStore implements Store {
 
   async get(index: StorageIndex): Promise<JSONValue | undefined> {
     const query = this._buildQuery(index);
-    const response = await this.store.get(query);
+    const response: unknown = await this.store.get(query);
     if (!response) {
       return;
     }
