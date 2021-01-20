@@ -63,7 +63,7 @@ describe("DatetimeMetric", function() {
   });
 
   it("attemping to set when glean upload is disabled is a no-op", async function() {
-    Glean.uploadEnabled = false;
+    await Glean.setUploadEnabled(false);
 
     const metric = new DatetimeMetricType({
       category: "aCategory",

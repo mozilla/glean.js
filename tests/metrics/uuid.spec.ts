@@ -27,7 +27,7 @@ describe("UUIDMetric", function() {
   });
 
   it("attemping to set when glean upload is disabled is a no-op", async function() {
-    Glean.uploadEnabled = false;
+    await Glean.setUploadEnabled(false);
 
     const metric = new UUIDMetricType({
       category: "aCategory",
@@ -42,7 +42,7 @@ describe("UUIDMetric", function() {
   });
 
   it("attemping to set an invalid uuid is a no-op", async function() {
-    Glean.uploadEnabled = false;
+    await Glean.setUploadEnabled(false);
 
     const metric = new UUIDMetricType({
       category: "aCategory",
