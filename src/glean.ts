@@ -134,6 +134,8 @@ class Glean {
     // Note that we can't provide the same guarantees as glean-core here.
     // If by any change another actor attempts to record a metric while
     // we are setting the known client id and first run date, they will be allowed to.
+    //
+    // TODO: Bug 1687491 might resolve this issue.
     Glean.uploadEnabled = true;
 
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
