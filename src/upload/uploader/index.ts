@@ -20,7 +20,7 @@ export abstract class Uploader {
    *
    * @returns The status code of the response.
    */
-  abstract post(url: URL, body: string, headers?: Record<string, string>): Promise<UploadResult>;
+  abstract post(url: string, body: string, headers?: Record<string, string>): Promise<UploadResult>;
 }
 
 // Default export for tests sake.
@@ -35,7 +35,7 @@ export abstract class Uploader {
 // TODO: remove this comment once Bug 1687516 is resolved.
 class MockUploader extends Uploader {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  post(_url: URL, _body: string, _headers?: Record<string, string>): Promise<UploadResult> {
+  post(_url: string, _body: string, _headers?: Record<string, string>): Promise<UploadResult> {
     const result: UploadResult = {
       result: UploadResultStatus.Success,
       status: 200

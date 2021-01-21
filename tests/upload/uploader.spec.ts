@@ -66,7 +66,7 @@ describe("Uploader/browser", function () {
     for (const [index, status] of [200, 400, 500].entries()) {
       stub.onCall(index).returns(Promise.resolve(createResponse(status)));
       assert.deepStrictEqual(
-        await BrowserUploader.post(new URL("htpps://localhost:8080"), ""),
+        await BrowserUploader.post("https://localhost:8080", ""),
         { status: status, result: UploadResultStatus.Success });
     }
   });
@@ -74,7 +74,7 @@ describe("Uploader/browser", function () {
   it("doesn't throw if upload action throws", async function () {
     sandbox.stub(global, "fetch").callsFake(() => Promise.reject());
     assert.deepStrictEqual(
-      await BrowserUploader.post(new URL("htpps://localhost:8080"), ""),
+      await BrowserUploader.post("https://localhost:8080", ""),
       { result: UploadResultStatus.RecoverableFailure }
     );
   });

@@ -11,7 +11,7 @@ interface Configuration {
   // The user visible version string fro the application running Glean.js.
   readonly appDisplayVersion?: string,
   // The server pings are sent to.
-  readonly serverEndpoint?: URL
+  readonly serverEndpoint?: string
 }
 
 export default Configuration;

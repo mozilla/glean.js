@@ -7,7 +7,7 @@ import Configuration from "config";
 import MetricsDatabase from "metrics/database";
 import PingsDatabase from "pings/database";
 import PingUploader from "upload";
-import { isUndefined, sanitizeApplicationId } from "utils";
+import { isUndefined, sanitizeApplicationId, validateURL } from "utils";
 import { CoreMetrics } from "internal_metrics";
 import { Lifetime } from "metrics";
 import { DatetimeMetric } from "metrics/types/datetime";
@@ -33,7 +33,7 @@ class Glean {
   // The application ID (will be sanitized during initialization).
   private _applicationId?: string;
   // The server pings are sent to.
-  private _serverEndpoint?: URL;
+  private _serverEndpoint?: string;
   // Whether or not to record metrics.
   private _uploadEnabled?: boolean;
 
@@ -181,8 +181,11 @@ class Glean {
     }
     Glean.instance._applicationId = sanitizeApplicationId(applicationId);
 
-    Glean.instance._serverEndpoint = config
-      ? config.serverEndpoint : new URL(DEFAULT_TELEMETRY_ENDPOINT);
+    if (config && config.serverEndpoint && !validateURL(config.serverEndpoint)) {
+      throw new Error(`Unable to initialize Glean, serverEndpoint ${config.serverEndpoint} is an invalid URL.`);
+    }
+    Glean.instance._serverEndpoint = (config && config.serverEndpoint)
+      ? config.serverEndpoint : DEFAULT_TELEMETRY_ENDPOINT;
 
     if (uploadEnabled) {
       await Glean.onUploadEnabled();
@@ -232,7 +235,7 @@ class Glean {
     return Glean.instance._applicationId;
   }
 
-  static get serverEndpoint(): URL | undefined {
+  static get serverEndpoint(): string | undefined {
     if (!Glean.instance._initialized) {
       console.warn("Attempted to access the Glean.serverEndpoint before Glean was initialized.");
     }

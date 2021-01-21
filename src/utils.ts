@@ -104,3 +104,15 @@ export function isNumber(v: unknown): v is number {
 export function sanitizeApplicationId(applicationId: string): string {
   return applicationId.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
 }
+
+/**
+ * Check that a given string is a valid URL.
+ *
+ * @param v The string to validate.
+ *
+ * @returns Whether or not the given string is a valid url.
+ */
+export function validateURL(v: string): boolean {
+  const urlPattern = /^(http|https):\/\/[a-zA-Z0-9._-]+(:\d+){0,1}(\/{0,1})$/i;
+  return urlPattern.test(v);
+}
