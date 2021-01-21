@@ -19,7 +19,7 @@ xvfb-run python main.py &> qml.log &
 sleep 10
 
 if grep -q "Some Javascript error occured" "qml.log"; then
-  echo "Javascript errors in found in QML! See more logs below."
+  echo "Failed to initialize Glean in QML! See more logs below."
   cat qml.log
   exit 1
 fi
