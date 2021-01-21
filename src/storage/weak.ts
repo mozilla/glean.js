@@ -14,9 +14,6 @@ import { JSONObject, JSONValue } from "utils";
 class WeakStore implements Store {
   private store: JSONObject;
 
-  // If we don't include these arguments here, the typescript checker will raise
-  // `TS2554: Expected 0 arguments, but got 1.`.
-  //
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(_store: string) {
     this.store = {};
