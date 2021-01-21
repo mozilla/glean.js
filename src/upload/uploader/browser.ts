@@ -46,7 +46,7 @@ class BrowserUploader extends Uploader {
     clearTimeout(timeout);
     return {
       result: UploadResultStatus.Success,
-      status: (await response.json()).status
+      status: response.status
     };
   }
 }

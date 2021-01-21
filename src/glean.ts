@@ -228,18 +228,10 @@ class Glean {
   }
 
   static get applicationId(): string | undefined {
-    if (!Glean.instance._initialized) {
-      console.warn("Attempted to access the Glean.applicationId before Glean was initialized.");
-    }
-
     return Glean.instance._applicationId;
   }
 
   static get serverEndpoint(): string | undefined {
-    if (!Glean.instance._initialized) {
-      console.warn("Attempted to access the Glean.serverEndpoint before Glean was initialized.");
-    }
-
     return Glean.instance._serverEndpoint;
   }
 
@@ -251,10 +243,6 @@ class Glean {
    * @returns Whether upload is enabled.
    */
   static isUploadEnabled(): boolean {
-    if (!Glean.instance._initialized) {
-      console.warn("Attempted to access the Glean.uploadEnabled before Glean was initialized.");
-    }
-
     return Glean.uploadEnabled;
   }
 
