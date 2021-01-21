@@ -5,7 +5,7 @@
 import Glean from "glean";
 import Configuration from "config";
 
-// Private stuff to export.
+// Private Glean types to export.
 import PingType from "pings";
 import BooleanMetricType from "metrics/types/boolean";
 import CounterMetricType from "metrics/types/counter";
