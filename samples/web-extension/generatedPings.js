@@ -4,13 +4,6 @@
 
 "use strict";
 
-const path = require("path");
+import Glean from "glean";
 
-module.exports = {
-  entry: "./index.js",
-  devtool: "inline-source-map",
-  output: {
-    filename: "bundle.js",
-    path: path.resolve(__dirname, "dist"),
-  }
-};
+export const samplePing = new Glean._private.PingType("sample", true, false);

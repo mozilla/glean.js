@@ -4,4 +4,11 @@
 
 "use strict";
 
-console.info("Nothing will happen. Glean.js is not yet implemented.");
+// Let the background script know the pop up has been opened.
+browser.runtime.sendMessage("popup-opened");
+
+const sendAPingButton = document.getElementById("send-ping");
+sendAPingButton.addEventListener("click", async () => {
+  // Tell the background script to upload a ping
+  browser.runtime.sendMessage("send-ping");
+}, { passive: true });

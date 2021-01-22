@@ -4,9 +4,38 @@
 
 import { Store, StorageIndex } from "storage";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "storage/utils";
-import { isJSONValue, isObject, JSONObject, JSONValue } from "utils";
+import { isJSONValue, isObject, JSONArray, JSONObject, JSONPrimitive, JSONValue } from "utils";
 
-type WebExtStoreQuery = { [x: string]: { [x: string]: null; } | null; };
+type WebExtStoreQuery = { [x: string]: WebExtStoreQuery | JSONPrimitive | JSONArray | null; };
+
+/**
+ * Strips all properties whose values are `null` from a WebExtStoreQuery.
+ *
+ * The `null` values are the ones which were not found,
+ * thus can be safely removed.
+ *
+ * # Important
+ *
+ * This modifies the original object.
+ *
+ * @param query The query we want to strip of null values.
+ */
+function stripNulls(query: WebExtStoreQuery) {
+  for (const key in query) {
+    const curr = query[key];
+    if (curr === null) {
+      delete query[key];
+    }
+
+    if (isObject(curr)) {
+      if (Object.keys(curr).length === 0) {
+        delete query[key];
+      } else {
+        stripNulls(curr);
+      }
+    }
+  }
+}
 
 /**
  * Persistent storage implementation based on the Promise-based
@@ -47,12 +76,12 @@ class WebExtStore implements Store {
    * @returns The query object.
    */
   private _buildQuery(index: StorageIndex): WebExtStoreQuery {
-    let partialQuery = null;
-    for (const key of index) {
-      partialQuery = { [key]: partialQuery };
+    let query = null;
+    for (const key of [ this.rootKey, ...index].reverse()) {
+      query = { [key]: query };
     }
 
-    return { [this.rootKey]: partialQuery };
+    return <WebExtStoreQuery>query;
   }
 
   /**
@@ -69,20 +98,21 @@ class WebExtStore implements Store {
 
   async get(index: StorageIndex): Promise<JSONValue | undefined> {
     const query = this._buildQuery(index);
-    const response: unknown = await this.store.get(query);
+    const response = await this.store.get(query);
+    stripNulls(response);
     if (!response) {
       return;
     }
 
     if (isJSONValue(response)) {
       if (isObject(response)) {
-        return getValueFromNestedObject(response, [ this.rootKey, ...index ]);
+        return getValueFromNestedObject(<JSONObject>response, [ this.rootKey, ...index ]);
       } else {
         return response;
       }
     }
 
-    throw new Error(
+    console.warn(
       `Unexpected value found in storage for index ${index}. Ignoring.
       ${JSON.stringify(response, null, 2)}`
     );
