@@ -18,7 +18,7 @@ describe("PingType", function() {
   });
 
   beforeEach(async function() {
-    await Glean.testRestGlean("something something");
+    await Glean.testResetGlean("something something");
   });
 
   it("collects and stores ping on submit", async function () {

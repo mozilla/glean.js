@@ -309,7 +309,7 @@ class Glean {
    *        first_run_date) are cleared. Default to `true`.
    * @param config Glean configuration options.
    */
-  static async testRestGlean(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
+  static async testResetGlean(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
     // Get back to an uninitialized state.
     Glean.instance._initialized = false;
 

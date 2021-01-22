@@ -65,7 +65,7 @@ describe("PingUploader", function() {
   });
 
   beforeEach(async function() {
-    await Glean.testRestGlean("something something");
+    await Glean.testResetGlean("something something");
   });
 
   it("scanning the pending pings directory fills up the queue", async function() {
