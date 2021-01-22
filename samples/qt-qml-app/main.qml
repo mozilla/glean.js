@@ -47,11 +47,11 @@ Rectangle {
   }
 
   Component.onCompleted: {
-      // Initialize Glean when the application starts.
-      try {
-        Glean.Glean.initialize("qt-qml-app", true);
-      } catch(err) {
-        console.error(`Some Javascript error occured.\n${err}`);
-      }
+    // Initialize Glean when the application starts.
+    Glean.Glean.initialize("qt-qml-app", true)
+      // Note: If you change this console messages you should change
+      // the console message verifications on `bin/qt-js-check.sh.
+      .then(() => console.log("Called Glean.initialize succesfully."))
+      .catch(err => console.error(`Some Javascript error occured.\n${err}`));
   }
 }

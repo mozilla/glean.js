@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { StorageIndex } from "storage";
-import { isObject, JSONObject, JSONValue } from "utils";
+import { isJSONValue, isObject, JSONObject, JSONValue } from "utils";
 
 /**
  * Gets an entry in a given object on a given index.
@@ -23,7 +23,10 @@ export function getValueFromNestedObject(obj: JSONObject, index: StorageIndex): 
   let target: JSONValue = obj;
   for (const key of index) {
     if (isObject(target) && key in target) {
-      target = target[key];
+      const temp: unknown = target[key];
+      if (isJSONValue(temp)) {
+        target = temp;
+      }
     } else {
       // Bailing out because the full target path doesn't exist.
       return;

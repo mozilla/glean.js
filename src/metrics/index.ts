@@ -147,6 +147,6 @@ export abstract class MetricType implements CommonMetricData {
    * @returns Whether or not this metric instance should be recorded.
    */
   shouldRecord(): boolean {
-    return (Glean.uploadEnabled && !this.disabled);
+    return (Glean.isUploadEnabled() && !this.disabled);
   }
 }

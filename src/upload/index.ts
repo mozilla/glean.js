@@ -155,7 +155,7 @@ class PingUploader implements PingsDatabaseObserver {
 
     const finalPing = this.preparePingForUpload(ping);
     const result = await Uploader.post(
-      new URL(ping.path, Glean.serverEndpoint),
+      `${Glean.serverEndpoint}${ping.path}`,
       finalPing.payload,
       finalPing.headers
     );

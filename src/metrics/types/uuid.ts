@@ -9,6 +9,32 @@ import { Metric, MetricType, CommonMetricData } from "metrics";
 import { isString } from "utils";
 import Glean from "glean";
 
+/**
+ * Generates a UUIDv4.
+ *
+ * Will provide a fallback in case `crypto` is not available,
+ * which makes the "uuid" package generator not work.
+ *
+ * # Important
+ *
+ * This workaround is here for usage in Qt/QML environments, where `crypto` is not available.
+ * Bug 1688015 was opened to figure out a less hacky way to do this.
+ *
+ * @returns A randomly generated UUIDv4.
+ */
+function generateUUIDv4(): string {
+  if (typeof crypto !== "undefined") {
+    return UUIDv4();
+  } else {
+    // Copied from https://stackoverflow.com/a/2117523/261698
+    // and https://stackoverflow.com/questions/105034/how-to-create-guid-uuid
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+      const r = Math.random() * 16 | 0, v = c == "x" ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
+}
+
 export class UUIDMetric extends Metric<string, string> {
   constructor(v: unknown) {
     super(v);
@@ -54,7 +80,7 @@ class UUIDMetricType extends MetricType {
     }
 
     if (!value) {
-      value = UUIDv4();
+      value = generateUUIDv4();
     }
 
     let metric: UUIDMetric;
@@ -79,7 +105,7 @@ class UUIDMetricType extends MetricType {
       return;
     }
 
-    const value = UUIDv4();
+    const value = generateUUIDv4();
     await this.set(value);
 
     return value;

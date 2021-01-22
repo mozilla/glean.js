@@ -14,7 +14,8 @@ import { JSONObject, JSONValue } from "utils";
 class WeakStore implements Store {
   private store: JSONObject;
 
-  constructor() {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  constructor(_store: string) {
     this.store = {};
   }
 

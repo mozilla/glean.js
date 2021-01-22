@@ -6,7 +6,7 @@ import { UploadResult, UploadResultStatus } from "upload";
 import { Uploader } from ".";
 
 class BrowserUploader extends Uploader {
-  async post(url: URL, body: string, headers: Record<string, string> = {}): Promise<UploadResult> {
+  async post(url: string, body: string, headers: Record<string, string> = {}): Promise<UploadResult> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.defaultTimeout);
 

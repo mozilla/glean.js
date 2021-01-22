@@ -144,6 +144,16 @@ describe("Glean", function() {
     }
   });
 
+  it("initialization throws if serverEndpoint is an invalida URL", async function() {
+    await Glean.testUninitialize();
+    try {
+      await Glean.initialize(GLOBAL_APPLICATION_ID, true, { serverEndpoint: "" });
+      assert.ok(false);
+    } catch {
+      assert.ok(true);
+    }
+  });
+
   it("disabling upload should disable metrics recording", async function() {
     const pings = ["aPing", "twoPing", "threePing"];
     const metric = new StringMetricType({
