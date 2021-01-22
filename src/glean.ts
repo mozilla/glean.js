@@ -11,6 +11,7 @@ import { isUndefined, sanitizeApplicationId, validateURL } from "utils";
 import { CoreMetrics } from "internal_metrics";
 import { Lifetime } from "metrics";
 import { DatetimeMetric } from "metrics/types/datetime";
+import Dispatcher from "dispatcher";
 
 class Glean {
   // The Glean singleton.
@@ -27,6 +28,11 @@ class Glean {
   private _coreMetrics: CoreMetrics;
   // The ping uploader.
   private _pingUploader: PingUploader
+  // A task dispatcher to help order asynchronous external API calls.
+  //
+  // The singleton will manage the dispatcher, but it is up to each developer
+  // to use this dispatcher to launch _any_ user facing API call.
+  private _dispatcher: Dispatcher;
 
   // Properties that will only be set on `initialize`.
 
@@ -44,6 +50,7 @@ class Glean {
         Use Glean.instance instead to access the Glean singleton.`);
     }
 
+    this._dispatcher = new Dispatcher();
     this._pingUploader = new PingUploader();
     this._coreMetrics = new CoreMetrics();
     this._initialized = false;
@@ -198,6 +205,9 @@ class Glean {
     await Glean.pingUploader.scanPendingPings();
     // Even though this returns a promise, there is no need to block on it returning.
     Glean.pingUploader.triggerUpload();
+
+    // Signal to the dispatcher that init is complete.
+    Glean.dispatcher.flushInit();
   }
 
   /**
@@ -227,12 +237,31 @@ class Glean {
     return Glean.instance._initialized;
   }
 
+  /**
+   * Gets this Glean's instance application id.
+   *
+   * @returns The application id or `undefined` in case Glean has not been initialized yet.
+   */
   static get applicationId(): string | undefined {
     return Glean.instance._applicationId;
   }
 
+  /**
+   * Gets this Glean's instance server endpoint.
+   *
+   * @returns The server endpoint or `undefined` in case Glean has not been initialized yet.
+   */
   static get serverEndpoint(): string | undefined {
     return Glean.instance._serverEndpoint;
+  }
+
+  /**
+   * Gets this Gleans's instance dispatcher instance.
+   *
+   * @returns The dispatcher instance.
+   */
+  static get dispatcher(): Dispatcher {
+    return Glean.instance._dispatcher;
   }
 
   /**
@@ -303,6 +332,9 @@ class Glean {
   static async testResetGlean(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
     // Get back to an uninitialized state.
     Glean.instance._initialized = false;
+
+    // Clear the dispatcher queue.
+    await Glean.dispatcher.clear();
 
     // Stop ongoing jobs and clear pending pings queue.
     await Glean.pingUploader.clearPendingPingsQueue();
