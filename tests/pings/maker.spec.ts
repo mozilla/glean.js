@@ -10,7 +10,7 @@ import Glean from "glean";
 
 describe("PingMaker", function() {
   beforeEach(async function() {
-    await Glean.testRestGlean("something something");
+    await Glean.testResetGlean("something something");
   });
 
   it("ping info must contain a non-empty start and end time", async function() {

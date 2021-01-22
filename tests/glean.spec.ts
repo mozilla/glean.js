@@ -15,7 +15,7 @@ const sandbox = sinon.createSandbox();
 
 describe("Glean", function() {
   beforeEach(async function() {
-    await Glean.testRestGlean(GLOBAL_APPLICATION_ID);
+    await Glean.testResetGlean(GLOBAL_APPLICATION_ID);
   });
 
   afterEach(function () {
