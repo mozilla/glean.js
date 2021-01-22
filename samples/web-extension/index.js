@@ -5,25 +5,11 @@
 "use strict";
 
 import Glean from "glean";
+import { samplePing } from "./generatedPings";
+import { webExtStarted, popupOpened } from "./generatedMetrics";
 
-// TODO: Once we have glean_parser generating pings and metrics,
-// remove this code.
-const samplePing = new Glean._private.PingType("sample", true, false);
-const webExtStarted = new Glean._private.DatetimeMetricType({
-  category: "sample",
-  name: "webext_installed",
-  sendInPings: ["sample"],
-  lifetime: "ping",
-  disabled: false
-}, "millisecond");
-const popupOpened = new Glean._private.CounterMetricType({
-  category: "sample",
-  name: "popup_opened",
-  sendInPings: ["sample"],
-  lifetime: "ping",
-  disabled: false
-}, "millisecond");
-
+// TODO: Do not wait for Glean to be initialized before recording metrics
+// once Bug 1687491 is resolved.
 Glean.initialize("web-extension", true)
   .then(() => {
     console.log("Glean has been succesfully initialized.");

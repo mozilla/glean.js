@@ -4,14 +4,11 @@
 
 "use strict";
 
-const env = (typeof browser !== "undefined")
-  ? browser : (typeof chrome !== "undefined" ? chrome : null);
-
 // Let the background script know the pop up has been opened.
-env.runtime.sendMessage("popup-opened");
+browser.runtime.sendMessage("popup-opened");
 
 const sendAPingButton = document.getElementById("send-ping");
 sendAPingButton.addEventListener("click", async () => {
   // Tell the background script to upload a ping
-  env.runtime.sendMessage("send-ping");
+  browser.runtime.sendMessage("send-ping");
 }, { passive: true });
