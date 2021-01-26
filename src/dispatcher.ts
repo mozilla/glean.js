@@ -112,8 +112,7 @@ class Dispatcher {
    *
    * # Note
    *
-   * Will not enqueue in case the dispatcher has not been initialized yet (i.e. `flushInit` has not been called yet)
-   * and the queues length will exceed `maxPreInitQueueSize`.
+   * Will not enqueue in case the dispatcher has not been initialized yet and the queues length exceeds `maxPreInitQueueSize`.
    *
    * @param task The task to enqueue.
    *
@@ -136,7 +135,7 @@ class Dispatcher {
   }
 
   /**
-   * Flushes the tasks enqueued while the dispatcher was uuninitialized.
+   * Flushes the tasks enqueued while the dispatcher was uninitialized.
    *
    * This is a no-op in case the dispatcher is not in an uninitialized state.
    */

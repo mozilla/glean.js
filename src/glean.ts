@@ -28,10 +28,7 @@ class Glean {
   private _coreMetrics: CoreMetrics;
   // The ping uploader.
   private _pingUploader: PingUploader
-  // A task dispatcher to help order asynchronous external API calls.
-  //
-  // The singleton will manage the dispatcher, but it is up to each developer
-  // to use this dispatcher to launch _any_ user facing API call.
+  // A task dispatcher to help execute in order asynchronous external API calls.
   private _dispatcher: Dispatcher;
 
   // Properties that will only be set on `initialize`.
@@ -256,7 +253,7 @@ class Glean {
   }
 
   /**
-   * Gets this Gleans's instance dispatcher instance.
+   * Gets this Gleans's instance dispatcher.
    *
    * @returns The dispatcher instance.
    */
