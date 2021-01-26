@@ -44,7 +44,7 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     browser.installAddon(
-      path.resolve(__dirname, "sample/out.xpi"),
+      path.resolve(__dirname, "sample/web-ext-artifacts/gleanjs-test-addon-0.0.1.zip"),
       true
     );
   } catch {

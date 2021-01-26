@@ -117,3 +117,4 @@ dist
 
 # Generated web-extension file for Firefox
 *.xpi
+web-ext-artifacts/
