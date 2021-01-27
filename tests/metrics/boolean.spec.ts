@@ -94,7 +94,7 @@ describe("BooleanMetric", function() {
     const spy = sandbox.spy(Glean.dispatcher, "launch");
     metric.set(true);
     assert.strictEqual(spy.callCount, 1);
-    await Glean.dispatcher.blockOnQueue();
+    await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(await metric.testGetValue("aPing"), true);
   });
 });
