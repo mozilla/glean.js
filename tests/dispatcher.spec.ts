@@ -12,7 +12,7 @@ const sandbox = sinon.createSandbox();
 /**
  * A sample task which returns a promise that takes between 0 and 10 ms to resolve.
  *
- * @returns The promise.
+ * @returns The promise resolved when the timeout expires.
  */
 const sampleTask = (): Promise<void> => {
   return new Promise(resolve => setTimeout(() => {
