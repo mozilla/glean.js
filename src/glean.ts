@@ -335,8 +335,8 @@ class Glean {
     // Get back to an uninitialized state.
     Glean.instance._initialized = false;
 
-    // Clear the dispatcher queue.
-    await Glean.dispatcher.clear();
+    // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
+    await Glean.dispatcher.testUninitialize();
 
     // Stop ongoing jobs and clear pending pings queue.
     await Glean.pingUploader.clearPendingPingsQueue();
