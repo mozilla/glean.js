@@ -21,11 +21,9 @@ export class BooleanMetric extends Metric<boolean, boolean> {
 }
 
 /**
- *
  *  A boolean metric.
  *
  * Records a simple flag.
- *
  */
 abstract class BooleanMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
@@ -33,21 +31,20 @@ abstract class BooleanMetricType extends MetricType {
   }
 
   /**
-   * Simulates setting this boolean metric
-   * and returns the resulting boolean metric that would be recorded.
+   * Sets the boolean metric type to a given value.
    *
    * @param value the value to set.
-   *
-   * @returns The BooleanMetric instance that would be set, or `undefined`
-   *          in case nothing would be set given the current state of the metric
-   *          i.e. it is disabled.
+   * @param recordFn a function that will record this metric.
    */
-  protected drySet(value: boolean): BooleanMetric | undefined {
+  protected setInternal(value: boolean, recordFn: (metric: BooleanMetric) => void): void {
     if (!this.shouldRecord()) {
       return;
     }
 
-    return new BooleanMetric(value);
+    const metric = new BooleanMetric(value);
+    if (metric) {
+      recordFn(metric);
+    }
   }
 
   /**
@@ -79,9 +76,13 @@ export class BooleanMetricTypeInternal extends BooleanMetricType {
   }
 
   async set(value: boolean): Promise<void> {
-    const metric = this.drySet(value);
-    if (metric) {
-      await Glean.metricsDatabase.record(this, metric);
+    let recordingAction = Promise.resolve();
+    this.setInternal(value, (metric) => {
+      recordingAction = Glean.metricsDatabase.record(this, metric);
+    });
+
+    if (recordingAction) {
+      await recordingAction;
     }
   }
 }
@@ -96,10 +97,9 @@ export class BooleanMetricTypeExternal extends BooleanMetricType {
     super(meta);
   }
 
-  async set(value: boolean): Promise<void> {
-    const metric = this.drySet(value);
-    if (metric) {
+  set(value: boolean): void {
+    this.setInternal(value, (metric) => {
       Glean.dispatcher.launch(() => Glean.metricsDatabase.record(this, metric));
-    }
+    });
   }
 }
