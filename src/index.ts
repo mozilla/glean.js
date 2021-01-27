@@ -7,7 +7,7 @@ import Configuration from "config";
 
 // Private Glean types to export.
 import PingType from "pings";
-import BooleanMetricType from "metrics/types/boolean";
+import { BooleanMetricTypeExternal as BooleanMetricType } from "metrics/types/boolean";
 import CounterMetricType from "metrics/types/counter";
 import DatetimeMetricType from "metrics/types/datetime";
 import StringMetricType from "metrics/types/string";

@@ -14,33 +14,40 @@ export class BooleanMetric extends Metric<boolean, boolean> {
   validate(v: unknown): v is boolean {
     return isBoolean(v);
   }
+
   payload(): boolean {
     return this._inner;
   }
 }
 
 /**
+ *
  *  A boolean metric.
  *
  * Records a simple flag.
+ *
  */
-class BooleanMetricType extends MetricType {
+abstract class BooleanMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("boolean", meta);
   }
 
   /**
-   * Sets to the specified boolean value.
+   * Simulates setting this boolean metric
+   * and returns the resulting boolean metric that would be recorded.
    *
    * @param value the value to set.
+   *
+   * @returns The BooleanMetric instance that would be set, or `undefined`
+   *          in case nothing would be set given the current state of the metric
+   *          i.e. it is disabled.
    */
-  async set(value: boolean): Promise<void> {
+  protected drySet(value: boolean): BooleanMetric | undefined {
     if (!this.shouldRecord()) {
       return;
     }
 
-    const metric = new BooleanMetric(value);
-    await Glean.metricsDatabase.record(this, metric);
+    return new BooleanMetric(value);
   }
 
   /**
@@ -61,4 +68,38 @@ class BooleanMetricType extends MetricType {
   }
 }
 
-export default BooleanMetricType;
+/**
+ * A boolean metric instance to be used only by Glean.
+ *
+ * This implementation will allow callers to wait on the metrics recording
+ */
+export class BooleanMetricTypeInternal extends BooleanMetricType {
+  constructor(meta: CommonMetricData) {
+    super(meta);
+  }
+
+  async set(value: boolean): Promise<void> {
+    const metric = this.drySet(value);
+    if (metric) {
+      await Glean.metricsDatabase.record(this, metric);
+    }
+  }
+}
+
+/**
+ * A boolean metric instance to be exported for outside users.
+ *
+ * This implementation will _dispatch_ any recording functions.
+ */
+export class BooleanMetricTypeExternal extends BooleanMetricType {
+  constructor(meta: CommonMetricData) {
+    super(meta);
+  }
+
+  async set(value: boolean): Promise<void> {
+    const metric = this.drySet(value);
+    if (metric) {
+      Glean.dispatcher.launch(() => Glean.metricsDatabase.record(this, metric));
+    }
+  }
+}
