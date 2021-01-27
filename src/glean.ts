@@ -11,6 +11,7 @@ import { isUndefined, sanitizeApplicationId, validateURL } from "utils";
 import { CoreMetrics } from "internal_metrics";
 import { Lifetime } from "metrics";
 import { DatetimeMetric } from "metrics/types/datetime";
+import Dispatcher from "dispatcher";
 
 class Glean {
   // The Glean singleton.
@@ -27,6 +28,8 @@ class Glean {
   private _coreMetrics: CoreMetrics;
   // The ping uploader.
   private _pingUploader: PingUploader
+  // A task dispatcher to help execute in order asynchronous external API calls.
+  private _dispatcher: Dispatcher;
 
   // Properties that will only be set on `initialize`.
 
@@ -44,6 +47,7 @@ class Glean {
         Use Glean.instance instead to access the Glean singleton.`);
     }
 
+    this._dispatcher = new Dispatcher();
     this._pingUploader = new PingUploader();
     this._coreMetrics = new CoreMetrics();
     this._initialized = false;
@@ -109,7 +113,12 @@ class Glean {
    * This function is only supposed to be called when telemetry is disabled.
    */
   private static async clearMetrics(): Promise<void> {
-    // Stop ongoing uploading jobs and clear pending pings queue.
+    // Stops any task execution on the dispatcher.
+    //
+    // While stopped, the dispatcher will enqueue but won't execute any tasks it receives.
+    await Glean.dispatcher.stop();
+
+    // Stop ongoing upload jobs and clear pending pings queue.
     await Glean.pingUploader.clearPendingPingsQueue();
 
     // There is only one metric that we want to survive after clearing all
@@ -131,11 +140,8 @@ class Glean {
     // We need to briefly set upload_enabled to true here so that `set`
     // is not a no-op.
     //
-    // Note that we can't provide the same guarantees as glean-core here.
-    // If by any change another actor attempts to record a metric while
-    // we are setting the known client id and first run date, they will be allowed to.
-    //
-    // TODO: Bug 1687491 might resolve this issue.
+    // This is safe.
+    // Since the dispatcher is stopped, no external API calls will be executed.
     Glean.uploadEnabled = true;
 
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
@@ -147,6 +153,9 @@ class Glean {
     await Glean.coreMetrics.firstRunDate.set(existingFirstRunDate.date);
 
     Glean.uploadEnabled = false;
+
+    // Clear the dispatcher queue.
+    await Glean.dispatcher.clear();
   }
 
   /**
@@ -198,6 +207,9 @@ class Glean {
     await Glean.pingUploader.scanPendingPings();
     // Even though this returns a promise, there is no need to block on it returning.
     Glean.pingUploader.triggerUpload();
+
+    // Signal to the dispatcher that init is complete.
+    Glean.dispatcher.flushInit();
   }
 
   /**
@@ -227,12 +239,31 @@ class Glean {
     return Glean.instance._initialized;
   }
 
+  /**
+   * Gets this Glean's instance application id.
+   *
+   * @returns The application id or `undefined` in case Glean has not been initialized yet.
+   */
   static get applicationId(): string | undefined {
     return Glean.instance._applicationId;
   }
 
+  /**
+   * Gets this Glean's instance server endpoint.
+   *
+   * @returns The server endpoint or `undefined` in case Glean has not been initialized yet.
+   */
   static get serverEndpoint(): string | undefined {
     return Glean.instance._serverEndpoint;
+  }
+
+  /**
+   * Gets this Gleans's instance dispatcher.
+   *
+   * @returns The dispatcher instance.
+   */
+  static get dispatcher(): Dispatcher {
+    return Glean.instance._dispatcher;
   }
 
   /**
@@ -303,6 +334,9 @@ class Glean {
   static async testResetGlean(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
     // Get back to an uninitialized state.
     Glean.instance._initialized = false;
+
+    // Clear the dispatcher queue.
+    await Glean.dispatcher.clear();
 
     // Stop ongoing jobs and clear pending pings queue.
     await Glean.pingUploader.clearPendingPingsQueue();
