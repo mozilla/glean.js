@@ -81,9 +81,7 @@ export class BooleanMetricTypeInternal extends BooleanMetricType {
       recordingAction = Glean.metricsDatabase.record(this, metric);
     });
 
-    if (recordingAction) {
-      await recordingAction;
-    }
+    await recordingAction;
   }
 }
 
