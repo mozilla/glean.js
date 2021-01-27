@@ -24,7 +24,7 @@ let dispatcher: Dispatcher;
 describe("Dispatcher", function() {
   afterEach(async function () {
     sandbox.restore();
-    dispatcher && await dispatcher.blockOnQueue();
+    dispatcher && await dispatcher.testBlockOnQueue();
   });
 
   it("launch correctly adds tasks to the queue", async function () {
@@ -44,12 +44,12 @@ describe("Dispatcher", function() {
 
     assert.strictEqual(dispatcher["queue"].length, 10);
     dispatcher.flushInit();
-    await dispatcher.blockOnQueue();
+    await dispatcher.testBlockOnQueue();
     assert.strictEqual(dispatcher["queue"].length, 0);
 
     const stub = sinon.stub().callsFake(sampleTask);
     dispatcher.launch(stub);
-    await dispatcher.blockOnQueue();
+    await dispatcher.testBlockOnQueue();
     assert.strictEqual(stub.callCount, 1);
     assert.strictEqual(dispatcher["queue"].length, 0);
   });
@@ -66,7 +66,7 @@ describe("Dispatcher", function() {
       dispatcher.launch(stub);
     }
 
-    await dispatcher.blockOnQueue();
+    await dispatcher.testBlockOnQueue();
     assert.strictEqual(stub.callCount, 10);
     assert.strictEqual(dispatcher["queue"].length, 0);
   });
@@ -77,6 +77,7 @@ describe("Dispatcher", function() {
 
     let counter = 0;
     const counts = new Array(10).fill(0);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stubs: sinon.SinonStub<any[], any>[] = [];
     for (let i = 0; i < 10; i++) {
       stubs.push(sandbox.stub().callsFake(async (): Promise<void> => {
@@ -89,7 +90,7 @@ describe("Dispatcher", function() {
       dispatcher.launch(stubs[i]);
     }
 
-    await dispatcher.blockOnQueue();
+    await dispatcher.testBlockOnQueue();
     for (let i = 0; i < 10; i++) {
       assert.strictEqual(counts[i], i);
     }
@@ -106,7 +107,7 @@ describe("Dispatcher", function() {
       dispatcher.launch(stubs[i]);
     }
 
-    await dispatcher.blockOnQueue();
+    await dispatcher.testBlockOnQueue();
     for (let i = 0; i < 10; i++) {
       assert.strictEqual(stubs[i].callCount, 1);
     }
@@ -120,7 +121,7 @@ describe("Dispatcher", function() {
     }
 
     dispatcher.flushInit();
-    assert.doesNotThrow(async () => await dispatcher.blockOnQueue());
+    assert.doesNotThrow(async () => await dispatcher.testBlockOnQueue());
   });
 
   it("queue is bounded before flushInit", async function () {
@@ -141,11 +142,11 @@ describe("Dispatcher", function() {
       dispatcher.launch(stub);
     }
 
-    await dispatcher.blockOnQueue();
+    await dispatcher.testBlockOnQueue();
     assert.strictEqual(stub.callCount, 10);
   });
 
-  it("clearing blocks and clears the queue", async function() {
+  it("clearing stops and clears the queue", async function() {
     dispatcher = new Dispatcher();
     dispatcher.flushInit();
 
@@ -157,5 +158,20 @@ describe("Dispatcher", function() {
     await dispatcher.clear();
     assert.ok(stub.callCount < 10);
     assert.strictEqual(dispatcher["queue"].length, 0);
+  });
+
+  it("stopping stops execution of tasks, even though tasks are still enqueued", async function() {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    const stub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 100; i++) {
+      dispatcher.launch(stub);
+    }
+
+    await dispatcher.stop();
+
+    assert.ok(stub.callCount < 10);
+    assert.strictEqual(dispatcher["queue"].length, 100 - stub.callCount);
   });
 });

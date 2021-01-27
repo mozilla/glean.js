@@ -113,7 +113,12 @@ class Glean {
    * This function is only supposed to be called when telemetry is disabled.
    */
   private static async clearMetrics(): Promise<void> {
-    // Stop ongoing uploading jobs and clear pending pings queue.
+    // Stops any task execution on the dispatcher.
+    //
+    // While stopped, the dispatcher will enqueue but won't execute any tasks it receives.
+    await Glean.dispatcher.stop();
+
+    // Stop ongoing upload jobs and clear pending pings queue.
     await Glean.pingUploader.clearPendingPingsQueue();
 
     // There is only one metric that we want to survive after clearing all
@@ -135,11 +140,8 @@ class Glean {
     // We need to briefly set upload_enabled to true here so that `set`
     // is not a no-op.
     //
-    // Note that we can't provide the same guarantees as glean-core here.
-    // If by any change another actor attempts to record a metric while
-    // we are setting the known client id and first run date, they will be allowed to.
-    //
-    // TODO: Bug 1687491 might resolve this issue.
+    // This is safe.
+    // Since the dispatcher is stopped, no external API calls will be executed.
     Glean.uploadEnabled = true;
 
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
@@ -151,6 +153,9 @@ class Glean {
     await Glean.coreMetrics.firstRunDate.set(existingFirstRunDate.date);
 
     Glean.uploadEnabled = false;
+
+    // Clear the dispatcher queue.
+    await Glean.dispatcher.clear();
   }
 
   /**

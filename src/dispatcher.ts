@@ -13,14 +13,18 @@ const enum DispatcherState {
   Idle,
   // The dispatcher is currently processing queued tasks.
   Processing,
-  // The dispatcher is blocked, tasks queued will not be immediatelly processed.
-  Blocked,
+  // The dispatcher is stopped, tasks queued will not be immediatelly processed.
+  Stopped,
 }
 
 // The possible commands to be processed by the dispatcher.
 const enum Commands {
+  // The dispatcher must enqueue a new task.
+  //
+  // This command is always followed by a concrete task for the dispatcher to execute.
   Task,
-  Block,
+  // The dispatcher should stop executing the queued tasks.
+  Stop,
 }
 
 // A task the dispatcher knows how to execute.
@@ -31,7 +35,7 @@ type Command = {
   task: Task,
   command: Commands.Task
 } | {
-  command: Commands.Block
+  command: Commands.Stop
 };
 
 /**
@@ -64,21 +68,14 @@ class Dispatcher {
   }
 
   /**
-   * Enqueues a Block command at the start of the queue.
-   */
-  private block(): void {
-    this.queue.unshift({ command: Commands.Block });
-  }
-
-  /**
    * Executes all the commands in the queue, from oldest to newest.
    *
-   * Stops on case a `Block` command is encountered.
+   * Stops on case a `Stop` command is encountered.
    */
   private async execute(): Promise<void> {
     let nextCommand = this.getNextCommand();
     while(nextCommand) {
-      if (nextCommand.command === Commands.Block) {
+      if (nextCommand.command === Commands.Stop) {
         break;
       }
 
@@ -115,14 +112,12 @@ class Dispatcher {
    * Will not enqueue in case the dispatcher has not been initialized yet and the queues length exceeds `maxPreInitQueueSize`.
    *
    * @param task The task to enqueue.
-   *
-   * @returns Whether or not the task was succesfully enqueued.
    */
-  launch(task: Task): boolean {
+  launch(task: Task): void {
     if (this.state === DispatcherState.Uninitialized) {
       if (this.queue.length >= this.maxPreInitQueueSize) {
         console.warn("Unable to enqueue task, pre init queue is full.");
-        return false;
+        return;
       }
     }
 
@@ -130,8 +125,11 @@ class Dispatcher {
       task,
       command: Commands.Task
     });
+
+    // Even though triggerExecution is async we don't want to block on it.
+    // The point of the dispatcher is to execute the async functions
+    // in a deterministic order without having to wait for them.
     this.triggerExecution();
-    return true;
   }
 
   /**
@@ -146,27 +144,47 @@ class Dispatcher {
     }
 
     this.state = DispatcherState.Idle;
+
+    // Even though triggerExecution is async we don't want to block on it.
+    // The point of the dispatcher is to execute the async functions
+    // in a deterministic order without having to wait for them.
     this.triggerExecution();
   }
 
   /**
-   * Blocks the current job and clears the tasks queue.
+   * Stops the current job and clears the tasks queue.
    *
-   * @returns A promise which resolves once the current job has been succesfully stopped and the queue was emptied.
+   * @returns A promise which resolves once the current job
+   *          has been succesfully stopped and the queue was emptied.
    */
   async clear(): Promise<void> {
-    this.block();
-    await this.blockOnQueue();
+    await this.stop();
     this.queue = [];
     this.state = DispatcherState.Idle;
   }
 
   /**
+   * Sets the state of this dispatcher to "Stopped" and stops any ongoing task processing.
+   *
+   * @returns A promise which resolves once the current job
+   *          has been succesfully stopped.
+   */
+  async stop(): Promise<void> {
+    if (this.state !== DispatcherState.Stopped) {
+      this.state = DispatcherState.Stopped;
+      this.queue.unshift({ command: Commands.Stop });
+      await this.testBlockOnQueue();
+    }
+  }
+
+  /**
+   * **Test-Only API**
+   *
    * Returns a promise that resolves once the current task execution in finished.
    *
    * @returns The promise.
    */
-  async blockOnQueue(): Promise<void> {
+  async testBlockOnQueue(): Promise<void> {
     return this.currentJob && await this.currentJob;
   }
 }
