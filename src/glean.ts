@@ -12,6 +12,7 @@ import { CoreMetrics } from "internal_metrics";
 import { Lifetime } from "metrics";
 import { DatetimeMetric } from "metrics/types/datetime";
 import Dispatcher from "dispatcher";
+import EventsDatabase from "metrics/events_database";
 
 class Glean {
   // The Glean singleton.
@@ -20,6 +21,7 @@ class Glean {
   // The metrics and pings databases.
   private _db: {
     metrics: MetricsDatabase,
+    events: EventsDatabase,
     pings: PingsDatabase
   }
   // Whether or not Glean has been initialized.
@@ -53,6 +55,7 @@ class Glean {
     this._initialized = false;
     this._db = {
       metrics: new MetricsDatabase(),
+      events: new EventsDatabase(),
       pings: new PingsDatabase(this._pingUploader)
     };
   }
@@ -220,6 +223,16 @@ class Glean {
   static get metricsDatabase(): MetricsDatabase {
     return Glean.instance._db.metrics;
   }
+
+  /**
+   * Gets this Glean's instance events database.
+   *
+   * @returns This Glean's instance events database.
+   */
+  static get eventsDatabase(): EventsDatabase {
+    return Glean.instance._db.events;
+  }
+
 
   /**
    * Gets this Glean's instance pings database.
