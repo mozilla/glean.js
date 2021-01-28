@@ -187,6 +187,18 @@ class Dispatcher {
   async testBlockOnQueue(): Promise<void> {
     return this.currentJob && await this.currentJob;
   }
+
+  /**
+   * **Test-Only API**
+   *
+   * Returns the dispatcher back to an uninitialized state.
+   *
+   * This will also stop ongoing tasks and clear the queue.
+   */
+  async testUninitialize(): Promise<void> {
+    await this.clear();
+    this.state = DispatcherState.Uninitialized;
+  }
 }
 
 export default Dispatcher;
