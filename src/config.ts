@@ -11,7 +11,11 @@ interface Configuration {
   // The user visible version string fro the application running Glean.js.
   readonly appDisplayVersion?: string,
   // The server pings are sent to.
-  readonly serverEndpoint?: string
+  readonly serverEndpoint?: string,
+  // Whether or not Glean should be started in testing mode.
+  //
+  // This unlocks features that allows dispatcher tasks to be waited on.
+  readonly testing?: boolean
 }
 
 export default Configuration;

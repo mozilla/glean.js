@@ -14,6 +14,7 @@ export class BooleanMetric extends Metric<boolean, boolean> {
   validate(v: unknown): v is boolean {
     return isBoolean(v);
   }
+
   payload(): boolean {
     return this._inner;
   }
@@ -34,13 +35,13 @@ class BooleanMetricType extends MetricType {
    *
    * @param value the value to set.
    */
-  async set(value: boolean): Promise<void> {
+  set(value: boolean): void {
     if (!this.shouldRecord()) {
       return;
     }
 
     const metric = new BooleanMetric(value);
-    await Glean.metricsDatabase.record(this, metric);
+    this.dispatchRecordingTask(() => Glean.metricsDatabase.record(this, metric));
   }
 
   /**
@@ -57,6 +58,7 @@ class BooleanMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<boolean | undefined> {
+    await this.testBlockOnRecordingTasks();
     return Glean.metricsDatabase.getMetric<boolean>(ping, this);
   }
 }

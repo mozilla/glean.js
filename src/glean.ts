@@ -39,6 +39,8 @@ class Glean {
   private _serverEndpoint?: string;
   // Whether or not to record metrics.
   private _uploadEnabled?: boolean;
+  // Whether or this Glean instance is in testing mode.
+  private _testing?: boolean;
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -185,6 +187,10 @@ class Glean {
       return;
     }
 
+    if (config?.testing) {
+      Glean.instance._testing = true;
+    }
+
     if (applicationId.length === 0) {
       throw new Error("Unable to initialize Glean, applicationId cannot be an empty string.");
     }
@@ -267,6 +273,15 @@ class Glean {
   }
 
   /**
+   * Whether or not Glean is currently in testing mode.
+   *
+   * @returns Whether or not Glean is currently in testing mode.
+   */
+  static get testing(): boolean {
+    return Glean.instance._testing || false;
+  }
+
+  /**
    * Determines whether upload is enabled.
    *
    * When upload is disabled, no data will be recorded.
@@ -346,7 +361,10 @@ class Glean {
     await Glean.pingsDatabase.clearAll();
 
     // Re-Initialize Glean.
-    await Glean.initialize(applicationId, uploadEnabled, config);
+    await Glean.initialize(applicationId, uploadEnabled, {
+      ...config,
+      testing: true,
+    });
   }
 }
 
