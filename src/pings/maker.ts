@@ -23,6 +23,7 @@ const GLEAN_START_TIME = new Date();
  */
 export async function getSequenceNumber(ping: PingType): Promise<number> {
   const seq = new CounterMetricType({
+    category: "",
     name: `${ping.name}#sequence`,
     sendInPings: [PING_INFO_STORAGE],
     lifetime: Lifetime.User,
@@ -57,6 +58,7 @@ export async function getSequenceNumber(ping: PingType): Promise<number> {
  */
 export async function getStartEndTimes(ping: PingType): Promise<{ startTime: string, endTime: string }> {
   const start = new DatetimeMetricType({
+    category: "",
     name: `${ping.name}#start`,
     sendInPings: [PING_INFO_STORAGE],
     lifetime: Lifetime.User,
