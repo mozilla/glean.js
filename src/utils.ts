@@ -30,6 +30,10 @@ export function isJSONValue(v: unknown): v is JSONValue {
     }
   }
 
+  if (Array.isArray(v)) {
+    return v.every((e) => isJSONValue(e));
+  }
+
   return false;
 }
 
