@@ -169,7 +169,8 @@ export async function getPingHeaders(): Promise<Record<string, string> | undefin
  */
 export async function collectPing(ping: PingType, reason?: string): Promise<PingPayload | undefined> {
   const metricsData = await Glean.metricsDatabase.getPingMetrics(ping.name, true);
-  if (!metricsData && !ping.sendIfEmtpy) {
+  const eventsData = await Glean.eventsDatabase.getPingMetrics(ping.name, true);
+  if (!metricsData && !eventsData && !ping.sendIfEmtpy) {
     console.info(`Storage for ${ping.name} empty. Bailing out.`);
     return;
   } else if (!metricsData) {
@@ -181,6 +182,7 @@ export async function collectPing(ping: PingType, reason?: string): Promise<Ping
   const clientInfo = await buildClientInfoSection(ping);
   return {
     ...metrics,
+    events: eventsData,
     ping_info: pingInfo,
     client_info: clientInfo,
   };
