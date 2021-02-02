@@ -47,7 +47,7 @@ describe("Glean", function() {
 
     metric.set("TEST VALUE");
     pings.forEach(async (ping) => {
-      assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(ping));
+      assert.strictEqual(await metric.testGetValue(ping), "TEST VALUE");
     });
 
     await Glean.setUploadEnabled(false);
@@ -67,7 +67,7 @@ describe("Glean", function() {
 
     metric.set("TEST VALUE");
     pings.forEach(async (ping) => {
-      assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(ping));
+      assert.strictEqual(await metric.testGetValue(ping), "TEST VALUE");
     });
   });
 
@@ -166,13 +166,13 @@ describe("Glean", function() {
 
     metric.set("TEST VALUE");
     pings.forEach(async (ping) => {
-      assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(ping));
+      assert.strictEqual(await metric.testGetValue(ping), "TEST VALUE");
     });
 
     await Glean.setUploadEnabled(false);
     metric.set("TEST VALUE");
     pings.forEach(async (ping) => {
-      assert.strictEqual(await Glean["coreMetrics"]["clientId"].testGetValue(ping), undefined);
+      assert.strictEqual(await metric.testGetValue(ping), undefined);
     });
   });
 
