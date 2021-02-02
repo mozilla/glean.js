@@ -33,12 +33,8 @@ export = {
    *
    * @returns A promise that is resolved once initialize is completed.
    */
-  async initialize(
-    applicationId: string,
-    uploadEnabled: boolean,
-    config?: Configuration
-  ): Promise<void> {
-    await Glean.initialize(applicationId, uploadEnabled, config);
+  async initialize(applicationId: string, uploadEnabled: boolean, config?: Configuration): Promise<void> {
+    Glean.dispatcher.launch(() => Glean.initialize(applicationId, uploadEnabled, config));
   },
 
   /**
@@ -55,10 +51,8 @@ export = {
    * If Glean has not been initialized yet, this is also a no-op.
    *
    * @param flag When true, enable metric collection.
-   *
-   * @returns A promise that is resolved once setUploadEnabled is completed.
    */
-  async setUploadEnabled(flag: boolean): Promise<void> {
+  setUploadEnabled(flag: boolean): void {
     if (!Glean.initialized) {
       console.error(
         `Changing upload enabled before Glean is initialized is not supported.
@@ -68,7 +62,7 @@ export = {
       return;
     }
 
-    await Glean.setUploadEnabled(flag);
+    Glean.dispatcher.launch(async () => { await Glean.setUploadEnabled(flag); });
   },
 
   _private: {
