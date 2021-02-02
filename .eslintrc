@@ -42,7 +42,11 @@
       },
       "extends": [
         "plugin:mocha/recommended"
-      ]
+      ],
+      "rules": {
+        "mocha/no-skipped-tests": "off",
+        "mocha/no-pending-tests": "off"
+      }
     },
     {
       "files": "*.json",
