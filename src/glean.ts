@@ -90,7 +90,7 @@ class Glean {
    */
   private static async onUploadEnabled(): Promise<void> {
     Glean.uploadEnabled = true;
-    await Glean.coreMetrics.initialize();
+    Glean.coreMetrics.initialize();
   }
 
   /**
@@ -125,13 +125,17 @@ class Glean {
     // metrics: first_run_date. Here, we store its value
     // so we can restore it after clearing the metrics.
     //
-    // TODO: This may throw an exception. Bug 1687475 will resolve this.
-    const existingFirstRunDate = new DatetimeMetric(
-      await Glean.metricsDatabase.getMetric(
-        CLIENT_INFO_STORAGE,
-        Glean.coreMetrics.firstRunDate
-      )
+    // If that value has never been set, we default to now.
+    const existingFirstRunDate = await Glean.metricsDatabase.getMetric(
+      CLIENT_INFO_STORAGE,
+      Glean.coreMetrics.firstRunDate
     );
+    let firstRunDate: Date;
+    try {
+      firstRunDate = new DatetimeMetric(existingFirstRunDate).date;
+    } catch {
+      firstRunDate = new Date();
+    }
 
     // Clear the databases.
     await Glean.metricsDatabase.clearAll();
@@ -144,13 +148,16 @@ class Glean {
     // Since the dispatcher is stopped, no external API calls will be executed.
     Glean.uploadEnabled = true;
 
-    // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
-    // make it easier to detect if pings were unintentionally sent after
-    // uploading is disabled.
-    await Glean.coreMetrics.clientId.set(KNOWN_CLIENT_ID);
+    // Note: executeSynchoronously executes even when the dispatcher is stopped.
+    await Glean.dispatcher.executeSynchronously(() => {
+      // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
+      // make it easier to detect if pings were unintentionally sent after
+      // uploading is disabled.
+      Glean.coreMetrics.clientId.set(KNOWN_CLIENT_ID);
 
-    // Restore the first_run_date.
-    await Glean.coreMetrics.firstRunDate.set(existingFirstRunDate.date);
+      // Restore the first_run_date.
+      Glean.coreMetrics.firstRunDate.set(firstRunDate);
+    });
 
     Glean.uploadEnabled = false;
 

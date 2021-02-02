@@ -89,15 +89,15 @@ export class CoreMetrics {
     });
   }
 
-  async initialize(appBuild?: string, appDisplayVersion?: string): Promise<void> {
-    await this.initializeClientId();
-    await this.initializeFirstRunDate();
-    await this.initializeOs();
-    await this.initializeOsVersion();
-    await this.initializeArchitecture();
-    await this.initializeLocale();
-    await this.appBuild.set(appBuild || "Unknown");
-    await this.appDisplayVersion.set(appDisplayVersion || "Unkown");
+  initialize(appBuild?: string, appDisplayVersion?: string): void {
+    this.initializeClientId();
+    this.initializeFirstRunDate();
+    this.initializeOs();
+    this.initializeOsVersion();
+    this.initializeArchitecture();
+    this.initializeLocale();
+    this.appBuild.set(appBuild || "Unknown");
+    this.appDisplayVersion.set(appDisplayVersion || "Unkown");
   }
 
   /**
@@ -122,7 +122,7 @@ export class CoreMetrics {
     }
 
     if (needNewClientId) {
-      await this.clientId.generateAndSet();
+      this.clientId.generateAndSet();
     }
   }
 
@@ -136,7 +136,7 @@ export class CoreMetrics {
     );
 
     if (!firstRunDate) {
-      await this.firstRunDate.set();
+      this.firstRunDate.set();
     }
   }
 
@@ -144,27 +144,27 @@ export class CoreMetrics {
    * Gets and sets the os.
    */
   async initializeOs(): Promise<void> {
-    await this.os.set(await PlatformInfo.os());
+    this.os.set(await PlatformInfo.os());
   }
 
   /**
    * Gets and sets the os.
    */
   async initializeOsVersion(): Promise<void> {
-    await this.osVersion.set(await PlatformInfo.osVersion());
+    this.osVersion.set(await PlatformInfo.osVersion());
   }
 
   /**
    * Gets and sets the system architecture.
    */
   async initializeArchitecture(): Promise<void> {
-    await this.architecture.set(await PlatformInfo.arch());
+    this.architecture.set(await PlatformInfo.arch());
   }
 
   /**
    * Gets and sets the system / browser locale.
    */
   async initializeLocale(): Promise<void> {
-    await this.locale.set(await PlatformInfo.locale());
+    this.locale.set(await PlatformInfo.locale());
   }
 }

@@ -16,6 +16,7 @@ describe("PingMaker", function() {
   it("ping info must contain a non-empty start and end time", async function() {
     const ping = new PingType("custom", true, false, []);
     const pingInfo = await PingMaker.buildPingInfoSection(ping);
+    await Glean.dispatcher.testBlockOnQueue();
 
     const startTime = new Date(pingInfo.start_time);
     const endTime = new Date(pingInfo.end_time);
@@ -26,6 +27,7 @@ describe("PingMaker", function() {
   it("buildPingInfo must report all the required fields", async function() {
     const ping = new PingType("custom", true, false, []);
     const pingInfo = await PingMaker.buildPingInfoSection(ping);
+    await Glean.dispatcher.testBlockOnQueue();
 
     assert.ok("seq" in pingInfo);
     assert.ok("start_time" in pingInfo);
@@ -44,6 +46,7 @@ describe("PingMaker", function() {
       appDisplayVersion: "display version",
       serverEndpoint: "http://localhost:8080"
     });
+    await Glean.dispatcher.testBlockOnQueue();
 
     const clientInfo2 = await PingMaker.buildClientInfoSection(ping);
     assert.ok("telemetry_sdk_build" in clientInfo2);
@@ -68,12 +71,16 @@ describe("PingMaker", function() {
 
     for(let i = 0; i <= 10; i++) {
       assert.strictEqual(await PingMaker.getSequenceNumber(ping1), i);
+      await Glean.dispatcher.testBlockOnQueue();
       assert.strictEqual(await PingMaker.getSequenceNumber(ping2), i);
+      await Glean.dispatcher.testBlockOnQueue();
     }
 
     await PingMaker.getSequenceNumber(ping1);
     assert.strictEqual(await PingMaker.getSequenceNumber(ping1), 12);
+    await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(await PingMaker.getSequenceNumber(ping2), 11);
+    await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(await PingMaker.getSequenceNumber(ping1), 13);
   });
 });
