@@ -119,6 +119,8 @@ describe("Glean", function() {
     await Glean.setUploadEnabled(false);
     await Glean.testUninitialize();
     await Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.dispatcher.testBlockOnQueue();
+
     const clientId = await Glean["coreMetrics"]["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(clientId);

@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Glean from "glean";
-import Configuration from "config";
+import { ConfigurationInterface } from "config";
 
 // Private Glean types to export.
 import PingType from "pings";
@@ -33,7 +33,7 @@ export = {
    *
    * @returns A promise that is resolved once initialize is completed.
    */
-  async initialize(applicationId: string, uploadEnabled: boolean, config?: Configuration): Promise<void> {
+  async initialize(applicationId: string, uploadEnabled: boolean, config?: ConfigurationInterface): Promise<void> {
     Glean.dispatcher.launch(() => Glean.initialize(applicationId, uploadEnabled, config));
   },
 
