@@ -3,14 +3,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import sinon from "sinon";
 
 import Glean from "glean";
 import BooleanMetricType from "metrics/types/boolean";
 import { Lifetime } from "metrics";
 
+const sandbox = sinon.createSandbox();
+
 describe("BooleanMetric", function() {
   beforeEach(async function() {
     await Glean.testResetGlean("something something");
+  });
+
+  afterEach(function () {
+    sandbox.restore();
   });
 
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
@@ -36,7 +43,7 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    await metric.set(true);
+    metric.set(true);
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
@@ -49,7 +56,7 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    await metric.set(true);
+    metric.set(true);
     assert.strictEqual(await metric.testGetValue("aPing"), true);
 
     const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
@@ -69,9 +76,27 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    await metric.set(true);
+    metric.set(true);
     assert.strictEqual(await metric.testGetValue("aPing"), true);
     assert.strictEqual(await metric.testGetValue("twoPing"), true);
     assert.strictEqual(await metric.testGetValue("threePing"), true);
+  });
+
+  it("works fine when Glean is not in testing mode", async function() {
+    Glean["instance"]["_testing"] = false;
+
+    const metric = new BooleanMetricType({
+      category: "aCategory",
+      name: "aBooleanMetric",
+      sendInPings: ["aPing", "twoPing", "threePing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    const spy = sandbox.spy(Glean.dispatcher, "launch");
+    metric.set(true);
+    assert.strictEqual(spy.callCount, 1);
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(await metric.testGetValue("aPing"), true);
   });
 });

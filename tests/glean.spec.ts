@@ -30,7 +30,7 @@ describe("Glean", function() {
       await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
 
     await Glean.testUninitialize();
-    await Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.initialize(GLOBAL_APPLICATION_ID, true, { testing: true });
     assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE));
     assert.ok(await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
   });

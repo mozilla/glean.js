@@ -174,7 +174,7 @@ class DatetimeMetricType extends MetricType {
    *
    * @param value The Date value to set. If not provided, will record the current time.
    */
-  async set(value?: Date): Promise<void> {
+  set(value?: Date): void {
     if (!this.shouldRecord()) {
       return;
     }
@@ -207,7 +207,7 @@ class DatetimeMetricType extends MetricType {
     }
 
     const metric = DatetimeMetric.fromDate(value, this.timeUnit);
-    await Glean.metricsDatabase.record(this, metric);
+    this.dispatchRecordingTask(() => Glean.metricsDatabase.record(this, metric));
   }
 
   /**
@@ -224,6 +224,7 @@ class DatetimeMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
+    await this.testBlockOnRecordingTasks();
     const value = await Glean.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
     if (value) {
       return new DatetimeMetric(value);

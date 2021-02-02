@@ -51,7 +51,7 @@ class StringMetricType extends MetricType {
    *
    * @param value the value to set.
    */
-  async set(value: string): Promise<void> {
+  set(value: string): void {
     if (!this.shouldRecord()) {
       return;
     }
@@ -62,7 +62,7 @@ class StringMetricType extends MetricType {
     }
 
     const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
-    await Glean.metricsDatabase.record(this, metric);
+    this.dispatchRecordingTask(() => Glean.metricsDatabase.record(this, metric));
   }
 
   /**
@@ -79,6 +79,7 @@ class StringMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<string | undefined> {
+    await this.testBlockOnRecordingTasks();
     return Glean.metricsDatabase.getMetric<string>(ping, this);
   }
 }

@@ -51,7 +51,7 @@ class CounterMetricType extends MetricType {
    * @param amount The amount to increase by. Should be positive.
    *               If not provided will default to `1`.
    */
-  async add(amount?: number): Promise<void> {
+  add(amount?: number): void {
     if (!this.shouldRecord()) {
       return;
     }
@@ -87,7 +87,7 @@ class CounterMetricType extends MetricType {
       };
     })(amount);
 
-    await Glean.metricsDatabase.transform(this, transformFn);
+    this.dispatchRecordingTask(() => Glean.metricsDatabase.transform(this, transformFn));
   }
 
   /**
@@ -104,6 +104,7 @@ class CounterMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<number | undefined> {
+    await this.testBlockOnRecordingTasks();
     return Glean.metricsDatabase.getMetric<number>(ping, this);
   }
 }

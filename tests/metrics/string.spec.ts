@@ -36,7 +36,7 @@ describe("StringMetric", function() {
       disabled: false
     });
  
-    await metric.set("test_string_value");
+    metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
@@ -49,7 +49,7 @@ describe("StringMetric", function() {
       disabled: false
     });
  
-    await metric.set("test_string_value");
+    metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
  
     const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
@@ -69,7 +69,7 @@ describe("StringMetric", function() {
       disabled: false
     });
 
-    await metric.set("test_string_value");
+    metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
     assert.strictEqual(await metric.testGetValue("twoPing"), "test_string_value");
     assert.strictEqual(await metric.testGetValue("threePing"), "test_string_value");
@@ -85,7 +85,7 @@ describe("StringMetric", function() {
     });
 
     const testString = "01234567890".repeat(20);
-    await metric.set(testString);
+    metric.set(testString);
 
     assert.strictEqual(
       await metric.testGetValue("aPing"),

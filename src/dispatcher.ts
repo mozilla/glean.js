@@ -28,7 +28,7 @@ const enum Commands {
 }
 
 // A task the dispatcher knows how to execute.
-type Task = () => Promise<void>;
+export type Task = () => Promise<void>;
 
 // An executable command.
 type Command = {
@@ -283,6 +283,23 @@ class Dispatcher {
   async testUninitialize(): Promise<void> {
     await this.clear();
     this.state = DispatcherState.Uninitialized;
+  }
+
+  /**
+   * Launches a task in test mode.
+   *
+   * @param task The task to launch.
+   *
+   * @returns A promise that resolves once the task is processed.
+   */
+  async testLaunch(task: Task): Promise<void> {
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    return new Promise(resolve => {
+      this.launch(async () => {
+        await task();
+        resolve();
+      });
+    });
   }
 }
 

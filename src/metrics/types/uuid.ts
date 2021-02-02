@@ -74,7 +74,7 @@ class UUIDMetricType extends MetricType {
    *
    * @throws In case `value` is not a valid UUID.
    */
-  async set(value: string): Promise<void> {
+  set(value: string): void {
     if (!this.shouldRecord()) {
       return;
     }
@@ -92,7 +92,7 @@ class UUIDMetricType extends MetricType {
       return;
     }
 
-    await Glean.metricsDatabase.record(this, metric);
+    this.dispatchRecordingTask(() => Glean.metricsDatabase.record(this, metric));
   }
 
   /**
@@ -100,13 +100,13 @@ class UUIDMetricType extends MetricType {
    *
    * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
    */
-  async generateAndSet(): Promise<string | undefined> {
+  generateAndSet(): string | undefined {
     if (!this.shouldRecord()) {
       return;
     }
 
     const value = generateUUIDv4();
-    await this.set(value);
+    this.set(value);
 
     return value;
   }
@@ -125,6 +125,7 @@ class UUIDMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<string | undefined> {
+    await this.testBlockOnRecordingTasks();
     return Glean.metricsDatabase.getMetric<string>(ping, this);
   }
 }

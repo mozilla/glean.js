@@ -4,6 +4,7 @@
 
 import { JSONValue } from "utils";
 import Glean from "glean";
+import { Task } from "dispatcher";
 
 /**
  * The Metric class describes the shared behaviour amongst concrete metrics.
@@ -115,6 +116,11 @@ export abstract class MetricType implements CommonMetricData {
   readonly lifetime: Lifetime;
   readonly disabled: boolean;
 
+  // Private list of ongoing dispatched recording tasks.
+  //
+  // This array will only be filled in testing mode.
+  #recording: Promise<void>[];
+
   constructor(type: string, meta: CommonMetricData) {
     this.type = type;
 
@@ -126,6 +132,8 @@ export abstract class MetricType implements CommonMetricData {
     if (meta.category) {
       this.category = meta.category;
     }
+
+    this.#recording = [];
   }
 
   /**
@@ -148,5 +156,39 @@ export abstract class MetricType implements CommonMetricData {
    */
   shouldRecord(): boolean {
     return (Glean.isUploadEnabled() && !this.disabled);
+  }
+
+  /**
+   * Dispatches a recording task to be performed asynchronously.
+   *
+   * If Glean is currently in testing mode the tasks are launched in canary mode
+   * and it's possible to use `testWaitOnRecordingTasks` to wait on them being completed.
+   *
+   * @param task The recording task.
+   */
+  dispatchRecordingTask(task: Task): void {
+    if (Glean.testing) {
+      const recordingTask = Glean.dispatcher.testLaunch(task);
+      this.#recording.push(recordingTask);
+      return;
+    }
+
+    Glean.dispatcher.launch(task);
+  }
+
+  /**
+   * **Test-only API**
+   *
+   * Allows the caller to block until all recording tasks related to this metric are completed.
+   *
+   * @returns A promise that returns once all ongoing recording tasks are completed.
+   */
+  protected async testBlockOnRecordingTasks(): Promise<void> {
+    if (!Glean.testing) {
+      console.error("Attempted to call a testing API, but Glean is not in testing mode.");
+      return;
+    }
+
+    await Promise.all(this.#recording);
   }
 }
