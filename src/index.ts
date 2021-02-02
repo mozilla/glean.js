@@ -10,6 +10,7 @@ import PingType from "pings";
 import BooleanMetricType from "metrics/types/boolean";
 import CounterMetricType from "metrics/types/counter";
 import DatetimeMetricType from "metrics/types/datetime";
+import EventMetricType from "metrics/types/event";
 import StringMetricType from "metrics/types/string";
 import UUIDMetricType from "metrics/types/uuid";
 
@@ -76,6 +77,7 @@ export = {
     BooleanMetricType,
     CounterMetricType,
     DatetimeMetricType,
+    EventMetricType,
     StringMetricType,
     UUIDMetricType
   }
