@@ -178,11 +178,12 @@ export async function collectPing(ping: PingType, reason?: string): Promise<Ping
   }
 
   const metrics = metricsData ? { metrics: metricsData } : {};
+  const events = eventsData ? { events: eventsData } : {};
   const pingInfo = await buildPingInfoSection(ping, reason);
   const clientInfo = await buildClientInfoSection(ping);
   return {
     ...metrics,
-    events: eventsData,
+    ...events,
     ping_info: pingInfo,
     client_info: clientInfo,
   };
