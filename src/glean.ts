@@ -137,6 +137,7 @@ class Glean {
     );
 
     // Clear the databases.
+    await Glean.eventsDatabase.clearAll();
     await Glean.metricsDatabase.clearAll();
     await Glean.pingsDatabase.clearAll();
 
@@ -355,6 +356,7 @@ class Glean {
     await Glean.pingUploader.clearPendingPingsQueue();
 
     // Clear the databases.
+    await Glean.eventsDatabase.clearAll();
     await Glean.metricsDatabase.clearAll();
     await Glean.pingsDatabase.clearAll();
 
