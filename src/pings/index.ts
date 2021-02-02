@@ -44,7 +44,7 @@ class PingType {
    *
    * @returns Whether or not the ping was successfully submitted.
    */
-  async submit(reason?: string): Promise<boolean> {
+  submit(reason?: string): boolean {
     if (!Glean.initialized) {
       console.info("Glean must be initialized before submitting pings.");
       return false;
@@ -62,7 +62,7 @@ class PingType {
     }
 
     const identifier = UUIDv4();
-    await collectAndStorePing(identifier, this, correctedReason);
+    Glean.dispatcher.launch(() => collectAndStorePing(identifier, this, correctedReason));
     return true;
   }
 }
