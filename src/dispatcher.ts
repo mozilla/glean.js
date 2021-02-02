@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // The possible states a dispatcher instance can be in.
-const enum DispatcherState {
+export const enum DispatcherState {
   // The dispatcher has not been initialized yet.
   //
   // When the dispatcher is in this state it will not enqueue
@@ -170,11 +170,17 @@ class Dispatcher {
    *          has been succesfully stopped.
    */
   async stop(): Promise<void> {
-    if (this.state !== DispatcherState.Stopped) {
-      this.state = DispatcherState.Stopped;
+    if (this.state === DispatcherState.Uninitialized) {
+      console.warn("Attempted to stop the dispatcher but it has not been initialized yet. Ignoring.");
+      return;
+    }
+
+    if (this.state === DispatcherState.Processing) {
       this.queue.unshift({ command: Commands.Stop });
       await this.testBlockOnQueue();
     }
+
+    this.state = DispatcherState.Stopped;
   }
 
   /**

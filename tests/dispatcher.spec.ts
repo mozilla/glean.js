@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import Dispatcher from "dispatcher";
+import Dispatcher, { DispatcherState } from "dispatcher";
 
 const sandbox = sinon.createSandbox();
 
@@ -173,5 +173,6 @@ describe("Dispatcher", function() {
 
     assert.ok(stub.callCount < 10);
     assert.strictEqual(dispatcher["queue"].length, 100 - stub.callCount);
+    assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
   });
 });
