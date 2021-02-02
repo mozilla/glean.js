@@ -175,4 +175,57 @@ describe("Dispatcher", function() {
     assert.strictEqual(dispatcher["queue"].length, 100 - stub.callCount);
     assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
   });
+
+  it("executing tasks in sync mode works as expected", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+    await dispatcher.testBlockOnQueue();
+
+    const stubAsync = sandbox.stub().callsFake(sampleTask);
+    // Async start a bunch of tasks, so that this tests resembles more closely the real world.
+    for (let i = 0; i < 100; i++) {
+      setTimeout(() => {
+        dispatcher.launch(stubAsync);
+      }, Math.random() * 100);
+    }
+
+    // While the above tasks are being enqueued, attempt to run a block of sync tasks.
+    const stubSync = sandbox.stub().callsFake(sampleTask);
+    await dispatcher.executeSynchronously(() => {
+      for (let i = 0; i < 100; i++) {
+        dispatcher.launch(stubSync);
+      }
+    });
+
+    // The async tasks  have not even finished being enqueued
+    assert.strictEqual(stubSync.callCount, 100);
+
+    // Wait for async tasks to be completed.
+    await dispatcher.testBlockOnQueue();
+    assert.strictEqual(stubAsync.callCount, 100);
+  });
+
+  it("calling executeSync inside a dispatched task works", async function() {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+    await dispatcher.testBlockOnQueue();
+
+    const stubSync = sandbox.stub().callsFake(sampleTask);
+    let executeSyncWorked = false;
+    const task = async () => {
+      await dispatcher.executeSynchronously(() => {
+        for (let i = 0; i < 100; i++) {
+          dispatcher.launch(stubSync);
+        }
+      });
+
+      if (stubSync.callCount === 100) {
+        executeSyncWorked = true;
+      }
+    };
+
+    dispatcher.launch(task);
+    await dispatcher.testBlockOnQueue();
+    assert.ok(executeSyncWorked);
+  });
 });

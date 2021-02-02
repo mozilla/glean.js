@@ -52,10 +52,32 @@ class Dispatcher {
   //
   // This is `undefined` in case there is no ongoing execution of tasks.
   private currentJob?: Promise<void>;
+  // Whether or not the dispatcher is currently operating in synchronous execution mode.
+  //
+  // When this is the case, tasks are enqueued in a separate sync queue.
+  private syncMode: boolean;
+  // An array of tasks to execute in sync mode.
+  private syncQueue: Task[];
 
   constructor(readonly maxPreInitQueueSize = 100) {
     this.queue = [];
     this.state = DispatcherState.Uninitialized;
+
+    this.syncMode = false;
+    this.syncQueue = [];
+  }
+
+  /**
+   * Executes a task in a safe way, if the task throws the error is caught and logged.
+   *
+   * @param task The task to execute.
+   */
+  private async executeTask(task: Task): Promise<void> {
+    try {
+      await task();
+    } catch(e) {
+      console.error("Error executing task:", e);
+    }
   }
 
   /**
@@ -79,18 +101,14 @@ class Dispatcher {
         break;
       }
 
-      try {
-        await nextCommand.task();
-      } catch(e) {
-        console.error("Error executing task:", e);
-      }
+      await this.executeTask(nextCommand.task);
 
       nextCommand = this.getNextCommand();
     }
   }
 
   /**
-   * Triggers the execution of enqueued command
+   * Triggers the execution of enqueued commands
    * in case the dispatcher is currently Idle.
    */
   private async triggerExecution(): Promise<void> {
@@ -104,16 +122,33 @@ class Dispatcher {
   }
 
   /**
+   * Executes all tasks in the sync queue.
+   */
+  private async executeSyncTasks(): Promise<void> {
+    for (const task of this.syncQueue) {
+      await this.executeTask(task);
+    }
+
+    this.syncQueue = [];
+  }
+
+  /**
    * Launches a task on this dispatchers queue.
    * Kickstarts the execution of the queue in case it is currently Idle.
    *
    * # Note
    *
-   * Will not enqueue in case the dispatcher has not been initialized yet and the queues length exceeds `maxPreInitQueueSize`.
+   * Will not enqueue in case the dispatcher has not been initialized yet
+   * and the queues length exceeds `maxPreInitQueueSize`.
    *
    * @param task The task to enqueue.
    */
   launch(task: Task): void {
+    if (this.syncMode) {
+      this.syncQueue.push(task);
+      return;
+    }
+
     if (this.state === DispatcherState.Uninitialized) {
       if (this.queue.length >= this.maxPreInitQueueSize) {
         console.warn("Unable to enqueue task, pre init queue is full.");
@@ -161,6 +196,50 @@ class Dispatcher {
     await this.stop();
     this.queue = [];
     this.state = DispatcherState.Idle;
+  }
+
+  /**
+   * Any sync call to  this instances`dispatcher.launch` inside this block
+   * will be executed immediatelly in a separate sync queue.
+   *
+   * The dispatcher state makes no difference on the execution of sync tasks,
+   * if it is stopped or uninitialized the tasks will still be executed.
+   *
+   * # Important
+   *
+   * It is essential that all dispatcher calls inside `fn` are done synchronously.
+   * Otherwise they won't be called in sync mode.
+   *
+   * This is ok:
+   *
+   * ```js
+   * dispatcher.executeSynchronously(() => {
+   *   dispatcher.launch(task);
+   * });
+   * ```
+   *
+   * This is not ok:
+   *
+   * ```js
+   * dispatcher.executeSynchronously(() => {
+   *   new Promise(resolve => {
+   *      dispatcher.launch(task);
+   *      resolve();
+   *   });
+   * });
+   * ```
+   *
+   * @param fn A function inside which any synchronous dispatcher call is executed immediatelly.
+   *
+   * @returns A promise which resolves once all tasks launched inside the block are resolved.
+   */
+  executeSynchronously(fn: () => void): Promise<void> {
+    // This works only if the dispatcher.lauch calls inside `fn` happen synchronously
+    // i.e. not inside promises or as callbacks for functions such as setTimeout and what not..
+    this.syncMode = true;
+    fn();
+    this.syncMode = false;
+    return this.executeSyncTasks();
   }
 
   /**
