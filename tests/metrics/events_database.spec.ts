@@ -67,7 +67,7 @@ describe("EventsDatabase", function() {
 
   it("getPingMetrics returns undefined if nothing is recorded", async function () {
     const db = new EventsDatabase();
-    const data = await db.getPingMetrics("test-unknown-ping", true);
+    const data = await db.getPingEvents("test-unknown-ping", true);
 
     assert.strictEqual(data, undefined);
   });
@@ -85,7 +85,7 @@ describe("EventsDatabase", function() {
 
     // We didn't record anything yet, so we don't expect anything to be
     // stored.
-    let snapshot = await db.getPingMetrics("store1", false);
+    let snapshot = await db.getPingEvents("store1", false);
     assert.strictEqual(snapshot, undefined);
 
     await db.record(metric, new RecordedEvent(
@@ -95,14 +95,14 @@ describe("EventsDatabase", function() {
     ));
 
     // Take a first snapshot and clear the recorded content.
-    snapshot = await db.getPingMetrics("store1", true);
+    snapshot = await db.getPingEvents("store1", true);
     assert.ok(snapshot != undefined);
 
     // If we snapshot a second time, the store must be empty.
-    const empty_snapshot = await db.getPingMetrics("store1", false);
+    const empty_snapshot = await db.getPingEvents("store1", false);
     assert.strictEqual(empty_snapshot, undefined);
     
-    const store2 = await db.getPingMetrics("store2", false);
+    const store2 = await db.getPingEvents("store2", false);
     for (const events of [snapshot, store2]) {
       assert.ok(events != undefined);
       assert.strictEqual(1, events.length);
@@ -142,7 +142,7 @@ describe("EventsDatabase", function() {
       10000,
     ));
 
-    const snapshot = await db.getPingMetrics("store1", true);
+    const snapshot = await db.getPingEvents("store1", true);
     assert.ok(snapshot);
     assert.strictEqual(3, snapshot.length);
     assert.strictEqual(0, (snapshot[0] as JSONObject)["timestamp"]);

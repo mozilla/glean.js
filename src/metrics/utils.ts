@@ -8,7 +8,6 @@ import { JSONValue } from "utils";
 import { BooleanMetric } from "metrics/types/boolean";
 import { CounterMetric } from "metrics/types/counter";
 import { DatetimeMetric } from "./types/datetime";
-import { EventMetric } from "./types/event";
 import { StringMetric } from "metrics/types/string";
 import { UUIDMetric } from "metrics/types/uuid";
 
@@ -21,7 +20,6 @@ const METRIC_MAP: {
   "boolean": BooleanMetric,
   "counter": CounterMetric,
   "datetime": DatetimeMetric,
-  "event": EventMetric,
   "string": StringMetric,
   "uuid": UUIDMetric,
 });

@@ -5,14 +5,12 @@
 import { MetricType, CommonMetricData } from "metrics";
 import Glean from "glean";
 import { ExtraMap, RecordedEvent } from "metrics/events_database";
+import { isUndefined } from "utils";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
 /**
- * A datetime metric.
- *
- * Used to record an absolute date and time,
- * such as the time the user first ran the application.
+ * An event metric.
  */
 class EventMetricType extends MetricType {
   private allowedExtraKeys?: string[];
@@ -30,7 +28,11 @@ class EventMetricType extends MetricType {
    * @returns the number of milliseconds since the time origin.
    */
   protected getMonotonicNow(): number {
-    return Math.round(performance.now() / 1000);
+    // Sadly, `performance.now` is not available outside of browsers, which
+    // means we should get creative to find a proper clock. Fall back to `Date.now`
+    // for now, until bug 1690528 is fixed.
+    const now = isUndefined(performance) ? Date.now() : performance.now();
+    return Math.round(now / 1000);
   }
 
   /**
@@ -38,9 +40,9 @@ class EventMetricType extends MetricType {
    * provided by the instance of this class.
    *
    * @param extra optional. This is a map, both keys and values need to be
-   *              strings, keys are identifiers. This is used for events where
-   *              additional richer context is needed.
-   *              The maximum length for values is 100 bytes.
+   *        strings, keys are identifiers. This is used for events where
+   *        additional richer context is needed.
+   *        The maximum length for values is 100 bytes.
    */
   async record(extra?: ExtraMap): Promise<void> {
     if (!this.shouldRecord()) {
@@ -88,7 +90,7 @@ class EventMetricType extends MetricType {
    */
   async testGetValue(ping?: string): Promise<RecordedEvent[] | undefined> {
     const pingToQuery = ping ?? this.sendInPings[0];
-    const events = await Glean.eventsDatabase.testGetValue(pingToQuery, this);
+    const events = await Glean.eventsDatabase.getEvents(pingToQuery, this);
     if (!events) {
       return undefined;
     }

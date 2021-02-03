@@ -131,7 +131,7 @@ export abstract class MetricType implements CommonMetricData {
    * @returns The generated identifier.
    */
   get identifier(): string {
-    if (this.category && this.category.length > 0) {
+    if (this.category.length > 0) {
       return `${this.category}.${this.name}`;
     } else {
       return this.name;

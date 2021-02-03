@@ -3,9 +3,9 @@
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { Store } from "storage";
-import WeakStore from "storage/weak";
-import { MetricType } from "metrics";
+import PersistentStore from "storage/persistent";
 import { isUndefined, JSONArray, JSONObject, JSONValue } from "utils";
+import EventMetricType from "./types/event";
 
 export interface Metrics {
   [aMetricType: string]: {
@@ -14,21 +14,28 @@ export interface Metrics {
 }
 
 // An helper type for the 'extra' map.
-export type ExtraMap = { [name: string]: string };
+export type ExtraMap = Record<string, string>;
 
 // Represents the recorded data for a single event.
 export class RecordedEvent {
   constructor(
-    category: string,
-    name: string,
-    timestamp: number,
-    extra?: ExtraMap,
-  ) {
-    this.category = category;
-    this.name = name;
-    this.timestamp = timestamp;
-    this.extra = extra;
-  }
+    // The event's category.
+    //
+    // This is defined by users in the metrics file.
+    readonly category: string,
+    // The event's name.
+    //
+    // This is defined by users in the metrics file.
+    readonly name: string,
+    // The timestamp of when the event was recorded.
+    //
+    // This allows to order events.
+    readonly timestamp: number,
+    // A map of all extra data values.
+    //
+    // The set of allowed extra keys is defined by users in the metrics file.
+    readonly extra?: ExtraMap,
+  ) {}
 
   static toJSONObject(e: RecordedEvent): JSONObject {
     return {
@@ -47,23 +54,6 @@ export class RecordedEvent {
       e["extra"] as ExtraMap | undefined
     );
   }
-
-  // The event's category.
-  //
-  // This is defined by users in the metrics file.
-  readonly category: string;
-  // The event's name.
-  //
-  // This is defined by users in the metrics file.
-  readonly name: string;
-  // The timestamp of when the event was recorded.
-  //
-  // This allows to order events.
-  readonly timestamp: number;
-  // A map of all extra data values.
-  //
-  // The set of allowed extra keys is defined by users in the metrics file.
-  readonly extra?: ExtraMap;
 }
 
 /**
@@ -91,7 +81,7 @@ class EventsDatabase {
   private eventsStore: Store;
 
   constructor() {
-    this.eventsStore = new WeakStore("unused");
+    this.eventsStore = new PersistentStore("events");
   }
 
   /**
@@ -100,7 +90,7 @@ class EventsDatabase {
    * @param metric The metric to record to.
    * @param value The value we want to record to the given metric.
    */
-  async record(metric: MetricType, value: RecordedEvent): Promise<void> {
+  async record(metric: EventMetricType, value: RecordedEvent): Promise<void> {
     if (metric.disabled) {
       return;
     }
@@ -127,26 +117,19 @@ class EventsDatabase {
    * @returns an array of `RecordedEvent` containing the found events or `undefined`
    *          if no recorded event was found.
    */
-  async testGetValue(
+  async getEvents(
     ping: string,
-    metric: MetricType
+    metric: EventMetricType
   ): Promise<RecordedEvent[] | undefined> {
-    const value = await this.eventsStore.get([ping]);
-    if (!value) {
-      return undefined;
+    const events = await this.getAndValidatePingData(ping);
+    if (events.length === 0) {
+      return;
     }
 
-    const rawEvents = value as JSONArray;
-    return rawEvents
+    return events
       // Only report events for the requested metric.
       .filter((e) => {
-        const rawEventObj = e as JSONObject;
-        return (rawEventObj["category"] === metric.category)
-          && (rawEventObj["name"] === metric.name);
-      })
-      // Convert them to `RecordedEvent`s.
-      .map((e) => {
-        return RecordedEvent.fromJSONObject(e as JSONObject);
+        return (e.category === metric.category) && (e.name === metric.name);
       });
   }
 
@@ -164,7 +147,7 @@ class EventsDatabase {
    * @returns The ping payload found for the given parameters or an empty object
    *          in case no data was found or the data that was found, was invalid.
    */
-  private async getAndValidatePingData(ping: string): Promise<JSONArray> {
+  private async getAndValidatePingData(ping: string): Promise<RecordedEvent[]> {
     const data = await this.eventsStore.get([ping]);
     if (isUndefined(data)) {
       return [];
@@ -177,7 +160,7 @@ class EventsDatabase {
       return [];
     }
 
-    return data;
+    return data.map((e) => RecordedEvent.fromJSONObject(e as JSONObject));
   }
 
   /**
@@ -189,7 +172,7 @@ class EventsDatabase {
    * @returns An object containing all the metrics recorded to the given ping,
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
-  async getPingMetrics(ping: string, clearPingLifetimeData: boolean): Promise<JSONArray | undefined> {
+  async getPingEvents(ping: string, clearPingLifetimeData: boolean): Promise<JSONArray | undefined> {
     const pingData = await this.getAndValidatePingData(ping);
 
     if (clearPingLifetimeData) {
@@ -202,20 +185,16 @@ class EventsDatabase {
 
     // Sort the events by their timestamp.
     const sortedData = pingData.sort((a, b) => {
-      const objA = a as unknown as RecordedEvent;
-      const objB = b as unknown as RecordedEvent;
-      return objA["timestamp"] - objB["timestamp"];
+      return a.timestamp - b.timestamp;
     });
 
     // Make all the events relative to the first one.
-    const firstTimestamp =
-      (sortedData[0] as unknown as RecordedEvent)["timestamp"];
+    const firstTimestamp = sortedData[0].timestamp;
 
     return sortedData.map((e) => {
-      const objE = e as JSONObject;
-      const timestamp = (objE["timestamp"] as number) ?? 0;
-      objE["timestamp"] = timestamp - firstTimestamp;
-      return objE; 
+      const adjusted = RecordedEvent.toJSONObject(e);
+      adjusted["timestamp"] = e.timestamp - firstTimestamp;
+      return adjusted;
     });
   }
 

@@ -57,6 +57,7 @@ describe("MetricsDatabase", function() {
       const db = new Database();
       const metric = new StringMetricType({
         name: "aMetric",
+        category: "",
         sendInPings: ["aPing", "otherPing", "oneMorePing"],
         lifetime: Lifetime.Application,
         disabled: false
@@ -75,6 +76,7 @@ describe("MetricsDatabase", function() {
       const db = new Database();
       const metric = new StringMetricType({
         name: "aMetric",
+        category: "",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
@@ -90,6 +92,7 @@ describe("MetricsDatabase", function() {
       const db = new Database();
       const metric = new StringMetricType({
         name: "aMetric",
+        category: "",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: true
@@ -154,6 +157,7 @@ describe("MetricsDatabase", function() {
       const db = new Database();
       const metric = new StringMetricType({
         name: "aMetric",
+        category: "",
         sendInPings: ["aPing", "otherPing", "oneMorePing"],
         lifetime: Lifetime.Application,
         disabled: false
@@ -174,6 +178,7 @@ describe("MetricsDatabase", function() {
       const db = new Database();
       const metric = new StringMetricType({
         name: "aMetric",
+        category: "",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: true
@@ -192,6 +197,7 @@ describe("MetricsDatabase", function() {
       const db = new Database();
       const metric = new StringMetricType({
         name: "aMetric",
+        category: "",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
@@ -205,6 +211,7 @@ describe("MetricsDatabase", function() {
       const db = new Database();
       const metric = new StringMetricType({
         name: "aMetric",
+        category: "",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
@@ -217,6 +224,7 @@ describe("MetricsDatabase", function() {
       const db = new Database();
       const metric = new StringMetricType({
         name: "aMetric",
+        category: "",
         sendInPings: ["aPing"],
         lifetime: Lifetime.Application,
         disabled: false
