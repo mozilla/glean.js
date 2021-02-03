@@ -4,7 +4,7 @@
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "main": "./dist/glean.js",
   "scripts": {
-    "test": "npm run build:test-webext && npm run test:unit --",
+    "test": "npm run build:test-webext && npm run test:unit",
     "test:debug": "ts-mocha \"tests/**/*.spec.ts\" --paths -p ./tsconfig.json --recursive --inspect-brk",
     "test:unit": "ts-mocha \"tests/**/*.spec.ts\" --paths -p ./tsconfig.json  --recursive --timeout 0",
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
