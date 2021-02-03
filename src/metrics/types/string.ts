@@ -51,18 +51,20 @@ class StringMetricType extends MetricType {
    *
    * @param value the value to set.
    */
-  async set(value: string): Promise<void> {
-    if (!this.shouldRecord()) {
-      return;
-    }
-
-    if (value.length > MAX_LENGTH_VALUE) {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`String ${value} is longer than ${MAX_LENGTH_VALUE} chars. Truncating.`);
-    }
-
-    const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
-    await Glean.metricsDatabase.record(this, metric);
+  set(value: string): void {
+    Glean.dispatcher.launch(async () => {
+      if (!this.shouldRecord()) {
+        return;
+      }
+  
+      if (value.length > MAX_LENGTH_VALUE) {
+        // TODO: record error once Bug 1682574 is resolved.
+        console.warn(`String ${value} is longer than ${MAX_LENGTH_VALUE} chars. Truncating.`);
+      }
+  
+      const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
+      await Glean.metricsDatabase.record(this, metric);
+    });
   }
 
   /**

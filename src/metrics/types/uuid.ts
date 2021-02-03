@@ -75,24 +75,26 @@ class UUIDMetricType extends MetricType {
    * @throws In case `value` is not a valid UUID.
    */
   async set(value: string): Promise<void> {
-    if (!this.shouldRecord()) {
-      return;
-    }
-
-    if (!value) {
-      value = generateUUIDv4();
-    }
-
-    let metric: UUIDMetric;
-    try {
-      metric = new UUIDMetric(value);
-    } catch {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`"${value}" is not a valid UUID. Ignoring`);
-      return;
-    }
-
-    await Glean.metricsDatabase.record(this, metric);
+    Glean.dispatcher.launch(async () => {
+      if (!this.shouldRecord()) {
+        return;
+      }
+  
+      if (!value) {
+        value = generateUUIDv4();
+      }
+  
+      let metric: UUIDMetric;
+      try {
+        metric = new UUIDMetric(value);
+      } catch {
+        // TODO: record error once Bug 1682574 is resolved.
+        console.warn(`"${value}" is not a valid UUID. Ignoring`);
+        return;
+      }
+  
+      await Glean.metricsDatabase.record(this, metric);
+    });
   }
 
   /**

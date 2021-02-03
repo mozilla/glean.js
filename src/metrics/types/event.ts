@@ -44,35 +44,37 @@ class EventMetricType extends MetricType {
    *        additional richer context is needed.
    *        The maximum length for values is 100 bytes.
    */
-  async record(extra?: ExtraMap): Promise<void> {
-    if (!this.shouldRecord()) {
-      return;
-    }
+  record(extra?: ExtraMap): void {
+    Glean.dispatcher.launch(async () => {
+      if (!this.shouldRecord()) {
+        return;
+      }
+  
+      const timestamp = this.getMonotonicNow();
 
-    const timestamp = this.getMonotonicNow();
-
-    // Truncate the extra keys, if needed.
-    let truncatedExtra: ExtraMap | undefined = undefined;
-    if (extra && this.allowedExtraKeys) {
-      truncatedExtra = {};
-      for (const [name, value] of Object.entries(extra)) {
-        if (this.allowedExtraKeys.includes(name)) {
-          truncatedExtra[name] = value.substr(0, MAX_LENGTH_EXTRA_KEY_VALUE);
-        } else {
-          // TODO: bug 1682574 - record an error.
-          console.error(`Invalid key index ${name}`);
-          continue;
+      // Truncate the extra keys, if needed.
+      let truncatedExtra: ExtraMap | undefined = undefined;
+      if (extra && this.allowedExtraKeys) {
+        truncatedExtra = {};
+        for (const [name, value] of Object.entries(extra)) {
+          if (this.allowedExtraKeys.includes(name)) {
+            truncatedExtra[name] = value.substr(0, MAX_LENGTH_EXTRA_KEY_VALUE);
+          } else {
+            // TODO: bug 1682574 - record an error.
+            console.error(`Invalid key index ${name}`);
+            continue;
+          }
         }
       }
-    }
-
-    const event = new RecordedEvent(
-      this.category,
-      this.name,
-      timestamp,
-      truncatedExtra,
-    );
-    await Glean.eventsDatabase.record(this, event);
+  
+      const event = new RecordedEvent(
+        this.category,
+        this.name,
+        timestamp,
+        truncatedExtra,
+      );
+      await Glean.eventsDatabase.record(this, event);
+    });
   }
 
   /**
