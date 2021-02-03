@@ -2,12 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CLIENT_INFO_STORAGE, DEFAULT_TELEMETRY_ENDPOINT, KNOWN_CLIENT_ID } from "./constants";
-import Configuration from "config";
+import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants";
+import { Configuration, ConfigurationInterface } from "config";
 import MetricsDatabase from "metrics/database";
 import PingsDatabase from "pings/database";
 import PingUploader from "upload";
-import { isUndefined, sanitizeApplicationId, validateURL } from "utils";
+import { isUndefined, sanitizeApplicationId } from "utils";
 import { CoreMetrics } from "internal_metrics";
 import { Lifetime } from "metrics";
 import { DatetimeMetric } from "metrics/types/datetime";
@@ -35,10 +35,10 @@ class Glean {
 
   // The application ID (will be sanitized during initialization).
   private _applicationId?: string;
-  // The server pings are sent to.
-  private _serverEndpoint?: string;
   // Whether or not to record metrics.
   private _uploadEnabled?: boolean;
+  // The Glean configuration object.
+  private _config?: Configuration;
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -125,13 +125,20 @@ class Glean {
     // metrics: first_run_date. Here, we store its value
     // so we can restore it after clearing the metrics.
     //
-    // TODO: This may throw an exception. Bug 1687475 will resolve this.
-    const existingFirstRunDate = new DatetimeMetric(
-      await Glean.metricsDatabase.getMetric(
-        CLIENT_INFO_STORAGE,
-        Glean.coreMetrics.firstRunDate
-      )
-    );
+    // Note: This will throw in case the stored metric is incorrect or inexistent.
+    // The most likely is that it throws if the metrics hasn't been set,
+    // e.g. we start Glean for the first with tupload disabled.
+    let firstRunDate: Date;
+    try {
+      firstRunDate = new DatetimeMetric(
+        await Glean.metricsDatabase.getMetric(
+          CLIENT_INFO_STORAGE,
+          Glean.coreMetrics.firstRunDate
+        )
+      ).date;
+    } catch {
+      firstRunDate = new Date();
+    }
 
     // Clear the databases.
     await Glean.metricsDatabase.clearAll();
@@ -150,7 +157,7 @@ class Glean {
     await Glean.coreMetrics.clientId.set(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await Glean.coreMetrics.firstRunDate.set(existingFirstRunDate.date);
+    await Glean.coreMetrics.firstRunDate.set(firstRunDate);
 
     Glean.uploadEnabled = false;
 
@@ -171,14 +178,18 @@ class Glean {
    *
    * @param applicationId The application ID (will be sanitized during initialization).
    * @param uploadEnabled Determines whether telemetry is enabled.
-   *                      If disabled, all persisted metrics, events and queued pings (except
-   *                      first_run_date) are cleared.
+   *        If disabled, all persisted metrics, events and queued pings
+   *        (except first_run_date) are cleared.
    * @param config Glean configuration options.
+   *
+   * @throws
+   * - If config.serverEndpoint is an invalid URL;
+   * - If the application if is an empty string.
    */
   static async initialize(
     applicationId: string,
     uploadEnabled: boolean,
-    config?: Configuration
+    config?: ConfigurationInterface
   ): Promise<void> {
     if (Glean.instance._initialized) {
       console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
@@ -189,17 +200,43 @@ class Glean {
       throw new Error("Unable to initialize Glean, applicationId cannot be an empty string.");
     }
     Glean.instance._applicationId = sanitizeApplicationId(applicationId);
+    Glean.instance._config = new Configuration(config);
 
-    if (config && config.serverEndpoint && !validateURL(config.serverEndpoint)) {
-      throw new Error(`Unable to initialize Glean, serverEndpoint ${config.serverEndpoint} is an invalid URL.`);
-    }
-    Glean.instance._serverEndpoint = (config && config.serverEndpoint)
-      ? config.serverEndpoint : DEFAULT_TELEMETRY_ENDPOINT;
+    // Clear application lifetime metrics.
+    //
+    // IMPORTANT!
+    // Any pings we want to send upon initialization should happen before this.
+    Glean.metricsDatabase.clear(Lifetime.Application);
 
+    // The upload enabled flag may have changed since the last run, for
+    // example by the changing of a config file.
     if (uploadEnabled) {
+      // If upload is enabled, just follow the normal code path to
+      // instantiate the core metrics.
       await Glean.onUploadEnabled();
     } else {
-      await Glean.onUploadDisabled();
+      // If upload is disabled, and we've never run before, only set the
+      // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
+      // ping.
+      // If we have run before, and if the client_id is not equal to
+      // the KNOWN_CLIENT_ID, do the full upload disabled operations to
+      // clear metrics, set the client_id to KNOWN_CLIENT_ID, and send a
+      // deletion request ping.
+      const clientId = await Glean.metricsDatabase.getMetric(
+        CLIENT_INFO_STORAGE,
+        Glean.coreMetrics.clientId
+      );
+
+      if (clientId) {
+        if (clientId !== KNOWN_CLIENT_ID) {
+          // Temporarily enable uploading so we can submit a
+          // deletion request ping.
+          Glean.uploadEnabled = true;
+          await Glean.onUploadDisabled();
+        }
+      } else {
+        await Glean.clearMetrics();
+      }
     }
 
     Glean.instance._initialized = true;
@@ -254,7 +291,7 @@ class Glean {
    * @returns The server endpoint or `undefined` in case Glean has not been initialized yet.
    */
   static get serverEndpoint(): string | undefined {
-    return Glean.instance._serverEndpoint;
+    return Glean.instance._config?.serverEndpoint;
   }
 
   /**
@@ -309,13 +346,19 @@ class Glean {
   /**
    * **Test-only API**
    *
-   * Resets the Glean to an uninitialized state and clear app lifetime metrics.
+   * Resets the Glean to an uninitialized state.
    *
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    */
   static async testUninitialize(): Promise<void> {
+    // Get back to an uninitialized state.
     Glean.instance._initialized = false;
-    await Glean.metricsDatabase.clear(Lifetime.Application);
+
+    // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
+    await Glean.dispatcher.testUninitialize();
+
+    // Stop ongoing jobs and clear pending pings queue.
+    await Glean.pingUploader.clearPendingPingsQueue();
   }
 
   /**
@@ -332,14 +375,7 @@ class Glean {
    * @param config Glean configuration options.
    */
   static async testResetGlean(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
-    // Get back to an uninitialized state.
-    Glean.instance._initialized = false;
-
-    // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
-    await Glean.dispatcher.testUninitialize();
-
-    // Stop ongoing jobs and clear pending pings queue.
-    await Glean.pingUploader.clearPendingPingsQueue();
+    await Glean.testUninitialize();
 
     // Clear the databases.
     await Glean.metricsDatabase.clearAll();
