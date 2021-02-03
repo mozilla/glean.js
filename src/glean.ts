@@ -125,13 +125,20 @@ class Glean {
     // metrics: first_run_date. Here, we store its value
     // so we can restore it after clearing the metrics.
     //
-    // TODO: This may throw an exception. Bug 1687475 will resolve this.
-    const existingFirstRunDate = new DatetimeMetric(
-      await Glean.metricsDatabase.getMetric(
-        CLIENT_INFO_STORAGE,
-        Glean.coreMetrics.firstRunDate
-      )
-    );
+    // Note: This will throw in case the stored metric is incorrect or inexistent.
+    // The most likely is that it throws if the metrics hasn't been set,
+    // e.g. we start Glean for the first with tupload disabled.
+    let firstRunDate: Date;
+    try {
+      firstRunDate = new DatetimeMetric(
+        await Glean.metricsDatabase.getMetric(
+          CLIENT_INFO_STORAGE,
+          Glean.coreMetrics.firstRunDate
+        )
+      ).date;
+    } catch {
+      firstRunDate = new Date();
+    }
 
     // Clear the databases.
     await Glean.metricsDatabase.clearAll();
@@ -150,7 +157,7 @@ class Glean {
     await Glean.coreMetrics.clientId.set(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await Glean.coreMetrics.firstRunDate.set(existingFirstRunDate.date);
+    await Glean.coreMetrics.firstRunDate.set(firstRunDate);
 
     Glean.uploadEnabled = false;
 
@@ -196,10 +203,35 @@ class Glean {
 
     Glean.instance._config = new Configuration(config);
 
+    // The upload enabled flag may have changed since the last run, for
+    // example by the changing of a config file.
     if (uploadEnabled) {
+      // If upload is enabled, just follow the normal code path to
+      // instantiate the core metrics.
       await Glean.onUploadEnabled();
     } else {
-      await Glean.onUploadDisabled();
+      // If upload is disabled, and we've never run before, only set the
+      // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
+      // ping.
+      // If we have run before, and if the client_id is not equal to
+      // the KNOWN_CLIENT_ID, do the full upload disabled operations to
+      // clear metrics, set the client_id to KNOWN_CLIENT_ID, and send a
+      // deletion request ping.
+      const clientId = await Glean.metricsDatabase.getMetric(
+        CLIENT_INFO_STORAGE,
+        Glean.coreMetrics.clientId
+      );
+
+      if (clientId) {
+        if (clientId !== KNOWN_CLIENT_ID) {
+          // Temporarily enable uploading so we can submit a
+          // deletion request ping.
+          Glean.uploadEnabled = true;
+          await Glean.onUploadDisabled();
+        }
+      } else {
+        await Glean.clearMetrics();
+      }
     }
 
     Glean.instance._initialized = true;
