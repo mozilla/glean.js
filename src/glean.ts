@@ -2,12 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CLIENT_INFO_STORAGE, DEFAULT_TELEMETRY_ENDPOINT, KNOWN_CLIENT_ID } from "./constants";
-import Configuration from "config";
+import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants";
+import { Configuration, ConfigurationInterface } from "config";
 import MetricsDatabase from "metrics/database";
 import PingsDatabase from "pings/database";
 import PingUploader from "upload";
-import { isUndefined, sanitizeApplicationId, validateURL } from "utils";
+import { isUndefined, sanitizeApplicationId } from "utils";
 import { CoreMetrics } from "internal_metrics";
 import { Lifetime } from "metrics";
 import { DatetimeMetric } from "metrics/types/datetime";
@@ -35,10 +35,10 @@ class Glean {
 
   // The application ID (will be sanitized during initialization).
   private _applicationId?: string;
-  // The server pings are sent to.
-  private _serverEndpoint?: string;
   // Whether or not to record metrics.
   private _uploadEnabled?: boolean;
+  // The Glean configuration object.
+  private _config?: Configuration;
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -171,14 +171,18 @@ class Glean {
    *
    * @param applicationId The application ID (will be sanitized during initialization).
    * @param uploadEnabled Determines whether telemetry is enabled.
-   *                      If disabled, all persisted metrics, events and queued pings (except
-   *                      first_run_date) are cleared.
+   *        If disabled, all persisted metrics, events and queued pings
+   *        (except first_run_date) are cleared.
    * @param config Glean configuration options.
+   *
+   * @throws
+   * - If config.serverEndpoint is an invalid URL;
+   * - If the application if is an empty string.
    */
   static async initialize(
     applicationId: string,
     uploadEnabled: boolean,
-    config?: Configuration
+    config?: ConfigurationInterface
   ): Promise<void> {
     if (Glean.instance._initialized) {
       console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
@@ -190,11 +194,7 @@ class Glean {
     }
     Glean.instance._applicationId = sanitizeApplicationId(applicationId);
 
-    if (config && config.serverEndpoint && !validateURL(config.serverEndpoint)) {
-      throw new Error(`Unable to initialize Glean, serverEndpoint ${config.serverEndpoint} is an invalid URL.`);
-    }
-    Glean.instance._serverEndpoint = (config && config.serverEndpoint)
-      ? config.serverEndpoint : DEFAULT_TELEMETRY_ENDPOINT;
+    Glean.instance._config = new Configuration(config);
 
     if (uploadEnabled) {
       await Glean.onUploadEnabled();
@@ -254,7 +254,7 @@ class Glean {
    * @returns The server endpoint or `undefined` in case Glean has not been initialized yet.
    */
   static get serverEndpoint(): string | undefined {
-    return Glean.instance._serverEndpoint;
+    return Glean.instance._config?.serverEndpoint;
   }
 
   /**
