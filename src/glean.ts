@@ -200,8 +200,13 @@ class Glean {
       throw new Error("Unable to initialize Glean, applicationId cannot be an empty string.");
     }
     Glean.instance._applicationId = sanitizeApplicationId(applicationId);
-
     Glean.instance._config = new Configuration(config);
+
+    // Clear application lifetime metrics.
+    //
+    // IMPORTANT!
+    // Any pings we want to send upon initialization should happen before this.
+    Glean.metricsDatabase.clear(Lifetime.Application);
 
     // The upload enabled flag may have changed since the last run, for
     // example by the changing of a config file.
@@ -341,13 +346,19 @@ class Glean {
   /**
    * **Test-only API**
    *
-   * Resets the Glean to an uninitialized state and clear app lifetime metrics.
+   * Resets the Glean to an uninitialized state.
    *
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    */
   static async testUninitialize(): Promise<void> {
+    // Get back to an uninitialized state.
     Glean.instance._initialized = false;
-    await Glean.metricsDatabase.clear(Lifetime.Application);
+
+    // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
+    await Glean.dispatcher.testUninitialize();
+
+    // Stop ongoing jobs and clear pending pings queue.
+    await Glean.pingUploader.clearPendingPingsQueue();
   }
 
   /**
@@ -364,14 +375,7 @@ class Glean {
    * @param config Glean configuration options.
    */
   static async testResetGlean(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
-    // Get back to an uninitialized state.
-    Glean.instance._initialized = false;
-
-    // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
-    await Glean.dispatcher.testUninitialize();
-
-    // Stop ongoing jobs and clear pending pings queue.
-    await Glean.pingUploader.clearPendingPingsQueue();
+    await Glean.testUninitialize();
 
     // Clear the databases.
     await Glean.metricsDatabase.clearAll();
