@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // The possible states a dispatcher instance can be in.
-const enum DispatcherState {
+export const enum DispatcherState {
   // The dispatcher has not been initialized yet.
   //
   // When the dispatcher is in this state it will not enqueue
@@ -25,6 +25,8 @@ const enum Commands {
   Task,
   // The dispatcher should stop executing the queued tasks.
   Stop,
+  // The dispatcher should stop executing the queued tasks and clear the queue.
+  Clear,
 }
 
 // A task the dispatcher knows how to execute.
@@ -33,9 +35,9 @@ type Task = () => Promise<void>;
 // An executable command.
 type Command = {
   task: Task,
-  command: Commands.Task
+  command: Commands.Task,
 } | {
-  command: Commands.Stop
+  command: Exclude<Commands, Commands.Task>,
 };
 
 /**
@@ -68,24 +70,36 @@ class Dispatcher {
   }
 
   /**
-   * Executes all the commands in the queue, from oldest to newest.
+   * Executes a task safely, catching any errors.
    *
-   * Stops on case a `Stop` command is encountered.
+   * @param task The  task to execute.
+   */
+  private async executeTask(task: Task): Promise<void> {
+    try {
+      await task();
+    } catch(e) {
+      console.error("Error executing task:", e);
+    }
+  }
+
+  /**
+   * Executes all the commands in the queue, from oldest to newest.
    */
   private async execute(): Promise<void> {
     let nextCommand = this.getNextCommand();
     while(nextCommand) {
-      if (nextCommand.command === Commands.Stop) {
-        break;
+      switch(nextCommand.command) {
+      case(Commands.Stop):
+        this.state = DispatcherState.Stopped;
+        return;
+      case(Commands.Clear):
+        this.queue = [];
+        this.state = DispatcherState.Stopped;
+        return;
+      case(Commands.Task):
+        await this.executeTask(nextCommand.task);
+        nextCommand = this.getNextCommand();
       }
-
-      try {
-        await nextCommand.task();
-      } catch(e) {
-        console.error("Error executing task:", e);
-      }
-
-      nextCommand = this.getNextCommand();
     }
   }
 
@@ -93,43 +107,73 @@ class Dispatcher {
    * Triggers the execution of enqueued command
    * in case the dispatcher is currently Idle.
    */
-  private async triggerExecution(): Promise<void> {
+  private triggerExecution(): void {
     if (this.state === DispatcherState.Idle && this.queue.length > 0) {
       this.state = DispatcherState.Processing;
       this.currentJob = this.execute();
-      await this.currentJob;
-      this.currentJob = undefined;
-      this.state = DispatcherState.Idle;
+
+      // We decide against using `await` here, so that this function does not return a promise and
+      // no one feels compelled to wait on execution of tasks.
+      //
+      // That should be avoided as much as possible,
+      // because it will cause a deadlock in case you wait inside a task
+      // that was launched inside another task.
+      this.currentJob.then(() => {
+        this.currentJob = undefined;
+        if (this.state === DispatcherState.Processing) {
+          this.state = DispatcherState.Idle;
+        }
+      });
     }
   }
 
   /**
-   * Launches a task on this dispatchers queue.
-   * Kickstarts the execution of the queue in case it is currently Idle.
+   * Internal method to launch a task and trigger execution.
    *
-   * # Note
+   * Allows enqueueing of any valid command.
    *
-   * Will not enqueue in case the dispatcher has not been initialized yet and the queues length exceeds `maxPreInitQueueSize`.
+   * Allows proritization of tasks, to add tasks at the front of the queue.
+   * When a task is marked as a `priorityTask` it will be enqueued
+   * regardless of the `maxPreInitQueueSize being overflown.
    *
-   * @param task The task to enqueue.
+   * @param command The command to enqueue.
+   * @param priorityTask Whether or not this task is a priority task
+   *        and should be enqueued at the front of the queue.
    */
-  launch(task: Task): void {
-    if (this.state === DispatcherState.Uninitialized) {
+  private launchInternal(command: Command, priorityTask = false): void {
+    if (!priorityTask && this.state === DispatcherState.Uninitialized) {
       if (this.queue.length >= this.maxPreInitQueueSize) {
         console.warn("Unable to enqueue task, pre init queue is full.");
         return;
       }
     }
 
-    this.queue.push({
+    if (priorityTask) {
+      this.queue.unshift(command);
+    } else {
+      this.queue.push(command);
+    }
+
+    this.triggerExecution();
+  }
+
+  /**
+   * Adds a task to the end of this dispatchers queue.
+   *
+   * Kickstarts the execution of the queue in case the dispatcher currently Idle.
+   *
+   * # Note
+   *
+   * Will not enqueue in case the dispatcher has not been initialized yet
+   * and the queues length exceeds `maxPreInitQueueSize`.
+   *
+   * @param task The task to enqueue.
+   */
+  launch(task: Task): void {
+    this.launchInternal({
       task,
       command: Commands.Task
     });
-
-    // Even though triggerExecution is async we don't want to block on it.
-    // The point of the dispatcher is to execute the async functions
-    // in a deterministic order without having to wait for them.
-    this.triggerExecution();
   }
 
   /**
@@ -144,36 +188,48 @@ class Dispatcher {
     }
 
     this.state = DispatcherState.Idle;
-
-    // Even though triggerExecution is async we don't want to block on it.
-    // The point of the dispatcher is to execute the async functions
-    // in a deterministic order without having to wait for them.
     this.triggerExecution();
   }
 
   /**
-   * Stops the current job and clears the tasks queue.
+   * Enqueues a Clear command at the front of the queue and triggers execution.
    *
-   * @returns A promise which resolves once the current job
-   *          has been succesfully stopped and the queue was emptied.
+   * The Clear command will remove all other tasks from the queue
+   * and put the dispatcher in a Stopped state after the command is executed.
+   * In order to re-start the dispatcher, call the `resume` method.
+   *
+   * # Note
+   *
+   * Even if the dispatcher is stopped this command will be executed.
    */
-  async clear(): Promise<void> {
-    await this.stop();
-    this.queue = [];
-    this.state = DispatcherState.Idle;
+  clear(): void {
+    this.launchInternal({ command: Commands.Clear }, true);
+    this.resume();
   }
 
   /**
-   * Sets the state of this dispatcher to "Stopped" and stops any ongoing task processing.
+   * Enqueues a Stop command at the front of the queue and triggers execution.
    *
-   * @returns A promise which resolves once the current job
-   *          has been succesfully stopped.
+   * The Stop command will stop execution of current tasks
+   * and put the Dispatcher in a Stopped state.
+   *
+   * While stopped the dispatcher will still enqueue tasks but won't execute them.
+   *
+   * In order to re-start the dispatcher, call the `resume` method.
    */
-  async stop(): Promise<void> {
-    if (this.state !== DispatcherState.Stopped) {
-      this.state = DispatcherState.Stopped;
-      this.queue.unshift({ command: Commands.Stop });
-      await this.testBlockOnQueue();
+  stop(): void {
+    this.launchInternal({ command: Commands.Stop }, true);
+  }
+
+  /**
+   * Resumes execution os tasks if the dispatcher is stopped.
+   *
+   * This is a no-op if the dispatcher is not stopped.
+   */
+  resume(): void {
+    if (this.state === DispatcherState.Stopped) {
+      this.state = DispatcherState.Idle;
+      this.triggerExecution();
     }
   }
 
@@ -181,6 +237,9 @@ class Dispatcher {
    * **Test-Only API**
    *
    * Returns a promise that resolves once the current task execution in finished.
+   *
+   * Use this with caution. 
+   * If called inside a task launched inside another task, it will cause a deadlock.
    *
    * @returns The promise.
    */
@@ -196,7 +255,9 @@ class Dispatcher {
    * This will also stop ongoing tasks and clear the queue.
    */
   async testUninitialize(): Promise<void> {
-    await this.clear();
+    this.clear();
+    // We need to wait for the clear command to be executed.
+    await this.testBlockOnQueue();
     this.state = DispatcherState.Uninitialized;
   }
 }
