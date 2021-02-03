@@ -5,7 +5,7 @@
 import { Metrics as MetricsPayload } from "metrics/database";
 import { Store } from "storage";
 import PersistentStore from "storage/persistent";
-import { isObject, isJSONValue, JSONObject, isString } from "utils";
+import { isObject, isJSONValue, JSONObject, isString, JSONArray } from "utils";
 
 export interface PingInfo extends JSONObject {
   seq: number,
@@ -40,7 +40,7 @@ export interface PingPayload extends JSONObject {
   ping_info: PingInfo,
   client_info: ClientInfo,
   metrics?: MetricsPayload,
-  events?: JSONObject,
+  events?: JSONArray,
 }
 
 export interface PingInternalRepresentation extends JSONObject {

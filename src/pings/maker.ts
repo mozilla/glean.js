@@ -23,6 +23,7 @@ const GLEAN_START_TIME = new Date();
  */
 export async function getSequenceNumber(ping: PingType): Promise<number> {
   const seq = new CounterMetricType({
+    category: "",
     name: `${ping.name}#sequence`,
     sendInPings: [PING_INFO_STORAGE],
     lifetime: Lifetime.User,
@@ -57,6 +58,7 @@ export async function getSequenceNumber(ping: PingType): Promise<number> {
  */
 export async function getStartEndTimes(ping: PingType): Promise<{ startTime: string, endTime: string }> {
   const start = new DatetimeMetricType({
+    category: "",
     name: `${ping.name}#start`,
     sendInPings: [PING_INFO_STORAGE],
     lifetime: Lifetime.User,
@@ -167,7 +169,8 @@ export async function getPingHeaders(): Promise<Record<string, string> | undefin
  */
 export async function collectPing(ping: PingType, reason?: string): Promise<PingPayload | undefined> {
   const metricsData = await Glean.metricsDatabase.getPingMetrics(ping.name, true);
-  if (!metricsData && !ping.sendIfEmtpy) {
+  const eventsData = await Glean.eventsDatabase.getPingEvents(ping.name, true);
+  if (!metricsData && !eventsData && !ping.sendIfEmtpy) {
     console.info(`Storage for ${ping.name} empty. Bailing out.`);
     return;
   } else if (!metricsData) {
@@ -175,10 +178,12 @@ export async function collectPing(ping: PingType, reason?: string): Promise<Ping
   }
 
   const metrics = metricsData ? { metrics: metricsData } : {};
+  const events = eventsData ? { events: eventsData } : {};
   const pingInfo = await buildPingInfoSection(ping, reason);
   const clientInfo = await buildClientInfoSection(ping);
   return {
     ...metrics,
+    ...events,
     ping_info: pingInfo,
     client_info: clientInfo,
   };

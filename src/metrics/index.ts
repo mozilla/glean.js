@@ -93,7 +93,7 @@ export interface CommonMetricData {
   // The metric's name.
   readonly name: string,
   // The metric's category.
-  readonly category?: string,
+  readonly category: string,
   // List of ping names to include this metric in.
   readonly sendInPings: string[],
   // The metric's lifetime.
@@ -110,7 +110,7 @@ export interface CommonMetricData {
 export abstract class MetricType implements CommonMetricData {
   readonly type: string;
   readonly name: string;
-  readonly category?: string;
+  readonly category: string;
   readonly sendInPings: string[];
   readonly lifetime: Lifetime;
   readonly disabled: boolean;
@@ -119,13 +119,10 @@ export abstract class MetricType implements CommonMetricData {
     this.type = type;
 
     this.name = meta.name;
+    this.category = meta.category;
     this.sendInPings = meta.sendInPings;
     this.lifetime = meta.lifetime;
     this.disabled = meta.disabled;
-
-    if (meta.category) {
-      this.category = meta.category;
-    }
   }
 
   /**
@@ -134,7 +131,7 @@ export abstract class MetricType implements CommonMetricData {
    * @returns The generated identifier.
    */
   get identifier(): string {
-    if (this.category) {
+    if (this.category.length > 0) {
       return `${this.category}.${this.name}`;
     } else {
       return this.name;
