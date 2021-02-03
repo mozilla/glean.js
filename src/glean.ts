@@ -203,54 +203,63 @@ class Glean {
     if (applicationId.length === 0) {
       throw new Error("Unable to initialize Glean, applicationId cannot be an empty string.");
     }
-    Glean.instance._applicationId = sanitizeApplicationId(applicationId);
-    Glean.instance._config = new Configuration(config);
 
-    // Clear application lifetime metrics.
+    // The configuration constructor will throw in case config hany any incorrect prop.
+    const correctConfig = new Configuration(config);
+
+    // Initialize the dispatcher and execute init before any other enqueued task.
     //
-    // IMPORTANT!
-    // Any pings we want to send upon initialization should happen before this.
-    Glean.metricsDatabase.clear(Lifetime.Application);
-
-    // The upload enabled flag may have changed since the last run, for
-    // example by the changing of a config file.
-    if (uploadEnabled) {
-      // If upload is enabled, just follow the normal code path to
-      // instantiate the core metrics.
-      await Glean.onUploadEnabled();
-    } else {
-      // If upload is disabled, and we've never run before, only set the
-      // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
-      // ping.
-      // If we have run before, and if the client_id is not equal to
-      // the KNOWN_CLIENT_ID, do the full upload disabled operations to
-      // clear metrics, set the client_id to KNOWN_CLIENT_ID, and send a
-      // deletion request ping.
-      const clientId = await Glean.metricsDatabase.getMetric(
-        CLIENT_INFO_STORAGE,
-        Glean.coreMetrics.clientId
-      );
-
-      if (clientId) {
-        if (clientId !== KNOWN_CLIENT_ID) {
-          // Temporarily enable uploading so we can submit a
-          // deletion request ping.
-          Glean.uploadEnabled = true;
-          await Glean.onUploadDisabled();
-        }
+    // Note: We decide to execute the above tasks outside of the dispatcher task,
+    // because they will throw if configuration is incorrect and we want them to throw.
+    //
+    // The dispatcher will catch and log any exceptions.
+    Glean.dispatcher.flushInit(async () => {
+      Glean.instance._applicationId = sanitizeApplicationId(applicationId);
+      Glean.instance._config = correctConfig;
+  
+      // Clear application lifetime metrics.
+      //
+      // IMPORTANT!
+      // Any pings we want to send upon initialization should happen before this.
+      Glean.metricsDatabase.clear(Lifetime.Application);
+  
+      // The upload enabled flag may have changed since the last run, for
+      // example by the changing of a config file.
+      if (uploadEnabled) {
+        // If upload is enabled, just follow the normal code path to
+        // instantiate the core metrics.
+        await Glean.onUploadEnabled();
       } else {
-        await Glean.clearMetrics();
+        // If upload is disabled, and we've never run before, only set the
+        // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
+        // ping.
+        // If we have run before, and if the client_id is not equal to
+        // the KNOWN_CLIENT_ID, do the full upload disabled operations to
+        // clear metrics, set the client_id to KNOWN_CLIENT_ID, and send a
+        // deletion request ping.
+        const clientId = await Glean.metricsDatabase.getMetric(
+          CLIENT_INFO_STORAGE,
+          Glean.coreMetrics.clientId
+        );
+  
+        if (clientId) {
+          if (clientId !== KNOWN_CLIENT_ID) {
+            // Temporarily enable uploading so we can submit a
+            // deletion request ping.
+            Glean.uploadEnabled = true;
+            await Glean.onUploadDisabled();
+          }
+        } else {
+          await Glean.clearMetrics();
+        }
       }
-    }
-
-    Glean.instance._initialized = true;
-
-    await Glean.pingUploader.scanPendingPings();
-    // Even though this returns a promise, there is no need to block on it returning.
-    Glean.pingUploader.triggerUpload();
-
-    // Signal to the dispatcher that init is complete.
-    Glean.dispatcher.flushInit();
+  
+      Glean.instance._initialized = true;
+  
+      await Glean.pingUploader.scanPendingPings();
+      // Even though this returns a promise, there is no need to block on it returning.
+      Glean.pingUploader.triggerUpload();
+    });
   }
 
   /**
@@ -341,20 +350,26 @@ class Glean {
    * If the value of this flag is not actually changed, this is a no-op.
    *
    * @param flag When true, enable metric collection.
-   *
-   * @returns Whether the flag was different from the current value,
-   *          and actual work was done to clear or reinstate metrics.
    */
-  static async setUploadEnabled(flag: boolean): Promise<boolean> {
-    if (Glean.uploadEnabled !== flag) {
-      if (flag) {
-        await Glean.onUploadEnabled();
-      } else {
-        await Glean.onUploadDisabled();
+  static setUploadEnabled(flag: boolean): void {
+    Glean.dispatcher.launch(async () => {
+      if (!Glean.initialized) {
+        console.error(
+          `Changing upload enabled before Glean is initialized is not supported.
+          Pass the correct state into \`Glean.initialize\`.
+          See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`
+        );
+        return;
       }
-      return true;
-    }
-    return false;
+
+      if (Glean.uploadEnabled !== flag) {
+        if (flag) {
+          await Glean.onUploadEnabled();
+        } else {
+          await Glean.onUploadDisabled();
+        }
+      }
+    });
   }
 
   /**

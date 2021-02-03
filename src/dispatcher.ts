@@ -180,11 +180,20 @@ class Dispatcher {
    * Flushes the tasks enqueued while the dispatcher was uninitialized.
    *
    * This is a no-op in case the dispatcher is not in an uninitialized state.
+   *
+   * @param task Optional task to execute before any of the tasks enqueued prior to init.
    */
-  flushInit(): void {
+  flushInit(task?: Task): void {
     if (this.state !== DispatcherState.Uninitialized) {
       console.warn("Attempted to initialize the Dispatcher, but it is already initialized. Ignoring.");
       return;
+    }
+
+    if (task) {
+      this.launchInternal({
+        task,
+        command: Commands.Task
+      }, true);
     }
 
     this.state = DispatcherState.Idle;

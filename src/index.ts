@@ -31,15 +31,13 @@ export = {
    *                      If disabled, all persisted metrics, events and queued pings (except
    *                      first_run_date) are cleared.
    * @param config Glean configuration options.
-   *
-   * @returns A promise that is resolved once initialize is completed.
    */
-  async initialize(
+  initialize(
     applicationId: string,
     uploadEnabled: boolean,
     config?: ConfigurationInterface
-  ): Promise<void> {
-    await Glean.initialize(applicationId, uploadEnabled, config);
+  ): void {
+    Glean.initialize(applicationId, uploadEnabled, config);
   },
 
   /**
@@ -56,20 +54,9 @@ export = {
    * If Glean has not been initialized yet, this is also a no-op.
    *
    * @param flag When true, enable metric collection.
-   *
-   * @returns A promise that is resolved once setUploadEnabled is completed.
    */
-  async setUploadEnabled(flag: boolean): Promise<void> {
-    if (!Glean.initialized) {
-      console.error(
-        `Changing upload enabled before Glean is initialized is not supported.
-        Pass the correct state into \`Glean.initialize\`.
-        See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`
-      );
-      return;
-    }
-
-    await Glean.setUploadEnabled(flag);
+  setUploadEnabled(flag: boolean): void {
+    Glean.setUploadEnabled(flag);
   },
 
   _private: {

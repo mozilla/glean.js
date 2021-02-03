@@ -174,40 +174,42 @@ class DatetimeMetricType extends MetricType {
    *
    * @param value The Date value to set. If not provided, will record the current time.
    */
-  async set(value?: Date): Promise<void> {
-    if (!this.shouldRecord()) {
-      return;
-    }
-
-    if (!value) {
-      value = new Date();
-    }
-
-    // We always save a milliseconds precision ISO string on the database,
-    // regardless of the time unit. So we zero out information that
-    // is not necessary for the current time unit of this metric.
-    const truncatedDate = value;
-    switch(this.timeUnit) {
-    case (TimeUnit.Day):
-      truncatedDate.setMilliseconds(0);
-      truncatedDate.setSeconds(0);
-      truncatedDate.setMinutes(0);
-      truncatedDate.setMilliseconds(0);
-    case (TimeUnit.Hour):
-      truncatedDate.setMilliseconds(0);
-      truncatedDate.setSeconds(0);
-      truncatedDate.setMinutes(0);
-    case (TimeUnit.Minute):
-      truncatedDate.setMilliseconds(0);
-      truncatedDate.setSeconds(0);
-    case (TimeUnit.Second):
-      truncatedDate.setMilliseconds(0);
-    default:
-      break;
-    }
-
-    const metric = DatetimeMetric.fromDate(value, this.timeUnit);
-    await Glean.metricsDatabase.record(this, metric);
+  set(value?: Date): void {
+    Glean.dispatcher.launch(async () => {
+      if (!this.shouldRecord()) {
+        return;
+      }
+  
+      if (!value) {
+        value = new Date();
+      }
+  
+      // We always save a milliseconds precision ISO string on the database,
+      // regardless of the time unit. So we zero out information that
+      // is not necessary for the current time unit of this metric.
+      const truncatedDate = value;
+      switch(this.timeUnit) {
+      case (TimeUnit.Day):
+        truncatedDate.setMilliseconds(0);
+        truncatedDate.setSeconds(0);
+        truncatedDate.setMinutes(0);
+        truncatedDate.setMilliseconds(0);
+      case (TimeUnit.Hour):
+        truncatedDate.setMilliseconds(0);
+        truncatedDate.setSeconds(0);
+        truncatedDate.setMinutes(0);
+      case (TimeUnit.Minute):
+        truncatedDate.setMilliseconds(0);
+        truncatedDate.setSeconds(0);
+      case (TimeUnit.Second):
+        truncatedDate.setMilliseconds(0);
+      default:
+        break;
+      }
+  
+      const metric = DatetimeMetric.fromDate(value, this.timeUnit);
+      await Glean.metricsDatabase.record(this, metric);
+    });
   }
 
   /**

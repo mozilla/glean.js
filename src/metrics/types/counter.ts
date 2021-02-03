@@ -51,43 +51,45 @@ class CounterMetricType extends MetricType {
    * @param amount The amount to increase by. Should be positive.
    *               If not provided will default to `1`.
    */
-  async add(amount?: number): Promise<void> {
-    if (!this.shouldRecord()) {
-      return;
-    }
-
-    if (isUndefined(amount)) {
-      amount = 1;
-    }
-
-    if (amount <= 0) {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`Attempted to add an invalid amount ${amount}. Ignoring.`);
-      return;
-    }
-
-    const transformFn = ((amount) => {
-      return (v?: JSONValue): CounterMetric => {
-        let metric: CounterMetric;
-        let result: number;
-        try {
-          metric = new CounterMetric(v);
-          result = metric.get() + amount;
-        } catch {
-          metric = new CounterMetric(amount);
-          result = amount;
-        }
-
-        if (result > Number.MAX_SAFE_INTEGER) {
-          result = Number.MAX_SAFE_INTEGER;
-        }
-
-        metric.set(result);
-        return metric;
-      };
-    })(amount);
-
-    await Glean.metricsDatabase.transform(this, transformFn);
+  add(amount?: number): void {
+    Glean.dispatcher.launch(async () => {
+      if (!this.shouldRecord()) {
+        return;
+      }
+  
+      if (isUndefined(amount)) {
+        amount = 1;
+      }
+  
+      if (amount <= 0) {
+        // TODO: record error once Bug 1682574 is resolved.
+        console.warn(`Attempted to add an invalid amount ${amount}. Ignoring.`);
+        return;
+      }
+  
+      const transformFn = ((amount) => {
+        return (v?: JSONValue): CounterMetric => {
+          let metric: CounterMetric;
+          let result: number;
+          try {
+            metric = new CounterMetric(v);
+            result = metric.get() + amount;
+          } catch {
+            metric = new CounterMetric(amount);
+            result = amount;
+          }
+  
+          if (result > Number.MAX_SAFE_INTEGER) {
+            result = Number.MAX_SAFE_INTEGER;
+          }
+  
+          metric.set(result);
+          return metric;
+        };
+      })(amount);
+  
+      await Glean.metricsDatabase.transform(this, transformFn);
+    });
   }
 
   /**

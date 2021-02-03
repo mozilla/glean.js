@@ -34,13 +34,15 @@ class BooleanMetricType extends MetricType {
    *
    * @param value the value to set.
    */
-  async set(value: boolean): Promise<void> {
-    if (!this.shouldRecord()) {
-      return;
-    }
-
-    const metric = new BooleanMetric(value);
-    await Glean.metricsDatabase.record(this, metric);
+  set(value: boolean): void {
+    Glean.dispatcher.launch(async () => {
+      if (!this.shouldRecord()) {
+        return;
+      }
+  
+      const metric = new BooleanMetric(value);
+      await Glean.metricsDatabase.record(this, metric);
+    });
   }
 
   /**

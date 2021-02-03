@@ -41,29 +41,29 @@ class PingType {
    *
    * @param reason The reason the ping was triggered. Included in the
    *               `ping_info.reason` part of the payload.
-   *
-   * @returns Whether or not the ping was successfully submitted.
    */
-  async submit(reason?: string): Promise<boolean> {
-    if (!Glean.initialized) {
-      console.info("Glean must be initialized before submitting pings.");
-      return false;
-    }
-
-    if (!Glean.isUploadEnabled()) {
-      console.info("Glean disabled: not submitting any pings.");
-      return false;
-    }
-
-    let correctedReason = reason;
-    if (reason && !this.reasonCodes.includes(reason)) {
-      console.error(`Invalid reason code ${reason} from ${this.name}. Ignoring.`);
-      correctedReason = undefined;
-    }
-
-    const identifier = UUIDv4();
-    await collectAndStorePing(identifier, this, correctedReason);
-    return true;
+  submit(reason?: string): void {
+    Glean.dispatcher.launch(async () => {
+      if (!Glean.initialized) {
+        console.info("Glean must be initialized before submitting pings.");
+        return;
+      }
+  
+      if (!Glean.isUploadEnabled()) {
+        console.info("Glean disabled: not submitting any pings.");
+        return;
+      }
+  
+      let correctedReason = reason;
+      if (reason && !this.reasonCodes.includes(reason)) {
+        console.error(`Invalid reason code ${reason} from ${this.name}. Ignoring.`);
+        correctedReason = undefined;
+      }
+  
+      const identifier = UUIDv4();
+      await collectAndStorePing(identifier, this, correctedReason);
+      return;
+    });
   }
 }
 
