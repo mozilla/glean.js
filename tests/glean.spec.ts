@@ -30,7 +30,7 @@ describe("Glean", function() {
       await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
 
     await Glean.testUninitialize();
-    await Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    Glean.initialize(GLOBAL_APPLICATION_ID, true);
     assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE));
     assert.ok(await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
   });
@@ -46,42 +46,42 @@ describe("Glean", function() {
     });
 
     metric.set("TEST VALUE");
-    pings.forEach(async (ping) => {
-      assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(ping));
-    });
+    for (const ping of pings) {
+      assert.strictEqual(await metric.testGetValue(ping), "TEST VALUE");
+    }
 
-    await Glean.setUploadEnabled(false);
-    pings.forEach(async (ping) => {
+    Glean.setUploadEnabled(false);
+    for (const ping of pings) {
       assert.strictEqual(await metric.testGetValue(ping), undefined);
-    });
+    }
 
     metric.set("TEST VALUE");
-    pings.forEach(async (ping) => {
+    for (const ping of pings) {
       assert.strictEqual(await metric.testGetValue(ping), undefined);
-    });
+    }
 
-    await Glean.setUploadEnabled(true);
-    pings.forEach(async (ping) => {
+    Glean.setUploadEnabled(true);
+    for (const ping of pings) {
       assert.strictEqual(await metric.testGetValue(ping), undefined);
-    });
+    }
 
     metric.set("TEST VALUE");
-    pings.forEach(async (ping) => {
-      assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(ping));
-    });
+    for (const ping of pings) {
+      assert.strictEqual(await metric.testGetValue(ping), "TEST VALUE");
+    }
   });
 
   it("first_run_date is managed correctly when toggling uploading", async function() {
     const originalFirstRunDate = await Glean["coreMetrics"]["firstRunDate"]
       .testGetValueAsString(CLIENT_INFO_STORAGE);
 
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
     assert.strictEqual(
       await Glean["coreMetrics"]["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
       originalFirstRunDate
     );
 
-    await Glean.setUploadEnabled(true);
+    Glean.setUploadEnabled(true);
     assert.strictEqual(
       await Glean["coreMetrics"]["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
       originalFirstRunDate
@@ -94,13 +94,13 @@ describe("Glean", function() {
     assert.ok(originalClientId);
     assert.ok(originalClientId !== KNOWN_CLIENT_ID);
 
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
     assert.strictEqual(
       await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
     );
 
-    await Glean.setUploadEnabled(true);
+    Glean.setUploadEnabled(true);
     const newClientId = await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(newClientId !== originalClientId);
     assert.ok(newClientId !== KNOWN_CLIENT_ID);
@@ -108,7 +108,7 @@ describe("Glean", function() {
 
   it("client_id is set to known value when uploading disabled at start", async function() {
     await Glean.testUninitialize();
-    await Glean.initialize(GLOBAL_APPLICATION_ID, false);
+    Glean.initialize(GLOBAL_APPLICATION_ID, false);
     assert.strictEqual(
       await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
@@ -116,9 +116,9 @@ describe("Glean", function() {
   });
 
   it("client_id is set to random value when uploading enabled at start", async function() {
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
     await Glean.testUninitialize();
-    await Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    Glean.initialize(GLOBAL_APPLICATION_ID, true);
     const clientId = await Glean["coreMetrics"]["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(clientId);
@@ -126,18 +126,17 @@ describe("Glean", function() {
   });
 
   it("enabling when already enabled is a no-op", async function() {
-    assert.ok(!(await Glean.setUploadEnabled(true)));
+    // TODO: Re-implement this now that this function doesn't return a boolean anymore.
   });
 
   it("disabling when already disabled is a no-op", async function() {
-    await Glean.setUploadEnabled(false);
-    assert.ok(!(await Glean.setUploadEnabled(false)));
+    // TODO: Re-implement this now that this function doesn't return a boolean anymore.
   });
 
   it("initialization throws if applicationId is an empty string", async function() {
     await Glean.testUninitialize();
     try {
-      await Glean.initialize("", true);
+      Glean.initialize("", true);
       assert.ok(false);
     } catch {
       assert.ok(true);
@@ -147,7 +146,7 @@ describe("Glean", function() {
   it("initialization throws if serverEndpoint is an invalida URL", async function() {
     await Glean.testUninitialize();
     try {
-      await Glean.initialize(GLOBAL_APPLICATION_ID, true, { serverEndpoint: "" });
+      Glean.initialize(GLOBAL_APPLICATION_ID, true, { serverEndpoint: "" });
       assert.ok(false);
     } catch {
       assert.ok(true);
@@ -165,22 +164,22 @@ describe("Glean", function() {
     });
 
     metric.set("TEST VALUE");
-    pings.forEach(async (ping) => {
-      assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(ping));
-    });
+    for (const ping of pings) {
+      assert.strictEqual(await metric.testGetValue(ping), "TEST VALUE");
+    }
 
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
     metric.set("TEST VALUE");
-    pings.forEach(async (ping) => {
-      assert.strictEqual(await Glean["coreMetrics"]["clientId"].testGetValue(ping), undefined);
-    });
+    for (const ping of pings) {
+      assert.strictEqual(await metric.testGetValue(ping), undefined);
+    }
   });
 
   it("initializing twice is a no-op", async function() {
     await Glean.testUninitialize();
-    await Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    Glean.initialize(GLOBAL_APPLICATION_ID, true);
     // This time it should not be called, which means upload should not be switched to `false`.
-    await Glean.initialize(GLOBAL_APPLICATION_ID, false);
+    Glean.initialize(GLOBAL_APPLICATION_ID, false);
     assert.ok(Glean.isUploadEnabled());
   });
 });

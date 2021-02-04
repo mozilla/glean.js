@@ -5,7 +5,7 @@
 import { Store, StorageIndex } from "storage";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "storage/utils";
 import { JSONObject, JSONValue } from "utils";
-
+ 
 /**
  * A weak implementation for the Store interface.
  *
@@ -13,34 +13,44 @@ import { JSONObject, JSONValue } from "utils";
  */
 class WeakStore implements Store {
   private store: JSONObject;
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   constructor(_store: string) {
     this.store = {};
   }
 
-  async _getWholeStore(): Promise<JSONObject> {
-    return this.store;
+  _getWholeStore(): Promise<JSONObject> {
+    return Promise.resolve(this.store);
   }
 
-  async get(index: StorageIndex): Promise<JSONValue | undefined> {
-    return getValueFromNestedObject(this.store, index);
+  get(index: StorageIndex): Promise<JSONValue | undefined> {
+    try {
+      const value = getValueFromNestedObject(this.store, index);
+      return Promise.resolve(value);
+    } catch(e) {
+      return Promise.reject(e);
+    }
   }
 
-  async update(
+  update(
     index: StorageIndex,
     transformFn: (v?: JSONValue) => JSONValue
   ): Promise<void> {
-    this.store = updateNestedObject(this.store, index, transformFn);
+    try {
+      this.store = updateNestedObject(this.store, index, transformFn);
+      return Promise.resolve();
+    } catch(e) {
+      return Promise.reject(e);
+    }
   }
 
-  async delete(index: StorageIndex): Promise<void> {
+  delete(index: StorageIndex): Promise<void> {
     try {
       this.store = deleteKeyFromNestedObject(this.store, index);
     } catch (e) {
-      console.warn(e.message, "Ignoring.");
+      console.warn((e as Error).message, "Ignoring.");
     }
+    return Promise.resolve();
   }
 }
-
+ 
 export default WeakStore;

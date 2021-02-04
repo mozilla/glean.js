@@ -124,15 +124,15 @@ describe("PingsDatabase", function() {
       };
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
-      identifiers.forEach(async (identifier) => {
+      for (const identifier of identifiers) {
         await db.recordPing(path, identifier, payload);
-      });
+      }
 
       const allPings = await db.getAllPings();
       assert.strictEqual(Object.keys(allPings).length, 5);
-      identifiers.forEach(async (identifier, index) => {
+      for (const [index, identifier] of identifiers.entries()) {
         assert.strictEqual(identifier, identifiers[index]);
-      });
+      }
     });
 
     it("getAllPings dosen't error when there are no pings stored", async function () {
@@ -157,23 +157,23 @@ describe("PingsDatabase", function() {
       };
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
-      identifiers.forEach(async (identifier) => {
+      for (const identifier of identifiers) {
         await db.recordPing(path, identifier, payload);
-      });
+      }
 
       await db.deletePing("foo");
       const allPings = await db.getAllPings();
       assert.strictEqual(Object.keys(allPings).length, 4);
-      ["bar", "baz", "qux", "etc"].forEach(async (identifier, index) => {
+      for (const [index, identifier] of identifiers.entries()) {
         assert.strictEqual(identifier, identifiers[index]);
-      });
+      }
 
       await db.deletePing("bar");
       const allPings2 = await db.getAllPings();
       assert.strictEqual(Object.keys(allPings2).length, 3);
-      ["baz", "qux", "etc"].forEach(async (identifier, index) => {
+      for (const [index, identifier] of identifiers.entries()) {
         assert.strictEqual(identifier, identifiers[index]);
-      });
+      }
     });
 
     it("deleting a ping that is not in the db doesn't error", async function() {
@@ -191,16 +191,16 @@ describe("PingsDatabase", function() {
       };
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
-      identifiers.forEach(async (identifier) => {
+      for (const identifier of identifiers) {
         await db.recordPing(path, identifier, payload);
-      });
+      }
 
       await db.deletePing("no existo");
       const allPings = await db.getAllPings();
       assert.strictEqual(Object.keys(allPings).length, 5);
-      identifiers.forEach(async (identifier, index) => {
+      for (const [index, identifier] of identifiers.entries()) {
         assert.strictEqual(identifier, identifiers[index]);
-      });
+      }
     });
   });
 
@@ -220,9 +220,9 @@ describe("PingsDatabase", function() {
       };
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
-      identifiers.forEach(async (identifier) => {
+      for (const identifier of identifiers) {
         await db.recordPing(path, identifier, payload);
-      });
+      }
   
       await db.clearAll();
       assert.strictEqual(Object.keys(await db["store"]._getWholeStore()).length, 0);

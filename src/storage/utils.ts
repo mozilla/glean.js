@@ -83,7 +83,7 @@ export function updateNestedObject(
     target[finalKey] = value;
     return returnObject;
   } catch(e) {
-    console.error("Error while transforming stored value. Ignoring old value.", e.message);
+    console.error("Error while transforming stored value. Ignoring old value.", e);
     target[finalKey] = transformFn(undefined);
     return returnObject;
   }

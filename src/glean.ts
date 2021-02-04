@@ -119,7 +119,7 @@ class Glean {
     // Stops any task execution on the dispatcher.
     //
     // While stopped, the dispatcher will enqueue but won't execute any tasks it receives.
-    await Glean.dispatcher.stop();
+    Glean.dispatcher.stop();
 
     // Stop ongoing upload jobs and clear pending pings queue.
     await Glean.pingUploader.clearPendingPingsQueue();
@@ -158,15 +158,15 @@ class Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    await Glean.coreMetrics.clientId.set(KNOWN_CLIENT_ID);
+    Glean.coreMetrics.clientId.set(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await Glean.coreMetrics.firstRunDate.set(firstRunDate);
+    Glean.coreMetrics.firstRunDate.set(firstRunDate);
 
     Glean.uploadEnabled = false;
 
     // Clear the dispatcher queue.
-    await Glean.dispatcher.clear();
+    Glean.dispatcher.clear();
   }
 
   /**
@@ -190,11 +190,11 @@ class Glean {
    * - If config.serverEndpoint is an invalid URL;
    * - If the application if is an empty string.
    */
-  static async initialize(
+  static initialize(
     applicationId: string,
     uploadEnabled: boolean,
     config?: ConfigurationInterface
-  ): Promise<void> {
+  ): void {
     if (Glean.instance._initialized) {
       console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
       return;
@@ -216,12 +216,12 @@ class Glean {
     Glean.dispatcher.flushInit(async () => {
       Glean.instance._applicationId = sanitizeApplicationId(applicationId);
       Glean.instance._config = correctConfig;
-  
+
       // Clear application lifetime metrics.
       //
       // IMPORTANT!
       // Any pings we want to send upon initialization should happen before this.
-      Glean.metricsDatabase.clear(Lifetime.Application);
+      await Glean.metricsDatabase.clear(Lifetime.Application);
   
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
@@ -253,12 +253,15 @@ class Glean {
           await Glean.clearMetrics();
         }
       }
-  
+
       Glean.instance._initialized = true;
-  
+
       await Glean.pingUploader.scanPendingPings();
+
       // Even though this returns a promise, there is no need to block on it returning.
-      Glean.pingUploader.triggerUpload();
+      //
+      // On the contrary we _want_ the dispatcher to execute tasks async.
+      void Glean.pingUploader.triggerUpload();
     });
   }
 
@@ -412,7 +415,9 @@ class Glean {
     await Glean.pingsDatabase.clearAll();
 
     // Re-Initialize Glean.
-    await Glean.initialize(applicationId, uploadEnabled, config);
+    Glean.initialize(applicationId, uploadEnabled, config);
+
+    await Glean.dispatcher.testBlockOnQueue();
   }
 }
 

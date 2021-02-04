@@ -26,7 +26,7 @@ describe("CounterMetric", function() {
   });
   
   it("attemping to add when glean upload is disabled is a no-op", async function() {
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
 
     const metric = new CounterMetricType({
       category: "aCategory",
@@ -36,7 +36,7 @@ describe("CounterMetric", function() {
       disabled: false
     });
   
-    await metric.add(10);
+    metric.add(10);
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
@@ -49,7 +49,7 @@ describe("CounterMetric", function() {
       disabled: false
     });
   
-    await metric.add(10);
+    metric.add(10);
     assert.strictEqual(await metric.testGetValue("aPing"), 10);
   
     const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
@@ -69,7 +69,7 @@ describe("CounterMetric", function() {
       disabled: false
     });
 
-    await metric.add(10);
+    metric.add(10);
     assert.strictEqual(await metric.testGetValue("aPing"), 10);
     assert.strictEqual(await metric.testGetValue("twoPing"), 10);
     assert.strictEqual(await metric.testGetValue("threePing"), 10);
@@ -84,13 +84,13 @@ describe("CounterMetric", function() {
       disabled: false
     });
 
-    await metric.add(0);
+    metric.add(0);
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
 
-    await metric.add(-1);
+    metric.add(-1);
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
 
-    await metric.add(1);
+    metric.add(1);
     assert.strictEqual(await metric.testGetValue("aPing"), 1);
   });
 
@@ -103,17 +103,17 @@ describe("CounterMetric", function() {
       disabled: false
     });
 
-    await metric.add(2);
+    metric.add(2);
     assert.strictEqual(await metric.testGetValue("aPing"), 2);
     assert.strictEqual(await metric.testGetValue("twoPing"), 2);
     assert.strictEqual(await metric.testGetValue("threePing"), 2);
 
-    await metric.add(2);
+    metric.add(2);
     assert.strictEqual(await metric.testGetValue("aPing"), 4);
     assert.strictEqual(await metric.testGetValue("twoPing"), 4);
     assert.strictEqual(await metric.testGetValue("threePing"), 4);
 
-    await metric.add(2);
+    metric.add(2);
     assert.strictEqual(await metric.testGetValue("aPing"), 6);
     assert.strictEqual(await metric.testGetValue("twoPing"), 6);
     assert.strictEqual(await metric.testGetValue("threePing"), 6);
@@ -128,9 +128,9 @@ describe("CounterMetric", function() {
       disabled: false
     });
 
-    await metric.add(2);
+    metric.add(2);
     assert.strictEqual(await metric.testGetValue("aPing"), 2);
-    await metric.add(Number.MAX_SAFE_INTEGER);
+    metric.add(Number.MAX_SAFE_INTEGER);
     assert.strictEqual(await metric.testGetValue("aPing"), Number.MAX_SAFE_INTEGER);
   });
 });

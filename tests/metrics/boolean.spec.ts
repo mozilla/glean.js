@@ -26,7 +26,7 @@ describe("BooleanMetric", function() {
   });
 
   it("attemping to set when glean upload is disabled is a no-op", async function() {
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
 
     const metric = new BooleanMetricType({
       category: "aCategory",
@@ -36,7 +36,7 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    await metric.set(true);
+    metric.set(true);
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
@@ -49,7 +49,7 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    await metric.set(true);
+    metric.set(true);
     assert.strictEqual(await metric.testGetValue("aPing"), true);
 
     const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
@@ -69,7 +69,7 @@ describe("BooleanMetric", function() {
       disabled: false
     });
 
-    await metric.set(true);
+    metric.set(true);
     assert.strictEqual(await metric.testGetValue("aPing"), true);
     assert.strictEqual(await metric.testGetValue("twoPing"), true);
     assert.strictEqual(await metric.testGetValue("threePing"), true);

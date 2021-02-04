@@ -27,7 +27,7 @@ describe("UUIDMetric", function() {
   });
 
   it("attemping to set when glean upload is disabled is a no-op", async function() {
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
 
     const metric = new UUIDMetricType({
       category: "aCategory",
@@ -37,12 +37,12 @@ describe("UUIDMetric", function() {
       disabled: false
     });
 
-    await metric.generateAndSet();
+    metric.generateAndSet();
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
   it("attemping to set an invalid uuid is a no-op", async function() {
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
 
     const metric = new UUIDMetricType({
       category: "aCategory",
@@ -52,7 +52,7 @@ describe("UUIDMetric", function() {
       disabled: false
     });
 
-    await metric.set("not valid");
+    metric.set("not valid");
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
@@ -66,7 +66,7 @@ describe("UUIDMetric", function() {
     });
 
     const expected = UUIDv4();
-    await metric.set(expected);
+    metric.set(expected);
     assert.strictEqual(await metric.testGetValue("aPing"), expected);
 
     const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
@@ -87,7 +87,7 @@ describe("UUIDMetric", function() {
     });
 
     const expected = UUIDv4();
-    await metric.set(expected);
+    metric.set(expected);
     assert.strictEqual(await metric.testGetValue("aPing"), expected);
     assert.strictEqual(await metric.testGetValue("twoPing"), expected);
     assert.strictEqual(await metric.testGetValue("threePing"), expected);
@@ -102,7 +102,7 @@ describe("UUIDMetric", function() {
       disabled: false
     });
 
-    const value = await metric.generateAndSet();
+    const value = metric.generateAndSet();
     assert.strictEqual(value, await metric.testGetValue("aPing"));
   });
 });

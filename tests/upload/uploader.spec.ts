@@ -57,7 +57,7 @@ function createResponse(status: number): Response {
 }
 
 describe("Uploader/browser", function () {
-  afterEach(async function () {
+  afterEach(function () {
     sandbox.restore();
   });
 

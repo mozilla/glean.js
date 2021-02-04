@@ -106,8 +106,6 @@ class MetricsDatabase {
       return this.pingStore;
     case Lifetime.Application:
       return this.appStore;
-    default:
-      throw Error(`Attempted to retrive a store for an unknown lifetime: ${lifetime}`);
     }
   }
 

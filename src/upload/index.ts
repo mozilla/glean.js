@@ -155,7 +155,12 @@ class PingUploader implements PingsDatabaseObserver {
 
     const finalPing = this.preparePingForUpload(ping);
     const result = await Uploader.post(
-      `${Glean.serverEndpoint}${ping.path}`,
+      // We are sure that the applicationId is not `undefined` at this point,
+      // this function is only called when submitting a ping
+      // and that function return early when Glean is not initialized.
+      //
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      `${Glean.serverEndpoint!}${ping.path}`,
       finalPing.payload,
       finalPing.headers
     );
@@ -210,13 +215,13 @@ class PingUploader implements PingsDatabaseObserver {
 
     if (result === UploadResultStatus.UnrecoverableFailure || (status && status >= 400 && status < 500)) {
       console.warn(
-        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was ${status}.`);
+        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was ${status ?? "no status"}.`);
       await Glean.pingsDatabase.deletePing(identifier);
       return false;
     }
 
     console.warn(
-      `Recoverable upload failure while attempting to send ping ${identifier}, will retry. Error was ${status}.`);
+      `Recoverable upload failure while attempting to send ping ${identifier}, will retry. Error was ${status ?? "no status"}.`);
     return true;
   }
 
@@ -314,7 +319,7 @@ class PingUploader implements PingsDatabaseObserver {
    */
   update(identifier: string, ping: PingInternalRepresentation): void {
     this.enqueuePing({ identifier, ...ping });
-    this.triggerUpload();
+    void this.triggerUpload();
   }
 }
 

@@ -33,9 +33,9 @@ async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
   };
 
   const identifiers = Array.from({ length: numPings }, () => UUIDv4());
-  identifiers.forEach(async (identifier) => {
+  for (const identifier of identifiers) {
     await Glean.pingsDatabase.recordPing(path, identifier, payload);
-  });
+  }
 
   return identifiers;
 }
@@ -60,7 +60,7 @@ function disableGleanUploader(): void {
 }
 
 describe("PingUploader", function() {
-  afterEach(async function () {
+  afterEach(function () {
     sandbox.restore();
   });
 
@@ -112,7 +112,7 @@ describe("PingUploader", function() {
 
     // Trigger uploading, but don't wait for it to finish,
     // so that it is ongoing when we cancel.
-    uploader.triggerUpload();
+    void uploader.triggerUpload();
     await uploader.cancelUpload();
 
     // There is really no way to know how many pings Glean will be able to upload
@@ -158,7 +158,7 @@ describe("PingUploader", function() {
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 1);
   });
 
-  it("duplicates are not enqueued", async function() {
+  it("duplicates are not enqueued", function() {
     const uploader = new PingUploader();
     for (let i = 0; i < 10; i++) {
       uploader["enqueuePing"]({
