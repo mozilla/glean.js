@@ -10,7 +10,7 @@ import EventMetricType from "metrics/types/event";
 import { JSONObject } from "utils";
 
 describe("EventsDatabase", function() {
-  it("stable serialization", async function () {
+  it("stable serialization", function () {
     const event_empty = new RecordedEvent(
       "cat",
       "name",
@@ -34,7 +34,7 @@ describe("EventsDatabase", function() {
     assert.deepStrictEqual(event_data, RecordedEvent.fromJSONObject(event_data_json));
   });
 
-  it("deserialize existing data", async function () {
+  it("deserialize existing data", function () {
     const event_empty_json = {
       "category": "cat",
       "extra": undefined,

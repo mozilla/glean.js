@@ -27,7 +27,7 @@ describe("Dispatcher", function() {
     dispatcher && await dispatcher.testBlockOnQueue();
   });
 
-  it("launch correctly adds tasks to the queue", async function () {
+  it("launch correctly adds tasks to the queue", function () {
     dispatcher = new Dispatcher();
     for (let i = 0; i < 10; i++) {
       dispatcher.launch(sampleTask);
@@ -80,9 +80,10 @@ describe("Dispatcher", function() {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const stubs: sinon.SinonStub<any[], any>[] = [];
     for (let i = 0; i < 10; i++) {
-      stubs.push(sandbox.stub().callsFake(async (): Promise<void> => {
+      stubs.push(sandbox.stub().callsFake((): Promise<void> => {
         counts[i] = counter;
         counter++;
+        return Promise.resolve();
       }));
     }
 
@@ -113,7 +114,7 @@ describe("Dispatcher", function() {
     }
   });
 
-  it("exceptions thrown by enqueued tasks are caught", async function () {
+  it("exceptions thrown by enqueued tasks are caught", function () {
     dispatcher = new Dispatcher();
     const stub = sandbox.stub().callsFake(() => Promise.reject());
     for (let i = 0; i < 10; i++) {
@@ -124,7 +125,7 @@ describe("Dispatcher", function() {
     assert.doesNotThrow(async () => await dispatcher.testBlockOnQueue());
   });
 
-  it("queue is bounded before flushInit", async function () {
+  it("queue is bounded before flushInit", function () {
     dispatcher = new Dispatcher(5);
     for (let i = 0; i < 10; i++) {
       dispatcher.launch(sampleTask);
@@ -224,7 +225,7 @@ describe("Dispatcher", function() {
       dispatcher.launch(stub);
     }
 
-    dispatcher.launch(async () => dispatcher.clear());
+    dispatcher.launch(() => Promise.resolve(dispatcher.clear()));
     for (let i = 0; i < 10; i++) {
       dispatcher.launch(stub);
     }
@@ -260,7 +261,7 @@ describe("Dispatcher", function() {
       dispatcher.launch(stub);
     }
 
-    dispatcher.launch(async () => dispatcher.stop());
+    dispatcher.launch(() => Promise.resolve(dispatcher.stop()));
     await dispatcher.testBlockOnQueue();
 
     assert.strictEqual(stub.callCount, 10);

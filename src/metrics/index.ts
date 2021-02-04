@@ -49,7 +49,7 @@ export abstract class Metric<
    */
   set(v: unknown): void {
     if (!this.validate(v)) {
-      console.error(`Unable to set metric to ${v}. Value is in unexpected format. Ignoring.`);
+      console.error(`Unable to set metric to ${JSON.stringify(v)}. Value is in unexpected format. Ignoring.`);
       return;
     }
 

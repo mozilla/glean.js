@@ -31,7 +31,7 @@ export async function getSequenceNumber(ping: PingType): Promise<number> {
   });
 
   const currentSeqData = await Glean.metricsDatabase.getMetric(PING_INFO_STORAGE, seq);
-  await seq.add(1);
+  seq.add(1);
 
   if (currentSeqData) {
     // Creating a new counter metric validates that the metric stored is actually a number.
@@ -77,7 +77,7 @@ export async function getStartEndTimes(ping: PingType): Promise<{ startTime: str
 
   // Update the start time with the current time.
   const endTimeData = new Date();
-  await start.set(endTimeData);
+  start.set(endTimeData);
   const endTime = DatetimeMetric.fromDate(endTimeData, TimeUnit.Minute);
 
   return {
@@ -149,11 +149,8 @@ export async function buildClientInfoSection(ping: PingType): Promise<ClientInfo
  * The current headers gathered here are:
  * - [X-Debug-Id]
  * - [X-Source-Tags]
- *
- * @returns An object with the headers to include
- *          or `undefined` if there are no headers to include.
  */
-export async function getPingHeaders(): Promise<Record<string, string> | undefined> {
+export function getPingHeaders(): Record<string, string> | undefined {
   // TODO: Returning nothing for now until Bug 1685718 is resolved.
   return;
 }
@@ -198,7 +195,12 @@ export async function collectPing(ping: PingType, reason?: string): Promise<Ping
  * @returns The final submission path.
  */
 function makePath(identifier: string, ping: PingType): string {
-  return `/submit/${Glean.applicationId}/${ping.name}/${GLEAN_SCHEMA_VERSION}/${identifier}`;
+  // We are sure that the applicationId is not `undefined` at this point,
+  // this function is only called when submitting a ping
+  // and that function return early when Glean is not initialized.
+  //
+  // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+  return `/submit/${Glean.applicationId!}/${ping.name}/${GLEAN_SCHEMA_VERSION}/${identifier}`;
 }
 
 /**
@@ -215,7 +217,7 @@ export async function collectAndStorePing(identifier: string, ping: PingType, re
   if (!payload) {
     return;
   }
-  const headers = await getPingHeaders();
+  const headers = getPingHeaders();
   return Glean.pingsDatabase.recordPing(
     makePath(identifier, ping),
     identifier,

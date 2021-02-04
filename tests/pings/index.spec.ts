@@ -33,9 +33,9 @@ describe("PingType", function() {
       lifetime: Lifetime.Ping,
       disabled: false
     });
-    await counter.add();
+    counter.add();
 
-    assert.ok(await ping.submit());
+    assert.ok(ping.submit());
     // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
     // possibly once Bug 1677440 is resolved.
     const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
@@ -51,20 +51,20 @@ describe("PingType", function() {
 
     // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
     // possibly once Bug 1677440 is resolved.
-    assert.ok(await ping1.submit());
+    assert.ok(ping1.submit());
     let storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);
 
-    assert.ok(await ping2.submit());
+    assert.ok(ping2.submit());
     storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
   it("no pings are submitted if upload is disabled", async function() {
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
 
     const ping = new PingType("custom", true, false, []);
-    assert.strictEqual(await ping.submit(), false);
+    assert.strictEqual(ping.submit(), false);
     // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
     // possibly once Bug 1677440 is resolved.
     const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
@@ -75,7 +75,7 @@ describe("PingType", function() {
     await Glean.testUninitialize();
 
     const ping = new PingType("custom", true, false, []);
-    assert.strictEqual(await ping.submit(), false);
+    assert.strictEqual(ping.submit(), false);
     // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
     // possibly once Bug 1677440 is resolved.
     const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();

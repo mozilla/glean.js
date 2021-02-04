@@ -115,7 +115,7 @@ describe("MetricsDatabase", function() {
         disabled: false
       });
       await db.transform(userMetric, (v?: JSONValue) => (
-        v ? new StringMetric(`USER_${v}`) : new StringMetric("USER")
+        v ? new StringMetric(`USER_${JSON.stringify(v)}`) : new StringMetric("USER")
       ));
       assert.strictEqual(
         await db["userStore"].get(["aPing", "string", "user.aMetric"]),
@@ -130,7 +130,7 @@ describe("MetricsDatabase", function() {
         disabled: false
       });
       await db.transform(pingMetric,(v?: JSONValue) => (
-        v ? new StringMetric(`PING_${v}`) : new StringMetric("PING")
+        v ? new StringMetric(`PING_${JSON.stringify(v)}`) : new StringMetric("PING")
       ));
       assert.strictEqual(
         await db["pingStore"].get(["aPing", "string", "ping.aMetric"]),
@@ -145,7 +145,7 @@ describe("MetricsDatabase", function() {
         disabled: false
       });
       await db.transform(appMetric, (v?: JSONValue) => (
-        v ? new StringMetric(`APP_${v}`) : new StringMetric("APP")
+        v ? new StringMetric(`APP_${JSON.stringify(v)}`) : new StringMetric("APP")
       ));
       assert.strictEqual(
         await db["appStore"].get(["aPing", "string", "app.aMetric"]),
@@ -164,7 +164,7 @@ describe("MetricsDatabase", function() {
       });
 
       await db.transform(metric, (v?: JSONValue) => (
-        v ? new StringMetric(`EXTRA_${v}`) : new StringMetric("EXTRA")
+        v ? new StringMetric(`EXTRA_${JSON.stringify(v)}`) : new StringMetric("EXTRA")
       ));
       const recorded1 = await db["appStore"].get(["aPing", "string", "aMetric"]);
       assert.strictEqual(recorded1, "EXTRA");
@@ -185,7 +185,7 @@ describe("MetricsDatabase", function() {
       });
 
       await db.transform(metric, (v?: JSONValue) => (
-        v ? new StringMetric(`EXTRA_${v}`) : new StringMetric("EXTRA")
+        v ? new StringMetric(`EXTRA_${JSON.stringify(v)}`) : new StringMetric("EXTRA")
       ));
       const recorded = await db["appStore"].get(["aPing", "string", "aMetric"]);
       assert.strictEqual(recorded, undefined);

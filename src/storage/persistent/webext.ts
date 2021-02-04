@@ -113,7 +113,7 @@ class WebExtStore implements Store {
     }
 
     console.warn(
-      `Unexpected value found in storage for index ${index}. Ignoring.
+      `Unexpected value found in storage for index ${JSON.stringify(index)}. Ignoring.
       ${JSON.stringify(response, null, 2)}`
     );
   }
@@ -146,7 +146,7 @@ class WebExtStore implements Store {
       );
       return this.store.set(query);
     } catch(e) {
-      console.warn(e.message, "Ignoring");
+      console.warn((e as Error).message, "Ignoring");
     }
   }
 }

@@ -74,7 +74,7 @@ class UUIDMetricType extends MetricType {
    *
    * @throws In case `value` is not a valid UUID.
    */
-  async set(value: string): Promise<void> {
+  set(value: string): void {
     Glean.dispatcher.launch(async () => {
       if (!this.shouldRecord()) {
         return;
@@ -102,13 +102,13 @@ class UUIDMetricType extends MetricType {
    *
    * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
    */
-  async generateAndSet(): Promise<string | undefined> {
+  generateAndSet(): string | undefined {
     if (!this.shouldRecord()) {
       return;
     }
 
     const value = generateUUIDv4();
-    await this.set(value);
+    this.set(value);
 
     return value;
   }

@@ -24,7 +24,7 @@ const stores: {
   }
 } = {
   "WeakStore": {
-    initializeStore: (): WeakStore => new WeakStore()
+    initializeStore: (): WeakStore => new WeakStore("unused")
   },
   "WebExtStore": {
     initializeStore: (): WebExtStore => new WebExtStore("test"),
@@ -151,7 +151,7 @@ for (const store in stores) {
       });
   
       it("Attempting to update an existing entry doesn't error ", async function () {
-        const updater = (v?: JSONValue): string => `${v} new and improved!`;
+        const updater = (v?: JSONValue): string => `${JSON.stringify(v)} new and improved!`;
         await store.update(index, updater);
         assert.strictEqual(updater(value), await store.get(index));
       });

@@ -43,6 +43,7 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
     // https://github.com/SeleniumHQ/selenium/blob/trunk/javascript/node/selenium-webdriver/firefox.js#L632-L652
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call
     browser.installAddon(
       path.resolve(__dirname, "sample/web-ext-artifacts/gleanjs-test-addon-0.0.1.zip"),
       true
@@ -71,7 +72,7 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
 export function webExtensionAPIProxyBuilder(browser: WebDriver, method: string[]) {
   return async function (...args: never[]): Promise<never> {
     return browser.executeAsyncScript((args: never[], method: string[], callback: (arg: string) => void) => {
-      console.log(`Executing proxy ${method} with the following args:`, args);
+      console.log(`Executing proxy ${JSON.stringify(method)} with the following args:`, args);
 
       console.log("Dispatching a new test event!");
       // Send a new test event to be run on the background script of the sample web extension.

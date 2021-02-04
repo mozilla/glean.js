@@ -118,12 +118,19 @@ class Dispatcher {
       // That should be avoided as much as possible,
       // because it will cause a deadlock in case you wait inside a task
       // that was launched inside another task.
-      this.currentJob.then(() => {
-        this.currentJob = undefined;
-        if (this.state === DispatcherState.Processing) {
-          this.state = DispatcherState.Idle;
-        }
-      });
+      this.currentJob
+        .then(() => {
+          this.currentJob = undefined;
+          if (this.state === DispatcherState.Processing) {
+            this.state = DispatcherState.Idle;
+          }
+        })
+        .catch(error => {
+          console.error(
+            "IMPOSSIBLE: Something went wrong while the dispatcher was executing the tasks queue.",
+            error
+          );
+        });
     }
   }
 

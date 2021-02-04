@@ -63,7 +63,7 @@ describe("DatetimeMetric", function() {
   });
 
   it("attemping to set when glean upload is disabled is a no-op", async function() {
-    await Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
 
     const metric = new DatetimeMetricType({
       category: "aCategory",
@@ -73,7 +73,7 @@ describe("DatetimeMetric", function() {
       disabled: false
     }, "millisecond");
 
-    await metric.set();
+    metric.set();
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
@@ -90,7 +90,7 @@ describe("DatetimeMetric", function() {
       disabled: false
     }, "minute");
 
-    await metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
+    metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15+05:00");
 
     const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
@@ -117,19 +117,19 @@ describe("DatetimeMetric", function() {
       disabled: false
     }, "millisecond");
 
-    await metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
+    metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("threePing"), "1995-05-25T08:15:45.385+05:00");
 
     // A date prior to the UNIX epoch
-    await metric.set(new Date(1895, 4, 25, 8, 15, 45, 385));
+    metric.set(new Date(1895, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "1895-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1895-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("threePing"), "1895-05-25T08:15:45.385+05:00");
 
     // A date following 2038 (the extent of signed 32-bits after UNIX epoch)
-    await metric.set(new Date(2995, 4, 25, 8, 15, 45, 385));
+    metric.set(new Date(2995, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "2995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("twoPing"), "2995-05-25T08:15:45.385+05:00");
     assert.strictEqual(await metric.testGetValueAsString("threePing"), "2995-05-25T08:15:45.385+05:00");
@@ -181,7 +181,7 @@ describe("DatetimeMetric", function() {
         disabled: false
       }, testCase.unit);
 
-      await metric.set(date);
+      metric.set(date);
       assert.strictEqual(await metric.testGetValueAsString("aPing"), testCase.expected);
     }
   });
