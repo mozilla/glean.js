@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import Dispatcher from "dispatcher";
+import Dispatcher, { DispatcherState } from "dispatcher";
 
 const sandbox = sinon.createSandbox();
 
@@ -146,6 +146,37 @@ describe("Dispatcher", function() {
     assert.strictEqual(stub.callCount, 10);
   });
 
+  it("dispatcher just keeps enqueueing tasks launched inside other tasks", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    const stub = sandbox.stub().callsFake(sampleTask);
+    const inceptionTask = async () => {
+      await stub();
+      dispatcher.launch(async () => {
+        await stub();
+        dispatcher.launch(stub);
+      });
+    };
+
+    const originalExecuteFn = dispatcher["execute"].bind(dispatcher);
+    let executeCallCount = 0;
+    dispatcher["execute"] = async (): Promise<void> => {
+      await originalExecuteFn();
+      executeCallCount++;
+    };
+    dispatcher.launch(inceptionTask);
+
+    await dispatcher.testBlockOnQueue();
+    assert.strictEqual(stub.callCount, 3);
+
+    // Execute should only have been called once.
+    //
+    // The dispatcher should be never have left the Processing state
+    // while launching the internal tasks.
+    assert.strictEqual(executeCallCount, 1);
+  });
+
   it("clearing stops and clears the queue", async function() {
     dispatcher = new Dispatcher();
     dispatcher.flushInit();
@@ -155,9 +186,53 @@ describe("Dispatcher", function() {
       dispatcher.launch(stub);
     }
 
-    await dispatcher.clear();
+    dispatcher.clear();
+    await dispatcher.testBlockOnQueue();
+
     assert.ok(stub.callCount < 10);
     assert.strictEqual(dispatcher["queue"].length, 0);
+    assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
+  });
+
+  it("clearing works even if the dispatcher is stopped", async function() {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+    dispatcher.stop();
+
+    const stub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(stub);
+    }
+
+    assert.strictEqual(stub.callCount, 0);
+    assert.strictEqual(dispatcher["queue"].length, 10);
+
+    dispatcher.clear();
+    await dispatcher.testBlockOnQueue();
+
+    assert.strictEqual(stub.callCount, 0);
+    assert.strictEqual(dispatcher["queue"].length, 0);
+    assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
+  });
+
+  it("attempting to clear from inside a launched task finishes the current task before clearing", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    const stub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(stub);
+    }
+
+    dispatcher.launch(async () => dispatcher.clear());
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(stub);
+    }
+    await dispatcher.testBlockOnQueue();
+
+    assert.strictEqual(stub.callCount, 10);
+    assert.strictEqual(dispatcher["queue"].length, 0);
+    assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
   });
 
   it("stopping stops execution of tasks, even though tasks are still enqueued", async function() {
@@ -169,9 +244,26 @@ describe("Dispatcher", function() {
       dispatcher.launch(stub);
     }
 
-    await dispatcher.stop();
+    dispatcher.stop();
+    await dispatcher.testBlockOnQueue();
 
     assert.ok(stub.callCount < 10);
     assert.strictEqual(dispatcher["queue"].length, 100 - stub.callCount);
+  });
+
+  it("attempting to stop execution from inside a launched task finishes the current task before stopping", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    const stub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(stub);
+    }
+
+    dispatcher.launch(async () => dispatcher.stop());
+    await dispatcher.testBlockOnQueue();
+
+    assert.strictEqual(stub.callCount, 10);
+    assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
   });
 });
