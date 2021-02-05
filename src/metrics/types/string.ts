@@ -81,7 +81,11 @@ class StringMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<string | undefined> {
-    return Glean.metricsDatabase.getMetric<string>(ping, this);
+    let metric: string | undefined;
+    await Glean.dispatcher.testLaunch(async () => {
+      metric = await Glean.metricsDatabase.getMetric<string>(ping, this);
+    });
+    return metric;
   }
 }
 

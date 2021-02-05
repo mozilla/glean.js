@@ -226,7 +226,10 @@ class DatetimeMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
-    const value = await Glean.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
+    let value: DatetimeInternalRepresentation | undefined;
+    await Glean.dispatcher.testLaunch(async () => {
+      value = await Glean.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
+    });
     if (value) {
       return new DatetimeMetric(value);
     }

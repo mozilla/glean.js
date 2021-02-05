@@ -2,38 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { v4 as UUIDv4, validate as UUIDvalidate } from "uuid";
+import { validate as UUIDvalidate } from "uuid";
 
 import { KNOWN_CLIENT_ID } from "../../constants";
 import { Metric, MetricType, CommonMetricData } from "metrics";
-import { isString } from "utils";
+import { isString, generateUUIDv4 } from "utils";
 import Glean from "glean";
-
-/**
- * Generates a UUIDv4.
- *
- * Will provide a fallback in case `crypto` is not available,
- * which makes the "uuid" package generator not work.
- *
- * # Important
- *
- * This workaround is here for usage in Qt/QML environments, where `crypto` is not available.
- * Bug 1688015 was opened to figure out a less hacky way to do this.
- *
- * @returns A randomly generated UUIDv4.
- */
-function generateUUIDv4(): string {
-  if (typeof crypto !== "undefined") {
-    return UUIDv4();
-  } else {
-    // Copied from https://stackoverflow.com/a/2117523/261698
-    // and https://stackoverflow.com/questions/105034/how-to-create-guid-uuid
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-      const r = Math.random() * 16 | 0, v = c == "x" ? r : (r & 0x3 | 0x8);
-      return v.toString(16);
-    });
-  }
-}
 
 export class UUIDMetric extends Metric<string, string> {
   constructor(v: unknown) {
@@ -127,7 +101,11 @@ class UUIDMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<string | undefined> {
-    return Glean.metricsDatabase.getMetric<string>(ping, this);
+    let metric: string | undefined;
+    await Glean.dispatcher.testLaunch(async () => {
+      metric = await Glean.metricsDatabase.getMetric<string>(ping, this);
+    });
+    return metric;
   }
 }
  

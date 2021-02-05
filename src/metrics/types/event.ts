@@ -92,11 +92,10 @@ class EventMetricType extends MetricType {
    */
   async testGetValue(ping?: string): Promise<RecordedEvent[] | undefined> {
     const pingToQuery = ping ?? this.sendInPings[0];
-    const events = await Glean.eventsDatabase.getEvents(pingToQuery, this);
-    if (!events) {
-      return undefined;
-    }
-
+    let events: RecordedEvent[] | undefined;
+    await Glean.dispatcher.testLaunch(async () => {
+      events = await Glean.eventsDatabase.getEvents(pingToQuery, this);
+    });
     return events;
   }
 }
