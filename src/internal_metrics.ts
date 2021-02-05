@@ -11,6 +11,7 @@ import TimeUnit from "metrics/time_unit";
 import { Lifetime } from "metrics";
 import Glean from "glean";
 import PlatformInfo from "platform_info";
+import { generateUUIDv4 } from "utils";
 
 export class CoreMetrics {
   readonly clientId: UUIDMetricType;
@@ -96,8 +97,8 @@ export class CoreMetrics {
     await this.initializeOsVersion();
     await this.initializeArchitecture();
     await this.initializeLocale();
-    this.appBuild.set(appBuild || "Unknown");
-    this.appDisplayVersion.set(appDisplayVersion || "Unkown");
+    await StringMetricType._private_setSync(this.appBuild, appBuild || "Unknown");
+    await StringMetricType._private_setSync(this.appDisplayVersion, appDisplayVersion || "Unknown");
   }
 
   /**
@@ -122,7 +123,7 @@ export class CoreMetrics {
     }
 
     if (needNewClientId) {
-      this.clientId.generateAndSet();
+      await UUIDMetricType._private_setSync(this.clientId, generateUUIDv4());
     }
   }
 
@@ -136,7 +137,7 @@ export class CoreMetrics {
     );
 
     if (!firstRunDate) {
-      this.firstRunDate.set();
+      await DatetimeMetricType._private_setSync(this.firstRunDate);
     }
   }
 
@@ -144,27 +145,27 @@ export class CoreMetrics {
    * Gets and sets the os.
    */
   async initializeOs(): Promise<void> {
-    this.os.set(await PlatformInfo.os());
+    await StringMetricType._private_setSync(this.os, await PlatformInfo.os());
   }
 
   /**
    * Gets and sets the os.
    */
   async initializeOsVersion(): Promise<void> {
-    this.osVersion.set(await PlatformInfo.osVersion());
+    await StringMetricType._private_setSync(this.osVersion, await PlatformInfo.osVersion());
   }
 
   /**
    * Gets and sets the system architecture.
    */
   async initializeArchitecture(): Promise<void> {
-    this.architecture.set(await PlatformInfo.arch());
+    await StringMetricType._private_setSync(this.architecture, await PlatformInfo.arch());
   }
 
   /**
    * Gets and sets the system / browser locale.
    */
   async initializeLocale(): Promise<void> {
-    this.locale.set(await PlatformInfo.locale());
+    await StringMetricType._private_setSync(this.locale, await PlatformInfo.locale());
   }
 }

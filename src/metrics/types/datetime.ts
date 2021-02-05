@@ -162,11 +162,59 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
  * such as the time the user first ran the application.
  */
 class DatetimeMetricType extends MetricType {
-  private timeUnit: TimeUnit;
+  timeUnit: TimeUnit;
 
   constructor(meta: CommonMetricData, timeUnit: string) {
     super("datetime", meta);
     this.timeUnit = timeUnit as TimeUnit;
+  }
+
+  /**
+   * An internal implemention of `set` that does not dispatch the recording task.
+   *
+   * # Important
+   *
+   * This is absolutely not meant to be used outside of Glean itself.
+   * It may cause multiple issues because it cannot guarantee
+   * that the recording of the metric will happen in order with other Glean API calls.
+   *
+   * @param instance The metric instance to record to.
+   * @param value The date we want to set to.
+   */
+  static async _private_setSync(instance: DatetimeMetricType, value?: Date): Promise<void> {
+    if (!instance.shouldRecord()) {
+      return;
+    }
+
+    if (!value) {
+      value = new Date();
+    }
+
+    // We always save a milliseconds precision ISO string on the database,
+    // regardless of the time unit. So we zero out information that
+    // is not necessary for the current time unit of this metric.
+    const truncatedDate = value;
+    switch(instance.timeUnit) {
+    case (TimeUnit.Day):
+      truncatedDate.setMilliseconds(0);
+      truncatedDate.setSeconds(0);
+      truncatedDate.setMinutes(0);
+      truncatedDate.setMilliseconds(0);
+    case (TimeUnit.Hour):
+      truncatedDate.setMilliseconds(0);
+      truncatedDate.setSeconds(0);
+      truncatedDate.setMinutes(0);
+    case (TimeUnit.Minute):
+      truncatedDate.setMilliseconds(0);
+      truncatedDate.setSeconds(0);
+    case (TimeUnit.Second):
+      truncatedDate.setMilliseconds(0);
+    default:
+      break;
+    }
+
+    const metric = DatetimeMetric.fromDate(value, instance.timeUnit);
+    await Glean.metricsDatabase.record(instance, metric);
   }
 
   /**
@@ -175,41 +223,7 @@ class DatetimeMetricType extends MetricType {
    * @param value The Date value to set. If not provided, will record the current time.
    */
   set(value?: Date): void {
-    Glean.dispatcher.launch(async () => {
-      if (!this.shouldRecord()) {
-        return;
-      }
-  
-      if (!value) {
-        value = new Date();
-      }
-  
-      // We always save a milliseconds precision ISO string on the database,
-      // regardless of the time unit. So we zero out information that
-      // is not necessary for the current time unit of this metric.
-      const truncatedDate = value;
-      switch(this.timeUnit) {
-      case (TimeUnit.Day):
-        truncatedDate.setMilliseconds(0);
-        truncatedDate.setSeconds(0);
-        truncatedDate.setMinutes(0);
-        truncatedDate.setMilliseconds(0);
-      case (TimeUnit.Hour):
-        truncatedDate.setMilliseconds(0);
-        truncatedDate.setSeconds(0);
-        truncatedDate.setMinutes(0);
-      case (TimeUnit.Minute):
-        truncatedDate.setMilliseconds(0);
-        truncatedDate.setSeconds(0);
-      case (TimeUnit.Second):
-        truncatedDate.setMilliseconds(0);
-      default:
-        break;
-      }
-  
-      const metric = DatetimeMetric.fromDate(value, this.timeUnit);
-      await Glean.metricsDatabase.record(this, metric);
-    });
+    Glean.dispatcher.launch(() => DatetimeMetricType._private_setSync(this, value));
   }
 
   /**

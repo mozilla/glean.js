@@ -40,6 +40,57 @@ class CounterMetricType extends MetricType {
   }
 
   /**
+   * An internal implemention of `add` that does not dispatch the recording task.
+   *
+   * # Important
+   *
+   * This is absolutely not meant to be used outside of Glean itself.
+   * It may cause multiple issues because it cannot guarantee
+   * that the recording of the metric will happen in order with other Glean API calls.
+   *
+   * @param instance The metric instance to record to.
+   * @param amount The amount we want to add.
+   */
+  static async _private_addSync(instance: CounterMetricType, amount?: number): Promise<void> {
+    if (!instance.shouldRecord()) {
+      return;
+    }
+
+    if (isUndefined(amount)) {
+      amount = 1;
+    }
+
+    if (amount <= 0) {
+      // TODO: record error once Bug 1682574 is resolved.
+      console.warn(`Attempted to add an invalid amount ${amount}. Ignoring.`);
+      return;
+    }
+
+    const transformFn = ((amount) => {
+      return (v?: JSONValue): CounterMetric => {
+        let metric: CounterMetric;
+        let result: number;
+        try {
+          metric = new CounterMetric(v);
+          result = metric.get() + amount;
+        } catch {
+          metric = new CounterMetric(amount);
+          result = amount;
+        }
+
+        if (result > Number.MAX_SAFE_INTEGER) {
+          result = Number.MAX_SAFE_INTEGER;
+        }
+
+        metric.set(result);
+        return metric;
+      };
+    })(amount);
+
+    await Glean.metricsDatabase.transform(instance, transformFn);
+  }
+
+  /**
    * Increases the counter by `amount`.
    *
    * # Note
@@ -52,44 +103,7 @@ class CounterMetricType extends MetricType {
    *               If not provided will default to `1`.
    */
   add(amount?: number): void {
-    Glean.dispatcher.launch(async () => {
-      if (!this.shouldRecord()) {
-        return;
-      }
-  
-      if (isUndefined(amount)) {
-        amount = 1;
-      }
-  
-      if (amount <= 0) {
-        // TODO: record error once Bug 1682574 is resolved.
-        console.warn(`Attempted to add an invalid amount ${amount}. Ignoring.`);
-        return;
-      }
-  
-      const transformFn = ((amount) => {
-        return (v?: JSONValue): CounterMetric => {
-          let metric: CounterMetric;
-          let result: number;
-          try {
-            metric = new CounterMetric(v);
-            result = metric.get() + amount;
-          } catch {
-            metric = new CounterMetric(amount);
-            result = amount;
-          }
-  
-          if (result > Number.MAX_SAFE_INTEGER) {
-            result = Number.MAX_SAFE_INTEGER;
-          }
-  
-          metric.set(result);
-          return metric;
-        };
-      })(amount);
-  
-      await Glean.metricsDatabase.transform(this, transformFn);
-    });
+    Glean.dispatcher.launch(async () => CounterMetricType._private_addSync(this, amount));
   }
 
   /**

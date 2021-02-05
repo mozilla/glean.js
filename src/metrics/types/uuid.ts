@@ -42,6 +42,39 @@ class UUIDMetricType extends MetricType {
   }
 
   /**
+   * An internal implemention of `set` that does not dispatch the recording task.
+   *
+   * # Important
+   *
+   * This is absolutely not meant to be used outside of Glean itself.
+   * It may cause multiple issues because it cannot guarantee
+   * that the recording of the metric will happen in order with other Glean API calls.
+   *
+   * @param instance The metric instance to record to.
+   * @param value The UUID we want to set to.
+   */
+  static async _private_setSync(instance: UUIDMetricType, value: string): Promise<void> {
+    if (!instance.shouldRecord()) {
+      return;
+    }
+
+    if (!value) {
+      value = generateUUIDv4();
+    }
+
+    let metric: UUIDMetric;
+    try {
+      metric = new UUIDMetric(value);
+    } catch {
+      // TODO: record error once Bug 1682574 is resolved.
+      console.warn(`"${value}" is not a valid UUID. Ignoring`);
+      return;
+    }
+
+    await Glean.metricsDatabase.record(instance, metric);
+  }
+
+  /**
    * Sets to the specified value.
    *
    * @param value the value to set.
@@ -49,26 +82,7 @@ class UUIDMetricType extends MetricType {
    * @throws In case `value` is not a valid UUID.
    */
   set(value: string): void {
-    Glean.dispatcher.launch(async () => {
-      if (!this.shouldRecord()) {
-        return;
-      }
-  
-      if (!value) {
-        value = generateUUIDv4();
-      }
-  
-      let metric: UUIDMetric;
-      try {
-        metric = new UUIDMetric(value);
-      } catch {
-        // TODO: record error once Bug 1682574 is resolved.
-        console.warn(`"${value}" is not a valid UUID. Ignoring`);
-        return;
-      }
-  
-      await Glean.metricsDatabase.record(this, metric);
-    });
+    Glean.dispatcher.launch(() => UUIDMetricType._private_setSync(this, value));
   }
 
   /**
