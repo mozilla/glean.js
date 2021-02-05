@@ -126,11 +126,20 @@ describe("Glean", function() {
   });
 
   it("enabling when already enabled is a no-op", async function() {
-    // TODO: Re-implement this now that this function doesn't return a boolean anymore.
+    const spy = sandbox.spy(Glean["coreMetrics"], "initialize");
+    Glean.setUploadEnabled(true);
+    // Wait for `setUploadEnabled` to be executed.
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(spy.callCount, 0);
   });
 
   it("disabling when already disabled is a no-op", async function() {
-    // TODO: Re-implement this now that this function doesn't return a boolean anymore.
+    const spy = sandbox.spy(Glean["pingUploader"], "clearPendingPingsQueue");
+    Glean.setUploadEnabled(false);
+    Glean.setUploadEnabled(false);
+    // Wait for `setUploadEnabled` to be executed both times.
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(spy.callCount, 1);
   });
 
   it("initialization throws if applicationId is an empty string", async function() {
@@ -178,6 +187,9 @@ describe("Glean", function() {
   it("initializing twice is a no-op", async function() {
     await Glean.testUninitialize();
     Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    // initialize is dispatched, we must await on the queue being completed to assert things.
+    await Glean.dispatcher.testBlockOnQueue();
+
     // This time it should not be called, which means upload should not be switched to `false`.
     Glean.initialize(GLOBAL_APPLICATION_ID, false);
     assert.ok(Glean.isUploadEnabled());
