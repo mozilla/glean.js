@@ -18,14 +18,8 @@ xvfb-run python main.py &> qml.log &
 
 sleep 10
 
-if grep -q "Some Javascript error occured" "qml.log"; then
+if grep -q "Error executing task:" "qml.log"; then
   echo "Failed to initialize Glean in QML! See more logs below."
-  cat qml.log
-  exit 1
-fi
-
-if ! grep -q "Called Glean.initialize" "qml.log"; then
-  echo "Unable to initialize Glean in QML! See more logs below."
   cat qml.log
   exit 1
 fi
