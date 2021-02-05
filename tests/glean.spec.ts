@@ -9,6 +9,8 @@ import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "../src/constants";
 import Glean from "glean";
 import { Lifetime } from "metrics";
 import StringMetricType from "metrics/types/string";
+import PingType from "pings";
+import Uploader from "upload/uploader";
 
 const GLOBAL_APPLICATION_ID = "org.mozilla.glean.test.app";
 const sandbox = sinon.createSandbox();
@@ -193,5 +195,24 @@ describe("Glean", function() {
     // This time it should not be called, which means upload should not be switched to `false`.
     Glean.initialize(GLOBAL_APPLICATION_ID, false);
     assert.ok(Glean.isUploadEnabled());
+  });
+
+  it("flipping upload enabled respects order of events", async function() {
+    await Glean.testUninitialize();
+
+    const ping = new PingType("custom", true, true, []);
+    const postSpy = sandbox.spy(Uploader, "post");
+
+    // Start Glean with upload enabled.
+    Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    // Immediatelly disable upload.
+    Glean.setUploadEnabled(false);
+    ping.submit();
+
+    await Glean.dispatcher.testBlockOnQueue();
+
+    assert.strictEqual(postSpy.callCount, 0);
+
+    // TODO: Check that a deletion request ping was sent after Bug 1686685 is resolved.
   });
 });
