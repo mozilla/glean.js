@@ -146,7 +146,7 @@ class WebExtStore implements Store {
       );
       return this.store.set(query);
     } catch(e) {
-      console.warn((e as Error).message, "Ignoring");
+      console.warn("Ignoring key", e);
     }
   }
 }
