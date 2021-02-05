@@ -319,6 +319,15 @@ class Glean {
   }
 
   /**
+   * Whether or not to log pings upon collection.
+   *
+   * @returns Whether or not to log pings upon collection.
+   */
+  static get logPings(): boolean {
+    return Glean.instance._config?.debug?.logPings || false;
+  }
+
+  /**
    * Gets this Gleans's instance dispatcher.
    *
    * @returns The dispatcher instance.
@@ -370,6 +379,32 @@ class Glean {
           await Glean.onUploadDisabled();
         }
       }
+    });
+  }
+
+  /**
+   * Sets the `logPings` flag.
+   *
+   * When this flag is `true` pings will be logged to the console right before they are collected.
+   *
+   * @param flag Whether or not to log pings.
+   */
+  static setLogPings(flag: boolean): void {
+    Glean.dispatcher.launch(() => {
+      // It is guaranteed that _config will have a value here.
+      //
+      // All dispatched tasks are guaranteed to be run after initialize.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      if (!Glean.instance._config!.debug) {
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        Glean.instance._config!.debug = {};
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      Glean.instance._config!.debug.logPings = flag;
+
+      // The dispatcher requires that dispatched functions return promises.
+      return Promise.resolve();
     });
   }
 
