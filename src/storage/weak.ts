@@ -5,7 +5,6 @@
 import { Store, StorageIndex } from "storage";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "storage/utils";
 import { JSONObject, JSONValue } from "utils";
- 
 /**
  * A weak implementation for the Store interface.
  *
@@ -52,5 +51,4 @@ class WeakStore implements Store {
     return Promise.resolve();
   }
 }
- 
 export default WeakStore;

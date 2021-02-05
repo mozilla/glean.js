@@ -202,7 +202,7 @@ class Glean {
       throw new Error("Unable to initialize Glean, applicationId cannot be an empty string.");
     }
 
-    // The configuration constructor will throw in case config hany any incorrect prop.
+    // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
 
     // Initialize the dispatcher and execute init before any other enqueued task.
