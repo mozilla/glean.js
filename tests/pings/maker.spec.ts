@@ -44,6 +44,7 @@ describe("PingMaker", function() {
       appDisplayVersion: "display version",
       serverEndpoint: "http://localhost:8080"
     });
+    await Glean.dispatcher.testBlockOnQueue();
 
     const clientInfo2 = await PingMaker.buildClientInfoSection(ping);
     assert.ok("telemetry_sdk_build" in clientInfo2);

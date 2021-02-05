@@ -12,6 +12,17 @@ import Glean from "glean";
 
 const sandbox = sinon.createSandbox();
 
+/**
+ * Submits a ping and waits for the dispatcher queue to be completed.
+ *
+ * @param ping The ping to submit.
+ */
+async function submitSync(ping: PingType): Promise<void> {
+  ping.submit();
+  // TODO: Drop this whole approach once Bug 1691033 is resolved.
+  await Glean.dispatcher.testBlockOnQueue();
+}
+
 describe("PingType", function() {
   afterEach(function () {
     sandbox.restore();
@@ -35,9 +46,7 @@ describe("PingType", function() {
     });
     counter.add();
 
-    assert.ok(ping.submit());
-    // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
-    // possibly once Bug 1677440 is resolved.
+    await submitSync(ping);
     const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
@@ -49,13 +58,11 @@ describe("PingType", function() {
     const ping1 = new PingType("ping1", true, false, []);
     const ping2 = new PingType("ping2", true, true, []);
 
-    // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
-    // possibly once Bug 1677440 is resolved.
-    assert.ok(ping1.submit());
+    await submitSync(ping1);
     let storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);
 
-    assert.ok(ping2.submit());
+    await submitSync(ping2);
     storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
@@ -64,9 +71,7 @@ describe("PingType", function() {
     Glean.setUploadEnabled(false);
 
     const ping = new PingType("custom", true, false, []);
-    assert.strictEqual(ping.submit(), false);
-    // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
-    // possibly once Bug 1677440 is resolved.
+    await submitSync(ping);
     const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);
   });
@@ -75,9 +80,7 @@ describe("PingType", function() {
     await Glean.testUninitialize();
 
     const ping = new PingType("custom", true, false, []);
-    assert.strictEqual(ping.submit(), false);
-    // TODO: Make this nicer once we have a nice way to check if pings are enqueued,
-    // possibly once Bug 1677440 is resolved.
+    await submitSync(ping);
     const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);
   });
