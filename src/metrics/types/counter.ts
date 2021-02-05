@@ -106,7 +106,11 @@ class CounterMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string): Promise<number | undefined> {
-    return Glean.metricsDatabase.getMetric<number>(ping, this);
+    let metric: number | undefined;
+    await Glean.dispatcher.testLaunch(async () => {
+      metric = await Glean.metricsDatabase.getMetric<number>(ping, this);
+    });
+    return metric;
   }
 }
 

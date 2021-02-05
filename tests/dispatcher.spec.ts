@@ -267,4 +267,133 @@ describe("Dispatcher", function() {
     assert.strictEqual(stub.callCount, 10);
     assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
   });
+
+  it("testLaunch will resolve once the task is executed", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    const stub = sandbox.stub().callsFake(sampleTask);
+
+    // Launch a bunch of tasks to clog the queue
+    for (let i = 0; i < 100; i++) {
+      dispatcher.launch(sampleTask);
+    }
+
+    await dispatcher.testLaunch(stub);
+
+    assert.strictEqual(stub.callCount, 1);
+  });
+
+  it("testLaunch will also resolve if the queue is cleared", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    const stub = sandbox.stub().callsFake(sampleTask);
+
+    // Launch a bunch of tasks to clog the queue
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(sampleTask);
+    }
+
+    // The clear command will be queued before `testLaunch`
+    // and that will definitely prevent `testLaunch` from being called.
+    dispatcher.clear();
+    await dispatcher.testLaunch(stub);
+
+    assert.strictEqual(stub.callCount, 0);
+
+    // The clear command was launched before the testLaunch command,
+    // which means it is at the top of the queue and will clear before we get to our command.
+    //
+    // The final expected state of the dispatcher, in this case, is stopped.
+    assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
+  });
+
+  it("testLaunch will resume queue execution if the dispatcher is stopped", async function () {
+    dispatcher = new Dispatcher();
+
+    const stub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(stub);
+    }
+
+    dispatcher.stop();
+
+    dispatcher.flushInit();
+    await dispatcher.testBlockOnQueue();
+    assert.strictEqual(dispatcher["queue"].length, 10);
+
+    const testStub = sandbox.stub().callsFake(sampleTask);
+    await dispatcher.testLaunch(testStub);
+
+    assert.strictEqual(dispatcher["queue"].length, 0);
+    assert.strictEqual(stub.callCount, 10);
+    assert.strictEqual(testStub.callCount, 1);
+
+    // We block here because we are only sure that all the tasks are done executing.
+    // We are not _guaranteed_ that the `execute` function is done,
+    // this the state may still be Processing.
+    await dispatcher.testBlockOnQueue();
+
+    // If the dispatcher was stopped and we called `testLaunch`
+    // the dispatcher will return the dispatcher to an idle state.
+    assert.strictEqual(dispatcher["state"], DispatcherState.Idle);
+  });
+
+  it("testLaunch will reject in case the dispatcher is uninitialized for too long", async function () {
+    dispatcher = new Dispatcher();
+    try {
+      await dispatcher.testLaunch(sampleTask);
+      assert.ok(false);
+    } catch {
+      assert.ok(true);
+    }
+  });
+
+  it("testLaunch will not reject in case the dispatcher is uninitialized, but quickly initializes", async function () {
+    dispatcher = new Dispatcher();
+    const testLaunchedTask = dispatcher.testLaunch(sampleTask);
+    dispatcher.flushInit();
+    try {
+      await testLaunchedTask;
+      assert.ok(true);
+    } catch {
+      assert.ok(false);
+    }
+  });
+
+  it("launching multiple test tasks at the same time works as expected", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    const stub1 = sandbox.stub().callsFake(sampleTask);
+    const stub2 = sandbox.stub().callsFake(sampleTask);
+    const stub3 = sandbox.stub().callsFake(sampleTask);
+
+    const test1 = dispatcher.testLaunch(stub1);
+    const test2 = dispatcher.testLaunch(stub2);
+    const test3 = dispatcher.testLaunch(stub3);
+
+    await Promise.all([test1, test2, test3]);
+
+    sinon.assert.callOrder(stub1, stub2, stub3);
+  });
+
+  it("testLaunch observers are unattached after promise is resolved or rejected", async function() {
+    dispatcher = new Dispatcher();
+
+    const willReject = dispatcher.testLaunch(sampleTask);
+    assert.strictEqual(dispatcher["observers"].length, 1);
+    try {
+      await willReject;
+    } catch {
+      assert.strictEqual(dispatcher["observers"].length, 0);
+    }
+
+    dispatcher.flushInit();
+    const willNotReject = dispatcher.testLaunch(sampleTask);
+    assert.strictEqual(dispatcher["observers"].length, 1);
+    await willNotReject;
+    assert.strictEqual(dispatcher["observers"].length, 0);
+  });
 });
