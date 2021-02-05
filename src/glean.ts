@@ -10,9 +10,10 @@ import PingUploader from "upload";
 import { isUndefined, sanitizeApplicationId } from "utils";
 import { CoreMetrics } from "internal_metrics";
 import { Lifetime } from "metrics";
-import { DatetimeMetric } from "metrics/types/datetime";
-import Dispatcher from "dispatcher";
 import EventsDatabase from "metrics/events_database";
+import UUIDMetricType from "metrics/types/uuid";
+import DatetimeMetricType, { DatetimeMetric } from "metrics/types/datetime";
+import Dispatcher from "dispatcher";
 
 class Glean {
   // The Glean singleton.
@@ -116,11 +117,6 @@ class Glean {
    * This function is only supposed to be called when telemetry is disabled.
    */
   private static async clearMetrics(): Promise<void> {
-    // Stops any task execution on the dispatcher.
-    //
-    // While stopped, the dispatcher will enqueue but won't execute any tasks it receives.
-    Glean.dispatcher.stop();
-
     // Stop ongoing upload jobs and clear pending pings queue.
     await Glean.pingUploader.clearPendingPingsQueue();
 
@@ -152,21 +148,23 @@ class Glean {
     // is not a no-op.
     //
     // This is safe.
-    // Since the dispatcher is stopped, no external API calls will be executed.
+    //
+    // `clearMetrics` is either called on `initialize` or `setUploadEnabled`.
+    // Both are dispatched tasks, which means that any other dispatched task
+    // called after them will only be executed after they are done.
+    // Since all external API calls are dispatched, it is not possible
+    // for any other API call to be execute concurrently with this one.
     Glean.uploadEnabled = true;
 
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    Glean.coreMetrics.clientId.set(KNOWN_CLIENT_ID);
+    await UUIDMetricType._private_setSync(Glean.coreMetrics.clientId, KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    Glean.coreMetrics.firstRunDate.set(firstRunDate);
+    await DatetimeMetricType._private_setSync(Glean.coreMetrics.firstRunDate, firstRunDate);
 
     Glean.uploadEnabled = false;
-
-    // Clear the dispatcher queue.
-    Glean.dispatcher.clear();
   }
 
   /**

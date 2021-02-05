@@ -42,6 +42,32 @@ class StringMetricType extends MetricType {
   }
 
   /**
+   * An internal implemention of `set` that does not dispatch the recording task.
+   *
+   * # Important
+   *
+   * This is absolutely not meant to be used outside of Glean itself.
+   * It may cause multiple issues because it cannot guarantee
+   * that the recording of the metric will happen in order with other Glean API calls.
+   *
+   * @param instance The metric instance to record to.
+   * @param value The string we want to set to.
+   */
+  static async _private_setSync(instance: StringMetricType, value: string): Promise<void> {
+    if (!instance.shouldRecord()) {
+      return;
+    }
+
+    if (value.length > MAX_LENGTH_VALUE) {
+      // TODO: record error once Bug 1682574 is resolved.
+      console.warn(`String ${value} is longer than ${MAX_LENGTH_VALUE} chars. Truncating.`);
+    }
+
+    const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
+    await Glean.metricsDatabase.record(instance, metric);
+  }
+
+  /**
    * Sets to the specified string value.
    *
    * # Note
@@ -52,19 +78,7 @@ class StringMetricType extends MetricType {
    * @param value the value to set.
    */
   set(value: string): void {
-    Glean.dispatcher.launch(async () => {
-      if (!this.shouldRecord()) {
-        return;
-      }
-  
-      if (value.length > MAX_LENGTH_VALUE) {
-        // TODO: record error once Bug 1682574 is resolved.
-        console.warn(`String ${value} is longer than ${MAX_LENGTH_VALUE} chars. Truncating.`);
-      }
-  
-      const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
-      await Glean.metricsDatabase.record(this, metric);
-    });
+    Glean.dispatcher.launch(() => StringMetricType._private_setSync(this, value));
   }
 
   /**
