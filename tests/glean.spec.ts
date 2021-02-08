@@ -215,4 +215,25 @@ describe("Glean", function() {
 
     // TODO: Check that a deletion request ping was sent after Bug 1686685 is resolved.
   });
+
+  it("setting log pings works before and after glean and on initialize", async function () {
+    await Glean.testUninitialize();
+
+    // Setting on initialize.
+    Glean.initialize(GLOBAL_APPLICATION_ID, true, { debug: { logPings: true } });
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.ok(Glean.logPings);
+
+    await Glean.testUninitialize();
+
+    // Setting before initialize.
+    Glean.setLogPings(true);
+    Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.ok(Glean.logPings);
+
+    // Setting after initialize.
+    Glean.setLogPings(false);
+    assert.ok(!Glean.logPings);
+  });
 });

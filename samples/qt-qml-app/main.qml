@@ -7,6 +7,9 @@ import QtQuick.Controls 2.0
 import QtGraphicalEffects 1.15
 
 import "../../dist/glean.js" as Glean;
+// These must be imported after Glean because they rely on Glean being in the environment.
+import "./generatedPings.js" as Pings;
+import "./generatedMetrics.js" as Metrics;
 
 Rectangle {
   id: screen
@@ -16,38 +19,54 @@ Rectangle {
   property int displayText: 0
 
   Button {
-    id: glean
-    text: "PUSH 👏 THIS 👏 BUTTON"
+    id: record
+    text: "Record"
+    anchors.horizontalCenter: ping.horizontalCenter
+    anchors.bottom: ping.bottom
+    anchors.bottomMargin: 80
+    palette.buttonText: "black"
+    palette.button: "#f1f1f1"
+    font.bold: true
+    onClicked: () => {
+      console.log("Adding to the `button_clicked` metric.")
+      Metrics.buttonClicked.add();
+    }
+  }
+
+  Button {
+    id: ping
+    text: "Submit ping"
     anchors.centerIn: parent
     palette.buttonText: "white"
     palette.button: "#ff5000"
     font.bold: true
     onClicked: () => {
       screen.displayText = 1;
-      console.info("Nothing will happen. Glean.js is not yet implemented.");
+      Pings.samplePing.submit();
     }
   }
 
   DropShadow {
-    anchors.fill: glean
+    anchors.fill: ping
     horizontalOffset: 7
     verticalOffset: -7
     radius: 0
     color: "#0059ab"
-    source: glean
+    source: ping
   }
 
   Text {
     id: consoleWarn
-    text: "Now, take a look at the logs on your terminal."
+    text: "A ping should have been submitted, please check you terminal for logs."
     visible: displayText
-    anchors.top: glean.bottom
+    anchors.top: ping.bottom
     anchors.topMargin: 30
-    anchors.horizontalCenter: glean.horizontalCenter
+    anchors.horizontalCenter: ping.horizontalCenter
   }
 
   Component.onCompleted: {
-    // Initialize Glean when the application starts.
-    Glean.Glean.initialize("qt-qml-app", true);
+    // Initialize Glean.
+    Glean.Glean.initialize("qt-qml-app", true, { debug: { logPings: true }});
+    Metrics.appStarted.set();
   }
 }

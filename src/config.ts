@@ -6,6 +6,14 @@ import { DEFAULT_TELEMETRY_ENDPOINT } from "./constants";
 import { validateURL } from "utils";
 
 /**
+ * Lists Glean's debug options.
+ */
+interface DebugOptions {
+  // Whether or not lot log pings when they are collected.
+  logPings?: boolean,
+}
+
+/**
  * Describes how to configure Glean.
  */
 export interface ConfigurationInterface {
@@ -15,6 +23,8 @@ export interface ConfigurationInterface {
   readonly appDisplayVersion?: string,
   // The server pings are sent to.
   readonly serverEndpoint?: string,
+  // Debug configuration.
+  debug?: DebugOptions,
 }
 
 export class Configuration implements ConfigurationInterface {
@@ -24,11 +34,13 @@ export class Configuration implements ConfigurationInterface {
   readonly appDisplayVersion?: string;
   // The server pings are sent to.
   readonly serverEndpoint: string;
+  // Debug configuration.
+  debug?: DebugOptions;
  
   constructor(config?: ConfigurationInterface) {
     this.appBuild = config?.appBuild;
     this.appDisplayVersion = config?.appDisplayVersion;
-    this.appBuild = config?.appBuild;
+    this.debug = config?.debug;
 
     if (config?.serverEndpoint && !validateURL(config.serverEndpoint)) {
       throw new Error(

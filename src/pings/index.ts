@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { v4 as UUIDv4 } from "uuid";
 
 import collectAndStorePing from "pings/maker";
+import { generateUUIDv4 } from "utils";
 import Glean from "glean";
 
 /**
@@ -60,7 +60,7 @@ class PingType {
         correctedReason = undefined;
       }
   
-      const identifier = UUIDv4();
+      const identifier = generateUUIDv4();
       await collectAndStorePing(identifier, this, correctedReason);
       return;
     });

@@ -59,6 +59,18 @@ export = {
     Glean.setUploadEnabled(flag);
   },
 
+  /**
+   * Sets the `logPings` flag.
+   *
+   * When this flag is `true` pings will be logged
+   * to the console right before they are collected.
+   *
+   * @param flag Whether or not to log pings.
+   */
+  setLogPings(flag: boolean): void {
+    Glean.setLogPings(flag);
+  },
+
   _private: {
     PingType,
     BooleanMetricType,

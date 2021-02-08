@@ -217,6 +217,11 @@ export async function collectAndStorePing(identifier: string, ping: PingType, re
   if (!payload) {
     return;
   }
+
+  if (Glean.logPings) {
+    console.info(JSON.stringify(payload, null, 2));
+  }
+
   const headers = getPingHeaders();
   return Glean.pingsDatabase.recordPing(
     makePath(identifier, ping),
