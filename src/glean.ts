@@ -263,75 +263,34 @@ class Glean {
     });
   }
 
-  /**
-   * Gets this Glean's instance metrics database.
-   *
-   * @returns This Glean's instance metrics database.
-   */
   static get metricsDatabase(): MetricsDatabase {
     return Glean.instance._db.metrics;
   }
 
-  /**
-   * Gets this Glean's instance events database.
-   *
-   * @returns This Glean's instance events database.
-   */
   static get eventsDatabase(): EventsDatabase {
     return Glean.instance._db.events;
   }
 
-
-  /**
-   * Gets this Glean's instance pings database.
-   *
-   * @returns This Glean's instance pings database.
-   */
   static get pingsDatabase(): PingsDatabase {
     return Glean.instance._db.pings;
   }
 
-  /**
-   * Gets this Glean's instance initialization status.
-   *
-   * @returns Whether or not the Glean singleton has been initialized.
-   */
   static get initialized(): boolean {
     return Glean.instance._initialized;
   }
 
-  /**
-   * Gets this Glean's instance application id.
-   *
-   * @returns The application id or `undefined` in case Glean has not been initialized yet.
-   */
   static get applicationId(): string | undefined {
     return Glean.instance._applicationId;
   }
 
-  /**
-   * Gets this Glean's instance server endpoint.
-   *
-   * @returns The server endpoint or `undefined` in case Glean has not been initialized yet.
-   */
   static get serverEndpoint(): string | undefined {
     return Glean.instance._config?.serverEndpoint;
   }
 
-  /**
-   * Whether or not to log pings upon collection.
-   *
-   * @returns Whether or not to log pings upon collection.
-   */
   static get logPings(): boolean {
     return Glean.instance._config?.debug?.logPings || false;
   }
 
-  /**
-   * Gets this Gleans's instance dispatcher.
-   *
-   * @returns The dispatcher instance.
-   */
   static get dispatcher(): Dispatcher {
     return Glean.instance._dispatcher;
   }
