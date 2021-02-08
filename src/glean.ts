@@ -14,6 +14,7 @@ import EventsDatabase from "metrics/events_database";
 import UUIDMetricType from "metrics/types/uuid";
 import DatetimeMetricType, { DatetimeMetric } from "metrics/types/datetime";
 import Dispatcher from "dispatcher";
+import CorePings from "internal_pings";
 
 class Glean {
   // The Glean singleton.
@@ -29,6 +30,8 @@ class Glean {
   private _initialized: boolean;
   // Instances of Glean's core metrics.
   private _coreMetrics: CoreMetrics;
+  // Instances of Glean's core pings.
+  private _corePings: CorePings;
   // The ping uploader.
   private _pingUploader: PingUploader
   // A task dispatcher to help execute in order asynchronous external API calls.
@@ -53,6 +56,7 @@ class Glean {
     this._dispatcher = new Dispatcher();
     this._pingUploader = new PingUploader();
     this._coreMetrics = new CoreMetrics();
+    this._corePings = new CorePings();
     this._initialized = false;
     this._db = {
       metrics: new MetricsDatabase(),
@@ -75,6 +79,10 @@ class Glean {
 
   private static get coreMetrics(): CoreMetrics {
     return Glean.instance._coreMetrics;
+  }
+
+  private static get corePings(): CorePings {
+    return Glean.instance._corePings;
   }
 
   private static get uploadEnabled(): boolean {
@@ -109,6 +117,9 @@ class Glean {
   private static async onUploadDisabled(): Promise<void> {
     Glean.uploadEnabled = false;
     await Glean.clearMetrics();
+    // Note that `submit` is a dispatched function.
+    // The actual submission will only happen after we leave `onUploadDisabled`.
+    Glean.corePings.deletionRequest.submit();
   }
 
   /**
@@ -126,7 +137,7 @@ class Glean {
     //
     // Note: This will throw in case the stored metric is incorrect or inexistent.
     // The most likely is that it throws if the metrics hasn't been set,
-    // e.g. we start Glean for the first with tupload disabled.
+    // e.g. we start Glean for the first with upload disabled.
     let firstRunDate: Date;
     try {
       firstRunDate = new DatetimeMetric(
@@ -220,6 +231,13 @@ class Glean {
       // IMPORTANT!
       // Any pings we want to send upon initialization should happen before this.
       await Glean.metricsDatabase.clear(Lifetime.Application);
+
+      // We need to mark Glean as initialized before dealing with the upload status,
+      // otherwise we will not be able to submit deletion-request pings if necessary.
+      //
+      // This is fine, we are inside a dispatched task that is guaranteed to run before any
+      // other task. Nothing will be executed before this function is over.
+      Glean.instance._initialized = true;
   
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
@@ -242,23 +260,20 @@ class Glean {
   
         if (clientId) {
           if (clientId !== KNOWN_CLIENT_ID) {
-            // Temporarily enable uploading so we can submit a
-            // deletion request ping.
-            Glean.uploadEnabled = true;
             await Glean.onUploadDisabled();
           }
         } else {
+          // Call `clearMetrics` directly here instead of `onUploadDisabled` to avoid sending
+          // a deletion-request ping for a user that has already done that.
           await Glean.clearMetrics();
         }
       }
-
-      Glean.instance._initialized = true;
 
       await Glean.pingUploader.scanPendingPings();
 
       // Even though this returns a promise, there is no need to block on it returning.
       //
-      // On the contrary we _want_ the dispatcher to execute tasks async.
+      // On the contrary we _want_ the uploading tasks to be executed async.
       void Glean.pingUploader.triggerUpload();
     });
   }

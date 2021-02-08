@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-import collectAndStorePing from "pings/maker";
+import { DELETION_REQUEST_PING_NAME } from "../constants";
 import { generateUUIDv4 } from "utils";
+import collectAndStorePing from "pings/maker";
 import Glean from "glean";
 
 /**
@@ -21,14 +21,18 @@ class PingType {
    * @param name  The name of the ping.
    * @param includeClientId Whether to include the client ID in the assembled ping when submitting.
    * @param sendIfEmtpy Whether the ping should be sent empty or not.
-   * @param reasonCodes The valid reason codes for this ping.
+   * @param reasonCodes Optional. The valid reason codes for this ping.
    */
   constructor (
     readonly name: string,
     readonly includeClientId: boolean,
     readonly sendIfEmtpy: boolean,
-    readonly reasonCodes: string[]
+    readonly reasonCodes: string[] = []
   ) {}
+
+  private isDeletionRequest(): boolean {
+    return this.name === DELETION_REQUEST_PING_NAME;
+  }
 
   /**
    * Collects and submits a ping for eventual uploading.
@@ -48,9 +52,9 @@ class PingType {
         console.info("Glean must be initialized before submitting pings.");
         return;
       }
-  
-      if (!Glean.isUploadEnabled()) {
-        console.info("Glean disabled: not submitting any pings.");
+
+      if (!Glean.isUploadEnabled() && !this.isDeletionRequest()) {
+        console.info("Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.");
         return;
       }
   
