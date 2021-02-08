@@ -51,7 +51,7 @@ class CounterMetricType extends MetricType {
    * @param instance The metric instance to record to.
    * @param amount The amount we want to add.
    */
-  static async _private_addSync(instance: CounterMetricType, amount?: number): Promise<void> {
+  static async _private_addUndispatched(instance: CounterMetricType, amount?: number): Promise<void> {
     if (!instance.shouldRecord()) {
       return;
     }
@@ -103,7 +103,7 @@ class CounterMetricType extends MetricType {
    *               If not provided will default to `1`.
    */
   add(amount?: number): void {
-    Glean.dispatcher.launch(async () => CounterMetricType._private_addSync(this, amount));
+    Glean.dispatcher.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
   }
 
   /**

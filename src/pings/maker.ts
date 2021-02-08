@@ -31,7 +31,7 @@ export async function getSequenceNumber(ping: PingType): Promise<number> {
   });
 
   const currentSeqData = await Glean.metricsDatabase.getMetric(PING_INFO_STORAGE, seq);
-  await CounterMetricType._private_addSync(seq, 1);
+  await CounterMetricType._private_addUndispatched(seq, 1);
 
   if (currentSeqData) {
     // Creating a new counter metric validates that the metric stored is actually a number.
@@ -77,7 +77,7 @@ export async function getStartEndTimes(ping: PingType): Promise<{ startTime: str
 
   // Update the start time with the current time.
   const endTimeData = new Date();
-  await DatetimeMetricType._private_setSync(start, endTimeData);
+  await DatetimeMetricType._private_setUndispatched(start, endTimeData);
   const endTime = DatetimeMetric.fromDate(endTimeData, TimeUnit.Minute);
 
   return {

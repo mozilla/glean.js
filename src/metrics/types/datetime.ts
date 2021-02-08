@@ -181,7 +181,7 @@ class DatetimeMetricType extends MetricType {
    * @param instance The metric instance to record to.
    * @param value The date we want to set to.
    */
-  static async _private_setSync(instance: DatetimeMetricType, value?: Date): Promise<void> {
+  static async _private_setUndispatched(instance: DatetimeMetricType, value?: Date): Promise<void> {
     if (!instance.shouldRecord()) {
       return;
     }
@@ -223,7 +223,7 @@ class DatetimeMetricType extends MetricType {
    * @param value The Date value to set. If not provided, will record the current time.
    */
   set(value?: Date): void {
-    Glean.dispatcher.launch(() => DatetimeMetricType._private_setSync(this, value));
+    Glean.dispatcher.launch(() => DatetimeMetricType._private_setUndispatched(this, value));
   }
 
   /**

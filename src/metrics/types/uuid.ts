@@ -53,7 +53,7 @@ class UUIDMetricType extends MetricType {
    * @param instance The metric instance to record to.
    * @param value The UUID we want to set to.
    */
-  static async _private_setSync(instance: UUIDMetricType, value: string): Promise<void> {
+  static async _private_setUndispatched(instance: UUIDMetricType, value: string): Promise<void> {
     if (!instance.shouldRecord()) {
       return;
     }
@@ -82,7 +82,7 @@ class UUIDMetricType extends MetricType {
    * @throws In case `value` is not a valid UUID.
    */
   set(value: string): void {
-    Glean.dispatcher.launch(() => UUIDMetricType._private_setSync(this, value));
+    Glean.dispatcher.launch(() => UUIDMetricType._private_setUndispatched(this, value));
   }
 
   /**
