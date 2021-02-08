@@ -65,10 +65,8 @@ Rectangle {
   }
 
   Component.onCompleted: {
-    // Log pings that are sent.
-    Glean.Glean.setLogPings(true);
     // Initialize Glean.
-    Glean.Glean.initialize("qt-qml-app", true);
+    Glean.Glean.initialize("qt-qml-app", true, { debug: { logPings: true }});
     Metrics.appStarted.set();
   }
 }

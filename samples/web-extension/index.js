@@ -8,8 +8,7 @@ import Glean from "glean";
 import { samplePing } from "./generatedPings";
 import { webExtStarted, popupOpened } from "./generatedMetrics";
 
-Glean.setLogPings(true);
-Glean.initialize("web-extension", true);
+Glean.initialize("web-extension", true, { debug: { logPings: true }});
 webExtStarted.set();
 
 // Listen for messages from the popup.
