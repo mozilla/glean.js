@@ -236,7 +236,7 @@ class Glean {
       // otherwise we will not be able to submit deletion-request pings if necessary.
       //
       // This is fine, we are inside a dispatched task that is guaranteed to run before any
-      // other task. Nothing will be executed before this function is over.
+      // other task. No external API call will be executed before we leave this task.
       Glean.instance._initialized = true;
   
       // The upload enabled flag may have changed since the last run, for
