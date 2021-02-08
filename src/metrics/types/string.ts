@@ -53,7 +53,7 @@ class StringMetricType extends MetricType {
    * @param instance The metric instance to record to.
    * @param value The string we want to set to.
    */
-  static async _private_setSync(instance: StringMetricType, value: string): Promise<void> {
+  static async _private_setUndispatched(instance: StringMetricType, value: string): Promise<void> {
     if (!instance.shouldRecord()) {
       return;
     }
@@ -78,7 +78,7 @@ class StringMetricType extends MetricType {
    * @param value the value to set.
    */
   set(value: string): void {
-    Glean.dispatcher.launch(() => StringMetricType._private_setSync(this, value));
+    Glean.dispatcher.launch(() => StringMetricType._private_setUndispatched(this, value));
   }
 
   /**

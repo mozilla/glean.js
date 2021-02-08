@@ -97,8 +97,8 @@ export class CoreMetrics {
     await this.initializeOsVersion();
     await this.initializeArchitecture();
     await this.initializeLocale();
-    await StringMetricType._private_setSync(this.appBuild, appBuild || "Unknown");
-    await StringMetricType._private_setSync(this.appDisplayVersion, appDisplayVersion || "Unknown");
+    await StringMetricType._private_setUndispatched(this.appBuild, appBuild || "Unknown");
+    await StringMetricType._private_setUndispatched(this.appDisplayVersion, appDisplayVersion || "Unknown");
   }
 
   /**
@@ -123,7 +123,7 @@ export class CoreMetrics {
     }
 
     if (needNewClientId) {
-      await UUIDMetricType._private_setSync(this.clientId, generateUUIDv4());
+      await UUIDMetricType._private_setUndispatched(this.clientId, generateUUIDv4());
     }
   }
 
@@ -137,7 +137,7 @@ export class CoreMetrics {
     );
 
     if (!firstRunDate) {
-      await DatetimeMetricType._private_setSync(this.firstRunDate);
+      await DatetimeMetricType._private_setUndispatched(this.firstRunDate);
     }
   }
 
@@ -145,27 +145,27 @@ export class CoreMetrics {
    * Gets and sets the os.
    */
   async initializeOs(): Promise<void> {
-    await StringMetricType._private_setSync(this.os, await PlatformInfo.os());
+    await StringMetricType._private_setUndispatched(this.os, await PlatformInfo.os());
   }
 
   /**
    * Gets and sets the os.
    */
   async initializeOsVersion(): Promise<void> {
-    await StringMetricType._private_setSync(this.osVersion, await PlatformInfo.osVersion());
+    await StringMetricType._private_setUndispatched(this.osVersion, await PlatformInfo.osVersion());
   }
 
   /**
    * Gets and sets the system architecture.
    */
   async initializeArchitecture(): Promise<void> {
-    await StringMetricType._private_setSync(this.architecture, await PlatformInfo.arch());
+    await StringMetricType._private_setUndispatched(this.architecture, await PlatformInfo.arch());
   }
 
   /**
    * Gets and sets the system / browser locale.
    */
   async initializeLocale(): Promise<void> {
-    await StringMetricType._private_setSync(this.locale, await PlatformInfo.locale());
+    await StringMetricType._private_setUndispatched(this.locale, await PlatformInfo.locale());
   }
 }

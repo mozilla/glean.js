@@ -159,10 +159,10 @@ class Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    await UUIDMetricType._private_setSync(Glean.coreMetrics.clientId, KNOWN_CLIENT_ID);
+    await UUIDMetricType._private_setUndispatched(Glean.coreMetrics.clientId, KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await DatetimeMetricType._private_setSync(Glean.coreMetrics.firstRunDate, firstRunDate);
+    await DatetimeMetricType._private_setUndispatched(Glean.coreMetrics.firstRunDate, firstRunDate);
 
     Glean.uploadEnabled = false;
   }
