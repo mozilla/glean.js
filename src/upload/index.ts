@@ -148,7 +148,7 @@ class PingUploader implements PingsDatabaseObserver {
    * @returns The status number of the response or `undefined` if unable to attempt upload.
    */
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
-    if (!Glean.initialize) {
+    if (!Glean.initialized) {
       console.warn("Attempted to upload a ping, but Glean is not initialized yet. Ignoring.");
       return { result: UploadResultStatus.RecoverableFailure };
     }

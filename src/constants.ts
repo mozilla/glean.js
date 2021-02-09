@@ -35,3 +35,6 @@ export const KNOWN_CLIENT_ID = "c0ffeec0-ffee-c0ff-eec0-ffeec0ffeec0";
 
 // The default server pings are sent to.
 export const DEFAULT_TELEMETRY_ENDPOINT = "https://incoming.telemetry.mozilla.org";
+
+// The name of the deletion-request ping.
+export const DELETION_REQUEST_PING_NAME = "deletion-request";

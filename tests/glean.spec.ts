@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "../src/constants";
+import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "../src/constants";
 import Glean from "glean";
 import { Lifetime } from "metrics";
 import StringMetricType from "metrics/types/string";
@@ -210,10 +210,75 @@ describe("Glean", function() {
     ping.submit();
 
     await Glean.dispatcher.testBlockOnQueue();
+    // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
+    await Glean["pingUploader"]["currentJob"];
 
+    // Check that one ping was sent,
+    // but that ping is not our custom ping, but the deletion-request.
+    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+    assert.strictEqual(postSpy.callCount, 1);
+  });
+
+  it("deletion request is sent when toggling upload from on to off", async function() {
+    const postSpy = sandbox.spy(Uploader, "post");
+
+    Glean.setUploadEnabled(false);
+    await Glean.dispatcher.testBlockOnQueue();
+
+    assert.strictEqual(postSpy.callCount, 1);
+    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+
+    postSpy.resetHistory();
+    Glean.setUploadEnabled(true);
+    await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(postSpy.callCount, 0);
+  });
 
-    // TODO: Check that a deletion request ping was sent after Bug 1686685 is resolved.
+  it("deletion request ping is sent when toggling upload status between runs", async function() {
+    const postSpy = sandbox.spy(Uploader, "post");
+
+    Glean.setUploadEnabled(true);
+    await Glean.dispatcher.testBlockOnQueue();
+
+    // Can't use testResetGlean here because it clears all stores
+    // and when there is no client_id at all stored, a deletion ping is also not set.
+    await Glean.testUninitialize();
+    Glean.initialize(GLOBAL_APPLICATION_ID, false);
+    await Glean.dispatcher.testBlockOnQueue();
+    // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
+    await Glean["pingUploader"]["currentJob"];
+
+    // A deletion request is sent
+    assert.strictEqual(postSpy.callCount, 1);
+    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+  });
+
+  it("deletion request ping is not sent if upload status does not change between runs", async function () {
+    const postSpy = sandbox.spy(Uploader, "post");
+
+    Glean.setUploadEnabled(false);
+    await Glean.dispatcher.testBlockOnQueue();
+
+    // A deletion request is sent
+    assert.strictEqual(postSpy.callCount, 1);
+    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+
+    // Can't use testResetGlean here because it clears all stores
+    // and when there is no client_id at all stored, a deletion ping is also not set.
+    await Glean.testUninitialize();
+    Glean.initialize(GLOBAL_APPLICATION_ID, false);
+    await Glean.dispatcher.testBlockOnQueue();
+    // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
+    await Glean["pingUploader"]["currentJob"];
+
+    postSpy.resetHistory();
+    assert.strictEqual(postSpy.callCount, 0);
+  });
+
+  it("deletion request ping is not sent when user starts Glean for the first time with upload disabled", async function () {
+    const postSpy = sandbox.spy(Uploader, "post");
+    await Glean.testResetGlean(GLOBAL_APPLICATION_ID, false);
+    assert.strictEqual(postSpy.callCount, 0);
   });
 
   it("setting log pings works before and after glean and on initialize", async function () {
