@@ -225,7 +225,7 @@ class MetricsDatabase {
     const appData = await this.getAndValidatePingData(ping, Lifetime.Application);
 
     if (clearPingLifetimeData) {
-      await this.clear(Lifetime.Ping);
+      await this.clear(Lifetime.Ping, ping);
     }
 
     const response: Metrics = { ...pingData };
@@ -249,10 +249,12 @@ class MetricsDatabase {
    * Clears currently persisted data for a given lifetime.
    *
    * @param lifetime The lifetime to clear.
+   * @param ping The ping to clear data from. When ommited, data from all pings will be cleared.
    */
-  async clear(lifetime: Lifetime): Promise<void> {
+  async clear(lifetime: Lifetime, ping?: string): Promise<void> {
     const store = this._chooseStore(lifetime);
-    await store.delete([]);
+    const storageIndex = ping ? [ping] : [];
+    await store.delete(storageIndex);
   }
 
   /**
