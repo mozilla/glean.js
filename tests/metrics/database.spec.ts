@@ -8,6 +8,7 @@ import Database, { isValidInternalMetricsRepresentation } from "metrics/database
 import { Lifetime } from "metrics";
 import StringMetricType, { StringMetric } from "metrics/types/string";
 import { JSONValue } from "utils";
+import Glean from "glean";
 
 describe("MetricsDatabase", function() {
   describe("record", function() {
@@ -373,7 +374,7 @@ describe("MetricsDatabase", function() {
       const pingMetric = new StringMetricType({
         category: "ping",
         name: "metric",
-        sendInPings: ["aPing"],
+        sendInPings: ["aPing", "twoPing", "threePing"],
         lifetime: Lifetime.Ping,
         disabled: false
       });
@@ -390,7 +391,18 @@ describe("MetricsDatabase", function() {
 
       await db.getPingMetrics("aPing", true);
       assert.notDeepStrictEqual(await db["userStore"]._getWholeStore(), {});
-      assert.deepStrictEqual(await db["pingStore"]._getWholeStore(), {});
+      assert.deepStrictEqual(await db["pingStore"]._getWholeStore(), {
+        "twoPing": {
+          "string": {
+            "ping.metric": "pingValue"
+          }
+        },
+        "threePing": {
+          "string": {
+            "ping.metric": "pingValue"
+          }
+        }
+      });
       assert.notDeepStrictEqual(await db["appStore"]._getWholeStore(), {});
     });
   });
@@ -464,6 +476,24 @@ describe("MetricsDatabase", function() {
       assert.deepStrictEqual(await db["userStore"]._getWholeStore(), {});
       assert.notDeepStrictEqual(await db["pingStore"]._getWholeStore(), {});
       assert.notDeepStrictEqual(await db["appStore"]._getWholeStore(), {});
+    });
+
+    it("clears data from specific ping when specified", async function () {
+      // Must initialize Glean, otherwise `testGetValue` will hang forever.
+      await Glean.testResetGlean("something something", true);
+
+      const metric = new StringMetricType({
+        category: "some",
+        name: "metric",
+        sendInPings: ["aPing", "twoPing"],
+        lifetime: Lifetime.Ping,
+        disabled: false
+      });
+      await Glean.metricsDatabase.record(metric, new StringMetric("value"));
+      await Glean.metricsDatabase.clear(Lifetime.Ping, "aPing");
+
+      assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+      assert.strictEqual(await metric.testGetValue("twoPing"), "value");
     });
   });
 });
