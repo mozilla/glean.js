@@ -98,7 +98,7 @@ describe("EventMetric", function() {
     assert.strictEqual(snapshot, undefined);
   });
 
-  it.skip("bug 1690307: events should not record when upload is disabled", async function () {
+  it("events should not record when upload is disabled", async function () {
     const click = new TestEventMetricType({
       category: "ui",
       name: "click",
