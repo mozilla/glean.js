@@ -8,10 +8,8 @@ import PingType from "pings";
 /**
  * Glean-provided pings, all enabled by default.
  *
- * Pings initialized here should be defined in `pings.yaml`
- * and for now manually translated into JS code.
- *
- * TODO: This file should be auto-generated once Bug 1691365 is resolved.
+ * Pings initialized here should be defined in `./pings.yaml`
+ * and manually translated into JS code.
  */
 class CorePings {
   // This ping is intended to communicate to the Data Pipeline

@@ -13,6 +13,12 @@ import Glean from "glean";
 import PlatformInfo from "platform_info";
 import { generateUUIDv4 } from "utils";
 
+/**
+ * Glean internal metrics.
+ *
+ * Metrics initialized here should be defined in `./metrics.yaml`
+ * and manually translated into JS code.
+ */
 export class CoreMetrics {
   readonly clientId: UUIDMetricType;
   readonly firstRunDate: DatetimeMetricType;
