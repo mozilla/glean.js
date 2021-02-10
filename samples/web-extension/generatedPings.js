@@ -6,4 +6,8 @@
 
 import Glean from "glean";
 
-export const samplePing = new Glean._private.PingType("sample", true, false);
+export const samplePing = new Glean._private.PingType({
+  name: "sample",
+  includeClientId: true,
+  sendIfEmpty: false,
+});

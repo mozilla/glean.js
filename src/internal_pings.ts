@@ -20,11 +20,11 @@ class CorePings {
   readonly deletionRequest: PingType;
 
   constructor() {
-    this.deletionRequest = new PingType(
-      DELETION_REQUEST_PING_NAME,
-      /* include client id */ true,
-      /* send if empty */ true
-    );
+    this.deletionRequest = new PingType({
+      name: DELETION_REQUEST_PING_NAME,
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
   }
 }
 

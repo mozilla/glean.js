@@ -14,7 +14,11 @@ describe("PingMaker", function() {
   });
 
   it("ping info must contain a non-empty start and end time", async function() {
-    const ping = new PingType("custom", true, false, []);
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
     const pingInfo = await PingMaker.buildPingInfoSection(ping);
 
     const startTime = new Date(pingInfo.start_time);
@@ -24,7 +28,11 @@ describe("PingMaker", function() {
   });
 
   it("buildPingInfo must report all the required fields", async function() {
-    const ping = new PingType("custom", true, false, []);
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
     const pingInfo = await PingMaker.buildPingInfoSection(ping);
 
     assert.ok("seq" in pingInfo);
@@ -34,7 +42,11 @@ describe("PingMaker", function() {
 
   it("buildClientInfo must report all the available data", async function() {
     await Glean.testUninitialize();
-    const ping = new PingType("custom", true, false, []);
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
     const clientInfo1 = await PingMaker.buildClientInfoSection(ping);
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
@@ -59,13 +71,25 @@ describe("PingMaker", function() {
   });
 
   it("collectPing must return `undefined` if ping that must not be sent if empty, is empty", async function() {
-    const ping = new PingType("custom", true, false, []);
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
     assert.strictEqual(await PingMaker.collectPing(ping), undefined);
   });
 
   it("sequence numbers must be sequential", async function() {
-    const ping1 = new PingType("ping1", true, true, []);
-    const ping2 = new PingType("ping2", true, true, []);
+    const ping1 = new PingType({
+      name: "ping1",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+    const ping2 = new PingType({
+      name: "ping2",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
 
     for(let i = 0; i <= 10; i++) {
       assert.strictEqual(await PingMaker.getSequenceNumber(ping1), i);
