@@ -36,7 +36,11 @@ describe("PingType", function() {
     // Disable ping uploading for it not to interfere with this tests.
     sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
 
-    const ping = new PingType("custom", true, false, []);
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
     const counter = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -55,8 +59,16 @@ describe("PingType", function() {
     // Disable ping uploading for it not to interfere with this tests.
     sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
 
-    const ping1 = new PingType("ping1", true, false, []);
-    const ping2 = new PingType("ping2", true, true, []);
+    const ping1 = new PingType({
+      name: "ping1",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
+    const ping2 = new PingType({
+      name: "ping2",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
 
     await submitSync(ping1);
     let storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
@@ -70,7 +82,11 @@ describe("PingType", function() {
   it("no pings are submitted if upload is disabled", async function() {
     Glean.setUploadEnabled(false);
 
-    const ping = new PingType("custom", true, false, []);
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
     await submitSync(ping);
     const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);
@@ -79,7 +95,11 @@ describe("PingType", function() {
   it("no pings are submitted if Glean has not been initialized", async function() {
     await Glean.testUninitialize();
 
-    const ping = new PingType("custom", true, false, []);
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
     await submitSync(ping);
     const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);

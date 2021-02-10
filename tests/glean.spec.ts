@@ -200,7 +200,11 @@ describe("Glean", function() {
   it("flipping upload enabled respects order of events", async function() {
     await Glean.testUninitialize();
 
-    const ping = new PingType("custom", true, true, []);
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
     const postSpy = sandbox.spy(Uploader, "post");
 
     // Start Glean with upload enabled.

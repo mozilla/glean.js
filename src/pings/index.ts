@@ -8,27 +8,37 @@ import collectAndStorePing from "pings/maker";
 import Glean from "glean";
 
 /**
+ * The common set of data for creating a new ping.
+ */
+interface CommonPingData {
+  // The name of the ping.
+  readonly name: string,
+  // Whether to include the client ID in the assembled ping when submitting.
+  readonly includeClientId: boolean,
+  // Whether the ping should be sent empty or not.
+  readonly sendIfEmpty: boolean,
+  // Optional. The valid reason codes for this ping.
+  readonly reasonCodes?: string[]
+}
+
+/**
  * Stores information about a ping.
  *
  * This is required so that given metric data queued on disk we can send
  * pings with the correct settings, e.g. whether it has a client_id.
  */
-class PingType {
-  /**
-   * Creates a new ping type for the given name,
-   * whether to include the client ID and whether to send this ping empty.
-   *
-   * @param name  The name of the ping.
-   * @param includeClientId Whether to include the client ID in the assembled ping when submitting.
-   * @param sendIfEmtpy Whether the ping should be sent empty or not.
-   * @param reasonCodes Optional. The valid reason codes for this ping.
-   */
-  constructor (
-    readonly name: string,
-    readonly includeClientId: boolean,
-    readonly sendIfEmtpy: boolean,
-    readonly reasonCodes: string[] = []
-  ) {}
+class PingType implements CommonPingData {
+  readonly name: string;
+  readonly includeClientId: boolean;
+  readonly sendIfEmpty: boolean;
+  readonly reasonCodes: string[];
+
+  constructor (meta: CommonPingData) {
+    this.name = meta.name;
+    this.includeClientId = meta.includeClientId;
+    this.sendIfEmpty = meta.sendIfEmpty;
+    this.reasonCodes = meta.reasonCodes ?? [];
+  }
 
   private isDeletionRequest(): boolean {
     return this.name === DELETION_REQUEST_PING_NAME;
