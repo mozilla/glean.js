@@ -5,11 +5,11 @@
 "use strict";
 
 import Glean from "glean";
-import { samplePing } from "./generatedPings";
-import { webExtStarted, popupOpened } from "./generatedMetrics";
+import { custom } from "./generated/pings";
+import { webextStarted, popupOpened } from "./generated/sample";
 
 Glean.initialize("web-extension", true, { debug: { logPings: true }});
-webExtStarted.set();
+webextStarted.set();
 
 // Listen for messages from the popup.
 browser.runtime.onMessage.addListener(msg => {
@@ -20,7 +20,7 @@ browser.runtime.onMessage.addListener(msg => {
   }
 
   if (msg === "send-ping") {
-    samplePing.submit();
+    custom.submit();
   }
 });
 

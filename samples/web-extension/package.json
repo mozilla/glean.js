@@ -4,6 +4,7 @@
   "description": "A sample web extension using Glean.js",
   "main": "index.js",
   "scripts": {
+    "glean_parser": "glean_parser translate metrics.yaml pings.yaml -f javascript -o generated",
     "build": "webpack --config webpack.config.js --mode production",
     "dev": "webpack --watch --config webpack.config.js --mode development"
   },
