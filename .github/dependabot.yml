@@ -1,0 +1,14 @@
+version: 2
+updates:
+  - package-ecosystem: "npm"
+    directory: "/"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/samples/web-extension"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "pip"
+    directory: "/samples/qt-qml-app"
+    schedule:
+      interval: "daily"
