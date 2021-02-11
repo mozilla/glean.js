@@ -1,5 +1,4 @@
 {
-  "name": "glean",
   "version": "0.1.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "main": "./dist/glean.js",
@@ -13,11 +12,14 @@
     "dev:webext": "webpack --watch --config webpack.config.webext.js --mode development --devtool inline-source-map",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
     "dev:qt": "webpack --watch --config webpack.config.qt.js --mode development  --devtool inline-source-map",
-    "build:test-webext": "cd tests/utils/webext/sample/ && npm install && npm run build:xpi"
+    "build:test-webext": "cd tests/utils/webext/sample/ && npm install && npm run build:xpi",
+    "prepublish:webext": "npm run build:webext && json -I -f package.json -e \"this.name=\\\"@mozilla/glean-webext\\\"\"",
+    "publish:webext": "npm run prepublish:webext && npm publish",
+    "postpublish": "json -I -f package.json -e \"delete this.name\""
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/brizental/glean.js.git"
+    "url": "git+https://github.com/mozilla/glean.js.git"
   },
   "keywords": [
     "telemetry",
@@ -26,9 +28,9 @@
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/brizental/glean.js/issues"
+    "url": "https://bugzilla.mozilla.org/buglist.cgi?product=Data%20Platform%20and%20Tools&component=Glean.js&bug_status=__open__&list_id=15591291"
   },
-  "homepage": "https://github.com/brizental/glean.js#readme",
+  "homepage": "https://github.com/mozilla/glean.js#readme",
   "devDependencies": {
     "@types/assert": "^1.5.2",
     "@types/mocha": "^8.0.3",
@@ -45,6 +47,7 @@
     "geckodriver": "^1.21.0",
     "jsdom": "16.4.0",
     "jsdom-global": "3.0.2",
+    "json": "^10.0.0",
     "mocha": "^8.2.1",
     "selenium-webdriver": "^4.0.0-alpha.8",
     "sinon": "^9.2.2",
@@ -58,5 +61,11 @@
   },
   "dependencies": {
     "uuid": "^8.3.2"
-  }
+  },
+  "files": [
+    "README.md",
+    "package.json",
+    "src",
+    "dist"
+  ]
 }
