@@ -91,7 +91,7 @@ workflows:
       - publish-webext:
           requires:
             - lint
-            - unit tests
+            - unit-tests
           filters:
             branches:
               ignore: /.*/
