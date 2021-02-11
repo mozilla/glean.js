@@ -47,7 +47,7 @@
     "jsdom-global": "3.0.2",
     "mocha": "^8.2.1",
     "selenium-webdriver": "^4.0.0-alpha.8",
-    "sinon": "^9.2.2",
+    "sinon": "^9.2.4",
     "ts-loader": "^8.0.9",
     "ts-mocha": "^8.0.0",
     "ts-node": "^9.0.0",
