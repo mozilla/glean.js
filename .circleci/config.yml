@@ -14,10 +14,10 @@ jobs:
       - checkout
       - run:
           name: Install Javascript dependencies
-          command: npm install
+          command: npm --prefix ./glean install
       - run:
           name: Run linter
-          command: npm run lint
+          command: npm --prefix ./glean run lint
 
   unit-tests:
     docker:
@@ -32,10 +32,10 @@ jobs:
             sudo apt install firefox-trunk
       - run:
           name: Install Javascript dependencies
-          command: npm install
+          command: npm --prefix ./glean install
       - run:
           name: Run unit tests
-          command: export PATH=.:$PATH && npm run test
+          command: export PATH=.:$PATH && npm --prefix ./glean run test
 
   check-size:
     docker:
@@ -59,8 +59,8 @@ jobs:
             export NVM_DIR="$([ -z "${XDG_CONFIG_HOME-}" ] && printf %s "${HOME}/.nvm" || printf %s "${XDG_CONFIG_HOME}/nvm")"
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm install node
-            npm install
-            npm run build:qt
+            npm --prefix ./glean install
+            npm --prefix ./glean run build
       - run:
           name: Verify no Javascript errors found in Qt
           command: bin/qt-js-check.sh
