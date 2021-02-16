@@ -6,7 +6,7 @@ import QtQuick 2.0
 import QtQuick.Controls 2.0
 import QtGraphicalEffects 1.15
 
-import "../../dist/glean.js" as Glean;
+import "../../glean/dist/qt.js" as Glean;
 // These must be imported after Glean because they rely on Glean being in the environment.
 import "./generated/pings.js" as Pings;
 import "./generated/sample.js" as Metrics;
