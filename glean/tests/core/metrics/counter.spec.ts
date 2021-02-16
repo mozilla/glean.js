@@ -4,9 +4,9 @@
 
 import assert from "assert";
 
-import Glean from "glean";
-import CounterMetricType from "metrics/types/counter";
-import { Lifetime } from "metrics";
+import Glean from "core/glean";
+import CounterMetricType from "core/metrics/types/counter";
+import { Lifetime } from "core/metrics";
   
 describe("CounterMetric", function() {
   beforeEach(async function() {

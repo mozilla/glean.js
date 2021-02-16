@@ -3,13 +3,18 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import Glean from "core/glean";
 
-import { Lifetime } from "metrics";
-import EventsDatabase, { RecordedEvent } from "metrics/events_database";
-import EventMetricType from "metrics/types/event";
-import { JSONObject } from "utils";
+import { Lifetime } from "core/metrics";
+import EventsDatabase, { RecordedEvent } from "core/metrics/events_database";
+import EventMetricType from "core/metrics/types/event";
+import { JSONObject } from "core/utils";
 
 describe("EventsDatabase", function() {
+  beforeEach(async function() {
+    await Glean.testResetGlean("something something");
+  });
+
   it("stable serialization", function () {
     const event_empty = new RecordedEvent(
       "cat",

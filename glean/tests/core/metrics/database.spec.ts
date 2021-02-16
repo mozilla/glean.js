@@ -4,13 +4,17 @@
 
 import assert from "assert";
 
-import Database, { isValidInternalMetricsRepresentation } from "metrics/database";
-import { Lifetime } from "metrics";
-import StringMetricType, { StringMetric } from "metrics/types/string";
-import { JSONValue } from "utils";
-import Glean from "glean";
+import Database, { isValidInternalMetricsRepresentation } from "core/metrics/database";
+import { Lifetime } from "core/metrics";
+import StringMetricType, { StringMetric } from "core/metrics/types/string";
+import { JSONValue } from "core/utils";
+import Glean from "core/glean";
 
 describe("MetricsDatabase", function() {
+  beforeEach(async function() {
+    await Glean.testResetGlean("something something");
+  });
+
   describe("record", function() {
     it("records to the correct place at the underlying store", async function() {
       const db = new Database();

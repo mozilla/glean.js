@@ -4,9 +4,13 @@
 
 import assert from "assert";
 
-import Database, { Observer, isValidPingInternalRepresentation } from "pings/database";
+import Database, { Observer, isValidPingInternalRepresentation } from "core/pings/database";
+import Glean from "core/glean";
 
 describe("PingsDatabase", function() {
+  beforeEach(async function() {
+    await Glean.testResetGlean("something something");
+  });
 
   describe("record", function () {
     it("records correctly to the correct place at the underlying storage", async function() {

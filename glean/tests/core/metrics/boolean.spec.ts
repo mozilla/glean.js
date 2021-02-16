@@ -4,9 +4,9 @@
 
 import assert from "assert";
 
-import Glean from "glean";
-import BooleanMetricType from "metrics/types/boolean";
-import { Lifetime } from "metrics";
+import Glean from "core/glean";
+import BooleanMetricType from "core/metrics/types/boolean";
+import { Lifetime } from "core/metrics";
 
 describe("BooleanMetric", function() {
   beforeEach(async function() {

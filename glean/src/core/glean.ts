@@ -220,11 +220,13 @@ class Glean {
       return;
     }
 
-    Glean.instance._db = {
-      metrics: new MetricsDatabase(),
-      events: new EventsDatabase(),
-      pings: new PingsDatabase(Glean.pingUploader)
-    };
+    if (!Glean.instance._db) {
+      Glean.instance._db = {
+        metrics: new MetricsDatabase(),
+        events: new EventsDatabase(),
+        pings: new PingsDatabase(Glean.pingUploader)
+      };
+    }
 
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
@@ -482,9 +484,14 @@ class Glean {
     await Glean.testUninitialize();
 
     // Clear the databases.
-    await Glean.eventsDatabase.clearAll();
-    await Glean.metricsDatabase.clearAll();
-    await Glean.pingsDatabase.clearAll();
+    try {
+      await Glean.eventsDatabase.clearAll();
+      await Glean.metricsDatabase.clearAll();
+      await Glean.pingsDatabase.clearAll();
+    } catch {
+      // Nothing to do here.
+      // It is expected that these will fail in case we are initializing Glean for the first time.
+    }
 
     // Re-Initialize Glean.
     await Glean.testInitialize(applicationId, uploadEnabled, config);

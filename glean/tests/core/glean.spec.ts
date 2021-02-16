@@ -5,12 +5,12 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "../src/constants";
-import Glean from "glean";
-import { Lifetime } from "metrics";
-import StringMetricType from "metrics/types/string";
-import PingType from "pings";
-import Uploader from "upload/uploader";
+import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "core/constants";
+import Glean from "core/glean";
+import { Lifetime } from "core/metrics";
+import StringMetricType from "core/metrics/types/string";
+import PingType from "core/pings";
+import TestPlatform from "platform/qt";
 
 const GLOBAL_APPLICATION_ID = "org.mozilla.glean.test.app";
 const sandbox = sinon.createSandbox();
@@ -32,7 +32,7 @@ describe("Glean", function() {
       await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
 
     await Glean.testUninitialize();
-    Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
     assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE));
     assert.ok(await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
   });
@@ -110,7 +110,7 @@ describe("Glean", function() {
 
   it("client_id is set to known value when uploading disabled at start", async function() {
     await Glean.testUninitialize();
-    Glean.initialize(GLOBAL_APPLICATION_ID, false);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, false);
     assert.strictEqual(
       await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
@@ -120,7 +120,7 @@ describe("Glean", function() {
   it("client_id is set to random value when uploading enabled at start", async function() {
     Glean.setUploadEnabled(false);
     await Glean.testUninitialize();
-    Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
     const clientId = await Glean["coreMetrics"]["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(clientId);
@@ -147,7 +147,7 @@ describe("Glean", function() {
   it("initialization throws if applicationId is an empty string", async function() {
     await Glean.testUninitialize();
     try {
-      Glean.initialize("", true);
+      await Glean.testInitialize("", true);
       assert.ok(false);
     } catch {
       assert.ok(true);
@@ -157,7 +157,7 @@ describe("Glean", function() {
   it("initialization throws if serverEndpoint is an invalida URL", async function() {
     await Glean.testUninitialize();
     try {
-      Glean.initialize(GLOBAL_APPLICATION_ID, true, { serverEndpoint: "" });
+      await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { serverEndpoint: "" });
       assert.ok(false);
     } catch {
       assert.ok(true);
@@ -188,12 +188,12 @@ describe("Glean", function() {
 
   it("initializing twice is a no-op", async function() {
     await Glean.testUninitialize();
-    Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
     // initialize is dispatched, we must await on the queue being completed to assert things.
     await Glean.dispatcher.testBlockOnQueue();
 
     // This time it should not be called, which means upload should not be switched to `false`.
-    Glean.initialize(GLOBAL_APPLICATION_ID, false);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, false);
     assert.ok(Glean.isUploadEnabled());
   });
 
@@ -205,10 +205,10 @@ describe("Glean", function() {
       includeClientId: true,
       sendIfEmpty: true,
     });
-    const postSpy = sandbox.spy(Uploader, "post");
+    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
 
     // Start Glean with upload enabled.
-    Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
     // Immediatelly disable upload.
     Glean.setUploadEnabled(false);
     ping.submit();
@@ -224,7 +224,7 @@ describe("Glean", function() {
   });
 
   it("deletion request is sent when toggling upload from on to off", async function() {
-    const postSpy = sandbox.spy(Uploader, "post");
+    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
 
     Glean.setUploadEnabled(false);
     await Glean.dispatcher.testBlockOnQueue();
@@ -239,17 +239,17 @@ describe("Glean", function() {
   });
 
   it("deletion request ping is sent when toggling upload status between runs", async function() {
-    const postSpy = sandbox.spy(Uploader, "post");
+    const postSpy = sandbox.spy(TestPlatform.uploader, "post");
 
     Glean.setUploadEnabled(true);
     await Glean.dispatcher.testBlockOnQueue();
 
     // Can't use testResetGlean here because it clears all stores
-    // and when there is no client_id at all stored, a deletion ping is also not set.
+    // and when there is no client_id at all stored, a deletion ping is also not sent.
     await Glean.testUninitialize();
-    Glean.initialize(GLOBAL_APPLICATION_ID, false);
-    await Glean.dispatcher.testBlockOnQueue();
-    // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, false);
+
+    // TODO: Make this nicer once Bug 1691033 is resolved.
     await Glean["pingUploader"]["currentJob"];
 
     // A deletion request is sent
@@ -258,7 +258,7 @@ describe("Glean", function() {
   });
 
   it("deletion request ping is not sent if upload status does not change between runs", async function () {
-    const postSpy = sandbox.spy(Uploader, "post");
+    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
 
     Glean.setUploadEnabled(false);
     await Glean.dispatcher.testBlockOnQueue();
@@ -270,7 +270,7 @@ describe("Glean", function() {
     // Can't use testResetGlean here because it clears all stores
     // and when there is no client_id at all stored, a deletion ping is also not set.
     await Glean.testUninitialize();
-    Glean.initialize(GLOBAL_APPLICATION_ID, false);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, false);
     await Glean.dispatcher.testBlockOnQueue();
     // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
     await Glean["pingUploader"]["currentJob"];
@@ -280,7 +280,7 @@ describe("Glean", function() {
   });
 
   it("deletion request ping is not sent when user starts Glean for the first time with upload disabled", async function () {
-    const postSpy = sandbox.spy(Uploader, "post");
+    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
     await Glean.testResetGlean(GLOBAL_APPLICATION_ID, false);
     assert.strictEqual(postSpy.callCount, 0);
   });
@@ -289,7 +289,7 @@ describe("Glean", function() {
     await Glean.testUninitialize();
 
     // Setting on initialize.
-    Glean.initialize(GLOBAL_APPLICATION_ID, true, { debug: { logPings: true } });
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { logPings: true } });
     await Glean.dispatcher.testBlockOnQueue();
     assert.ok(Glean.logPings);
 
@@ -297,7 +297,7 @@ describe("Glean", function() {
 
     // Setting before initialize.
     Glean.setLogPings(true);
-    Glean.initialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
     await Glean.dispatcher.testBlockOnQueue();
     assert.ok(Glean.logPings);
 

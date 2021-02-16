@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import * as utils from "utils";
+
+import * as utils from "core/utils";
 
 describe("utils", function() {
   it("isObject validates correctly", function() {

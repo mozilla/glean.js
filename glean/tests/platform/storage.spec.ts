@@ -6,11 +6,11 @@ import { WebDriver } from "selenium-webdriver";
 import assert from "assert";
 
 import { setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
-import { Store } from "storage";
+import Store from "core/storage";
 
-import WeakStore from "storage/weak";
-import WebExtStore from "storage/persistent/webext";
-import { isUndefined, JSONValue } from "utils";
+import TestStore from "platform/test/storage";
+import WebExtStore from "platform/webext/storage";
+import { isUndefined, JSONValue } from "core/utils";
 
 let firefox: WebDriver;
 
@@ -23,8 +23,8 @@ const stores: {
     afterAll?: () => Promise<void>
   }
 } = {
-  "WeakStore": {
-    initializeStore: (): WeakStore => new WeakStore("unused")
+  "TestStore": {
+    initializeStore: (): TestStore => new TestStore("unused")
   },
   "WebExtStore": {
     initializeStore: (): WebExtStore => new WebExtStore("test"),

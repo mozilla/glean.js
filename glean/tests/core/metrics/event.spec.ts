@@ -5,9 +5,9 @@
 import { performance } from "perf_hooks";
 import assert from "assert";
 
-import Glean from "glean";
-import EventMetricType from "metrics/types/event";
-import { Lifetime } from "metrics";
+import Glean from "core/glean";
+import EventMetricType from "core/metrics/types/event";
+import { Lifetime } from "core/metrics";
 
 // A test event type that exclusively overrides the
 // monotonic timer.

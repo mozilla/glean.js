@@ -4,9 +4,9 @@
 
 import assert from "assert";
 
-import PingType from "pings";
-import * as PingMaker from "pings/maker";
-import Glean from "glean";
+import PingType from "core/pings";
+import * as PingMaker from "core/pings/maker";
+import Glean from "core/glean";
 
 describe("PingMaker", function() {
   beforeEach(async function() {
@@ -51,12 +51,11 @@ describe("PingMaker", function() {
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
     // Initialize will also initialize core metrics that are part of the client info.
-    Glean.initialize("something something", true, {
+    await Glean.testInitialize("something something", true, {
       appBuild:"build",
       appDisplayVersion: "display version",
       serverEndpoint: "http://localhost:8080"
     });
-    await Glean.dispatcher.testBlockOnQueue();
 
     const clientInfo2 = await PingMaker.buildClientInfoSection(ping);
     assert.ok("telemetry_sdk_build" in clientInfo2);

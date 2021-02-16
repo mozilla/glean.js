@@ -5,9 +5,9 @@
 import assert from "assert";
 import { v4 as UUIDv4 } from "uuid";
 
-import Glean from "glean";
-import UUIDMetricType from "metrics/types/uuid";
-import { Lifetime } from "metrics";
+import Glean from "core/glean";
+import UUIDMetricType from "core/metrics/types/uuid";
+import { Lifetime } from "core/metrics";
  
 describe("UUIDMetric", function() {
   beforeEach(async function() {
