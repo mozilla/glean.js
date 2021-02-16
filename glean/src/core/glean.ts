@@ -34,7 +34,7 @@ class Glean {
   // A task dispatcher to help execute in order asynchronous external API calls.
   private _dispatcher: Dispatcher;
 
-  // The platformironment must be set before initialize.
+  // The environment must be set before initialize.
   private _platform?: Platform;
 
   // Properties that will only be set on `initialize`.
@@ -216,7 +216,7 @@ class Glean {
      }
 
      if (!Glean.instance._platform) {
-       console.error("Unable to initialize Glean, platformironment has not been set.");
+       console.error("Unable to initialize Glean, environment has not been set.");
        return;
      }
 
@@ -339,7 +339,7 @@ class Glean {
 
    static get platform(): Platform {
      if (!Glean.instance._platform) {
-       throw new Error("IMPOSSIBLE: Attempted to access platformironment specific APIs before Glean was initialized.");
+       throw new Error("IMPOSSIBLE: Attempted to access environment specific APIs before Glean was initialized.");
      }
 
      return Glean.instance._platform;
@@ -418,12 +418,12 @@ class Glean {
    }
 
    /**
-    * Sets the current platformironment.
+    * Sets the current environment.
     *
     * This function **must** be called before Glean.initialize.
     *
-    * @param platform The platformironment to set.
-    *        Please check out the available platformironments in the platform/ module.
+    * @param platform The environment to set.
+    *        Please check out the available environments in the platform/ module.
     */
    static setPlatform(platform: Platform): void {
      Glean.instance._platform = platform;

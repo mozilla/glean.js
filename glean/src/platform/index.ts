@@ -12,11 +12,11 @@ import PlatformInfo from "core/platform_info";
  * Each supported platform must provide an implementation of this interface.
  */
 interface Platform {
-  // The platformironment speficic storage implementation
+  // The environment speficic storage implementation
   Storage: new (rootKey: string) => Store,
-  // The platformironment specific uploader implementation
+  // The environment specific uploader implementation
   uploader: Uploader,
-  // The platformironment specifici implemtation of platform information getters
+  // The environment specifici implemtation of platform information getters
   info: PlatformInfo,
 }
 

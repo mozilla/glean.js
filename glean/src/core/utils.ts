@@ -131,7 +131,7 @@ export function validateURL(v: string): boolean {
  *
  * # Important
  *
- * This workaround is here for usage in Qt/QML platformironments, where `crypto` is not available.
+ * This workaround is here for usage in Qt/QML environments, where `crypto` is not available.
  * Bug 1688015 was opened to figure out a less hacky way to do this.
  *
  * @returns A randomly generated UUIDv4.
