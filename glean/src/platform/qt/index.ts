@@ -4,4 +4,4 @@
 
 // Qt does not have its implementations yet,
 // we leavet his here so that the sample will still work.
-export { default } from "platform/test"
+export { default } from "platform/test";
