@@ -75,7 +75,7 @@ jobs:
           command: npm --prefix ./glean install
       - run:
           name: NPM Authentication
-          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+          command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > glean/.npmrc
       - run:
           name: Publish to npm
           command: export PATH=.:$PATH && (cd glean && npm publish --access public)
