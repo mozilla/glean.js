@@ -80,7 +80,6 @@ jobs:
           name: Publish to npm
           command: export PATH=.:$PATH && (cd glean && npm publish)
 
-
 workflows:
   version: 2
   ci:
@@ -94,7 +93,7 @@ workflows:
             - unit-tests
           filters:
             branches:
-              ignore: /.*/
+              only: release
             tags:
               only: /v[0-9]+(\.[0-9]+)*/
       # Comment this job away until Bug 1681899 is resolved.
