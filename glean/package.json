@@ -1,8 +1,17 @@
 {
-  "name": "glean",
+  "name": "@mozilla/glean",
   "version": "0.1.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
-  "main": "./dist/glean.js",
+  "exports": {
+    "./package.json": "./package.json",
+    "./qt": "./dist/qt.js",
+    "./webext": "./dist/webext.js"
+  },
+  "files": [
+    "README.md",
+    "package.json",
+    "dist/**/*.js"
+  ],
   "scripts": {
     "test": "npm run test:core && npm run test:platform",
     "test:core": "ts-mocha \"tests/core/**/*.spec.ts\" --paths -p ./tsconfig.json  --recursive",
@@ -11,11 +20,12 @@
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build": "webpack --config webpack.config.js --mode production",
-    "dev": "webpack --watch --config webpack.config.js --mode development --devtool inline-source-map"
+    "dev": "webpack --watch --config webpack.config.js --mode development --devtool inline-source-map",
+    "prepare": "npm run build"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/brizental/glean.js.git"
+    "url": "git+https://github.com/mozilla/glean.js.git"
   },
   "keywords": [
     "telemetry",
@@ -24,9 +34,9 @@
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
   "bugs": {
-    "url": "https://github.com/brizental/glean.js/issues"
+    "url": "https://github.com/mozilla/glean.js/issues"
   },
-  "homepage": "https://github.com/brizental/glean.js#readme",
+  "homepage": "https://github.com/mozilla/glean.js#readme",
   "devDependencies": {
     "@types/assert": "^1.5.4",
     "@types/mocha": "^8.2.0",
