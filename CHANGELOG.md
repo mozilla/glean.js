@@ -2,7 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.1.0...main)
 
-* [#48](https://github.com/mozilla/glean.js/pull/48): Add this changelog file.
+* [#73](https://github.com/mozilla/glean.js/pull/73): Add this changelog file.
 * [#42](https://github.com/mozilla/glean.js/pull/42): Implement the `deletion-request` ping.
 * [#41](https://github.com/mozilla/glean.js/pull/41): Implement the `logPings` debug tool.
   * When `logPings` is enabled, pings are logged upon collection.
