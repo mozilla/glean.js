@@ -21,7 +21,8 @@
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build": "webpack --config webpack.config.js --mode production",
     "dev": "webpack --watch --config webpack.config.js --mode development --devtool inline-source-map",
-    "prepare": "npm run build"
+    "prepublishOnly": "cp ../README.md ./README.md && npm run build",
+    "postpublish": "rm ./README.md"
   },
   "repository": {
     "type": "git",
