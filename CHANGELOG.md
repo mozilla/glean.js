@@ -1,6 +1,9 @@
 # Unreleased changes
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.1.0...main)
+# v0.1.0 (2021-02-17)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/46f028fb4ea7b8f312daf4666904c81d0a3eb171...v0.1.0)
 
 * [#73](https://github.com/mozilla/glean.js/pull/73): Add this changelog file.
 * [#42](https://github.com/mozilla/glean.js/pull/42): Implement the `deletion-request` ping.
