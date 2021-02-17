@@ -98,7 +98,7 @@ if [ "$DOIT" = y ]; then
     cat > "${WORKSPACE_ROOT}/${FILE}" <<EOL
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean/compare/v${NEW_VERSION}...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v${NEW_VERSION}...main)
 ${CHANGELOG}
 EOL
 fi
