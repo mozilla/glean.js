@@ -78,7 +78,7 @@ jobs:
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
       - run:
           name: Publish to npm
-          command: export PATH=.:$PATH && (cd glean && npm publish)
+          command: export PATH=.:$PATH && (cd glean && npm publish --access public)
 
 workflows:
   version: 2
@@ -88,14 +88,11 @@ workflows:
       - unit-tests
       - check-qt-js
       - publish:
-          requires:
-            - lint
-            - unit-tests
           filters:
             branches:
-              only: release
+              ignore: /.*/
             tags:
-              only: /v[0-9]+(\.[0-9]+)*/
+              only: /^v.*/
       # Comment this job away until Bug 1681899 is resolved.
       # - check-size:
       #     filters:
