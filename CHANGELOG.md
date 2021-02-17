@@ -1,6 +1,12 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.1.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.1.1...main)
+# v0.1.1 (2021-02-17)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.1.0...v0.1.1)
+
+* [#77](https://github.com/mozilla/glean.js/pull/77): Include README.md file in `@mozilla/glean` package bundle.
+
 # v0.1.0 (2021-02-17)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/46f028fb4ea7b8f312daf4666904c81d0a3eb171...v0.1.0)
