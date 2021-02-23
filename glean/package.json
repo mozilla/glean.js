@@ -8,11 +8,13 @@
     "./webext/private/metrics/*": "./dist/webext/core/metrics/types/*.js",
     "./webext/private/ping": "./dist/webext/core/pings/index.js"
   },
-  "files": [
-    "README.md",
-    "package.json",
-    "dist/**/*.js"
-  ],
+  "typesVersions": {
+    "*": {
+      "webext/*": [
+        "./dist/webext/types/*"
+      ]
+    }
+  },
   "scripts": {
     "test": "npm run test:core && npm run test:platform",
     "test:core": "ts-mocha \"tests/core/**/*.spec.ts\" --recursive",
@@ -21,7 +23,8 @@
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:webext:lib": "tsc -p ./tsconfig/webext/index.json",
-    "build:webext": "npm run build:webext:lib",
+    "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
+    "build:webext": "npm run build:webext:lib && npm run build:webext:types",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
     "prepublishOnly": "cp ../README.md ./README.md && npm run build:webext",
     "postpublish": "rm ./README.md"
