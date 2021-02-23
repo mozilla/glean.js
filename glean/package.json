@@ -15,6 +15,11 @@
       ]
     }
   },
+  "files": [
+    "README.md",
+    "package.json",
+    "dist/**/*"
+  ],
   "scripts": {
     "test": "npm run test:core && npm run test:platform",
     "test:core": "ts-mocha \"tests/core/**/*.spec.ts\" --recursive",
