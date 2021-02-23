@@ -1,8 +1,11 @@
 # Unreleased changes
 
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.2.0...main)
+# v0.2.0 (2021-02-23)
+
 * [#85](https://github.com/mozilla/glean.js/pull/85): Include type declarations in `@mozilla/glean` webext package bundle.
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.1.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.1.1...v0.2.0)
 # v0.1.1 (2021-02-17)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.1.0...v0.1.1)
