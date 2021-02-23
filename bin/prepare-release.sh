@@ -103,6 +103,15 @@ ${CHANGELOG}
 EOL
 fi
 
+## Constants ###
+
+FILE=glean/src/core/constants.ts
+
+run $SED -i.bak -E \
+    -e "s/export const GLEAN_VERSION = \"[0-9a-z.-]+\";/export const GLEAN_VERSION = \"${NEW_VERSION}\";/" \
+    "${WORKSPACE_ROOT}/${FILE}"
+run rm "${WORKSPACE_ROOT}/${FILE}.bak"
+
 echo "Everything prepared for v${NEW_VERSION}"
 echo
 echo "Changed files:"
