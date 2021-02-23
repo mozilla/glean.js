@@ -4,10 +4,10 @@
 
 import { validate as UUIDvalidate } from "uuid";
 
-import { KNOWN_CLIENT_ID } from "core/constants";
-import { Metric, MetricType, CommonMetricData } from "core/metrics";
-import { isString, generateUUIDv4 } from "core/utils";
-import Glean from "core/glean";
+import { KNOWN_CLIENT_ID } from "../../constants";
+import { Metric, MetricType, CommonMetricData } from "../";
+import { isString, generateUUIDv4 } from "../../utils";
+import Glean from "../../glean";
 
 export class UUIDMetric extends Metric<string, string> {
   constructor(v: unknown) {

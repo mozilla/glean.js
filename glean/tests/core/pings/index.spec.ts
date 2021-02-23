@@ -5,10 +5,10 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import PingType from "core/pings";
-import CounterMetricType from "core/metrics/types/counter";
-import { Lifetime } from "core/metrics";
-import Glean from "core/glean";
+import PingType from "../../../src/core/pings";
+import CounterMetricType from "../../../src/core/metrics/types/counter";
+import { Lifetime } from "../../../src/core/metrics";
+import Glean from "../../../src/core/glean";
 
 const sandbox = sinon.createSandbox();
 

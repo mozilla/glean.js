@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store from "core/storage";
-import Uploader from "core/upload/uploader";
-import PlatformInfo from "core/platform_info";
+import Store from "../core/storage";
+import Uploader from "../core/upload/uploader";
+import PlatformInfo from "../core/platform_info";
 
 /**
  * An interface describing all the platform specific APIs Glean.js needs to access.

@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { GLEAN_VERSION } from "core/constants";
-import { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "core/pings/database";
-import Glean from "core/glean";
+import { GLEAN_VERSION } from "../constants";
+import { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database";
+import Glean from "../glean";
 
 interface QueuedPing extends PingInternalRepresentation {
   identifier: string

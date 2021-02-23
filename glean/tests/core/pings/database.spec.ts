@@ -4,8 +4,8 @@
 
 import assert from "assert";
 
-import Database, { Observer, isValidPingInternalRepresentation } from "core/pings/database";
-import Glean from "core/glean";
+import Database, { Observer, isValidPingInternalRepresentation } from "../../../src/core/pings/database";
+import Glean from "../../../src/core/glean";
 
 describe("PingsDatabase", function() {
   beforeEach(async function() {

@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Uploader from "core/upload/uploader";
-import { UploadResult, UploadResultStatus } from "core/upload";
+import Uploader from "../../core/upload/uploader";
+import { UploadResult, UploadResultStatus } from "../../core/upload";
 
 class BrowserUploader extends Uploader {
   async post(url: string, body: string, headers: Record<string, string> = {}): Promise<UploadResult> {

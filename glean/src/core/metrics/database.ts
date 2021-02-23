@@ -2,11 +2,11 @@
 //  * License, v. 2.0. If a copy of the MPL was not distributed with this
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store from "core/storage";
-import { MetricType, Lifetime, Metric } from "core/metrics";
-import { createMetric, validateMetricInternalRepresentation } from "core/metrics/utils";
-import { isObject, isUndefined, JSONValue } from "core/utils";
-import Glean from "core/glean";
+import Store from "../storage";
+import { MetricType, Lifetime, Metric } from "./";
+import { createMetric, validateMetricInternalRepresentation } from "./utils";
+import { isObject, isUndefined, JSONValue } from "../utils";
+import Glean from "../glean";
 
 export interface Metrics {
   [aMetricType: string]: {

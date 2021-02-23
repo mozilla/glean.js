@@ -2,22 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "core/constants";
-import { Configuration, ConfigurationInterface } from "core/config";
-import MetricsDatabase from "core/metrics/database";
-import PingsDatabase from "core/pings/database";
-import PingUploader from "core/upload";
-import { isUndefined, sanitizeApplicationId } from "core/utils";
-import { CoreMetrics } from "core/internal_metrics";
-import { Lifetime } from "core/metrics";
-import EventsDatabase from "core/metrics/events_database";
-import UUIDMetricType from "core/metrics/types/uuid";
-import DatetimeMetricType, { DatetimeMetric } from "core/metrics/types/datetime";
-import Dispatcher from "core/dispatcher";
-import CorePings from "core/internal_pings";
+import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants";
+import { Configuration, ConfigurationInterface } from "./config";
+import MetricsDatabase from "./metrics/database";
+import PingsDatabase from "./pings/database";
+import PingUploader from "./upload";
+import { isUndefined, sanitizeApplicationId } from "./utils";
+import { CoreMetrics } from "./internal_metrics";
+import { Lifetime } from "./metrics";
+import EventsDatabase from "./metrics/events_database";
+import UUIDMetricType from "./metrics/types/uuid";
+import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime";
+import Dispatcher from "./dispatcher";
+import CorePings from "./internal_pings";
 
-import Platform from "platform/index";
-import TestPlatform from "platform/test";
+import Platform from "../platform/index";
+import TestPlatform from "../platform/test";
 
 class Glean {
   // The Glean singleton.
