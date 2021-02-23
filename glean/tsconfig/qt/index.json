@@ -1,0 +1,7 @@
+{
+  "extends": "../base.json",
+  "include": ["../../src/index/qt.ts", "../../src/core/metrics/types/*.ts"],
+  "compilerOptions": {
+    "noEmit": true
+  }
+}
