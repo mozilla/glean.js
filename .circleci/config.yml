@@ -60,7 +60,7 @@ jobs:
             [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
             nvm install node
             npm --prefix ./glean install
-            npm --prefix ./glean run build
+            npm --prefix ./glean run build:qt
       - run:
           name: Verify no Javascript errors found in Qt
           command: bin/qt-js-check.sh

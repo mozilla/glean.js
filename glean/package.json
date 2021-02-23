@@ -4,24 +4,34 @@
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "exports": {
     "./package.json": "./package.json",
-    "./qt": "./dist/qt.js",
-    "./webext": "./dist/webext.js"
+    "./webext": "./dist/webext/index/webext.js",
+    "./webext/private/metrics/*": "./dist/webext/core/metrics/types/*.js",
+    "./webext/private/ping": "./dist/webext/core/pings/index.js"
+  },
+  "typesVersions": {
+    "*": {
+      "webext/*": [
+        "./dist/webext/types/*"
+      ]
+    }
   },
   "files": [
     "README.md",
     "package.json",
-    "dist/**/*.js"
+    "dist/**/*"
   ],
   "scripts": {
     "test": "npm run test:core && npm run test:platform",
-    "test:core": "ts-mocha \"tests/core/**/*.spec.ts\" --paths -p ./tsconfig.json  --recursive",
-    "test:platform": "npm run build:test-webext && ts-mocha \"tests/platform/**/*.spec.ts\" --paths -p ./tsconfig.json  --recursive --timeout 0",
+    "test:core": "ts-mocha \"tests/core/**/*.spec.ts\" --recursive",
+    "test:platform": "npm run build:test-webext && ts-mocha \"tests/platform/**/*.spec.ts\" --recursive --timeout 0",
     "build:test-webext": "cd tests/platform/utils/webext/sample/ && npm install && npm run build:xpi",
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
-    "build": "webpack --config webpack.config.js --mode production",
-    "dev": "webpack --watch --config webpack.config.js --mode development --devtool inline-source-map",
-    "prepublishOnly": "cp ../README.md ./README.md && npm run build",
+    "build:webext:lib": "tsc -p ./tsconfig/webext/index.json",
+    "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
+    "build:webext": "npm run build:webext:lib && npm run build:webext:types",
+    "build:qt": "webpack --config webpack.config.qt.js --mode production",
+    "prepublishOnly": "cp ../README.md ./README.md && npm run build:webext",
     "postpublish": "rm ./README.md"
   },
   "repository": {

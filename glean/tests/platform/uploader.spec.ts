@@ -6,9 +6,9 @@ import "jsdom-global/register";
 import assert from "assert";
 import sinon from "sinon";
 
-import { UploadResultStatus } from "core/upload";
-import BrowserUploader from "platform/webext/uploader";
-import { JSONObject } from "core/utils";
+import { UploadResultStatus } from "../../src/core/upload";
+import BrowserUploader from "../../src/platform/webext/uploader";
+import { JSONObject } from "../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 

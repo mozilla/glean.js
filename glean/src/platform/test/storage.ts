@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store, { StorageIndex } from "core/storage";
-import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "core/storage/utils";
-import { JSONObject, JSONValue } from "core/utils";
+import Store, { StorageIndex } from "../../core/storage";
+import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "../../core/storage/utils";
+import { JSONObject, JSONValue } from "../../core/utils";
 /**
  * A weak implementation for the Store interface.
  *

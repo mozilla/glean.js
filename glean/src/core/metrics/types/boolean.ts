@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Metric, MetricType, CommonMetricData } from "core/metrics";
-import { isBoolean } from "core/utils";
-import Glean from "core/glean";
+import { Metric, MetricType, CommonMetricData } from "../";
+import { isBoolean } from "../../utils";
+import Glean from "../../glean";
 
 export class BooleanMetric extends Metric<boolean, boolean> {
   constructor(v: unknown) {

@@ -5,12 +5,12 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "core/constants";
-import Glean from "core/glean";
-import { Lifetime } from "core/metrics";
-import StringMetricType from "core/metrics/types/string";
-import PingType from "core/pings";
-import TestPlatform from "platform/qt";
+import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "../../src/core/constants";
+import Glean from "../../src/core/glean";
+import { Lifetime } from "../../src/core/metrics";
+import StringMetricType from "../../src/core/metrics/types/string";
+import PingType from "../../src/core/pings";
+import TestPlatform from "../../src/platform/qt";
 
 const GLOBAL_APPLICATION_ID = "org.mozilla.glean.test.app";
 const sandbox = sinon.createSandbox();

@@ -2,15 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "core/constants";
-import UUIDMetricType from "core/metrics/types/uuid";
-import DatetimeMetricType from "core/metrics/types/datetime";
-import StringMetricType from "core/metrics/types/string";
-import { createMetric } from "core/metrics/utils";
-import TimeUnit from "core/metrics/time_unit";
-import { Lifetime } from "core/metrics";
-import { generateUUIDv4 } from "core/utils";
-import Glean from "core/glean";
+import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "./constants";
+import UUIDMetricType from "./metrics/types/uuid";
+import DatetimeMetricType from "./metrics/types/datetime";
+import StringMetricType from "./metrics/types/string";
+import { createMetric } from "./metrics/utils";
+import TimeUnit from "./metrics/time_unit";
+import { Lifetime } from "./metrics";
+import { generateUUIDv4 } from "./utils";
+import Glean from "./glean";
 
 /**
  * Glean internal metrics.

@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { JSONValue } from "core/utils";
-import Glean from "core/glean";
+import { JSONValue } from "../utils";
+import Glean from "../glean";
 
 /**
  * The Metric class describes the shared behaviour amongst concrete metrics.

@@ -21,6 +21,6 @@
       "38": "icons/glean-38.png"
     },
     "default_title": "Glean.js",
-    "default_popup": "popup.html"
+    "default_popup": "src/popup.html"
   }
 }

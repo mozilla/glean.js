@@ -2,12 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import MockStorage from "platform/test/storage";
-
-import { UploadResult, UploadResultStatus } from "core/upload";
-import PlatformInfo, { KnownOperatingSystems } from "core/platform_info";
-import Uploader from "core/upload/uploader";
-import Platform from "platform/index";
+import MockStorage from "../test/storage";
+import { UploadResult, UploadResultStatus } from "../../core/upload";
+import PlatformInfo, { KnownOperatingSystems } from "../../core/platform_info";
+import Uploader from "../../core/upload/uploader";
+import Platform from "../index";
 
 class MockUploader extends Uploader {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

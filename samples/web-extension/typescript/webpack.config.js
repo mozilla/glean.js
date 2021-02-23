@@ -7,8 +7,12 @@
 const path = require("path");
 
 module.exports = {
-  entry: "./index.js",
+  entry: "./src/index.ts",
   devtool: "inline-source-map",
+  resolve: {
+    modules: ["node_modules", "src"],
+    extensions: [ ".tsx", ".ts", ".js" ]
+  },
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),

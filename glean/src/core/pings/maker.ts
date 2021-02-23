@@ -2,14 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "core/constants";
-import CounterMetricType, { CounterMetric } from "core/metrics/types/counter";
-import DatetimeMetricType, { DatetimeMetric } from "core/metrics/types/datetime";
-import { Lifetime } from "core/metrics";
-import TimeUnit from "core/metrics/time_unit";
-import { ClientInfo, PingInfo, PingPayload } from "core/pings/database";
-import PingType from "core/pings";
-import Glean from "core/glean";
+import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "../constants";
+import CounterMetricType, { CounterMetric } from "../metrics/types/counter";
+import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime";
+import { Lifetime } from "../metrics";
+import TimeUnit from "../metrics/time_unit";
+import { ClientInfo, PingInfo, PingPayload } from "../pings/database";
+import PingType from "../pings";
+import Glean from "../glean";
 
 // The moment the current Glean.js session started.
 const GLEAN_START_TIME = new Date();

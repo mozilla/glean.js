@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { DEFAULT_TELEMETRY_ENDPOINT } from "core/constants";
-import { validateURL } from "core/utils";
+import { DEFAULT_TELEMETRY_ENDPOINT } from "./constants";
+import { validateURL } from "./utils";
 
 /**
  * Lists Glean's debug options.
