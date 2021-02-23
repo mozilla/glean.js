@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { MetricType, CommonMetricData } from "core/metrics";
-import Glean from "core/glean";
-import { ExtraMap, RecordedEvent } from "core/metrics/events_database";
-import { isUndefined } from "core/utils";
+import { MetricType, CommonMetricData } from "../";
+import Glean from "../../glean";
+import { ExtraMap, RecordedEvent } from "../events_database";
+import { isUndefined } from "../../utils";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 

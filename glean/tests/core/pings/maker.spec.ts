@@ -4,9 +4,9 @@
 
 import assert from "assert";
 
-import PingType from "core/pings";
-import * as PingMaker from "core/pings/maker";
-import Glean from "core/glean";
+import PingType from "../../../src/core/pings";
+import * as PingMaker from "../../../src/core/pings/maker";
+import Glean from "../../../src/core/glean";
 
 describe("PingMaker", function() {
   beforeEach(async function() {

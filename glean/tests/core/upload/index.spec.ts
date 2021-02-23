@@ -6,8 +6,8 @@ import assert from "assert";
 import sinon from "sinon";
 import { v4 as UUIDv4 } from "uuid";
 
-import Glean from "core/glean";
-import PingUploader, { UploadResultStatus } from "core/upload";
+import Glean from "../../../src/core/glean";
+import PingUploader, { UploadResultStatus } from "../../../src/core/upload";
 
 const sandbox = sinon.createSandbox();
 

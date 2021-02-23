@@ -6,11 +6,11 @@ import { WebDriver } from "selenium-webdriver";
 import assert from "assert";
 
 import { setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
-import Store from "core/storage";
+import Store from "../../src/core/storage";
 
-import TestStore from "platform/test/storage";
-import WebExtStore from "platform/webext/storage";
-import { isUndefined, JSONValue } from "core/utils";
+import TestStore from "../../src/platform/test/storage";
+import WebExtStore from "../../src/platform/webext/storage";
+import { isUndefined, JSONValue } from "../../src/core/utils";
 
 let firefox: WebDriver;
 

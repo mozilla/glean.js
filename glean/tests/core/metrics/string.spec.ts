@@ -4,9 +4,9 @@
 
 import assert from "assert";
 
-import Glean from "core/glean";
-import StringMetricType, { MAX_LENGTH_VALUE } from "core/metrics/types/string";
-import { Lifetime } from "core/metrics";
+import Glean from "../../../src/core/glean";
+import StringMetricType, { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string";
+import { Lifetime } from "../../../src/core/metrics";
  
 describe("StringMetric", function() {
   beforeEach(async function() {

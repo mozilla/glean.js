@@ -6,8 +6,8 @@
 
 const path = require("path");
 
-const base = {
-  entry: "./src/index.ts",
+module.exports = {
+  entry: "./src/index/qt.ts",
   module: {
     rules: [
       {
@@ -24,38 +24,8 @@ const base = {
   },
   output: {
     path: path.resolve(__dirname, "dist"),
+    filename: "glean.js",
+    libraryTarget: "var",
     library: "Glean",
   }
 };
-
-const qt = {
-  ...base,
-  output: {
-    ...base.output,
-    filename: "qt.js",
-    libraryTarget: "var",
-  },
-  resolve: {
-    ...base.resolve,
-    alias: {
-      "platform/current": path.resolve(__dirname, "src/platform/qt"),
-    }
-  }
-};
-
-const webext = {
-  ...base,
-  output: {
-    ...base.output,
-    filename: "webext.js",
-    libraryTarget: "umd",
-  },
-  resolve: {
-    ...base.resolve,
-    alias: {
-      "platform/current": path.resolve(__dirname, "src/platform/webext"),
-    }
-  }
-};
-
-module.exports = [ qt, webext ];

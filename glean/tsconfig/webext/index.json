@@ -1,0 +1,7 @@
+{
+  "extends": "../base.json",
+  "include": ["../../src/index/webext.ts", "../../src/core/metrics/types/*.ts"],
+  "compilerOptions": {
+    "outDir": "../../dist/webext"
+  }
+}

@@ -4,11 +4,11 @@
 
 import assert from "assert";
 
-import Database, { isValidInternalMetricsRepresentation } from "core/metrics/database";
-import { Lifetime } from "core/metrics";
-import StringMetricType, { StringMetric } from "core/metrics/types/string";
-import { JSONValue } from "core/utils";
-import Glean from "core/glean";
+import Database, { isValidInternalMetricsRepresentation } from "../../../src/core/metrics/database";
+import { Lifetime } from "../../../src/core/metrics";
+import StringMetricType, { StringMetric } from "../../../src/core/metrics/types/string";
+import { JSONValue } from "../../../src/core/utils";
+import Glean from "../../../src/core/glean";
 
 describe("MetricsDatabase", function() {
   beforeEach(async function() {

@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Metric, MetricType, CommonMetricData } from "core/metrics";
-import TimeUnit from "core/metrics/time_unit";
-import Glean from "core/glean";
-import { isNumber, isObject, isString } from "core/utils";
+import { Metric, MetricType, CommonMetricData } from "../";
+import TimeUnit from "../../metrics/time_unit";
+import Glean from "../../glean";
+import { isNumber, isObject, isString } from "../../utils";
 
 /**
  * Builds the formatted timezone offset string frim a given timezone.
