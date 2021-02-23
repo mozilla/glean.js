@@ -64,4 +64,4 @@ export default {
   setLogPings(flag: boolean): void {
     Glean.setLogPings(flag);
   }
-}
+};
