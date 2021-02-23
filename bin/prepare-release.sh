@@ -99,6 +99,7 @@ if [ "$DOIT" = y ]; then
 # Unreleased changes
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v${NEW_VERSION}...main)
+
 ${CHANGELOG}
 EOL
 fi
