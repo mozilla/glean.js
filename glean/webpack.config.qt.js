@@ -11,10 +11,10 @@ module.exports = {
   module: {
     rules: [
       {
+        test: /\.tsx?$/,
         loader: "ts-loader",
-        options: {
-          configFile: path.resolve(__dirname, "tsconfig/qt/index.json"),
-        }
+        exclude: /node_modules/,
+        options: { onlyCompileBundledFiles: true }
       },
     ],
   },
