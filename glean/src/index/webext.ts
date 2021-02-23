@@ -2,22 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Glean from "core/glean";
-import { ConfigurationInterface } from "core/config";
+import Glean from "../core/glean";
+import { ConfigurationInterface } from "../core/config";
 
-// This import will be aliased per platform.
-import platform from "platform/current";
+import platform from "../platform/webext";
 
-// Private Glean types to export.
-import PingType from "core/pings";
-import BooleanMetricType from "core/metrics/types/boolean";
-import CounterMetricType from "core/metrics/types/counter";
-import DatetimeMetricType from "core/metrics/types/datetime";
-import EventMetricType from "core/metrics/types/event";
-import StringMetricType from "core/metrics/types/string";
-import UUIDMetricType from "core/metrics/types/uuid";
-
-export = {
+export default {
   /**
    * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
    *
@@ -73,15 +63,5 @@ export = {
    */
   setLogPings(flag: boolean): void {
     Glean.setLogPings(flag);
-  },
-
-  _private: {
-    PingType,
-    BooleanMetricType,
-    CounterMetricType,
-    DatetimeMetricType,
-    EventMetricType,
-    StringMetricType,
-    UUIDMetricType
   }
 }
