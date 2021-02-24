@@ -5,7 +5,7 @@
 * [#90](https://github.com/mozilla/glean.js/pull/90): Provide exports for CommonJS and browser environemnts.
 * [#90](https://github.com/mozilla/glean.js/pull/90): BUGIFX: Accept lifetimes as strings when instantiating metric types.
 * [#90](https://github.com/mozilla/glean.js/pull/90): BUGFIX: Fix type declaration paths.
-* [#90](https://github.com/mozilla/glean.js/pull/90):  BUGFIX: Make web-ext-types a peer dependency.
+* [#90](https://github.com/mozilla/glean.js/pull/90): BUGFIX: Make web-ext-types a peer dependency.
   * This is quick fix until [Bug 1694701](https://bugzilla.mozilla.org/show_bug.cgi?id=1694701) is fixed.
 
 # v0.2.0 (2021-02-23)
