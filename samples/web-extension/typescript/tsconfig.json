@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "target": "ES2019",
-    "module": "ES2020",
+    "target": "es6",
+    "module": "commonjs",
     "strict": true,
     "skipLibCheck": true,
     "sourceMap": true,
@@ -12,9 +12,11 @@
       "node_modules/@types",
       "node_modules/web-ext-types"
     ],
-    "baseUrl": "./src",
-    "rootDir": "./"
+    "lib": ["es2017", "dom"],
+    "esModuleInterop": true,
+    "allowJs": true,
+    "moduleResolution": "node"
   },
-  "include": ["src/index.ts"],
+  "include": ["src/**/*.ts"],
   "$schema": "https://json.schemastore.org/tsconfig"
 }
