@@ -1,6 +1,9 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.2.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.3.0...main)
+# v0.3.0 (2021-02-24)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.2.0...v0.3.0)
 
 * [#90](https://github.com/mozilla/glean.js/pull/90): Provide exports for CommonJS and browser environemnts.
 * [#90](https://github.com/mozilla/glean.js/pull/90): BUGIFX: Accept lifetimes as strings when instantiating metric types.
