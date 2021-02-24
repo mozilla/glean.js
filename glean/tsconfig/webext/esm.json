@@ -1,0 +1,9 @@
+{
+  "extends": "../base.json",
+  "include": ["../../src/index/webext.ts", "../../src/core/metrics/types/*.ts"],
+  "compilerOptions": {
+    "target": "ES2019",
+    "module": "ES2020",
+    "outDir": "../../dist/webext/esm"
+  }
+}

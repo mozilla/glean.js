@@ -1,17 +1,35 @@
 {
   "name": "@mozilla/glean",
-  "version": "0.2.0",
+  "version": "0.3.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "exports": {
     "./package.json": "./package.json",
-    "./webext": "./dist/webext/index/webext.js",
-    "./webext/private/metrics/*": "./dist/webext/core/metrics/types/*.js",
-    "./webext/private/ping": "./dist/webext/core/pings/index.js"
+    "./webext": {
+      "browser": "./dist/webext/browser/index/webext.js",
+      "import": "./dist/webext/esm/index/webext.js",
+      "require": "./dist/webext/cjs/index/webext.js"
+    },
+    "./webext/private/metrics/*": {
+      "browser": "./dist/webext/browser/core/metrics/types/*.js",
+      "import": "./dist/webext/esm/core/metrics/types/*.js",
+      "require": "./dist/webext/cjs/core/metrics/types/*.js"
+    },
+    "./webext/private/ping": {
+      "browser": "./dist/webext/browser/core/pings/index.js",
+      "import": "./dist/webext/esm/core/pings/index.js",
+      "require": "./dist/webext/cjs/core/pings/index.js"
+    }
   },
   "typesVersions": {
     "*": {
-      "webext/*": [
-        "./dist/webext/types/*"
+      "webext": [
+        "./dist/webext/types/index/webext.d.ts"
+      ],
+      "webext/private/ping": [
+        "./dist/webext/types/core/pings/index.d.ts"
+      ],
+      "webext/private/metrics/*": [
+        "./dist/webext/types/core/metrics/types/*"
       ]
     }
   },
@@ -27,9 +45,11 @@
     "build:test-webext": "cd tests/platform/utils/webext/sample/ && npm install && npm run build:xpi",
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
-    "build:webext:lib": "tsc -p ./tsconfig/webext/index.json",
+    "build:webext:lib:esm": "tsc -p ./tsconfig/webext/esm.json",
+    "build:webext:lib:cjs": "tsc -p ./tsconfig/webext/cjs.json",
+    "build:webext:lib:browser": "tsc -p ./tsconfig/webext/browser.json",
     "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
-    "build:webext": "npm run build:webext:lib && npm run build:webext:types",
+    "build:webext": "rm -rf dist/webext && npm run build:webext:lib:esm && npm run build:webext:lib:cjs && npm run build:webext:lib:browser && npm run build:webext:types",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
     "prepublishOnly": "cp ../README.md ./README.md && npm run build:webext",
     "postpublish": "rm ./README.md"
@@ -77,5 +97,8 @@
   },
   "dependencies": {
     "uuid": "^8.3.2"
+  },
+  "peerDependencies": {
+    "web-ext-types": "^3.2.1"
   }
 }

@@ -12,7 +12,7 @@ Glean.initialize("web-extension", true, { debug: { logPings: true }});
 webextStarted.set();
 
 // Listen for messages from the popup.
-browser.runtime.onMessage.addListener(msg => {
+browser.runtime.onMessage.addListener((msg: any) => {
   console.log(`New message received! ${msg}`);
 
   if (msg === "popup-opened") {
