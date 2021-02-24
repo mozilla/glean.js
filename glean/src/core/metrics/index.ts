@@ -97,7 +97,7 @@ export interface CommonMetricData {
   // List of ping names to include this metric in.
   readonly sendInPings: string[],
   // The metric's lifetime.
-  readonly lifetime: Lifetime,
+  readonly lifetime: Lifetime | string,
   // Whether or not the metric is disabled.
   //
   // Disabled metrics are never recorded.
@@ -121,7 +121,7 @@ export abstract class MetricType implements CommonMetricData {
     this.name = meta.name;
     this.category = meta.category;
     this.sendInPings = meta.sendInPings;
-    this.lifetime = meta.lifetime;
+    this.lifetime = meta.lifetime as Lifetime;
     this.disabled = meta.disabled;
   }
 
