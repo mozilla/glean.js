@@ -22,9 +22,9 @@
   },
   "typesVersions": {
     "*": {
-      "webext/*": [
-        "./dist/webext/types/*"
-      ]
+      "webext": [ "./dist/webext/types/index/webext.d.ts" ],
+      "webext/private/ping": [ "./dist/webext/types/core/pings/index.d.ts" ],
+      "webext/private/metrics/*": [ "./dist/webext/types/core/metrics/types/*" ]
     }
   },
   "files": [
