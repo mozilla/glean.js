@@ -1,6 +1,8 @@
 # Unreleased changes
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.3.0...main)
+
+* [#92](https://github.com/mozilla/glean.js/pull/92): Remove `web-ext-types` from `peerDependencies` list.
 # v0.3.0 (2021-02-24)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.2.0...v0.3.0)
