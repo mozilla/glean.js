@@ -405,15 +405,15 @@ class Glean {
       // All dispatched tasks are guaranteed to be run after initialize.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (!Glean.instance._config!.debug) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Glean.instance._config!.debug = {};
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        Glean.instance._config!.debug = {};
       }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    Glean.instance._config!.debug.logPings = flag;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      Glean.instance._config!.debug.logPings = flag;
 
-    // The dispatcher requires that dispatched functions return promises.
-    return Promise.resolve();
+      // The dispatcher requires that dispatched functions return promises.
+      return Promise.resolve();
     });
   }
 
