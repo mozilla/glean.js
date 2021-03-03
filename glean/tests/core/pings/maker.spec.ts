@@ -3,14 +3,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import sinon from "sinon";
 
 import PingType from "../../../src/core/pings";
 import * as PingMaker from "../../../src/core/pings/maker";
 import Glean from "../../../src/core/glean";
+import { AfterPingCollection } from "../../../src/core/events";
+import GleanPlugin from "../../../src/plugins";
+import { PingPayload } from "../../../dist/webext/types/core/pings/database";
+import { JSONObject } from "../../../dist/webext/types/core/utils";
+
+const sandbox = sinon.createSandbox();
 
 describe("PingMaker", function() {
   beforeEach(async function() {
     await Glean.testResetGlean("something something");
+  });
+
+  afterEach(function () {
+    sandbox.restore();
   });
 
   it("ping info must contain a non-empty start and end time", async function() {
@@ -99,5 +110,39 @@ describe("PingMaker", function() {
     assert.strictEqual(await PingMaker.getSequenceNumber(ping1), 12);
     assert.strictEqual(await PingMaker.getSequenceNumber(ping2), 11);
     assert.strictEqual(await PingMaker.getSequenceNumber(ping1), 13);
+  });
+
+  it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
+    // Disable ping uploading for it not to interfere with this tests.
+    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+
+    class MockPlugin extends GleanPlugin<typeof AfterPingCollection> {
+      constructor() {
+        super(AfterPingCollection.name, "mockPlugin");
+      }
+
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      action(_payload: PingPayload): Promise<JSONObject> {
+        return Promise.resolve({ "you": "got mocked!" });
+      }
+    }
+
+    await Glean.testUninitialize();
+    await Glean.testInitialize("something something", true, { plugins: [ new MockPlugin() ]});
+    const ping = new PingType({
+      name: "ping",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+
+    await PingMaker.collectAndStorePing("ident", ping);
+    const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
+    assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
+
+    await Glean.testUninitialize();
+    await Glean.testInitialize("something something", true);
+    await PingMaker.collectAndStorePing("ident", ping);
+    const recordedPingNoPlugin = (await Glean.pingsDatabase.getAllPings())["ident"];
+    assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
   });
 });
