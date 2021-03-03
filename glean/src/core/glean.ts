@@ -95,26 +95,26 @@ class Glean {
   }
 
   /**
-  * Handles the changing of state from upload disabled to enabled.
-  *
-  * Should only be called when the state actually changes.
-  *
-  * The `uploadEnabled` flag is set to true and the core Glean metrics are recreated.
-  */
+   * Handles the changing of state from upload disabled to enabled.
+   *
+   * Should only be called when the state actually changes.
+   *
+   * The `uploadEnabled` flag is set to true and the core Glean metrics are recreated.
+   */
   private static async onUploadEnabled(): Promise<void> {
     Glean.uploadEnabled = true;
     await Glean.coreMetrics.initialize();
   }
 
   /**
-  * Handles the changing of state from upload enabled to disabled.
-  *
-  * Should only be called when the state actually changes.
-  *
-  * A deletion_request ping is sent, all pending metrics, events and queued
-  * pings are cleared, and the client_id is set to KNOWN_CLIENT_ID.
-  * Afterward, the upload_enabled flag is set to false.
-  */
+   * Handles the changing of state from upload enabled to disabled.
+   *
+   * Should only be called when the state actually changes.
+   *
+   * A deletion_request ping is sent, all pending metrics, events and queued
+   * pings are cleared, and the client_id is set to KNOWN_CLIENT_ID.
+   * Afterward, the upload_enabled flag is set to false.
+   */
   private static async onUploadDisabled(): Promise<void> {
     Glean.uploadEnabled = false;
     await Glean.clearMetrics();
@@ -124,10 +124,10 @@ class Glean {
   }
 
   /**
-  * Clears any pending metrics and pings.
-  *
-  * This function is only supposed to be called when telemetry is disabled.
-  */
+   * Clears any pending metrics and pings.
+   *
+   * This function is only supposed to be called when telemetry is disabled.
+   */
   private static async clearMetrics(): Promise<void> {
     // Stop ongoing upload jobs and clear pending pings queue.
     await Glean.pingUploader.clearPendingPingsQueue();
@@ -180,26 +180,26 @@ class Glean {
   }
 
   /**
-  * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
-  *
-  * # Note
-  *
-  * Before this method is called Glean will not be able to upload pings or record metrics,
-  * all such operations will be no-op.
-  *
-  * This is _not_ the way glean-core deals with this. It will record tasks performed before init
-  * and flush them on init. We have a bug to figure out how to do that for Glean.js, Bug 1687491.
-  *
-  * @param applicationId The application ID (will be sanitized during initialization).
-  * @param uploadEnabled Determines whether telemetry is enabled.
-  *        If disabled, all persisted metrics, events and queued pings
-  *        (except first_run_date) are cleared.
-  * @param config Glean configuration options.
-  *
-  * @throws
-  * - If config.serverEndpoint is an invalid URL;
-  * - If the application if is an empty string.
-  */
+   * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
+   *
+   * # Note
+   *
+   * Before this method is called Glean will not be able to upload pings or record metrics,
+   * all such operations will be no-op.
+   *
+   * This is _not_ the way glean-core deals with this. It will record tasks performed before init
+   * and flush them on init. We have a bug to figure out how to do that for Glean.js, Bug 1687491.
+   *
+   * @param applicationId The application ID (will be sanitized during initialization).
+   * @param uploadEnabled Determines whether telemetry is enabled.
+   *        If disabled, all persisted metrics, events and queued pings
+   *        (except first_run_date) are cleared.
+   * @param config Glean configuration options.
+   *
+   * @throws
+   * - If config.serverEndpoint is an invalid URL;
+   * - If the application if is an empty string.
+   */
   static initialize(
     applicationId: string,
     uploadEnabled: boolean,
@@ -346,30 +346,30 @@ class Glean {
   }
 
   /**
-  * Determines whether upload is enabled.
-  *
-  * When upload is disabled, no data will be recorded.
-  *
-  * @returns Whether upload is enabled.
-  */
+   * Determines whether upload is enabled.
+   *
+   * When upload is disabled, no data will be recorded.
+   *
+   * @returns Whether upload is enabled.
+   */
   static isUploadEnabled(): boolean {
     return Glean.uploadEnabled;
   }
 
   /**
-  * Sets whether upload is enabled or not.
-  *
-  * When uploading is disabled, metrics aren't recorded at all and no
-  * data is uploaded.
-  *
-  * When disabling, all pending metrics, events and queued pings are cleared.
-  *
-  * When enabling, the core Glean metrics are recreated.
-  *
-  * If the value of this flag is not actually changed, this is a no-op.
-  *
-  * @param flag When true, enable metric collection.
-  */
+   * Sets whether upload is enabled or not.
+   *
+   * When uploading is disabled, metrics aren't recorded at all and no
+   * data is uploaded.
+   *
+   * When disabling, all pending metrics, events and queued pings are cleared.
+   *
+   * When enabling, the core Glean metrics are recreated.
+   *
+   * If the value of this flag is not actually changed, this is a no-op.
+   *
+   * @param flag When true, enable metric collection.
+   */
   static setUploadEnabled(flag: boolean): void {
     Glean.dispatcher.launch(async () => {
       if (!Glean.initialized) {
@@ -392,12 +392,12 @@ class Glean {
   }
 
   /**
-  * Sets the `logPings` flag.
-  *
-  * When this flag is `true` pings will be logged to the console right before they are collected.
-  *
-  * @param flag Whether or not to log pings.
-  */
+   * Sets the `logPings` flag.
+   *
+   * When this flag is `true` pings will be logged to the console right before they are collected.
+   *
+   * @param flag Whether or not to log pings.
+   */
   static setLogPings(flag: boolean): void {
     Glean.dispatcher.launch(() => {
       // It is guaranteed that _config will have a value here.
@@ -418,30 +418,30 @@ class Glean {
   }
 
   /**
-  * Sets the current environment.
-  *
-  * This function **must** be called before Glean.initialize.
-  *
-  * @param platform The environment to set.
-  *        Please check out the available environments in the platform/ module.
-  */
+   * Sets the current environment.
+   *
+   * This function **must** be called before Glean.initialize.
+   *
+   * @param platform The environment to set.
+   *        Please check out the available environments in the platform/ module.
+   */
   static setPlatform(platform: Platform): void {
     Glean.instance._platform = platform;
   }
 
   /**
-  * **Test-only API**
-  *
-  * Initializes Glean in testing mode.
-  *
-  * All platform specific APIs will be mocked.
-  *
-  * @param applicationId The application ID (will be sanitized during initialization).
-  * @param uploadEnabled Determines whether telemetry is enabled.
-  *        If disabled, all persisted metrics, events and queued pings (except
-  *        first_run_date) are cleared. Default to `true`.
-  * @param config Glean configuration options.
-  */
+   * **Test-only API**
+   *
+   * Initializes Glean in testing mode.
+   *
+   * All platform specific APIs will be mocked.
+   *
+   * @param applicationId The application ID (will be sanitized during initialization).
+   * @param uploadEnabled Determines whether telemetry is enabled.
+   *        If disabled, all persisted metrics, events and queued pings (except
+   *        first_run_date) are cleared. Default to `true`.
+   * @param config Glean configuration options.
+   */
   static async testInitialize(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
     Glean.setPlatform(TestPlatform);
     Glean.initialize(applicationId, uploadEnabled, config);
@@ -450,12 +450,12 @@ class Glean {
   }
 
   /**
-  * **Test-only API**
-  *
-  * Resets the Glean to an uninitialized state.
-  *
-  * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-  */
+   * **Test-only API**
+   *
+   * Resets the Glean to an uninitialized state.
+   *
+   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
+   */
   static async testUninitialize(): Promise<void> {
     // Get back to an uninitialized state.
     Glean.instance._initialized = false;
@@ -468,18 +468,18 @@ class Glean {
   }
 
   /**
-  * **Test-only API**
-  *
-  * Resets the Glean singleton to its initial state and re-initializes it.
-  *
-  * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-  *
-  * @param applicationId The application ID (will be sanitized during initialization).
-  * @param uploadEnabled Determines whether telemetry is enabled.
-  *        If disabled, all persisted metrics, events and queued pings (except
-  *        first_run_date) are cleared. Default to `true`.
-  * @param config Glean configuration options.
-  */
+   * **Test-only API**
+   *
+   * Resets the Glean singleton to its initial state and re-initializes it.
+   *
+   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
+   *
+   * @param applicationId The application ID (will be sanitized during initialization).
+   * @param uploadEnabled Determines whether telemetry is enabled.
+   *        If disabled, all persisted metrics, events and queued pings (except
+   *        first_run_date) are cleared. Default to `true`.
+   * @param config Glean configuration options.
+   */
   static async testResetGlean(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
     await Glean.testUninitialize();
 
