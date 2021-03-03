@@ -11,8 +11,22 @@ import { Lifetime } from "../../src/core/metrics";
 import StringMetricType from "../../src/core/metrics/types/string";
 import PingType from "../../src/core/pings";
 import TestPlatform from "../../src/platform/qt";
+import GleanPlugin, { GleanEvent } from "../../src/plugins";
 
 const GLOBAL_APPLICATION_ID = "org.mozilla.glean.test.app";
+const MockEvent: GleanEvent<number[], number> = {
+  name: "mockEvent"
+};
+class MockPlugin extends GleanPlugin<typeof MockEvent> {
+  constructor() {
+    super(MockEvent.name, "mockPlugin");
+  }
+
+  action(...args: number[]): number {
+    return args.reduce((total, element) => total + element, 0);
+  }
+}
+
 const sandbox = sinon.createSandbox();
 
 describe("Glean", function() {
@@ -162,6 +176,63 @@ describe("Glean", function() {
     } catch {
       assert.ok(true);
     }
+  });
+
+  it("initialization registers plugins when provided", async function() {
+    await Glean.testUninitialize();
+
+    const mockPlugin = new MockPlugin();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, {
+      // We need to ignore TypeScript here,
+      // otherwise it will error since MockEvent is not listed as a Glean event in core/events.ts
+      //
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      plugins: [ mockPlugin ]
+    });
+
+    assert.deepStrictEqual(Glean["plugins"], { "mockEvent": mockPlugin });
+
+    await Glean.testUninitialize();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    assert.deepStrictEqual(Glean["plugins"], {});
+  });
+
+  it("registerPlugins ignores plugins intrumenting the same event", async function() {
+    await Glean.testUninitialize();
+
+    const mockPlugin = new MockPlugin();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, {
+      // We need to ignore TypeScript here,
+      // otherwise it will error since MockEvent is not listed as a Glean event in core/events.ts
+      //
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      plugins: [ mockPlugin, mockPlugin, mockPlugin ]
+    });
+
+    assert.deepStrictEqual(Glean["plugins"], { "mockEvent": mockPlugin });
+  });
+
+  it("triggerEvent executes the correct plugins", async function() {
+    await Glean.testUninitialize();
+
+    const mockPlugin = new MockPlugin();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, {
+      // We need to ignore TypeScript here,
+      // otherwise it will error since MockEvent is not listed as a Glean event in core/events.ts
+      //
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      plugins: [ mockPlugin ]
+    });
+
+    assert.strictEqual(Glean.triggerEvent(MockEvent, 5, 5, 5, 5), 20);
+
+    const AnotherMockEvent: GleanEvent<void[], void> = {
+      name: "anotherMockEvent"
+    };
+    assert.strictEqual(Glean.triggerEvent(AnotherMockEvent), undefined);
   });
 
   it("disabling upload should disable metrics recording", async function() {

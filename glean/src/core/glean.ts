@@ -18,6 +18,8 @@ import CorePings from "./internal_pings";
 
 import Platform from "../platform/index";
 import TestPlatform from "../platform/test";
+import GleanPlugin, { EventContext, EventResult, GleanEvent } from "../plugins";
+import GleanEvents from "./events";
 
 class Glean {
   // The Glean singleton.
@@ -50,7 +52,8 @@ class Glean {
     metrics: MetricsDatabase,
     events: EventsDatabase,
     pings: PingsDatabase
-  }
+  };
+  private _plugins: { [event: string]: GleanPlugin<GleanEvents> };
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -64,6 +67,7 @@ class Glean {
     this._coreMetrics = new CoreMetrics();
     this._corePings = new CorePings();
     this._initialized = false;
+    this._plugins = {};
   }
 
   private static get instance(): Glean {
@@ -92,6 +96,30 @@ class Glean {
 
   private static set uploadEnabled(value: boolean) {
     Glean.instance._uploadEnabled = value;
+  }
+
+  private static get plugins(): { [event: string]: GleanPlugin<GleanEvents> } {
+    return Glean.instance._plugins;
+  }
+
+  /**
+   * Registers a list of plugins.
+   *
+   * @param plugins The plugins list from the configuration.
+   */
+  private static registerPlugins(plugins: GleanPlugin<GleanEvents>[]): void {
+    for (const plugin of plugins) {
+      if (plugin.event in Glean.plugins) {
+        console.error(
+          `Attempted to register plugin '${plugin.name}', which instruments the event '${plugin.event}'.`,
+          `That event is already instrumented by plugin '${Glean.plugins[plugin.event].name}'`,
+          `Plugin '${plugin.name}' will be ignored.`
+        );
+        return;
+      }
+
+      Glean.instance._plugins[plugin.event] = plugin;
+    }
   }
 
   /**
@@ -230,6 +258,9 @@ class Glean {
 
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
+    if (config?.plugins) {
+      Glean.registerPlugins(config?.plugins);
+    }
 
     // Initialize the dispatcher and execute init before any other enqueued task.
     //
@@ -345,6 +376,16 @@ class Glean {
     return Glean.instance._platform;
   }
 
+  static triggerEvent<TriggeredEvent extends GleanEvent>(
+    event: TriggeredEvent,
+    ...args: EventContext<TriggeredEvent>
+  ): EventResult<TriggeredEvent> | void {
+    const plugin: GleanPlugin<TriggeredEvent> | undefined = Glean.plugins[event.name];
+    if (plugin) {
+      return plugin.action(...args);
+    }
+  }
+
   /**
    * Determines whether upload is enabled.
    *
@@ -374,9 +415,9 @@ class Glean {
     Glean.dispatcher.launch(async () => {
       if (!Glean.initialized) {
         console.error(
-          `Changing upload enabled before Glean is initialized is not supported.
-        Pass the correct state into \`Glean.initialize\`.
-        See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`
+          "Changing upload enabled before Glean is initialized is not supported.\n",
+          "Pass the correct state into `Glean.initialize\n`.",
+          "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
         );
         return;
       }
@@ -463,6 +504,9 @@ class Glean {
   static async testUninitialize(): Promise<void> {
     // Get back to an uninitialized state.
     Glean.instance._initialized = false;
+
+    // Clear plugins
+    Glean.instance._plugins = {};
 
     // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
     await Glean.dispatcher.testUninitialize();
