@@ -10,8 +10,8 @@ import * as PingMaker from "../../../src/core/pings/maker";
 import Glean from "../../../src/core/glean";
 import { AfterPingCollection } from "../../../src/core/events";
 import GleanPlugin from "../../../src/plugins";
-import { PingPayload } from "../../../dist/webext/types/core/pings/database";
-import { JSONObject } from "../../../dist/webext/types/core/utils";
+import { PingPayload } from "../../../src/core/pings/database";
+import { JSONObject } from "../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 
