@@ -442,7 +442,11 @@ class Glean {
    *        first_run_date) are cleared. Default to `true`.
    * @param config Glean configuration options.
    */
-  static async testInitialize(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
+  static async testInitialize(
+    applicationId: string,
+    uploadEnabled = true,
+    config?: ConfigurationInterface
+  ): Promise<void> {
     Glean.setPlatform(TestPlatform);
     Glean.initialize(applicationId, uploadEnabled, config);
 
@@ -480,7 +484,11 @@ class Glean {
    *        first_run_date) are cleared. Default to `true`.
    * @param config Glean configuration options.
    */
-  static async testResetGlean(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
+  static async testResetGlean(
+    applicationId: string,
+    uploadEnabled = true,
+    config?: ConfigurationInterface
+  ): Promise<void> {
     await Glean.testUninitialize();
 
     // Clear the databases.
