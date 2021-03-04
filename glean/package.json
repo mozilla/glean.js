@@ -96,6 +96,7 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
+    "jose": "^3.7.0",
     "uuid": "^8.3.2"
   }
 }
