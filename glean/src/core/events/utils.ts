@@ -36,7 +36,3 @@ export function testResetEvents(): void {
     CoreEvents[event].deregisterPlugin();
   }
 }
-
-
-
-
