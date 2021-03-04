@@ -11,7 +11,6 @@ import { ClientInfo, PingInfo, PingPayload } from "../pings/database";
 import PingType from "../pings";
 import Glean from "../glean";
 import CoreEvents from "../events";
-import { JSONObject } from "../utils";
 
 // The moment the current Glean.js session started.
 const GLEAN_START_TIME = new Date();
