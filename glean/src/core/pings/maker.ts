@@ -10,6 +10,8 @@ import TimeUnit from "../metrics/time_unit";
 import { ClientInfo, PingInfo, PingPayload } from "../pings/database";
 import PingType from "../pings";
 import Glean from "../glean";
+import CoreEvents from "../events";
+import { JSONObject } from "../utils";
 
 // The moment the current Glean.js session started.
 const GLEAN_START_TIME = new Date();
@@ -206,6 +208,10 @@ function makePath(identifier: string, ping: PingType): string {
 /**
  * Collects and stores a ping on the pings database.
  *
+ * This function will trigger the `AfterPingCollection` event.
+ * This event is triggered **after** logging the ping, which happens if `logPings` is set.
+ * We will log the payload before it suffers any change by plugins instrumenting this event.
+ *
  * @param identifier The pings UUID identifier.
  * @param ping The ping to submit.
  * @param reason An optional reason code to include in the ping.
@@ -213,20 +219,24 @@ function makePath(identifier: string, ping: PingType): string {
  * @returns A promise that is resolved once collection and storing is done.
  */
 export async function collectAndStorePing(identifier: string, ping: PingType, reason?: string): Promise<void> {
-  const payload = await collectPing(ping, reason);
-  if (!payload) {
+  const collectedPayload = await collectPing(ping, reason);
+  if (!collectedPayload) {
     return;
   }
 
   if (Glean.logPings) {
-    console.info(JSON.stringify(payload, null, 2));
+    console.info(JSON.stringify(collectedPayload, null, 2));
   }
 
   const headers = getPingHeaders();
+
+  const modifiedPayload = await CoreEvents.afterPingCollection.trigger(collectedPayload);
+  const finalPayload = modifiedPayload ? modifiedPayload : collectedPayload;
+
   return Glean.pingsDatabase.recordPing(
     makePath(identifier, ping),
     identifier,
-    payload,
+    finalPayload,
     headers
   );
 }
