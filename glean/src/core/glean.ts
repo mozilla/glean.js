@@ -15,6 +15,7 @@ import UUIDMetricType from "./metrics/types/uuid";
 import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime";
 import Dispatcher from "./dispatcher";
 import CorePings from "./internal_pings";
+import { registerPluginToEvent, testResetEvents } from "./events/utils";
 
 import Platform from "../platform/index";
 import TestPlatform from "../platform/test";
@@ -50,7 +51,7 @@ class Glean {
     metrics: MetricsDatabase,
     events: EventsDatabase,
     pings: PingsDatabase
-  }
+  };
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -231,6 +232,12 @@ class Glean {
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
 
+    if (config?.plugins) {
+      for (const plugin of config.plugins) {
+        registerPluginToEvent(plugin);
+      }
+    }
+
     // Initialize the dispatcher and execute init before any other enqueued task.
     //
     // Note: We decide to execute the above tasks outside of the dispatcher task,
@@ -374,9 +381,9 @@ class Glean {
     Glean.dispatcher.launch(async () => {
       if (!Glean.initialized) {
         console.error(
-          `Changing upload enabled before Glean is initialized is not supported.
-        Pass the correct state into \`Glean.initialize\`.
-        See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`
+          "Changing upload enabled before Glean is initialized is not supported.\n",
+          "Pass the correct state into `Glean.initialize\n`.",
+          "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
         );
         return;
       }
@@ -405,15 +412,15 @@ class Glean {
       // All dispatched tasks are guaranteed to be run after initialize.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       if (!Glean.instance._config!.debug) {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Glean.instance._config!.debug = {};
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        Glean.instance._config!.debug = {};
       }
 
-    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    Glean.instance._config!.debug.logPings = flag;
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      Glean.instance._config!.debug.logPings = flag;
 
-    // The dispatcher requires that dispatched functions return promises.
-    return Promise.resolve();
+      // The dispatcher requires that dispatched functions return promises.
+      return Promise.resolve();
     });
   }
 
@@ -442,7 +449,11 @@ class Glean {
    *        first_run_date) are cleared. Default to `true`.
    * @param config Glean configuration options.
    */
-  static async testInitialize(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
+  static async testInitialize(
+    applicationId: string,
+    uploadEnabled = true,
+    config?: ConfigurationInterface
+  ): Promise<void> {
     Glean.setPlatform(TestPlatform);
     Glean.initialize(applicationId, uploadEnabled, config);
 
@@ -459,6 +470,9 @@ class Glean {
   static async testUninitialize(): Promise<void> {
     // Get back to an uninitialized state.
     Glean.instance._initialized = false;
+
+    // Deregiter all plugins
+    testResetEvents();
 
     // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
     await Glean.dispatcher.testUninitialize();
@@ -480,7 +494,11 @@ class Glean {
    *        first_run_date) are cleared. Default to `true`.
    * @param config Glean configuration options.
    */
-  static async testResetGlean(applicationId: string, uploadEnabled = true, config?: Configuration): Promise<void> {
+  static async testResetGlean(
+    applicationId: string,
+    uploadEnabled = true,
+    config?: ConfigurationInterface
+  ): Promise<void> {
     await Glean.testUninitialize();
 
     // Clear the databases.

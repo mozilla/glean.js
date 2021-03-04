@@ -6,13 +6,26 @@ import assert from "assert";
 import sinon from "sinon";
 
 import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "../../src/core/constants";
+import CoreEvents from "../../src/core/events";
 import Glean from "../../src/core/glean";
 import { Lifetime } from "../../src/core/metrics";
 import StringMetricType from "../../src/core/metrics/types/string";
 import PingType from "../../src/core/pings";
+import { JSONObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";
+import Plugin from "../../src/plugins";
 
 const GLOBAL_APPLICATION_ID = "org.mozilla.glean.test.app";
+class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
+  constructor() {
+    super(CoreEvents["afterPingCollection"].name, "mockPlugin");
+  }
+
+  action(): Promise<JSONObject> {
+    return Promise.resolve({});
+  }
+}
+
 const sandbox = sinon.createSandbox();
 
 describe("Glean", function() {
@@ -162,6 +175,26 @@ describe("Glean", function() {
     } catch {
       assert.ok(true);
     }
+  });
+
+  it("initialization registers plugins when provided", async function() {
+    await Glean.testUninitialize();
+
+    const mockPlugin = new MockPlugin();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, {
+      // We need to ignore TypeScript here,
+      // otherwise it will error since mockEvent is not listed as a Glean event in core/events.ts
+      //
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      plugins: [ mockPlugin ]
+    });
+
+    assert.deepStrictEqual(CoreEvents["afterPingCollection"]["plugin"], mockPlugin);
+
+    await Glean.testUninitialize();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    assert.strictEqual(CoreEvents["afterPingCollection"]["plugin"], undefined);
   });
 
   it("disabling upload should disable metrics recording", async function() {

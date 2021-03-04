@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { DEFAULT_TELEMETRY_ENDPOINT } from "./constants";
+import Plugin from "../plugins";
 import { validateURL } from "./utils";
 
 /**
@@ -25,6 +26,8 @@ export interface ConfigurationInterface {
   readonly serverEndpoint?: string,
   // Debug configuration.
   debug?: DebugOptions,
+  // Optional list of plugins to include in current Glean instance.
+  plugins?: Plugin[],
 }
 
 export class Configuration implements ConfigurationInterface {
@@ -36,7 +39,7 @@ export class Configuration implements ConfigurationInterface {
   readonly serverEndpoint: string;
   // Debug configuration.
   debug?: DebugOptions;
- 
+
   constructor(config?: ConfigurationInterface) {
     this.appBuild = config?.appBuild;
     this.appDisplayVersion = config?.appDisplayVersion;
