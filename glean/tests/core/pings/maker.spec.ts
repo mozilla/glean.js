@@ -10,7 +10,6 @@ import * as PingMaker from "../../../src/core/pings/maker";
 import Glean from "../../../src/core/glean";
 import CoreEvents from "../../../src/core/events";
 import Plugin from "../../../src/plugins";
-import { PingPayload } from "../../../src/core/pings/database";
 import { JSONObject } from "../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
@@ -121,8 +120,7 @@ describe("PingMaker", function() {
         super(CoreEvents["afterPingCollection"].name, "mockPlugin");
       }
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      action(_payload: PingPayload): Promise<JSONObject> {
+      action(): Promise<JSONObject> {
         return Promise.resolve({ "you": "got mocked!" });
       }
     }
