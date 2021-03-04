@@ -28,10 +28,12 @@ describe("PingEncryptionPlugin", function() {
     await Glean.testUninitialize();
 
     const plugin = new PingEncryptionPlugin({
-      e: "AQAB",
-      n: "qpzYkTGRKSUcd12hZaJnYEKVLfdEsqu6HBAxZgRSvzLFj_zTSAEXjbf3fX47MPEHRw8NDcEXPjVOz84t4FTXYF2w2_LGWfp_myjV8pR6oUUncJjS7DhnUmTG5bpuK2HFXRMRJYz_iNR48xRJPMoY84jrnhdIFx8Tqv6w4ZHVyEvcvloPgwG3UjLidP6jmqbTiJtidVLnpQJRuFNFQJiluQXBZ1nOLC7raQshu7L9y0IatVU7vf0BPnmuSkcNNvmQkSta6ODQBPaL5-o5SW8H37vQjPDkrlJpreViNa3jqP5DB5HYUO-DMh4FegRv9gZWLDEvXpSd9A13YXCa9Q8K_w",
-      kty: "RSA",
-      alg: "RSA-OAEP-256"
+      "kid": "test",
+      "alg": "ECDH-ES",
+      "crv": "P-256",
+      "kty": "EC",
+      "x": "Qqihp7EryDN2-qQ-zuDPDpy5mJD5soFBDZmzPWTmjwk",
+      "y": "PiEQVUlywi2bEsA3_5D0VFrCHClCyUlLW52ajYs-5uc"
     });
     await Glean.testInitialize("something something", true, { plugins: [ plugin ]});
     const ping = new PingType({
@@ -42,6 +44,7 @@ describe("PingEncryptionPlugin", function() {
 
     await PingMaker.collectAndStorePing("ident", ping);
     const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
+    
     assert.ok("payload" in recordedPing.payload);
   });
 });

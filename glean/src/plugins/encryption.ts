@@ -20,14 +20,14 @@ class PingEncryptionPlugin extends Plugin<typeof CoreEvents["afterPingCollection
   }
 
   async action(payload: PingPayload): Promise<JSONObject> {
-    console.log(this.jwk);
     const key = await parseJwk(this.jwk);
     const encoder = new TextEncoder();
     const encodedPayload = await new CompactEncrypt(encoder.encode(JSON.stringify(payload)))
       .setProtectedHeader({
         kid: this.jwk.kid,
         alg: this.jwk.alg,
-        enc: "A256GCM"
+        enc: "A256GCM",
+        typ: "JWE",
       })
       .encrypt(key);
     return { payload: encodedPayload };
