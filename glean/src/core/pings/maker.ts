@@ -209,7 +209,7 @@ function makePath(identifier: string, ping: PingType): string {
  *
  * This function will trigger the `AfterPingCollection` event.
  * This event is triggered **after** logging the ping, which happens if `logPings` is set.
- * We will log the payload before it suffers any change by plugins instrumenting this event.
+ * We will log the payload before it suffers any change by plugins listening to this event.
  *
  * @param identifier The pings UUID identifier.
  * @param ping The ping to submit.

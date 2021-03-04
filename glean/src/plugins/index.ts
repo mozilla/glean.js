@@ -23,13 +23,13 @@ abstract class Plugin<E extends CoreEvent = CoreEvent> {
   /**
    * Instantiates the Glean plugin.
    *
-   * @param event The name of the even this plugin instruments.
+   * @param event The name of the even this plugin listens to.
    * @param name The name of this plugin.
    */
   constructor(readonly event: string, readonly name: string) {}
 
  /**
-  * An action that will be triggered everytime the instrumented event occurs.
+  * An action that will be triggered everytime the listened to event occurs.
   *
   * @param args The arguments that are expected to be passed by this event.
   */

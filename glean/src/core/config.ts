@@ -26,7 +26,7 @@ export interface ConfigurationInterface {
   readonly serverEndpoint?: string,
   // Debug configuration.
   debug?: DebugOptions,
-  // Optional list of plugins to instrument the current Glean instance.
+  // Optional list of plugins to include in current Glean instance.
   plugins?: Plugin[],
 }
 
