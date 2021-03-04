@@ -12,7 +12,7 @@ import { JSONObject } from "../core/utils";
 import CoreEvents from "../core/events";
 
 /**
- * A plugin that encrypts the payload of a ping before we store it.
+ * A plugin that encrypts the payload of pings before they are stored and sent.
  */
 class PingEncryptionPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor(readonly jwk: JWK) {
@@ -20,10 +20,15 @@ class PingEncryptionPlugin extends Plugin<typeof CoreEvents["afterPingCollection
   }
 
   async action(payload: PingPayload): Promise<JSONObject> {
+    console.log(this.jwk);
     const key = await parseJwk(this.jwk);
     const encoder = new TextEncoder();
     const encodedPayload = await new CompactEncrypt(encoder.encode(JSON.stringify(payload)))
-      .setProtectedHeader({ kid: this.jwk.kid })
+      .setProtectedHeader({
+        kid: this.jwk.kid,
+        alg: this.jwk.alg,
+        enc: "A256GCM"
+      })
       .encrypt(key);
     return { payload: encodedPayload };
   }
