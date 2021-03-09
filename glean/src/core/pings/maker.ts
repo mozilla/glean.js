@@ -209,7 +209,7 @@ export async function collectPing(ping: PingType, reason?: string): Promise<Ping
  *
  * @returns The final submission path.
  */
-function makePath(identifier: string, ping: PingType): string {
+export function makePath(identifier: string, ping: PingType): string {
   // We are sure that the applicationId is not `undefined` at this point,
   // this function is only called when submitting a ping
   // and that function return early when Glean is not initialized.

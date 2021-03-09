@@ -8,6 +8,8 @@ import sinon from "sinon";
 import Glean from "../../src/core/glean";
 import PingType from "../../src/core/pings";
 import * as PingMaker from "../../src/core/pings/maker";
+import { JSONObject } from "../../src/core/utils";
+import TestPlatform from "../../src/platform/qt";
 import PingEncryptionPlugin from "../../src/plugins/encryption";
 
 const sandbox = sinon.createSandbox();
@@ -24,9 +26,6 @@ describe("PingEncryptionPlugin", function() {
   });
 
   it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
-    // Disable ping uploading for it not to interfere with this tests.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
-
     await Glean.testUninitialize();
     await Glean.testInitialize(
       "something something",
@@ -45,14 +44,22 @@ describe("PingEncryptionPlugin", function() {
     );
 
     const ping = new PingType({
-      name: "ping",
+      name: "test",
       includeClientId: true,
       sendIfEmpty: true,
     });
-    await PingMaker.collectAndStorePing("ident", ping);
-    const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
+    const pingId = "ident";
 
-    assert.ok("payload" in recordedPing.payload);
-    assert.strictEqual(Object.keys(recordedPing.payload).length, 1);
+    const testPingSpy = sandbox.spy(TestPlatform.uploader, "post").withArgs(
+      sinon.match(PingMaker.makePath(pingId, ping)),
+      sinon.match.string
+    );
+
+    await PingMaker.collectAndStorePing(pingId, ping);
+    assert.ok(testPingSpy.calledOnce);
+
+    const payload = JSON.parse(testPingSpy.args[0][1]) as JSONObject;
+    assert.ok("payload" in payload);
+    assert.ok(typeof payload.payload === "string");
   });
 });
