@@ -5,7 +5,7 @@
 import Store from "../storage";
 import { MetricType, Lifetime, Metric } from "./";
 import { createMetric, validateMetricInternalRepresentation } from "./utils";
-import { isObject, isUndefined, JSONValue } from "../utils";
+import { isObject, isUndefined, JSONObject, JSONValue } from "../utils";
 import Glean from "../glean";
 
 export interface Metrics {
@@ -133,11 +133,48 @@ class MetricsDatabase {
     }
 
     const store = this._chooseStore(metric.lifetime);
-    const storageKey = metric.identifier;
+    const storageKey = await metric.getAsyncIdentifier();
     for (const ping of metric.sendInPings) {
       const finalTransformFn = (v?: JSONValue): JSONValue => transformFn(v).get();
       await store.update([ping, metric.type, storageKey], finalTransformFn);
     }
+  }
+
+  /**
+   * Checks if anything was stored for the provided metric.
+   *
+   * @param lifetime the metric `Lifetime`.
+   * @param ping the ping storage to search in.
+   * @param metricType the type of the metric.
+   * @param metricIdentifier the metric identifier.
+   *
+   * @returns `true` if the metric was found (regardless of the validity of the
+   *          stored data), `false` otherwise.
+   */
+  async hasMetric(lifetime: Lifetime, ping: string, metricType: string, metricIdentifier: string): Promise<boolean> {
+    const store = this._chooseStore(lifetime);
+    const value = await store.get([ping, metricType, metricIdentifier]);
+    return !isUndefined(value);
+  }
+
+  /**
+   * Counts the number of stored metrics with an id starting with a specific identifier.
+   *
+   * @param lifetime the metric `Lifetime`.
+   * @param ping the ping storage to search in.
+   * @param metricType the type of the metric.
+   * @param metricIdentifier the metric identifier.
+   *
+   * @returns the number of stored metrics with their id starting with the given identifier.
+   */
+  async countByBaseIdentifier(lifetime: Lifetime, ping: string, metricType: string, metricIdentifier: string): Promise<number> {
+    const store = this._chooseStore(lifetime);
+    const pingStorage = await store.get([ping, metricType]);
+    if (isUndefined(pingStorage)) {
+      return 0;
+    }
+
+    return Object.keys(pingStorage).filter(n => n.startsWith(metricIdentifier)).length;
   }
 
   /**
@@ -168,10 +205,10 @@ class MetricsDatabase {
     metric: MetricType
   ): Promise<T | undefined> {
     const store = this._chooseStore(metric.lifetime);
-    const storageKey = metric.identifier;
+    const storageKey = await metric.getAsyncIdentifier();
     const value = await store.get([ping, metric.type, storageKey]);
     if (!isUndefined(value) && !validateMetricInternalRepresentation<T>(metric.type, value)) {
-      console.error(`Unexpected value found for metric ${metric.identifier}: ${JSON.stringify(value)}. Clearing.`);
+      console.error(`Unexpected value found for metric ${storageKey}: ${JSON.stringify(value)}. Clearing.`);
       await store.delete([ping, metric.type, storageKey]);
       return;
     } else {
@@ -210,6 +247,30 @@ class MetricsDatabase {
     return data;
   }
 
+  private processLabeledMetric(snapshot: Metrics, metricType: string, metricId: string, metricData: JSONValue) {
+    const newType = `labeled_${metricType}`;
+    const idLabelSplit = metricId.split("/", 2);
+    const newId = idLabelSplit[0];
+    const label = idLabelSplit[1];
+
+    if (newType in snapshot && newId in snapshot[newType]) {
+      // Other labels were found for this metric. Do not throw them away.
+      const existingData = snapshot[newType][newId];
+      snapshot[newType][newId] = {
+        ...(existingData as JSONObject),
+        [label]: metricData
+      };
+    } else {
+      // This is the first label for this metric.
+      snapshot[newType] = {
+        ...snapshot[newType],
+        [newId]: {
+          [label]: metricData
+        }
+      };
+    }
+  }
+
   /**
    * Gets all of the persisted metrics related to a given ping.
    *
@@ -228,13 +289,21 @@ class MetricsDatabase {
       await this.clear(Lifetime.Ping, ping);
     }
 
-    const response: Metrics = { ...pingData };
-    for (const data of [userData, appData]) {
+    const response: Metrics = {};
+    for (const data of [userData, pingData, appData]) {
       for (const metricType in data) {
-        response[metricType] = {
-          ...response[metricType],
-          ...data[metricType]
-        };
+        for (const metricId in data[metricType]) {
+          if (metricId.includes("/")) {
+            // While labeled data is stored within the subtype storage (e.g. counter storage), it
+            // needs to live in a different section of the ping payload (e.g. `labeled_counter`).
+            this.processLabeledMetric(response, metricType, metricId, data[metricType][metricId]);
+          } else {
+            response[metricType] = {
+              ...response[metricType],
+              [metricId]: data[metricType][metricId]
+            };
+          }
+        }
       }
     }
 

@@ -2,8 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { JSONValue } from "../utils";
+import { isUndefined, JSONValue } from "../utils";
 import Glean from "../glean";
+import LabeledMetricType from "./types/labeled";
 
 /**
  * The Metric class describes the shared behaviour amongst concrete metrics.
@@ -101,7 +102,14 @@ export interface CommonMetricData {
   // Whether or not the metric is disabled.
   //
   // Disabled metrics are never recorded.
-  readonly disabled: boolean
+  readonly disabled: boolean,
+  // Dynamic label.
+  //
+  // When a labeled metric factory creates the specific metric to be recorded to,
+  // dynamic labels are stored in the metadata so that we can validate them when
+  // the Glean singleton is available (because metrics can be recorded before Glean
+  // is initialized).
+  dynamicLabel?: string
 }
 
 /**
@@ -114,6 +122,7 @@ export abstract class MetricType implements CommonMetricData {
   readonly sendInPings: string[];
   readonly lifetime: Lifetime;
   readonly disabled: boolean;
+  dynamicLabel?: string;
 
   constructor(type: string, meta: CommonMetricData) {
     this.type = type;
@@ -123,18 +132,38 @@ export abstract class MetricType implements CommonMetricData {
     this.sendInPings = meta.sendInPings;
     this.lifetime = meta.lifetime as Lifetime;
     this.disabled = meta.disabled;
+    this.dynamicLabel = meta.dynamicLabel;
   }
 
   /**
-   * This metric's unique identifier, including the category and name.
+   * The metric's base identifier, including the category and name, but not the label.
    *
-   * @returns The generated identifier.
+   * @returns The generated identifier. If `category` is empty, it's ommitted. Otherwise,
+   *          it's the combination of the metric's `category` and `name`.
    */
-  get identifier(): string {
+  baseIdentifier(): string {
     if (this.category.length > 0) {
       return `${this.category}.${this.name}`;
     } else {
       return this.name;
+    }
+  }
+
+  /**
+   * The metric's unique identifier, including the category, name and label.
+   *
+   * @returns The generated identifier. If `category` is empty, it's ommitted. Otherwise,
+   *          it's the combination of the metric's `category`, `name` and `label`.
+   */
+  async getAsyncIdentifier(): Promise<string> {
+    const baseIdentifier = this.baseIdentifier();
+
+    // We need to use `isUndefined` and cannot use `(this.dynamicLabel)` because we want
+    // empty strings to propagate as a dynamic labels, so that erros are potentially recorded.
+    if (!isUndefined(this.dynamicLabel)) {
+      return await LabeledMetricType.getValidDynamicLabel(this);
+    } else {
+      return baseIdentifier;
     }
   }
 
@@ -145,5 +174,26 @@ export abstract class MetricType implements CommonMetricData {
    */
   shouldRecord(): boolean {
     return (Glean.isUploadEnabled() && !this.disabled);
+  }
+}
+
+/**
+ * This is no-op internal metric representation.
+ *
+ * This can be used to instruct the validators to simply report
+ * whatever is stored internally, without performing any specific
+ * validation.
+ */
+export class PassthroughMetric extends Metric<JSONValue, JSONValue> {
+  constructor(v: unknown) {
+    super(v);
+  }
+
+  validate(v: unknown): v is JSONValue {
+    return true;
+  }
+
+  payload(): JSONValue {
+    return this._inner;
   }
 }

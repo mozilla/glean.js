@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Metric } from "./index";
+import { Metric, PassthroughMetric } from "./index";
 import { JSONValue } from "../utils";
 
 import { BooleanMetric } from "./types/boolean";
@@ -20,6 +20,7 @@ const METRIC_MAP: {
   "boolean": BooleanMetric,
   "counter": CounterMetric,
   "datetime": DatetimeMetric,
+  "labeled_counter": PassthroughMetric,
   "string": StringMetric,
   "uuid": UUIDMetric,
 });
