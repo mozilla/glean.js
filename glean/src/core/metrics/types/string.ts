@@ -91,7 +91,7 @@ class StringMetricType extends MetricType {
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
-   *             Defaults to the first value in `sendInPings`.
+   *        Defaults to the first value in `sendInPings`.
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
