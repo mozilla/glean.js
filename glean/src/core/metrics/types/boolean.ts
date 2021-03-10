@@ -55,10 +55,11 @@ class BooleanMetricType extends MetricType {
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
+   *             Defaults to the first value in `sendInPings`.
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string): Promise<boolean | undefined> {
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
     let metric: boolean | undefined;
     await Glean.dispatcher.testLaunch(async () => {
       metric = await Glean.metricsDatabase.getMetric<boolean>(ping, this);
