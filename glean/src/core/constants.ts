@@ -36,3 +36,6 @@ export const DEFAULT_TELEMETRY_ENDPOINT = "https://incoming.telemetry.mozilla.or
 
 // The name of the deletion-request ping.
 export const DELETION_REQUEST_PING_NAME = "deletion-request";
+
+// The maximum amount of source tags a user can set.
+export const GLEAN_MAX_SOURCE_TAGS = 5;
