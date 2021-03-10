@@ -29,7 +29,7 @@ class PingEncryptionPlugin extends Plugin<typeof CoreEvents["afterPingCollection
    *
    * @param jwk The JWK that will be used to encode outgoing ping payloads.
    * @param alg The algorithm this plugin will use for parsing the JWK. If this argument is not present,
-   *            we will look for the `alg` key in the JWK. If neither is present we defaut to "ECDH-ES".
+   *            we will look for the `alg` key in the JWK. If neither is present we default to "ECDH-ES".
    */
   constructor(private jwk: JWK, private alg?: string) {
     super(CoreEvents["afterPingCollection"].name, "pingEncryptionPlugin");
