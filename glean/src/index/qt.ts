@@ -77,7 +77,7 @@ export default {
   /**
    * Sets the `debugViewTag` debug option.
    *
-   * When this property is set, all subsequent outgoing pings will include the `X-Debug-Id` header
+   * When this property is set, all subsequent outgoing pings will include the `X-Debug-ID` header
    * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
    * To unset the `debugViewTag` call `Glean.unsetDebugViewTag();

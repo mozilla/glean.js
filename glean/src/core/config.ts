@@ -8,17 +8,6 @@ import { validateHeader, validateURL } from "./utils";
 
 /**
  * Lists Glean's debug options.
- *
- * The debug options for Glean may be set by calling one of the `set*` functions
- * or by setting the below properties on the configuration passed to `Glean.initialize`.
- *
- * The debugging features available out of the box are:
- *
- * * **Ping logging** - logging the contents of ping requests that are correctly assembled;
- * * **Debug tagging** - Adding the X-Debug-ID header to every ping request,
- *   allowing these tagged pings to be sent to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/);
- * * **Source tagging** - Adding the X-Source-Tags header to every ping request,
- *   allowing pings to be tagged with custom labels.
  */
 interface DebugOptions {
   // Whether or not lot log pings when they are collected.

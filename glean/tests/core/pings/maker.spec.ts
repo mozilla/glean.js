@@ -117,7 +117,7 @@ describe("PingMaker", function() {
     await Glean.dispatcher.testBlockOnQueue();
 
     assert.deepStrictEqual({
-      "X-Debug-Id": "test",
+      "X-Debug-ID": "test",
       "X-Source-Tags": "tag1,tag2,tag3"
     }, PingMaker.getPingHeaders());
 
