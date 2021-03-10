@@ -318,7 +318,7 @@ describe("Glean", function() {
     assert.strictEqual(postSpy.callCount, 0);
   });
 
-  it("setting log pings works before and after glean and on initialize", async function () {
+  it("setting log pings works before and after and on initialize", async function () {
     await Glean.testUninitialize();
 
     // Setting on initialize.
@@ -337,5 +337,78 @@ describe("Glean", function() {
     // Setting after initialize.
     Glean.setLogPings(false);
     assert.ok(!Glean.logPings);
+  });
+
+  it("setting debug view tag works before and after and on initialize", async function () {
+    await Glean.testUninitialize();
+
+    const testTag = "test";
+
+    // Setting on initialize.
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { debugViewTag: testTag } });
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.debugViewTag, testTag);
+
+    await Glean.testUninitialize();
+
+    // Setting before initialize.
+    Glean.setDebugViewTag(testTag);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.debugViewTag, testTag);
+
+    // Setting after initialize.
+    const anotherTestTag = "another-test";
+    Glean.setDebugViewTag(anotherTestTag);
+    assert.strictEqual(Glean.debugViewTag, anotherTestTag);
+  });
+
+  it("attempting to set an invalid debug view tag is ignored and no task is dispatched", function () {
+    const dispatchSpy = sandbox.spy(Glean.dispatcher, "launch");
+
+    const invaligTag = "inv@l!d_t*g";
+    Glean.setDebugViewTag(invaligTag);
+    assert.strictEqual(Glean.debugViewTag, undefined);
+    assert.ok(dispatchSpy.notCalled);
+  });
+
+  it("unsetting a debug view tag works", async function () {
+    // Unsetting when nothing is set is a no-op
+    Glean.unsetDebugViewTag();
+    assert.strictEqual(Glean.debugViewTag, undefined);
+
+    Glean.setDebugViewTag("test");
+    Glean.unsetDebugViewTag();
+
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.debugViewTag, undefined);
+  });
+
+  it("setting source tags on initialize works", async function () {
+    await Glean.testUninitialize();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { sourceTags: ["1", "2", "3", "4", "5"] } });
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.sourceTags, "1,2,3,4,5");
+  });
+
+  it("attempting to set invalid source tags is ignored and no task is dispatched", function () {
+    const dispatchSpy = sandbox.spy(Glean.dispatcher, "launch");
+
+    const invaligTags = ["inv@l!d_t*g"];
+    Glean.setSourceTags(invaligTags);
+    assert.strictEqual(Glean.sourceTags, undefined);
+    assert.ok(dispatchSpy.notCalled);
+  });
+
+  it("unsetting source tags works", async function () {
+    // Unsetting when nothing is set is a no-op
+    Glean.unsetSourceTags();
+    assert.strictEqual(Glean.sourceTags, undefined);
+
+    Glean.setSourceTags(["test"]);
+    Glean.unsetSourceTags();
+
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.sourceTags, undefined);
   });
 });

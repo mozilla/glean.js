@@ -340,6 +340,14 @@ class Glean {
     return Glean.instance._config?.debug?.logPings || false;
   }
 
+  static get debugViewTag(): string | undefined {
+    return Glean.instance._config?.debug.debugViewTag;
+  }
+
+  static get sourceTags(): string | undefined {
+    return Glean.instance._config?.debug.sourceTags?.toString();
+  }
+
   static get dispatcher(): Dispatcher {
     return Glean.instance._dispatcher;
   }
@@ -399,7 +407,7 @@ class Glean {
   }
 
   /**
-   * Sets the `logPings` flag.
+   * Sets the `logPings` debug option.
    *
    * When this flag is `true` pings will be logged to the console right before they are collected.
    *
@@ -407,19 +415,89 @@ class Glean {
    */
   static setLogPings(flag: boolean): void {
     Glean.dispatcher.launch(() => {
-      // It is guaranteed that _config will have a value here.
-      //
-      // All dispatched tasks are guaranteed to be run after initialize.
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      if (!Glean.instance._config!.debug) {
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        Glean.instance._config!.debug = {};
-      }
-
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       Glean.instance._config!.debug.logPings = flag;
 
       // The dispatcher requires that dispatched functions return promises.
+      return Promise.resolve();
+    });
+  }
+
+  /**
+   * Sets the `debugViewTag` debug option.
+   *
+   * When this property is set, all subsequent outgoing pings will include the `X-Debug-ID` header
+   * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
+   *
+   * To unset the `debugViewTag` call `Glean.unsetDebugViewTag();
+   *
+   * @param value The value of the header.
+   *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
+   */
+  static setDebugViewTag(value: string): void {
+    if (!Configuration.validateDebugViewTag(value)) {
+      console.error(`Invalid \`debugViewTag\` ${value}. Ignoring.`);
+      return;
+    }
+
+    Glean.dispatcher.launch(() => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      Glean.instance._config!.debug.debugViewTag = value;
+
+      // The dispatcher requires that dispatched functions return promises.
+      return Promise.resolve();
+    });
+  }
+
+  /**
+   * Unsets the `debugViewTag` debug option.
+   *
+   * This is a no-op is case there is no `debugViewTag` set at the moment.
+   */
+  static unsetDebugViewTag(): void {
+    Glean.dispatcher.launch(() => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      delete Glean.instance._config!.debug.debugViewTag;
+      return Promise.resolve();
+    });
+  }
+
+  /**
+   * Sets the `sourceTags` debug option.
+   *
+   * Ping tags will show in the destination datasets, after ingestion.
+   *
+   * **Note** Setting `sourceTags` will override all previously set tags.
+   *
+   * To unset the `sourceTags` call `Glean.unsetSourceTags();
+   *
+   * @param value A vector of at most 5 valid HTTP header values.
+   *        Individual tags must match the regex: "[a-zA-Z0-9-]{1,20}".
+   */
+  static setSourceTags(value: string[]): void {
+    if (!Configuration.validateSourceTags(value)) {
+      console.error(`Invalid \`sourceTags\` ${value.toString()}. Ignoring.`);
+      return;
+    }
+
+    Glean.dispatcher.launch(() => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      Glean.instance._config!.debug.sourceTags = value;
+
+      // The dispatcher requires that dispatched functions return promises.
+      return Promise.resolve();
+    });
+  }
+
+  /**
+   * Unsets the `sourceTags` debug option.
+   *
+   * This is a no-op is case there are no `sourceTags` set at the moment.
+   */
+  static unsetSourceTags(): void {
+    Glean.dispatcher.launch(() => {
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      delete Glean.instance._config!.debug.sourceTags;
       return Promise.resolve();
     });
   }

@@ -32,7 +32,7 @@ describe("PingsDatabase", function() {
         path, payload
       });
   
-      const headers = { "X-Debug-Id": "test" };
+      const headers = { "X-Debug-ID": "test" };
       const otherIdentifier = "THE OTHER IDENTIFIER";
       await db.recordPing(path, otherIdentifier, payload, headers);
       assert.deepStrictEqual(await db["store"].get([otherIdentifier]), {

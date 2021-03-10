@@ -148,12 +148,26 @@ export async function buildClientInfoSection(ping: PingType): Promise<ClientInfo
  * ping submission will still contain the desired headers.
  *
  * The current headers gathered here are:
- * - [X-Debug-Id]
+ * - [X-Debug-ID]
  * - [X-Source-Tags]
+ *
+ * @returns An object containing all the headers and their values
+ *          or `undefined` in case no custom headers were set.
  */
 export function getPingHeaders(): Record<string, string> | undefined {
-  // TODO: Returning nothing for now until Bug 1685718 is resolved.
-  return;
+  const headers: Record<string, string> = {};
+
+  if (Glean.debugViewTag) {
+    headers["X-Debug-ID"] = Glean.debugViewTag;
+  }
+
+  if (Glean.sourceTags) {
+    headers["X-Source-Tags"] = Glean.sourceTags;
+  }
+
+  if (Object.keys(headers).length > 0) {
+    return headers;
+  }
 }
 
 /**
