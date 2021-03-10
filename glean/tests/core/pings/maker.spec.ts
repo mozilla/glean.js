@@ -111,6 +111,22 @@ describe("PingMaker", function() {
     assert.strictEqual(await PingMaker.getSequenceNumber(ping1), 13);
   });
 
+  it("getPingHeaders returns headers when custom headers are set", async function () {
+    Glean.setDebugViewTag("test");
+    Glean.setSourceTags(["tag1", "tag2", "tag3"]);
+    await Glean.dispatcher.testBlockOnQueue();
+
+    assert.deepStrictEqual({
+      "X-Debug-Id": "test",
+      "X-Source-Tags": "tag1,tag2,tag3"
+    }, PingMaker.getPingHeaders());
+
+    Glean.unsetDebugViewTag();
+    Glean.unsetSourceTags();
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(PingMaker.getPingHeaders(), undefined);
+  });
+
   it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
     // Disable ping uploading for it not to interfere with this tests.
     sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());

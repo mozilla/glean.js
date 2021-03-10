@@ -427,12 +427,12 @@ class Glean {
    * Sets the `debugViewTag` debug option.
    *
    * When this property is set, all subsequent outgoing pings will include the `X-Debug-Id` header
-   * allowing all outgoing pings to be redirected to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
+   * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
    * To unset the `debugViewTag` call `Glean.unsetDebugViewTag();
    *
    * @param value The value of the header.
-   *              This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
+   *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
    */
   static setDebugViewTag(value: string): void {
     if (!Configuration.validateDebugViewTag(value)) {
