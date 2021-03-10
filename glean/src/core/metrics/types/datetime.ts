@@ -259,10 +259,11 @@ class DatetimeMetricType extends MetricType {
    * TODO: Only allow this function to be called on   test mode (depends on Bug 1682771).
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
+   *        Defaults to the first value in `sendInPings`.
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValueAsString(ping: string): Promise<string | undefined> {
+  async testGetValueAsString(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     const metric = await this.testGetValueAsDatetimeMetric(ping);
     return metric ? metric.payload() : undefined;
   }
@@ -284,10 +285,11 @@ class DatetimeMetricType extends MetricType {
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
+   *        Defaults to the first value in `sendInPings`.
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string): Promise<Date | undefined> {
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<Date | undefined> {
     const metric = await this.testGetValueAsDatetimeMetric(ping);
     return metric ? metric.date : undefined;
   }
