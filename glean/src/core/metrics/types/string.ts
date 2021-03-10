@@ -91,10 +91,11 @@ class StringMetricType extends MetricType {
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
+   *        Defaults to the first value in `sendInPings`.
    *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string): Promise<string | undefined> {
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     let metric: string | undefined;
     await Glean.dispatcher.testLaunch(async () => {
       metric = await Glean.metricsDatabase.getMetric<string>(ping, this);

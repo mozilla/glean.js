@@ -99,4 +99,17 @@ describe("utils", function() {
     assert.strictEqual(utils.validateURL("https://incoming.telemetry.mozilla.org"), true);
     assert.strictEqual(utils.validateURL("https://localhost:3000/"), true);
   });
+
+  it("validateHeader works correctly", function () {
+    // Invalid values
+    assert.strictEqual(utils.validateHeader(""), false);
+    assert.strictEqual(utils.validateHeader("invalid_value"), false);
+    assert.strictEqual(utils.validateHeader("invalid value"), false);
+    assert.strictEqual(utils.validateHeader("!nv@lid-val*e"), false);
+    assert.strictEqual(utils.validateHeader("invalid-value-because-way-too-long"), false);
+
+    // Valid values
+    assert.strictEqual(utils.validateHeader("valid-value"), true);
+    assert.strictEqual(utils.validateHeader("-also-valid-value"), true);
+  });
 });

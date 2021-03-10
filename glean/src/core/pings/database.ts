@@ -42,10 +42,9 @@ export interface PingPayload extends JSONObject {
   metrics?: MetricsPayload,
   events?: JSONArray,
 }
-
 export interface PingInternalRepresentation extends JSONObject {
   path: string,
-  payload: PingPayload,
+  payload: JSONObject,
   headers?: Record<string, string>
 }
 
@@ -117,7 +116,7 @@ class PingsDatabase {
   async recordPing(
     path: string,
     identifier: string,
-    payload: PingPayload,
+    payload: JSONObject,
     headers?: Record<string, string>
   ): Promise<void> {
     const ping: PingInternalRepresentation = {

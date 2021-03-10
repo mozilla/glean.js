@@ -6,13 +6,26 @@ import assert from "assert";
 import sinon from "sinon";
 
 import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "../../src/core/constants";
+import CoreEvents from "../../src/core/events";
 import Glean from "../../src/core/glean";
 import { Lifetime } from "../../src/core/metrics";
 import StringMetricType from "../../src/core/metrics/types/string";
 import PingType from "../../src/core/pings";
+import { JSONObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";
+import Plugin from "../../src/plugins";
 
 const GLOBAL_APPLICATION_ID = "org.mozilla.glean.test.app";
+class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
+  constructor() {
+    super(CoreEvents["afterPingCollection"].name, "mockPlugin");
+  }
+
+  action(): Promise<JSONObject> {
+    return Promise.resolve({});
+  }
+}
+
 const sandbox = sinon.createSandbox();
 
 describe("Glean", function() {
@@ -164,6 +177,26 @@ describe("Glean", function() {
     }
   });
 
+  it("initialization registers plugins when provided", async function() {
+    await Glean.testUninitialize();
+
+    const mockPlugin = new MockPlugin();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, {
+      // We need to ignore TypeScript here,
+      // otherwise it will error since mockEvent is not listed as a Glean event in core/events.ts
+      //
+      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+      // @ts-ignore
+      plugins: [ mockPlugin ]
+    });
+
+    assert.deepStrictEqual(CoreEvents["afterPingCollection"]["plugin"], mockPlugin);
+
+    await Glean.testUninitialize();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    assert.strictEqual(CoreEvents["afterPingCollection"]["plugin"], undefined);
+  });
+
   it("disabling upload should disable metrics recording", async function() {
     const pings = ["aPing", "twoPing", "threePing"];
     const metric = new StringMetricType({
@@ -285,7 +318,7 @@ describe("Glean", function() {
     assert.strictEqual(postSpy.callCount, 0);
   });
 
-  it("setting log pings works before and after glean and on initialize", async function () {
+  it("setting log pings works before and after and on initialize", async function () {
     await Glean.testUninitialize();
 
     // Setting on initialize.
@@ -304,5 +337,78 @@ describe("Glean", function() {
     // Setting after initialize.
     Glean.setLogPings(false);
     assert.ok(!Glean.logPings);
+  });
+
+  it("setting debug view tag works before and after and on initialize", async function () {
+    await Glean.testUninitialize();
+
+    const testTag = "test";
+
+    // Setting on initialize.
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { debugViewTag: testTag } });
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.debugViewTag, testTag);
+
+    await Glean.testUninitialize();
+
+    // Setting before initialize.
+    Glean.setDebugViewTag(testTag);
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.debugViewTag, testTag);
+
+    // Setting after initialize.
+    const anotherTestTag = "another-test";
+    Glean.setDebugViewTag(anotherTestTag);
+    assert.strictEqual(Glean.debugViewTag, anotherTestTag);
+  });
+
+  it("attempting to set an invalid debug view tag is ignored and no task is dispatched", function () {
+    const dispatchSpy = sandbox.spy(Glean.dispatcher, "launch");
+
+    const invaligTag = "inv@l!d_t*g";
+    Glean.setDebugViewTag(invaligTag);
+    assert.strictEqual(Glean.debugViewTag, undefined);
+    assert.ok(dispatchSpy.notCalled);
+  });
+
+  it("unsetting a debug view tag works", async function () {
+    // Unsetting when nothing is set is a no-op
+    Glean.unsetDebugViewTag();
+    assert.strictEqual(Glean.debugViewTag, undefined);
+
+    Glean.setDebugViewTag("test");
+    Glean.unsetDebugViewTag();
+
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.debugViewTag, undefined);
+  });
+
+  it("setting source tags on initialize works", async function () {
+    await Glean.testUninitialize();
+    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { sourceTags: ["1", "2", "3", "4", "5"] } });
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.sourceTags, "1,2,3,4,5");
+  });
+
+  it("attempting to set invalid source tags is ignored and no task is dispatched", function () {
+    const dispatchSpy = sandbox.spy(Glean.dispatcher, "launch");
+
+    const invaligTags = ["inv@l!d_t*g"];
+    Glean.setSourceTags(invaligTags);
+    assert.strictEqual(Glean.sourceTags, undefined);
+    assert.ok(dispatchSpy.notCalled);
+  });
+
+  it("unsetting source tags works", async function () {
+    // Unsetting when nothing is set is a no-op
+    Glean.unsetSourceTags();
+    assert.strictEqual(Glean.sourceTags, undefined);
+
+    Glean.setSourceTags(["test"]);
+    Glean.unsetSourceTags();
+
+    await Glean.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Glean.sourceTags, undefined);
   });
 });

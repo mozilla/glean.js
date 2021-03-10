@@ -1,6 +1,15 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.3.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.4.0...main)
+
+# v0.4.0 (2021-03-10)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.3.0...v0.4.0)
+
+* [#92](https://github.com/mozilla/glean.js/pull/92): Remove `web-ext-types` from `peerDependencies` list.
+* [#98](https://github.com/mozilla/glean.js/pull/98): Add external APIs for setting the Debug View Tag and Source Tags.
+* [#99](https://github.com/mozilla/glean.js/pull/99): BUGFIX: Add a default ping value in the testing APIs.
+
 # v0.3.0 (2021-02-24)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.2.0...v0.3.0)

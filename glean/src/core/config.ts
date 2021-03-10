@@ -2,8 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { DEFAULT_TELEMETRY_ENDPOINT } from "./constants";
-import { validateURL } from "./utils";
+import { DEFAULT_TELEMETRY_ENDPOINT, GLEAN_MAX_SOURCE_TAGS } from "./constants";
+import Plugin from "../plugins";
+import { validateHeader, validateURL } from "./utils";
 
 /**
  * Lists Glean's debug options.
@@ -11,6 +12,10 @@ import { validateURL } from "./utils";
 interface DebugOptions {
   // Whether or not lot log pings when they are collected.
   logPings?: boolean,
+  // The value of the X-Debug-ID header to be included in every ping.
+  debugViewTag?: string,
+  // The value of the X-Source-Tags header to be included in every ping.
+  sourceTags?: string[],
 }
 
 /**
@@ -25,6 +30,8 @@ export interface ConfigurationInterface {
   readonly serverEndpoint?: string,
   // Debug configuration.
   debug?: DebugOptions,
+  // Optional list of plugins to include in current Glean instance.
+  plugins?: Plugin[],
 }
 
 export class Configuration implements ConfigurationInterface {
@@ -35,12 +42,13 @@ export class Configuration implements ConfigurationInterface {
   // The server pings are sent to.
   readonly serverEndpoint: string;
   // Debug configuration.
-  debug?: DebugOptions;
- 
+  debug: DebugOptions;
+
   constructor(config?: ConfigurationInterface) {
     this.appBuild = config?.appBuild;
     this.appDisplayVersion = config?.appDisplayVersion;
-    this.debug = config?.debug;
+
+    this.debug = Configuration.sanitizeDebugOptions(config?.debug);
 
     if (config?.serverEndpoint && !validateURL(config.serverEndpoint)) {
       throw new Error(
@@ -48,5 +56,47 @@ export class Configuration implements ConfigurationInterface {
     }
     this.serverEndpoint = (config && config.serverEndpoint)
       ? config.serverEndpoint : DEFAULT_TELEMETRY_ENDPOINT;
+  }
+
+  static sanitizeDebugOptions(debug?: DebugOptions): DebugOptions {
+    const correctedDebugOptions: DebugOptions = debug || {};
+    if (!Configuration.validateDebugViewTag(debug?.debugViewTag || "")) {
+      delete correctedDebugOptions["debugViewTag"];
+    }
+    if (!Configuration.validateSourceTags(debug?.sourceTags || [])) {
+      delete correctedDebugOptions["sourceTags"];
+    }
+    return correctedDebugOptions;
+  }
+
+  static validateDebugViewTag(tag: string): boolean {
+    const validation = validateHeader(tag);
+    if (!validation) {
+      console.error(
+        `"${tag}" is not a valid \`debugViewTag\` value.`,
+        "Please make sure the value passed satisfies the regex `^[a-zA-Z0-9-]{1,20}$`."
+      );
+    }
+    return validation;
+  }
+
+  static validateSourceTags(tags: string[]): boolean {
+    if (tags.length < 1 || tags.length > GLEAN_MAX_SOURCE_TAGS) {
+      console.error(`A list of tags cannot contain more than ${GLEAN_MAX_SOURCE_TAGS} elements.`);
+      return false;
+    }
+
+    for (const tag of tags) {
+      if (tag.startsWith("glean")) {
+        console.error("Tags starting with `glean` are reserved and must not be used.");
+        return false;
+      }
+
+      if (!validateHeader(tag)) {
+        return false;
+      }
+    }
+
+    return true;
   }
 }

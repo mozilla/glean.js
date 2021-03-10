@@ -124,6 +124,17 @@ export function validateURL(v: string): boolean {
 }
 
 /**
+ * Validates whether or not a given value is an acceptable HTTP header for outgoing pings.
+ *
+ * @param v The value to validate.
+ *
+ * @returns Whether or not the given value is a valid HTTP header value.
+ */
+export function validateHeader(v: string): boolean {
+  return /^[a-z0-9-]{1,20}$/i.test(v);
+}
+
+/**
  * Generates a UUIDv4.
  *
  * Will provide a fallback in case `crypto` is not available,
