@@ -10,7 +10,6 @@ import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings";
 import collectAndStorePing from "../../../src/core/pings/maker";
 import PingUploader, { UploadResultStatus } from "../../../src/core/upload";
-import { JSONObject } from "../../../dist/webext/types/core/utils";
 
 const sandbox = sinon.createSandbox();
 
@@ -196,7 +195,7 @@ describe("PingUploader", function() {
 
     const url = postSpy.firstCall.args[0].split("/");
     const documentId = url[url.length - 1];
-    const headers = postSpy.firstCall.args[2] as JSONObject;
+    const headers = postSpy.firstCall.args[2] || {};
 
     assert.strictEqual(documentId, expectedDocumentId);
 
