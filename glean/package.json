@@ -39,7 +39,7 @@
     "dist/**/*"
   ],
   "scripts": {
-    "test": "npm run test:core && npm run test:platform",
+    "test": "npm run test:core && npm run test:platform && npm run test:plugins",
     "test:core": "ts-mocha \"tests/core/**/*.spec.ts\" --recursive",
     "test:plugins": "ts-mocha \"tests/plugins/**/*.spec.ts\" --recursive",
     "test:platform": "npm run build:test-webext && ts-mocha \"tests/platform/**/*.spec.ts\" --recursive --timeout 0",

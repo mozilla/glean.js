@@ -14,6 +14,16 @@ import { JSONObject } from "../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 
+class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
+  constructor() {
+    super(CoreEvents["afterPingCollection"].name, "mockPlugin");
+  }
+
+  action(): Promise<JSONObject> {
+    return Promise.resolve({ "you": "got mocked!" });
+  }
+}
+
 describe("PingMaker", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
@@ -133,16 +143,6 @@ describe("PingMaker", function() {
     // Disable ping uploading for it not to interfere with this tests.
     sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
 
-    class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
-      constructor() {
-        super(CoreEvents["afterPingCollection"].name, "mockPlugin");
-      }
-
-      action(): Promise<JSONObject> {
-        return Promise.resolve({ "you": "got mocked!" });
-      }
-    }
-
     await Glean.testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ]});
     const ping = new PingType({
       name: "ping",
@@ -158,5 +158,34 @@ describe("PingMaker", function() {
     await PingMaker.collectAndStorePing("ident", ping);
     const recordedPingNoPlugin = (await Glean.pingsDatabase.getAllPings())["ident"];
     assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
+  });
+
+  it("ping payload is logged before it is modified by a plugin", async function () {
+    // Disable ping uploading for it not to interfere with this tests.
+    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+
+    await Glean.testResetGlean(testAppId, true, {
+      debug: {
+        logPings: true
+      },
+      plugins: [ new MockPlugin() ]
+    });
+
+    const ping = new PingType({
+      name: "ping",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+
+    const consoleSpy = sandbox.spy(console, "info");
+    await PingMaker.collectAndStorePing("ident", ping);
+
+    const loggedPayload = JSON.parse(consoleSpy.lastCall.args[0]) as JSONObject;
+
+    const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
+    assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
+    assert.notDeepStrictEqual(loggedPayload, { "you": "got mocked!" });
+    assert.ok("client_info" in loggedPayload);
+    assert.ok("ping_info" in loggedPayload);
   });
 });

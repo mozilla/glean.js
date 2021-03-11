@@ -11,6 +11,9 @@ import { PingPayload } from "../core/pings/database";
 import { JSONObject } from "../core/utils";
 import CoreEvents from "../core/events";
 
+const JWE_ALGORTIHM = "ECDH-ES";
+const JWE_CONTENT_ENCODING = "A256GCM";
+
 /**
  * A plugin that listens for the `afterPingCollection` event and encrypts **all** outgoing pings
  * with the JWK provided upon initialization.
@@ -28,25 +31,19 @@ class PingEncryptionPlugin extends Plugin<typeof CoreEvents["afterPingCollection
    * Creates a new PingEncryptionPlugin instance.
    *
    * @param jwk The JWK that will be used to encode outgoing ping payloads.
-   * @param alg The algorithm this plugin will use for parsing the JWK. If this argument is not present,
-   *            we will look for the `alg` key in the JWK. If neither is present we default to "ECDH-ES".
    */
-  constructor(private jwk: JWK, private alg?: string) {
+  constructor(private jwk: JWK) {
     super(CoreEvents["afterPingCollection"].name, "pingEncryptionPlugin");
-
-    if (!alg) {
-      this.alg = jwk.alg ? jwk.alg : "ECDH-ES";
-    }
   }
 
   async action(payload: PingPayload): Promise<JSONObject> {
-    const key = await parseJwk(this.jwk, this.alg);
+    const key = await parseJwk(this.jwk, JWE_ALGORTIHM);
     const encoder = new TextEncoder();
     const encodedPayload = await new CompactEncrypt(encoder.encode(JSON.stringify(payload)))
       .setProtectedHeader({
         kid: this.jwk.kid,
-        alg: this.alg,
-        enc: "A256GCM",
+        alg: JWE_ALGORTIHM,
+        enc: JWE_CONTENT_ENCODING,
         typ: "JWE",
       })
       .encrypt(key);
