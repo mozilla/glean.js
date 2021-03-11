@@ -60,10 +60,10 @@ export class Configuration implements ConfigurationInterface {
 
   static sanitizeDebugOptions(debug?: DebugOptions): DebugOptions {
     const correctedDebugOptions: DebugOptions = debug || {};
-    if (!Configuration.validateDebugViewTag(debug?.debugViewTag || "")) {
+    if (debug?.debugViewTag !== undefined && !Configuration.validateDebugViewTag(debug?.debugViewTag)) {
       delete correctedDebugOptions["debugViewTag"];
     }
-    if (!Configuration.validateSourceTags(debug?.sourceTags || [])) {
+    if (debug?.sourceTags !== undefined && !Configuration.validateSourceTags(debug?.sourceTags)) {
       delete correctedDebugOptions["sourceTags"];
     }
     return correctedDebugOptions;
