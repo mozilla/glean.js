@@ -10,7 +10,7 @@ import { Configuration } from "../../src/core/config";
 const sandbox = sinon.createSandbox();
 
 describe("config", function() {
-  afterEach(async function () {
+  afterEach(function () {
     sandbox.restore();
   });
 
