@@ -15,9 +15,11 @@ import PingEncryptionPlugin from "../../src/plugins/encryption";
 const sandbox = sinon.createSandbox();
 
 describe("PingEncryptionPlugin", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   // eslint-disable-next-line mocha/no-hooks-for-single-case
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   // eslint-disable-next-line mocha/no-hooks-for-single-case
@@ -26,9 +28,8 @@ describe("PingEncryptionPlugin", function() {
   });
 
   it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
-    await Glean.testUninitialize();
-    await Glean.testInitialize(
-      "something something",
+    await Glean.testResetGlean(
+      testAppId,
       true,
       {
         plugins: [

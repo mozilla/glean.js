@@ -45,7 +45,8 @@
       ],
       "rules": {
         "mocha/no-skipped-tests": "off",
-        "mocha/no-pending-tests": "off"
+        "mocha/no-pending-tests": "off",
+        "mocha/no-setup-in-describe": "off"
       }
     },
     {

@@ -18,8 +18,10 @@ class TestEventMetricType extends EventMetricType {
 } 
 
 describe("EventMetric", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   it("the API records to its storage engine", async function () {

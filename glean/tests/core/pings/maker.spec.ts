@@ -15,8 +15,10 @@ import { JSONObject } from "../../../src/core/utils";
 const sandbox = sinon.createSandbox();
 
 describe("PingMaker", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   afterEach(function () {
@@ -61,7 +63,7 @@ describe("PingMaker", function() {
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
     // Initialize will also initialize core metrics that are part of the client info.
-    await Glean.testInitialize("something something", true, {
+    await Glean.testInitialize(testAppId, true, {
       appBuild:"build",
       appDisplayVersion: "display version",
       serverEndpoint: "http://localhost:8080"
@@ -141,8 +143,7 @@ describe("PingMaker", function() {
       }
     }
 
-    await Glean.testUninitialize();
-    await Glean.testInitialize("something something", true, { plugins: [ new MockPlugin() ]});
+    await Glean.testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ]});
     const ping = new PingType({
       name: "ping",
       includeClientId: true,
@@ -153,8 +154,7 @@ describe("PingMaker", function() {
     const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
 
-    await Glean.testUninitialize();
-    await Glean.testInitialize("something something", true);
+    await Glean.testResetGlean(testAppId, true);
     await PingMaker.collectAndStorePing("ident", ping);
     const recordedPingNoPlugin = (await Glean.pingsDatabase.getAllPings())["ident"];
     assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });

@@ -9,8 +9,10 @@ import StringMetricType, { MAX_LENGTH_VALUE } from "../../../src/core/metrics/ty
 import { Lifetime } from "../../../src/core/metrics";
  
 describe("StringMetric", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
