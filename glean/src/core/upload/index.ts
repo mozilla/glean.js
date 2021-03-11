@@ -117,10 +117,10 @@ class PingUploader implements PingsDatabaseObserver {
    *
    * @returns The updated ping.
    */
-  private preparePingForUpload(ping: QueuedPing): {
+  private async preparePingForUpload(ping: QueuedPing): Promise<{
     headers: Record<string, string>,
     payload: string
-  } {
+  }> {
     const stringifiedBody = JSON.stringify(ping.payload);
 
     let headers = ping.headers || {};
@@ -131,6 +131,7 @@ class PingUploader implements PingsDatabaseObserver {
       "Date": (new Date()).toISOString(),
       "X-Client-Type": "Glean.js",
       "X-Client-Version": GLEAN_VERSION,
+      "User-Agent": `Glean/${GLEAN_VERSION} (JS on ${await Glean.platform.info.os()})`
     };
 
     return {
@@ -152,7 +153,7 @@ class PingUploader implements PingsDatabaseObserver {
       return { result: UploadResultStatus.RecoverableFailure };
     }
 
-    const finalPing = this.preparePingForUpload(ping);
+    const finalPing = await this.preparePingForUpload(ping);
     const result = await Glean.platform.uploader.post(
       // We are sure that the applicationId is not `undefined` at this point,
       // this function is only called when submitting a ping
