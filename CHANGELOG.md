@@ -3,6 +3,7 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.4.0...main)
 
 * [#101](https://github.com/mozilla/glean.js/pull/101): BUGFIX: Only validate Debug View Tag and Source Tags when they are present.
+* [#102](https://github.com/mozilla/glean.js/pull/102): BUGFIX: Include a Glean User-Agent header in all pings.
 
 # v0.4.0 (2021-03-10)
 

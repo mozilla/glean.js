@@ -7,6 +7,8 @@ import sinon from "sinon";
 import { v4 as UUIDv4 } from "uuid";
 
 import Glean from "../../../src/core/glean";
+import PingType from "../../../src/core/pings";
+import collectAndStorePing from "../../../src/core/pings/maker";
 import PingUploader, { UploadResultStatus } from "../../../src/core/upload";
 
 const sandbox = sinon.createSandbox();
@@ -19,21 +21,15 @@ const sandbox = sinon.createSandbox();
  * @returns The array of identifiers of the pings added to the database.
  */
 async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
-  const path = "some/random/path/doesnt/matter";
-  const payload = {
-    ping_info: {
-      seq: 1,
-      start_time: "2020-01-11+01:00",
-      end_time: "2020-01-12+01:00",
-    },
-    client_info: {
-      telemetry_sdk_build: "32.0.0"
-    }
-  };
+  const ping = new PingType({
+    name: "ping",
+    includeClientId: true,
+    sendIfEmpty: true,
+  });
 
   const identifiers = Array.from({ length: numPings }, () => UUIDv4());
   for (const identifier of identifiers) {
-    await Glean.pingsDatabase.recordPing(path, identifier, payload);
+    await collectAndStorePing(identifier, ping);
   }
 
   return identifiers;
@@ -189,5 +185,25 @@ describe("PingUploader", function() {
 
     await waitForGleanUploader();
     assert.strictEqual(stub.callCount, 3);
+  });
+
+  it("correctly build ping request", async function () {
+    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+
+    const expectedDocumentId = (await fillUpPingsDatabase(1))[0];
+    await waitForGleanUploader();
+
+    const url = postSpy.firstCall.args[0].split("/");
+    const documentId = url[url.length - 1];
+    const headers = postSpy.firstCall.args[2] || {};
+
+    assert.strictEqual(documentId, expectedDocumentId);
+
+    assert.ok("Date" in headers);
+    assert.ok("User-Agent" in headers);
+    assert.ok("Content-Type" in headers);
+    assert.ok("X-Client-Type" in headers);
+    assert.ok("X-Client-Version" in headers);
+    assert.ok("Content-Length" in headers);
   });
 });
