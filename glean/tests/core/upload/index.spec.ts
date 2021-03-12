@@ -55,12 +55,14 @@ function disableGleanUploader(): void {
 }
 
 describe("PingUploader", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   afterEach(function () {
     sandbox.restore();
   });
 
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   it("scanning the pending pings directory fills up the queue", async function() {

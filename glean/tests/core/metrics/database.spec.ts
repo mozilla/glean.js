@@ -11,8 +11,10 @@ import { JSONValue } from "../../../src/core/utils";
 import Glean from "../../../src/core/glean";
 
 describe("MetricsDatabase", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   describe("record", function() {
@@ -483,9 +485,6 @@ describe("MetricsDatabase", function() {
     });
 
     it("clears data from specific ping when specified", async function () {
-      // Must initialize Glean, otherwise `testGetValue` will hang forever.
-      await Glean.testResetGlean("something something", true);
-
       const metric = new StringMetricType({
         category: "some",
         name: "metric",

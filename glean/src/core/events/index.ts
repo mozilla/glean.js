@@ -12,53 +12,57 @@ export class CoreEvent<
    Context extends unknown[] = unknown[],
    // The expected type of the action result. To be returned by the plugin.
    Result extends unknown = unknown
- > {
-   // The plugin to be triggered eveytime this even occurs.
-   private plugin?: Plugin<CoreEvent<Context, Result>>;
+> {
+  // The plugin to be triggered eveytime this even occurs.
+  private plugin?: Plugin<CoreEvent<Context, Result>>;
 
-   constructor(readonly name: string) {}
+  constructor(readonly name: string) {}
 
-   /**
-    * Registers a plugin that listens to this event.
-    *
-    * @param plugin The plugin to register.
-    */
-   registerPlugin(plugin: Plugin<CoreEvent<Context, Result>>): void {
-     if (this.plugin) {
-       console.error(
-         `Attempted to register plugin '${plugin.name}', which listens to the event '${plugin.event}'.`,
-         `That event is already watched by plugin '${this.plugin.name}'`,
-         `Plugin '${plugin.name}' will be ignored.`
-       );
-       return;
-     }
- 
-     this.plugin = plugin;
-   }
- 
-   /**
-    * Deregisters the currently registered plugin.
-    *
-    * If no plugin is currently registered this is a no-op.
-    */
-   deregisterPlugin(): void {
-     this.plugin = undefined;
-   }
+  get registeredPluginIdentifier(): string | undefined {
+    return this.plugin?.name;
+  }
 
-   /**
-    * Triggers this event.
-    *
-    * Will execute the action of the registered plugin, if there is any.
-    *
-    * @param args The arguments to be passed as context to the registered plugin.
-    *
-    * @returns The result from the plugin execution.
-    */
-   trigger(...args: Context): Result | void {
-     if (this.plugin) {
-       return this.plugin.action(...args);
-     }
-   }
+  /**
+   * Registers a plugin that listens to this event.
+   *
+   * @param plugin The plugin to register.
+   */
+  registerPlugin(plugin: Plugin<CoreEvent<Context, Result>>): void {
+    if (this.plugin) {
+      console.error(
+        `Attempted to register plugin '${plugin.name}', which listens to the event '${plugin.event}'.`,
+        `That event is already watched by plugin '${this.plugin.name}'`,
+        `Plugin '${plugin.name}' will be ignored.`
+      );
+      return;
+    }
+
+    this.plugin = plugin;
+  }
+
+  /**
+   * Deregisters the currently registered plugin.
+   *
+   * If no plugin is currently registered this is a no-op.
+   */
+  deregisterPlugin(): void {
+    this.plugin = undefined;
+  }
+
+  /**
+   * Triggers this event.
+   *
+   * Will execute the action of the registered plugin, if there is any.
+   *
+   * @param args The arguments to be passed as context to the registered plugin.
+   *
+   * @returns The result from the plugin execution.
+   */
+  trigger(...args: Context): Result | void {
+    if (this.plugin) {
+      return this.plugin.action(...args);
+    }
+  }
 }
 
 /**

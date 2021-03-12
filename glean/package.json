@@ -18,6 +18,11 @@
       "browser": "./dist/webext/browser/core/pings/index.js",
       "import": "./dist/webext/esm/core/pings/index.js",
       "require": "./dist/webext/cjs/core/pings/index.js"
+    },
+    "./webext/plugins/*": {
+      "browser": "./dist/webext/browser/plugins/*.js",
+      "import": "./dist/webext/esm/plugins/*.js",
+      "require": "./dist/webext/cjs/plugins/*.js"
     }
   },
   "typesVersions": {
@@ -30,6 +35,9 @@
       ],
       "webext/private/metrics/*": [
         "./dist/webext/types/core/metrics/types/*"
+      ],
+      "webext/plugins/*": [
+        "./dist/webext/types/plugins/*"
       ]
     }
   },
@@ -39,8 +47,9 @@
     "dist/**/*"
   ],
   "scripts": {
-    "test": "npm run test:core && npm run test:platform",
+    "test": "npm run test:core && npm run test:platform && npm run test:plugins",
     "test:core": "ts-mocha \"tests/core/**/*.spec.ts\" --recursive",
+    "test:plugins": "ts-mocha \"tests/plugins/**/*.spec.ts\" --recursive",
     "test:platform": "npm run build:test-webext && ts-mocha \"tests/platform/**/*.spec.ts\" --recursive --timeout 0",
     "build:test-webext": "cd tests/platform/utils/webext/sample/ && npm install && npm run build:xpi",
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
@@ -96,6 +105,7 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
+    "jose": "^3.7.0",
     "uuid": "^8.3.2"
   }
 }

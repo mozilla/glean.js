@@ -8,8 +8,10 @@ import Database, { Observer, isValidPingInternalRepresentation } from "../../../
 import Glean from "../../../src/core/glean";
 
 describe("PingsDatabase", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   describe("record", function () {
