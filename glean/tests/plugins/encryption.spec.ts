@@ -4,30 +4,32 @@
 
 import assert from "assert";
 import sinon from "sinon";
+import generateKeyPair from "jose/util/generate_key_pair";
+import fromKeyLike from "jose/jwk/from_key_like";
+import compactDecrypt from "jose/jwe/compact/decrypt";
 
 import Glean from "../../src/core/glean";
 import PingType from "../../src/core/pings";
-import * as PingMaker from "../../src/core/pings/maker";
 import { JSONObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";
 import PingEncryptionPlugin from "../../src/plugins/encryption";
+import collectAndStorePing, { makePath } from "../../src/core/pings/maker";
 
 const sandbox = sinon.createSandbox();
 
 describe("PingEncryptionPlugin", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  // eslint-disable-next-line mocha/no-hooks-for-single-case
   beforeEach(async function() {
     await Glean.testResetGlean(testAppId);
   });
 
-  // eslint-disable-next-line mocha/no-hooks-for-single-case
   afterEach(function () {
     sandbox.restore();
   });
 
   it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
+
     await Glean.testResetGlean(
       testAppId,
       true,
@@ -51,16 +53,62 @@ describe("PingEncryptionPlugin", function() {
     });
     const pingId = "ident";
 
-    const testPingSpy = sandbox.spy(TestPlatform.uploader, "post").withArgs(
-      sinon.match(PingMaker.makePath(pingId, ping)),
+    const postSpy = sandbox.spy(TestPlatform.uploader, "post").withArgs(
+      sinon.match(makePath(pingId, ping)),
       sinon.match.string
     );
 
-    await PingMaker.collectAndStorePing(pingId, ping);
-    assert.ok(testPingSpy.calledOnce);
+    await collectAndStorePing(pingId, ping);
+    assert.ok(postSpy.calledOnce);
 
-    const payload = JSON.parse(testPingSpy.args[0][1]) as JSONObject;
+    const payload = JSON.parse(postSpy.args[0][1]) as JSONObject;
     assert.ok("payload" in payload);
     assert.ok(typeof payload.payload === "string");
+  });
+
+  it("decrypting encrypted ping returns expected payload and protected headers", async function () {
+    // Disable ping uploading for it not to interfere with this tests.
+    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+
+    const { publicKey, privateKey } = await generateKeyPair("ECDH-ES");
+
+    await Glean.testResetGlean(
+      testAppId,
+      true,
+      {
+        plugins: [
+          new PingEncryptionPlugin(await fromKeyLike(publicKey))
+        ],
+        debug: {
+          logPings: true
+        }
+      }
+    );
+
+    const ping = new PingType({
+      name: "test",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+    const pingId = "ident";
+
+    const consoleSpy = sandbox.spy(console, "info");
+    await collectAndStorePing(pingId, ping);
+
+    const preEncryptionPayload = JSON.parse(consoleSpy.lastCall.args[0]) as JSONObject;
+    const encryptedPayload = (await Glean.pingsDatabase.getAllPings())[pingId]["payload"]["payload"];
+
+    const { plaintext, protectedHeader } = await compactDecrypt(
+      encryptedPayload as string,
+      privateKey
+    );
+    const decoder = new TextDecoder();
+    const decodedPayload = JSON.parse(decoder.decode(plaintext)) as JSONObject;
+
+    assert.deepStrictEqual(decodedPayload, preEncryptionPayload);
+    assert.ok("kid" in protectedHeader);
+    assert.ok("alg" in protectedHeader);
+    assert.ok("enc" in protectedHeader);
+    assert.ok("typ" in protectedHeader);
   });
 });
