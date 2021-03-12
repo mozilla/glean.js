@@ -188,4 +188,34 @@ describe("PingMaker", function() {
     assert.ok("client_info" in loggedPayload);
     assert.ok("ping_info" in loggedPayload);
   });
+
+  it("pings are not recorded in case a plugin throws", async function () {
+    class ThrowingPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
+      constructor() {
+        super(CoreEvents["afterPingCollection"].name, "mockPlugin");
+      }
+    
+      action(): Promise<JSONObject> {
+        throw new Error();
+      }
+    }
+
+    await Glean.testResetGlean(testAppId, true, {
+      debug: {
+        logPings: true
+      },
+      plugins: [ new ThrowingPlugin() ]
+    });
+
+    const ping = new PingType({
+      name: "ping",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+
+    await PingMaker.collectAndStorePing("ident", ping);
+
+    const recordedPings = await Glean.pingsDatabase.getAllPings();
+    assert.ok(!("ident" in recordedPings));
+  });
 });
