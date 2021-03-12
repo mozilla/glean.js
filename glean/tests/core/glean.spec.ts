@@ -346,7 +346,7 @@ describe("Glean", function() {
     const testTag = "test";
 
     // Setting on initialize.
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { debugViewTag: testTag } });
+    await Glean.testInitialize(testAppId, true, { debug: { debugViewTag: testTag } });
     await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.debugViewTag, testTag);
 
@@ -354,7 +354,7 @@ describe("Glean", function() {
 
     // Setting before initialize.
     Glean.setDebugViewTag(testTag);
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(testAppId, true);
     await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.debugViewTag, testTag);
 
@@ -387,7 +387,7 @@ describe("Glean", function() {
 
   it("setting source tags on initialize works", async function () {
     await Glean.testUninitialize();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { sourceTags: ["1", "2", "3", "4", "5"] } });
+    await Glean.testInitialize(testAppId, true, { debug: { sourceTags: ["1", "2", "3", "4", "5"] } });
     await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.sourceTags, "1,2,3,4,5");
   });
