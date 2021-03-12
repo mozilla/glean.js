@@ -10,6 +10,7 @@
 * [#101](https://github.com/mozilla/glean.js/pull/101): BUGFIX: Only validate Debug View Tag and Source Tags when they are present.
 * [#101](https://github.com/mozilla/glean.js/pull/101): BUGFIX: Only validate Debug View Tag and Source Tags when they are present.
 * [#102](https://github.com/mozilla/glean.js/pull/102): BUGFIX: Include a Glean User-Agent header in all pings.
+* [#97](https://github.com/mozilla/glean.js/pull/97): Add support for labelled metric types (string, boolean and counter).
 
 # v0.4.0 (2021-03-10)
 
