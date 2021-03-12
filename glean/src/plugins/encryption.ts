@@ -13,7 +13,10 @@ import { JSONObject } from "../core/utils";
 import CoreEvents from "../core/events";
 
 // These are the chosen defaults, because they are the ones expected by Glean's data pipeline.
-// See: https://github.com/mozilla/gcp-ingestion/blob/97619c801279670bddba8ce200799e8b8cda5e60/ingestion-beam/src/test/resources/pioneer.py#L53-L58
+//
+// That is the case because they are the only algorithm and content encoding pair supported
+// by Firefox's hand-rolled JWE implementation.
+// See: https://searchfox.org/mozilla-central/rev/eeb8cf278192d68b3977d0adb4d43f1463439269/services/crypto/modules/jwcrypto.jsm#58-74
 const JWE_ALGORITHM = "ECDH-ES";
 const JWE_CONTENT_ENCODING = "A256GCM";
 
