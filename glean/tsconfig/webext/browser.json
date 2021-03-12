@@ -1,6 +1,10 @@
 {
   "extends": "../base.json",
-  "include": ["../../src/index/webext.ts", "../../src/core/metrics/types/*.ts"],
+  "include": [
+    "../../src/index/webext.ts",
+    "../../src/core/metrics/types/*.ts",
+    "../../src/plugins/*.ts"
+  ],
   "compilerOptions": {
     "target": "ES2018",
     "module": "ES6",

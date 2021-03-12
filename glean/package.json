@@ -18,6 +18,11 @@
       "browser": "./dist/webext/browser/core/pings/index.js",
       "import": "./dist/webext/esm/core/pings/index.js",
       "require": "./dist/webext/cjs/core/pings/index.js"
+    },
+    "./webext/plugins/*": {
+      "browser": "./dist/webext/browser/plugins/*.js",
+      "import": "./dist/webext/esm/plugins/*.js",
+      "require": "./dist/webext/cjs/plugins/*.js"
     }
   },
   "typesVersions": {
@@ -30,6 +35,9 @@
       ],
       "webext/private/metrics/*": [
         "./dist/webext/types/core/metrics/types/*"
+      ],
+      "webext/plugins/*": [
+        "./dist/webext/types/plugins/*"
       ]
     }
   },
