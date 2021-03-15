@@ -52,13 +52,12 @@ class LabeledMetricType<T extends SupportedLabeledTypes> {
     labels?: string[],
   ) {
     return new Proxy(this, {
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      get: (_target: LabeledMetricType<T>, label: string): any => {
+      get: (_target: LabeledMetricType<T>, label: string): T => {
         if (labels) {
-          return LabeledMetricType.createFromStaticLabel<typeof submetric>(meta, submetric, labels, label);
+          return LabeledMetricType.createFromStaticLabel(meta, submetric, labels, label);
         }
 
-        return LabeledMetricType.createFromDynamicLabel<typeof submetric>(meta, submetric, label);
+        return LabeledMetricType.createFromDynamicLabel(meta, submetric, label);
       }
     });
   }
@@ -94,7 +93,7 @@ class LabeledMetricType<T extends SupportedLabeledTypes> {
     submetricClass: T,
     allowedLabels: string[],
     label: string
-  ): T {
+  ): InstanceType<T> {
     // If the label was provided in the registry file, then use it. Otherwise,
     // store data in the `OTHER_LABEL`.
     const adjustedLabel = allowedLabels.includes(label) ? label : OTHER_LABEL;
@@ -119,7 +118,7 @@ class LabeledMetricType<T extends SupportedLabeledTypes> {
     meta: CommonMetricData,
     submetricClass: T,
     label: string
-  ): T {
+  ): InstanceType<T> {
     const newMeta: CommonMetricData = {
       ...meta,
       dynamicLabel: label
@@ -127,6 +126,15 @@ class LabeledMetricType<T extends SupportedLabeledTypes> {
     return new submetricClass(newMeta);
   }
 
+  /**
+   * Checks if the dynamic label stored in the metric data is
+   * valid. If not, record an error and store data in the "__other__"
+   * label.
+   *
+   * @param metric the metric metadata.
+   *
+   * @returns a valid label that can be used to store data.
+   */
   static async getValidDynamicLabel(metric: MetricType): Promise<string> {
     // Note that we assume `metric.dynamicLabel` to always be available within this function.
     // This is a safe assumptions because we should only call `getValidDynamicLabel` if we have

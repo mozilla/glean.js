@@ -155,11 +155,11 @@ export abstract class MetricType implements CommonMetricData {
    * @returns The generated identifier. If `category` is empty, it's ommitted. Otherwise,
    *          it's the combination of the metric's `category`, `name` and `label`.
    */
-  async getAsyncIdentifier(): Promise<string> {
+  async identifier(): Promise<string> {
     const baseIdentifier = this.baseIdentifier();
 
     // We need to use `isUndefined` and cannot use `(this.dynamicLabel)` because we want
-    // empty strings to propagate as a dynamic labels, so that erros are potentially recorded.
+    // empty strings to propagate as dynamic labels, so that erros are potentially recorded.
     if (!isUndefined(this.dynamicLabel)) {
       return await LabeledMetricType.getValidDynamicLabel(this);
     } else {
@@ -178,7 +178,7 @@ export abstract class MetricType implements CommonMetricData {
 }
 
 /**
- * This is no-op internal metric representation.
+ * This is a no-op internal metric representation.
  *
  * This can be used to instruct the validators to simply report
  * whatever is stored internally, without performing any specific

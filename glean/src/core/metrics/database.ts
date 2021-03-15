@@ -133,7 +133,7 @@ class MetricsDatabase {
     }
 
     const store = this._chooseStore(metric.lifetime);
-    const storageKey = await metric.getAsyncIdentifier();
+    const storageKey = await metric.identifier();
     for (const ping of metric.sendInPings) {
       const finalTransformFn = (v?: JSONValue): JSONValue => transformFn(v).get();
       await store.update([ping, metric.type, storageKey], finalTransformFn);
@@ -205,7 +205,7 @@ class MetricsDatabase {
     metric: MetricType
   ): Promise<T | undefined> {
     const store = this._chooseStore(metric.lifetime);
-    const storageKey = await metric.getAsyncIdentifier();
+    const storageKey = await metric.identifier();
     const value = await store.get([ping, metric.type, storageKey]);
     if (!isUndefined(value) && !validateMetricInternalRepresentation<T>(metric.type, value)) {
       console.error(`Unexpected value found for metric ${storageKey}: ${JSON.stringify(value)}. Clearing.`);

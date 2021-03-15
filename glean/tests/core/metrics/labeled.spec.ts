@@ -17,8 +17,10 @@ import PingType from "../../../src/core/pings";
 const sandbox = sinon.createSandbox();
 
 describe("LabeledMetric", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("gleanjs.unit.test");
+    await Glean.testResetGlean(testAppId);
     // Disable ping uploading for it not to interfere with this tests.
     sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
   });
@@ -34,7 +36,7 @@ describe("LabeledMetric", function() {
       sendIfEmpty: false,
     });
 
-    const labeledCounterMetric = new LabeledMetricType<CounterMetricType>(
+    const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_counter_metric",
@@ -79,7 +81,7 @@ describe("LabeledMetric", function() {
       sendIfEmpty: false,
     });
 
-    const labeledCounterMetric = new LabeledMetricType<CounterMetricType>(
+    const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_counter_metric",
@@ -126,7 +128,7 @@ describe("LabeledMetric", function() {
   });
 
   it("test __other__ label without predefined labels", async function() {
-    const labeledCounterMetric = new LabeledMetricType<CounterMetricType>(
+    const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_counter_metric",
@@ -151,7 +153,7 @@ describe("LabeledMetric", function() {
   });
 
   it("test __other__ label without predefined labels before Glean initialization", async function() {
-    const labeledCounterMetric = new LabeledMetricType<CounterMetricType>(
+    const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_counter_metric",
@@ -181,7 +183,7 @@ describe("LabeledMetric", function() {
   });
 
   it("Ensure invalid labels on labeled counter go to __other__", async function() {
-    const labeledCounterMetric = new LabeledMetricType<CounterMetricType>(
+    const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_counter_metric",
@@ -203,7 +205,7 @@ describe("LabeledMetric", function() {
   });
 
   it("Ensure invalid labels on labeled boolean go to __other__", async function() {
-    const labeledBooleanMetric = new LabeledMetricType<BooleanMetricType>(
+    const labeledBooleanMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_boolean_metric",
@@ -225,7 +227,7 @@ describe("LabeledMetric", function() {
   });
 
   it("Ensure invalid labels on labeled string go to __other__", async function() {
-    const labeledStringMetric = new LabeledMetricType<StringMetricType>(
+    const labeledStringMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_string_metric",
@@ -247,7 +249,7 @@ describe("LabeledMetric", function() {
   });
 
   it("test labeled string metric type", async function() {
-    const labeledStringMetric = new LabeledMetricType<StringMetricType>(
+    const labeledStringMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_string_metric",
@@ -269,7 +271,7 @@ describe("LabeledMetric", function() {
   });
 
   it("test labeled boolean metric type", async function() {
-    const metric = new LabeledMetricType<BooleanMetricType>(
+    const metric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_bool",
@@ -291,7 +293,7 @@ describe("LabeledMetric", function() {
   });
 
   it("dynamic labels regex mismatch", async function() {
-    const labeledCounterMetric = new LabeledMetricType<CounterMetricType>(
+    const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_counter_metric",
@@ -320,7 +322,7 @@ describe("LabeledMetric", function() {
   });
 
   it("dynamic labels regex allowed", async function() {
-    const labeledCounterMetric = new LabeledMetricType<CounterMetricType>(
+    const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_counter_metric",
@@ -350,7 +352,7 @@ describe("LabeledMetric", function() {
   });
 
   it("seen labels get reloaded across initializations", async function() {
-    const labeledCounterMetric = new LabeledMetricType<CounterMetricType>(
+    const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_metric",
