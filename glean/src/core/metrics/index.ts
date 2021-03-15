@@ -178,13 +178,16 @@ export abstract class MetricType implements CommonMetricData {
 }
 
 /**
- * This is a no-op internal metric representation.
+ * This is an internal metric representation for labeled metrics.
  *
  * This can be used to instruct the validators to simply report
  * whatever is stored internally, without performing any specific
  * validation.
+ *
+ * This needs to live here, instead of labeled.ts, in order to avoid
+ * a cyclic dependency.
  */
-export class PassthroughMetric extends Metric<JSONValue, JSONValue> {
+export class LabeledMetric extends Metric<JSONValue, JSONValue> {
   constructor(v: unknown) {
     super(v);
   }
