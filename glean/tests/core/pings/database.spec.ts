@@ -16,7 +16,7 @@ describe("PingsDatabase", function() {
 
   describe("record", function () {
     it("records correctly to the correct place at the underlying storage", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const path = "some/random/path/doesnt/matter";
       const identifier = "THE IDENTIFIER";
       const payload = {
@@ -54,7 +54,7 @@ describe("PingsDatabase", function() {
         }
       };
   
-      const db = new Database(observer);
+      const db = new Database(Glean.platform.Storage, observer);
       const path = "some/random/path/doesnt/matter";
 
       const payload = {
@@ -89,7 +89,7 @@ describe("PingsDatabase", function() {
     });
 
     it("when incorrect data is found on the storage it is deleted", async function () {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const identifier = "THE IDENTIFIER";
       const path = "some/random/path/doesnt/matter";
       const payload = {
@@ -116,7 +116,7 @@ describe("PingsDatabase", function() {
     });
 
     it("getAllPings works correct when data is all correct", async function () {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const path = "some/random/path/doesnt/matter";
       const payload = {
         ping_info: {
@@ -142,14 +142,14 @@ describe("PingsDatabase", function() {
     });
 
     it("getAllPings dosen't error when there are no pings stored", async function () {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       assert.deepStrictEqual({}, await db.getAllPings());
     });
   });
 
   describe("delete", function() {
     it("deleting works", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const path = "some/random/path/doesnt/matter";
       const payload = {
         ping_info: {
@@ -183,7 +183,7 @@ describe("PingsDatabase", function() {
     });
 
     it("deleting a ping that is not in the db doesn't error", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const path = "some/random/path/doesnt/matter";
       const payload = {
         ping_info: {
@@ -212,7 +212,7 @@ describe("PingsDatabase", function() {
 
   describe("clear", function () {
     it("clearing works", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const path = "some/random/path/doesnt/matter";
       const payload = {
         ping_info: {
