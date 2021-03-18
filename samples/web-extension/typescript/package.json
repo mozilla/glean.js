@@ -4,9 +4,9 @@
   "description": "A sample web extension using Glean.js",
   "main": "dist/bundle.js",
   "scripts": {
-    "glean_parser": "glean_parser translate src/metrics.yaml src/pings.yaml -f typescript -o src/generated",
-    "build": "webpack --watch --config webpack.config.js --mode production",
-    "dev": "webpack --watch --config webpack.config.js --mode development"
+    "glean": "glean translate src/metrics.yaml src/pings.yaml -f typescript -o src/generated",
+    "build": "npm run glean && webpack --watch --config webpack.config.js --mode production",
+    "dev": "npm run glean && webpack --watch --config webpack.config.js --mode development"
   },
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
