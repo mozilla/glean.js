@@ -1,11 +1,15 @@
 version: 2
 updates:
   - package-ecosystem: "npm"
-    directory: "/"
+    directory: "/glean"
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
-    directory: "/samples/web-extension"
+    directory: "/samples/web-extension/typescript"
+    schedule:
+      interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/samples/web-extension/javascript"
     schedule:
       interval: "daily"
   - package-ecosystem: "pip"
