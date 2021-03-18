@@ -13,12 +13,14 @@ import TimeUnit from "../../../src/core/metrics/time_unit";
 const sandbox = sinon.createSandbox();
 
 describe("DatetimeMetric", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   afterEach(function () {
     sandbox.restore();
   });
 
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   it("datetime internal representation validation works as expected", function () {

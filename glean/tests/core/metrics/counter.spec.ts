@@ -7,10 +7,12 @@ import assert from "assert";
 import Glean from "../../../src/core/glean";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../src/core/metrics";
-  
+
 describe("CounterMetric", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
  
   it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {

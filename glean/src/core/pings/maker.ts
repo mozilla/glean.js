@@ -209,7 +209,7 @@ export async function collectPing(ping: PingType, reason?: string): Promise<Ping
  *
  * @returns The final submission path.
  */
-function makePath(identifier: string, ping: PingType): string {
+export function makePath(identifier: string, ping: PingType): string {
   // We are sure that the applicationId is not `undefined` at this point,
   // this function is only called when submitting a ping
   // and that function return early when Glean is not initialized.
@@ -237,15 +237,25 @@ export async function collectAndStorePing(identifier: string, ping: PingType, re
     return;
   }
 
+  let modifiedPayload;
+  try {
+    modifiedPayload = await CoreEvents.afterPingCollection.trigger(collectedPayload);
+  } catch(e) {
+    console.error(
+      `Error while attempting to modify ping payload for the "${ping.name}" ping using`,
+      `the ${JSON.stringify(CoreEvents.afterPingCollection.registeredPluginIdentifier)} plugin.`,
+      "Ping will not be submitted. See more logs below.\n\n",
+      e
+    );
+
+    return;
+  }
+
   if (Glean.logPings) {
     console.info(JSON.stringify(collectedPayload, null, 2));
   }
-
-  const headers = getPingHeaders();
-
-  const modifiedPayload = await CoreEvents.afterPingCollection.trigger(collectedPayload);
   const finalPayload = modifiedPayload ? modifiedPayload : collectedPayload;
-
+  const headers = getPingHeaders();
   return Glean.pingsDatabase.recordPing(
     makePath(identifier, ping),
     identifier,

@@ -3,10 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import sinon from "sinon";
 
 import { Configuration } from "../../src/core/config";
 
+const sandbox = sinon.createSandbox();
+
 describe("config", function() {
+  afterEach(function () {
+    sandbox.restore();
+  });
+
   it("validateSourceTags works correctly", function () {
     // Invalid values
     assert.ok(!Configuration.validateSourceTags([]));
@@ -51,5 +58,14 @@ describe("config", function() {
       Configuration.sanitizeDebugOptions({ sourceTags: ["ok"] }),
       { sourceTags: ["ok"] }
     );
+  });
+
+  it("validation functions are not called when debug view and source tags are not present", function () {
+    const sourceTagsSpy = sandbox.spy(Configuration, "validateSourceTags");
+    const debugViewTagSpy = sandbox.spy(Configuration, "validateDebugViewTag");
+
+    Configuration.sanitizeDebugOptions({});
+    assert.strictEqual(sourceTagsSpy.callCount, 0);
+    assert.strictEqual(debugViewTagSpy.callCount, 0);
   });
 });

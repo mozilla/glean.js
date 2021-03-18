@@ -11,8 +11,10 @@ import EventMetricType from "../../../src/core/metrics/types/event";
 import { JSONObject } from "../../../src/core/utils";
 
 describe("EventsDatabase", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   it("stable serialization", function () {

@@ -24,12 +24,14 @@ async function submitSync(ping: PingType): Promise<void> {
 }
 
 describe("PingType", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   afterEach(function () {
     sandbox.restore();
   });
 
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   it("collects and stores ping on submit", async function () {

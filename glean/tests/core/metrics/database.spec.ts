@@ -11,13 +11,15 @@ import { JSONValue } from "../../../src/core/utils";
 import Glean from "../../../src/core/glean";
 
 describe("MetricsDatabase", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   describe("record", function() {
     it("records to the correct place at the underlying store", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const userMetric = new StringMetricType({
         category: "user",
         name: "aMetric",
@@ -59,7 +61,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("records at all the pings defined in a metric", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const metric = new StringMetricType({
         name: "aMetric",
         category: "",
@@ -78,7 +80,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("overwrites old value if necessary", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const metric = new StringMetricType({
         name: "aMetric",
         category: "",
@@ -94,7 +96,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("doesn't record if metric is disabled", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const metric = new StringMetricType({
         name: "aMetric",
         category: "",
@@ -111,7 +113,7 @@ describe("MetricsDatabase", function() {
 
   describe("transform", function() {
     it("transforms to the correct place at the underlying store", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const userMetric = new StringMetricType({
         category: "user",
         name: "aMetric",
@@ -159,7 +161,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("transforms at all the pings defined in a metric", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const metric = new StringMetricType({
         name: "aMetric",
         category: "",
@@ -180,7 +182,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("doesn't transform if metric is disabled", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const metric = new StringMetricType({
         name: "aMetric",
         category: "",
@@ -199,7 +201,7 @@ describe("MetricsDatabase", function() {
 
   describe("getMetric", function() {
     it("gets correct metric from correct ping", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const metric = new StringMetricType({
         name: "aMetric",
         category: "",
@@ -213,7 +215,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("doesn't error if trying to get a metric that hasn't been recorded yet", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const metric = new StringMetricType({
         name: "aMetric",
         category: "",
@@ -226,7 +228,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("deletes entry in case an unexpected value in encountered", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const metric = new StringMetricType({
         name: "aMetric",
         category: "",
@@ -284,14 +286,14 @@ describe("MetricsDatabase", function() {
     });
 
     it("when incorrect data is found on the storage, it is deleted", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       await db["appStore"].update(["aPing"], () => "not even a string");
       assert.strictEqual(await db.getPingMetrics("aPing", false), undefined);
       assert.strictEqual(await db["appStore"].get(["aPing"]), undefined);
     });
 
     it("getting a ping with metric from only one lifetime works correctly", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       await db["appStore"].update(["aPing"], () => ({
         "string": {
           "string.one": "foo",
@@ -320,7 +322,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("getting a ping with metric from multiple lifetimes works correctly", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       await db["userStore"].update(["aPing"], () => ({
         "boolean": {
           "client_info.client_id": false,
@@ -365,7 +367,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("ping lifetime data is cleared when clearPingLifetimeData is passed", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const userMetric = new StringMetricType({
         category: "user",
         name: "metric",
@@ -413,7 +415,7 @@ describe("MetricsDatabase", function() {
 
   describe("clear", function() {
     it("clear all stores works correctly", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const userMetric = new StringMetricType({
         category: "user",
         name: "metric",
@@ -448,7 +450,7 @@ describe("MetricsDatabase", function() {
     });
 
     it("clears separate stores correctly", async function() {
-      const db = new Database();
+      const db = new Database(Glean.platform.Storage);
       const userMetric = new StringMetricType({
         category: "user",
         name: "metric",
@@ -483,9 +485,6 @@ describe("MetricsDatabase", function() {
     });
 
     it("clears data from specific ping when specified", async function () {
-      // Must initialize Glean, otherwise `testGetValue` will hang forever.
-      await Glean.testResetGlean("something something", true);
-
       const metric = new StringMetricType({
         category: "some",
         name: "metric",

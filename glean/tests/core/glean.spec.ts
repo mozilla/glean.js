@@ -15,7 +15,6 @@ import { JSONObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";
 import Plugin from "../../src/plugins";
 
-const GLOBAL_APPLICATION_ID = "org.mozilla.glean.test.app";
 class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor() {
     super(CoreEvents["afterPingCollection"].name, "mockPlugin");
@@ -29,8 +28,10 @@ class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
 const sandbox = sinon.createSandbox();
 
 describe("Glean", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean(GLOBAL_APPLICATION_ID);
+    await Glean.testResetGlean(testAppId);
   });
 
   afterEach(function () {
@@ -45,7 +46,7 @@ describe("Glean", function() {
       await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
 
     await Glean.testUninitialize();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(testAppId, true);
     assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE));
     assert.ok(await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
   });
@@ -123,7 +124,7 @@ describe("Glean", function() {
 
   it("client_id is set to known value when uploading disabled at start", async function() {
     await Glean.testUninitialize();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, false);
+    await Glean.testInitialize(testAppId, false);
     assert.strictEqual(
       await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
@@ -133,7 +134,7 @@ describe("Glean", function() {
   it("client_id is set to random value when uploading enabled at start", async function() {
     Glean.setUploadEnabled(false);
     await Glean.testUninitialize();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(testAppId, true);
     const clientId = await Glean["coreMetrics"]["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(clientId);
@@ -170,7 +171,7 @@ describe("Glean", function() {
   it("initialization throws if serverEndpoint is an invalida URL", async function() {
     await Glean.testUninitialize();
     try {
-      await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { serverEndpoint: "" });
+      await Glean.testInitialize(testAppId, true, { serverEndpoint: "" });
       assert.ok(false);
     } catch {
       assert.ok(true);
@@ -181,7 +182,7 @@ describe("Glean", function() {
     await Glean.testUninitialize();
 
     const mockPlugin = new MockPlugin();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, {
+    await Glean.testInitialize(testAppId, true, {
       // We need to ignore TypeScript here,
       // otherwise it will error since mockEvent is not listed as a Glean event in core/events.ts
       //
@@ -193,7 +194,7 @@ describe("Glean", function() {
     assert.deepStrictEqual(CoreEvents["afterPingCollection"]["plugin"], mockPlugin);
 
     await Glean.testUninitialize();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(testAppId, true);
     assert.strictEqual(CoreEvents["afterPingCollection"]["plugin"], undefined);
   });
 
@@ -221,12 +222,12 @@ describe("Glean", function() {
 
   it("initializing twice is a no-op", async function() {
     await Glean.testUninitialize();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(testAppId, true);
     // initialize is dispatched, we must await on the queue being completed to assert things.
     await Glean.dispatcher.testBlockOnQueue();
 
     // This time it should not be called, which means upload should not be switched to `false`.
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, false);
+    await Glean.testInitialize(testAppId, false);
     assert.ok(Glean.isUploadEnabled());
   });
 
@@ -241,7 +242,7 @@ describe("Glean", function() {
     const postSpy = sandbox.spy(Glean.platform.uploader, "post");
 
     // Start Glean with upload enabled.
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(testAppId, true);
     // Immediatelly disable upload.
     Glean.setUploadEnabled(false);
     ping.submit();
@@ -280,7 +281,7 @@ describe("Glean", function() {
     // Can't use testResetGlean here because it clears all stores
     // and when there is no client_id at all stored, a deletion ping is also not sent.
     await Glean.testUninitialize();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, false);
+    await Glean.testInitialize(testAppId, false);
 
     // TODO: Make this nicer once Bug 1691033 is resolved.
     await Glean["pingUploader"]["currentJob"];
@@ -303,7 +304,7 @@ describe("Glean", function() {
     // Can't use testResetGlean here because it clears all stores
     // and when there is no client_id at all stored, a deletion ping is also not set.
     await Glean.testUninitialize();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, false);
+    await Glean.testInitialize(testAppId, false);
     await Glean.dispatcher.testBlockOnQueue();
     // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
     await Glean["pingUploader"]["currentJob"];
@@ -314,7 +315,7 @@ describe("Glean", function() {
 
   it("deletion request ping is not sent when user starts Glean for the first time with upload disabled", async function () {
     const postSpy = sandbox.spy(Glean.platform.uploader, "post");
-    await Glean.testResetGlean(GLOBAL_APPLICATION_ID, false);
+    await Glean.testResetGlean(testAppId, false);
     assert.strictEqual(postSpy.callCount, 0);
   });
 
@@ -322,7 +323,7 @@ describe("Glean", function() {
     await Glean.testUninitialize();
 
     // Setting on initialize.
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { logPings: true } });
+    await Glean.testInitialize(testAppId, true, { debug: { logPings: true } });
     await Glean.dispatcher.testBlockOnQueue();
     assert.ok(Glean.logPings);
 
@@ -330,7 +331,7 @@ describe("Glean", function() {
 
     // Setting before initialize.
     Glean.setLogPings(true);
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(testAppId, true);
     await Glean.dispatcher.testBlockOnQueue();
     assert.ok(Glean.logPings);
 
@@ -345,7 +346,7 @@ describe("Glean", function() {
     const testTag = "test";
 
     // Setting on initialize.
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { debugViewTag: testTag } });
+    await Glean.testInitialize(testAppId, true, { debug: { debugViewTag: testTag } });
     await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.debugViewTag, testTag);
 
@@ -353,7 +354,7 @@ describe("Glean", function() {
 
     // Setting before initialize.
     Glean.setDebugViewTag(testTag);
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true);
+    await Glean.testInitialize(testAppId, true);
     await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.debugViewTag, testTag);
 
@@ -386,7 +387,7 @@ describe("Glean", function() {
 
   it("setting source tags on initialize works", async function () {
     await Glean.testUninitialize();
-    await Glean.testInitialize(GLOBAL_APPLICATION_ID, true, { debug: { sourceTags: ["1", "2", "3", "4", "5"] } });
+    await Glean.testInitialize(testAppId, true, { debug: { sourceTags: ["1", "2", "3", "4", "5"] } });
     await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.sourceTags, "1,2,3,4,5");
   });

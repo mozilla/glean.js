@@ -14,9 +14,21 @@ import { JSONObject } from "../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 
+class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
+  constructor() {
+    super(CoreEvents["afterPingCollection"].name, "mockPlugin");
+  }
+
+  action(): Promise<JSONObject> {
+    return Promise.resolve({ "you": "got mocked!" });
+  }
+}
+
 describe("PingMaker", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   beforeEach(async function() {
-    await Glean.testResetGlean("something something");
+    await Glean.testResetGlean(testAppId);
   });
 
   afterEach(function () {
@@ -61,7 +73,7 @@ describe("PingMaker", function() {
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
     // Initialize will also initialize core metrics that are part of the client info.
-    await Glean.testInitialize("something something", true, {
+    await Glean.testInitialize(testAppId, true, {
       appBuild:"build",
       appDisplayVersion: "display version",
       serverEndpoint: "http://localhost:8080"
@@ -131,18 +143,7 @@ describe("PingMaker", function() {
     // Disable ping uploading for it not to interfere with this tests.
     sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
 
-    class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
-      constructor() {
-        super(CoreEvents["afterPingCollection"].name, "mockPlugin");
-      }
-
-      action(): Promise<JSONObject> {
-        return Promise.resolve({ "you": "got mocked!" });
-      }
-    }
-
-    await Glean.testUninitialize();
-    await Glean.testInitialize("something something", true, { plugins: [ new MockPlugin() ]});
+    await Glean.testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ]});
     const ping = new PingType({
       name: "ping",
       includeClientId: true,
@@ -153,10 +154,68 @@ describe("PingMaker", function() {
     const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
 
-    await Glean.testUninitialize();
-    await Glean.testInitialize("something something", true);
+    await Glean.testResetGlean(testAppId, true);
     await PingMaker.collectAndStorePing("ident", ping);
     const recordedPingNoPlugin = (await Glean.pingsDatabase.getAllPings())["ident"];
     assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
+  });
+
+  it("ping payload is logged before it is modified by a plugin", async function () {
+    // Disable ping uploading for it not to interfere with this tests.
+    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+
+    await Glean.testResetGlean(testAppId, true, {
+      debug: {
+        logPings: true
+      },
+      plugins: [ new MockPlugin() ]
+    });
+
+    const ping = new PingType({
+      name: "ping",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+
+    const consoleSpy = sandbox.spy(console, "info");
+    await PingMaker.collectAndStorePing("ident", ping);
+
+    const loggedPayload = JSON.parse(consoleSpy.lastCall.args[0]) as JSONObject;
+
+    const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
+    assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
+    assert.notDeepStrictEqual(loggedPayload, { "you": "got mocked!" });
+    assert.ok("client_info" in loggedPayload);
+    assert.ok("ping_info" in loggedPayload);
+  });
+
+  it("pings are not recorded in case a plugin throws", async function () {
+    class ThrowingPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
+      constructor() {
+        super(CoreEvents["afterPingCollection"].name, "mockPlugin");
+      }
+    
+      action(): Promise<JSONObject> {
+        throw new Error();
+      }
+    }
+
+    await Glean.testResetGlean(testAppId, true, {
+      debug: {
+        logPings: true
+      },
+      plugins: [ new ThrowingPlugin() ]
+    });
+
+    const ping = new PingType({
+      name: "ping",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+
+    await PingMaker.collectAndStorePing("ident", ping);
+
+    const recordedPings = await Glean.pingsDatabase.getAllPings();
+    assert.ok(!("ident" in recordedPings));
   });
 });
