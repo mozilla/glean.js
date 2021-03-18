@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.4.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.5.0...main)
+
+# v0.5.0 (2021-03-18)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.4.0...v0.5.0)
 
 * [#96](https://github.com/mozilla/glean.js/pull/96): Provide a ping encryption plugin.
   * This plugin listens to the `afterPingCollection` event. It receives the collected payload of a ping and returns an encrypted version of it using a JWK provided upon instantiation.
