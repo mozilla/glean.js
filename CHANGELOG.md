@@ -12,7 +12,6 @@
   * The only internal event triggered at this point is the `afterPingCollection` event, which is triggered after ping collection and logging, and before ping storing.
   * Plugins are built to listen to a specific Glean event. Each plugin must define an `action`, which is executed everytime the event they are listening to is triggered.
 * [#101](https://github.com/mozilla/glean.js/pull/101): BUGFIX: Only validate Debug View Tag and Source Tags when they are present.
-* [#101](https://github.com/mozilla/glean.js/pull/101): BUGFIX: Only validate Debug View Tag and Source Tags when they are present.
 * [#102](https://github.com/mozilla/glean.js/pull/102): BUGFIX: Include a Glean User-Agent header in all pings.
 * [#97](https://github.com/mozilla/glean.js/pull/97): Add support for labeled metric types (string, boolean and counter).
 * [#105](https://github.com/mozilla/glean.js/pull/105): Introduce and publish the `glean` command for using the `glean-parser` in a virtual environment.
