@@ -5,7 +5,7 @@
 import Store from "../storage";
 import { Metrics as MetricsPayload } from "../metrics/database";
 import { isObject, isJSONValue, JSONObject, isString, JSONArray } from "../utils";
-import Glean from "../glean";
+import { StorageBuilder } from "../../platform";
 
 export interface PingInfo extends JSONObject {
   seq: number,
@@ -100,8 +100,8 @@ class PingsDatabase {
   private store: Store;
   private observer?: Observer;
 
-  constructor(observer?: Observer) {
-    this.store = new Glean.platform.Storage("pings");
+  constructor(store: StorageBuilder, observer?: Observer) {
+    this.store = new store("pings");
     this.observer = observer;
   }
 

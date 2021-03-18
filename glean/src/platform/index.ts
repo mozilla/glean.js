@@ -6,6 +6,8 @@ import Store from "../core/storage";
 import Uploader from "../core/upload/uploader";
 import PlatformInfo from "../core/platform_info";
 
+export type StorageBuilder = new (rootKey: string) => Store;
+
 /**
  * An interface describing all the platform specific APIs Glean.js needs to access.
  *
@@ -13,7 +15,7 @@ import PlatformInfo from "../core/platform_info";
  */
 interface Platform {
   // The environment speficic storage implementation
-  Storage: new (rootKey: string) => Store,
+  Storage: StorageBuilder,
   // The environment specific uploader implementation
   uploader: Uploader,
   // The environment specifici implemtation of platform information getters

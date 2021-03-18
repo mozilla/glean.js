@@ -223,9 +223,9 @@ class Glean {
 
     if (!Glean.instance._db) {
       Glean.instance._db = {
-        metrics: new MetricsDatabase(),
+        metrics: new MetricsDatabase(Glean.platform.Storage),
         events: new EventsDatabase(),
-        pings: new PingsDatabase(Glean.pingUploader)
+        pings: new PingsDatabase(Glean.platform.Storage, Glean.pingUploader)
       };
     }
 

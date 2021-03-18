@@ -6,7 +6,7 @@ import Store from "../storage";
 import { MetricType, Lifetime, Metric } from "./";
 import { createMetric, validateMetricInternalRepresentation } from "./utils";
 import { isObject, isUndefined, JSONObject, JSONValue } from "../utils";
-import Glean from "../glean";
+import { StorageBuilder } from "../../platform";
 
 export interface Metrics {
   [aMetricType: string]: {
@@ -83,10 +83,10 @@ class MetricsDatabase {
   private pingStore: Store;
   private appStore: Store;
 
-  constructor() {
-    this.userStore = new Glean.platform.Storage("userLifetimeMetrics");
-    this.pingStore = new Glean.platform.Storage("pingLifetimeMetrics");
-    this.appStore = new Glean.platform.Storage("appLifetimeMetrics");
+  constructor(storage: StorageBuilder) {
+    this.userStore = new storage("userLifetimeMetrics");
+    this.pingStore = new storage("pingLifetimeMetrics");
+    this.appStore = new storage("appLifetimeMetrics");
   }
 
   /**
