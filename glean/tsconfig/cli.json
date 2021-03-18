@@ -1,0 +1,9 @@
+{
+  "extends": "./base.json",
+  "include": [
+    "../src/cli.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "../dist/cli"
+  }
+}

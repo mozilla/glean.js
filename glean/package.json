@@ -46,6 +46,9 @@
     "package.json",
     "dist/**/*"
   ],
+  "bin": {
+    "glean": "./dist/cli/cli.js"
+  },
   "scripts": {
     "test": "npm run test:core && npm run test:platform && npm run test:plugins",
     "test:core": "ts-mocha \"tests/core/**/*.spec.ts\" --recursive",
@@ -54,13 +57,14 @@
     "build:test-webext": "cd tests/platform/utils/webext/sample/ && npm install && npm run build:xpi",
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
+    "build:cli": "tsc -p ./tsconfig/cli.json",
     "build:webext:lib:esm": "tsc -p ./tsconfig/webext/esm.json",
     "build:webext:lib:cjs": "tsc -p ./tsconfig/webext/cjs.json",
     "build:webext:lib:browser": "tsc -p ./tsconfig/webext/browser.json",
     "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
     "build:webext": "rm -rf dist/webext && npm run build:webext:lib:esm && npm run build:webext:lib:cjs && npm run build:webext:lib:browser && npm run build:webext:types",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
-    "prepublishOnly": "cp ../README.md ./README.md && npm run build:webext",
+    "prepublishOnly": "cp ../README.md ./README.md && npm run build:cli && npm run build:webext",
     "postpublish": "rm ./README.md"
   },
   "repository": {

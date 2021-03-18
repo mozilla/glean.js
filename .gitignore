@@ -121,3 +121,6 @@ web-ext-artifacts/
 
 # This is the name of the folder we will add the glean generated files in for our samples.
 generated/
+
+# This is the name of the Glean virtual environment
+.venv
