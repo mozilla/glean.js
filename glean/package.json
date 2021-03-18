@@ -64,7 +64,7 @@
     "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
     "build:webext": "rm -rf dist/webext && npm run build:webext:lib:esm && npm run build:webext:lib:cjs && npm run build:webext:lib:browser && npm run build:webext:types",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
-    "prepublishOnly": "cp ../README.md ./README.md && npm run build:webext",
+    "prepublishOnly": "cp ../README.md ./README.md && npm run build:cli && npm run build:webext",
     "postpublish": "rm ./README.md"
   },
   "repository": {
