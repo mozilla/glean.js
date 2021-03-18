@@ -9,6 +9,7 @@ Whenever this web extensions popup is opened it will trigger Glean.js events.
 > of the directory where the manifest file is.
 
 ## How to run this sample
+Running the example requires Python 3.
 
 1. Link the `@mozilla/glean` package. On the glean/ folder run:
 
