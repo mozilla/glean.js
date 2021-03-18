@@ -10,36 +10,28 @@ Whenever this web extensions popup is opened it will trigger Glean.js events.
 
 ## How to run this sample
 
-1. Generate metrics and pings files.
-
-```bash
-npm run glean_parser
-```
-
-> This command requires that you have [`glean_parser`](https://pypi.org/project/glean-parser/) available.
-> glean_parser is a Python package. To install it run `pip install glean_parser`.
-> Javascript support was added to glean_parser on version 2.1.0, make sure your version is up to date.
-
-2. Link the `@mozilla/glean` package. On the glean/ folder run:
+1. Link the `@mozilla/glean` package. On the glean/ folder run:
 
 ```bash
 npm link
 ```
 
-3. Link the `@mozilla/glean` package to this sample web extension. On this `web-extension` folder run:
-
-```bash
-npm link @mozilla/glean
-```
-
-4. Build this sample. On this `web-extension` folder run:
+2. Link the `@mozilla/glean` package to this sample web extension. On this `web-extension` folder run:
 
 ```bash
 npm install
+npm link @mozilla/glean
+```
+
+3. Build this sample. On this `web-extension` folder run:
+
+```bash
 npm run build
 ```
 
-5. Load the web extension on your browser of choice.
+> **Note** This operation will take some time on the first run, because it will create a virtual environment for running the glean-parser.
+
+4. Load the web extension on your browser of choice.
 
   - **Firefox**
     1. Go to [about:debugging#/runtime/this-firefox](about:debugging#/runtime/this-firefox);
