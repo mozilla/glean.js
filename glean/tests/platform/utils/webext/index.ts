@@ -88,6 +88,7 @@ export function webExtensionAPIProxyBuilder(browser: WebDriver, method: string[]
         }
       }));
 
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const handleTestResponse: any = (event: CustomEvent) => {
         console.log("Caught a new test response", event.detail);
         document.removeEventListener("testResponse", handleTestResponse, false);

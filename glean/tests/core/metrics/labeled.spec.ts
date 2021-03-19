@@ -4,7 +4,6 @@
 
 import assert from "assert";
 import sinon from "sinon";
-import { JSONObject } from "../../../dist/webext/types/core/utils";
 
 import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics";
@@ -13,6 +12,7 @@ import CounterMetricType from "../../../src/core/metrics/types/counter";
 import LabeledMetricType from "../../../src/core/metrics/types/labeled";
 import StringMetricType from "../../../src/core/metrics/types/string";
 import PingType from "../../../src/core/pings";
+import { JSONObject } from "../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 
