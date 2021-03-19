@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Metric, MetricType, CommonMetricData } from "../";
-import { isString } from "../../utils";
-import Glean from "../../glean";
+import { Metric, MetricType, CommonMetricData } from "../index.js";
+import { isString } from "../../utils.js";
+import Glean from "../../glean.js";
 
 export const MAX_LENGTH_VALUE = 100;
 

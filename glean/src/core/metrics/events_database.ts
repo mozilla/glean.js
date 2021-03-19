@@ -2,10 +2,10 @@
 //  * License, v. 2.0. If a copy of the MPL was not distributed with this
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store from "../storage";
-import { isUndefined, JSONArray, JSONObject, JSONValue } from "../utils";
-import EventMetricType from "./types/event";
-import Glean from "../glean";
+import Store from "../storage/index.js";
+import { isUndefined, JSONArray, JSONObject, JSONValue } from "../utils.js";
+import EventMetricType from "./types/event.js";
+import Glean from "../glean.js";
 
 export interface Metrics {
   [aMetricType: string]: {

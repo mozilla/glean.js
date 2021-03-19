@@ -7,10 +7,10 @@ import parseJwk from "jose/jwk/parse";
 import calculateThumbprint from "jose/jwk/thumbprint";
 import { JWK } from "jose/types";
 
-import Plugin from "./index";
-import { PingPayload } from "../core/pings/database";
-import { JSONObject } from "../core/utils";
-import CoreEvents from "../core/events";
+import Plugin from "./index.js";
+import { PingPayload } from "../core/pings/database.js";
+import { JSONObject } from "../core/utils.js";
+import CoreEvents from "../core/events/index.js";
 
 // These are the chosen defaults, because they are the ones expected by Glean's data pipeline.
 //

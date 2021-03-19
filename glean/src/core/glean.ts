@@ -2,23 +2,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants";
-import { Configuration, ConfigurationInterface } from "./config";
-import MetricsDatabase from "./metrics/database";
-import PingsDatabase from "./pings/database";
-import PingUploader from "./upload";
-import { isUndefined, sanitizeApplicationId } from "./utils";
-import { CoreMetrics } from "./internal_metrics";
-import { Lifetime } from "./metrics";
-import EventsDatabase from "./metrics/events_database";
-import UUIDMetricType from "./metrics/types/uuid";
-import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime";
-import Dispatcher from "./dispatcher";
-import CorePings from "./internal_pings";
-import { registerPluginToEvent, testResetEvents } from "./events/utils";
+import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants.js";
+import { Configuration, ConfigurationInterface } from "./config.js";
+import MetricsDatabase from "./metrics/database.js";
+import PingsDatabase from "./pings/database.js";
+import PingUploader from "./upload/index.js";
+import { isUndefined, sanitizeApplicationId } from "./utils.js";
+import { CoreMetrics } from "./internal_metrics.js";
+import { Lifetime } from "./metrics/index.js";
+import EventsDatabase from "./metrics/events_database.js";
+import UUIDMetricType from "./metrics/types/uuid.js";
+import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
+import Dispatcher from "./dispatcher.js";
+import CorePings from "./internal_pings.js";
+import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 
-import Platform from "../platform/index";
-import TestPlatform from "../platform/test";
+import Platform from "../platform/index.js";
+import TestPlatform from "../platform/test/index.js";
 
 class Glean {
   // The Glean singleton.

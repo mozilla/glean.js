@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { isUndefined, JSONValue } from "../utils";
-import Glean from "../glean";
-import LabeledMetricType from "./types/labeled";
+import { isUndefined, JSONValue } from "../utils.js";
+import Glean from "../glean.js";
+import LabeledMetricType from "./types/labeled.js";
 
 /**
  * The Metric class describes the shared behaviour amongst concrete metrics.

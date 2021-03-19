@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Glean from "../core/glean";
-import { ConfigurationInterface } from "../core/config";
+import Glean from "../core/glean.js";
+import { ConfigurationInterface } from "../core/config.js";
 
-import platform from "../platform/webext";
+import platform from "../platform/webext/index.js";
 
 export default {
   /**

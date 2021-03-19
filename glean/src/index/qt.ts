@@ -2,19 +2,19 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Glean from "../core/glean";
-import { ConfigurationInterface } from "../core/config";
+import Glean from "../core/glean.js";
+import { ConfigurationInterface } from "../core/config.js";
 
-import platform from "../platform/qt";
+import platform from "../platform/qt/index.js";
 
 // Private Glean types to export.
-import PingType from "../core/pings";
-import BooleanMetricType from "../core/metrics/types/boolean";
-import CounterMetricType from "../core/metrics/types/counter";
-import DatetimeMetricType from "../core/metrics/types/datetime";
-import EventMetricType from "../core/metrics/types/event";
-import StringMetricType from "../core/metrics/types/string";
-import UUIDMetricType from "../core/metrics/types/uuid";
+import PingType from "../core/pings/index.js";
+import BooleanMetricType from "../core/metrics/types/boolean.js";
+import CounterMetricType from "../core/metrics/types/counter.js";
+import DatetimeMetricType from "../core/metrics/types/datetime.js";
+import EventMetricType from "../core/metrics/types/event.js";
+import StringMetricType from "../core/metrics/types/string.js";
+import UUIDMetricType from "../core/metrics/types/uuid.js";
 
 export default {
   /**
