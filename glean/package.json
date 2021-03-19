@@ -2,7 +2,6 @@
   "name": "@mozilla/glean",
   "version": "0.5.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
-  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     "./webext": {
@@ -59,9 +58,9 @@
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:cli": "tsc -p ./tsconfig/cli.json",
-    "build:webext:lib:esm": "tsc -p ./tsconfig/webext/esm.json",
+    "build:webext:lib:esm": "tsc -p ./tsconfig/webext/esm.json && echo '{\"type\": \"module\"}'> dist/webext/esm/package.json",
     "build:webext:lib:cjs": "tsc -p ./tsconfig/webext/cjs.json",
-    "build:webext:lib:browser": "tsc -p ./tsconfig/webext/browser.json",
+    "build:webext:lib:browser": "tsc -p ./tsconfig/webext/browser.json && echo '{\"type\": \"module\"}'> dist/webext/esm/package.json",
     "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
     "build:webext": "rm -rf dist/webext && npm run build:webext:lib:esm && npm run build:webext:lib:cjs && npm run build:webext:lib:browser && npm run build:webext:types",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
