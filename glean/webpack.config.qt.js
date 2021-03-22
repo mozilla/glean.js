@@ -4,9 +4,34 @@
 
 "use strict";
 
-const path = require("path");
+import path, { dirname } from "path";
+import { fileURLToPath } from "url";
 
-module.exports = {
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+/**
+ * Hacky plugin that removes ".js" extensions from imports before resolving.
+ *
+ * ts-loader does not have support for ESM imports yet.
+ * See: https://github.com/TypeStrong/ts-loader/issues/1110
+ */
+class TsResolvePlugin {
+  apply(resolver) {
+    const target = resolver.ensureHook("internalResolve");
+    resolver.getHook("resolve")
+      .tapAsync("TsResolvePlugin", (request, resolveContext, callback) => {
+        // If the request ends with ".js", remove the ending.
+        const correctedRequest = request.request.replace(/.js$/, "");
+        const obj = Object.assign({}, request, {
+          request: correctedRequest
+        });
+        return resolver.doResolve(target, obj, null, resolveContext, callback);
+      });
+  }
+}
+
+export default {
   entry: "./src/index/qt.ts",
   module: {
     rules: [
@@ -14,13 +39,16 @@ module.exports = {
         test: /\.tsx?$/,
         loader: "ts-loader",
         exclude: /node_modules/,
-        options: { onlyCompileBundledFiles: true }
+        options: { onlyCompileBundledFiles: true },
       },
     ],
   },
   resolve: {
-    modules: ["node_modules", "src"],
-    extensions: [ ".tsx", ".ts", ".js" ]
+    modules: ["node_modules"],
+    extensions: [ ".tsx", ".ts", ".js" ],
+    plugins: [
+      new TsResolvePlugin()
+    ]
   },
   output: {
     path: path.resolve(__dirname, "dist"),

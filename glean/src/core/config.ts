@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { DEFAULT_TELEMETRY_ENDPOINT, GLEAN_MAX_SOURCE_TAGS } from "./constants";
-import Plugin from "../plugins";
-import { validateHeader, validateURL } from "./utils";
+import { DEFAULT_TELEMETRY_ENDPOINT, GLEAN_MAX_SOURCE_TAGS } from "./constants.js";
+import Plugin from "../plugins/index.js";
+import { validateHeader, validateURL } from "./utils.js";
 
 /**
  * Lists Glean's debug options.

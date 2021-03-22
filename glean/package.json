@@ -1,7 +1,8 @@
 {
   "name": "@mozilla/glean",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
+  "type": "module",
   "exports": {
     "./package.json": "./package.json",
     "./webext": {
@@ -51,15 +52,16 @@
   },
   "scripts": {
     "test": "npm run test:core && npm run test:platform && npm run test:plugins",
-    "test:core": "ts-mocha \"tests/core/**/*.spec.ts\" --recursive",
-    "test:plugins": "ts-mocha \"tests/plugins/**/*.spec.ts\" --recursive",
-    "test:platform": "npm run build:test-webext && ts-mocha \"tests/platform/**/*.spec.ts\" --recursive --timeout 0",
+    "test:core": "npm run test:base -- \"tests/core/**/*.spec.ts\" --recursive",
+    "test:plugins": "npm run test:base -- \"tests/plugins/**/*.spec.ts\" --recursive",
+    "test:platform": "npm run build:test-webext && npm run test:base -- \"tests/platform/**/*.spec.ts\" --recursive --timeout 0",
+    "test:base": "node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js",
     "build:test-webext": "cd tests/platform/utils/webext/sample/ && npm install && npm run build:xpi",
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:cli": "tsc -p ./tsconfig/cli.json",
     "build:webext:lib:esm": "tsc -p ./tsconfig/webext/esm.json",
-    "build:webext:lib:cjs": "tsc -p ./tsconfig/webext/cjs.json",
+    "build:webext:lib:cjs": "tsc -p ./tsconfig/webext/cjs.json && echo '{\"type\": \"commonjs\"}'> dist/webext/esm/package.json",
     "build:webext:lib:browser": "tsc -p ./tsconfig/webext/browser.json",
     "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
     "build:webext": "rm -rf dist/webext && npm run build:webext:lib:esm && npm run build:webext:lib:cjs && npm run build:webext:lib:browser && npm run build:webext:types",
@@ -101,7 +103,6 @@
     "selenium-webdriver": "^4.0.0-alpha.8",
     "sinon": "^9.2.4",
     "ts-loader": "^8.0.17",
-    "ts-mocha": "^8.0.0",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.5",
     "web-ext-types": "^3.2.1",

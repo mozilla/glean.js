@@ -4,9 +4,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-//require('ts-node').register();
-//require('./glean.ts');
-
 import * as exec from "child_process";
 import * as fs from "fs";
 import * as path from "path";

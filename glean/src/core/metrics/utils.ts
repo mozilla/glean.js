@@ -2,14 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Metric, LabeledMetric } from "./index";
-import { JSONValue } from "../utils";
+import { Metric, LabeledMetric } from "./index.js";
+import { JSONValue } from "../utils.js";
 
-import { BooleanMetric } from "./types/boolean";
-import { CounterMetric } from "./types/counter";
-import { DatetimeMetric } from "./types/datetime";
-import { StringMetric } from "./types/string";
-import { UUIDMetric } from "./types/uuid";
+import { BooleanMetric } from "./types/boolean.js";
+import { CounterMetric } from "./types/counter.js";
+import { DatetimeMetric } from "./types/datetime.js";
+import { StringMetric } from "./types/string.js";
+import { UUIDMetric } from "./types/uuid.js";
 
 /**
  * A map containing all supported internal metrics and its constructors.

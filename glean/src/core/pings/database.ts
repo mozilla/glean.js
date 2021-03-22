@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store from "../storage";
-import { Metrics as MetricsPayload } from "../metrics/database";
-import { isObject, isJSONValue, JSONObject, isString, JSONArray } from "../utils";
-import { StorageBuilder } from "../../platform";
+import Store from "../storage/index.js";
+import { Metrics as MetricsPayload } from "../metrics/database.js";
+import { isObject, isJSONValue, JSONObject, isString, JSONArray } from "../utils.js";
+import { StorageBuilder } from "../../platform/index.js";
 
 export interface PingInfo extends JSONObject {
   seq: number,

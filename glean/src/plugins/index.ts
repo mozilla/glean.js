@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CoreEvent } from "../core/events";
+import { CoreEvent } from "../core/events/index.js";
 
 // Helper type that extracts the type of the Context from a generic CoreEvent.
 export type EventContext<Context> = Context extends CoreEvent<infer InnerContext, unknown>

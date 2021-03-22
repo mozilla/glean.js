@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { generateUUIDv4 } from "./utils";
+import { generateUUIDv4 } from "./utils.js";
 
 // The possible states a dispatcher instance can be in.
 export const enum DispatcherState {

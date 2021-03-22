@@ -1,6 +1,17 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.5.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.6.0...main)
+
+# v0.6.0 (2021-03-22)
+
+* [#123](https://github.com/mozilla/glean.js/pull/123): BUGFIX: Fix support for ES6 environments.
+  * Include `.js` extensions in all local import statements.
+    * ES6' module resolution algorithm does not currently support automatic resolution of file extensions and does not have the hability to import directories that have an index file. The extension and the name of the file being import need to _always_ be specified. See: https://nodejs.org/api/esm.html#esm_customizing_esm_specifier_resolution_algorithm
+  * Add a `type: module` declaration to the main `package.json`.
+    * Without this statement, ES6 support is disabled. See: https://nodejs.org/docs/latest-v13.x/api/esm.html#esm_enabling.:
+    * To keep support for CommonJS, in our CommonJS build we include a `package.json` that overrides the `type: module` of the main `package.json` with a `type: commonjs`.
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.5.0...v0.6.0)
 
 # v0.5.0 (2021-03-18)
 
@@ -11,7 +22,6 @@
 * [#95](https://github.com/mozilla/glean.js/pull/95): Add a `plugins` property to the configuration options and create an event abstraction for triggering internal Glean events.
   * The only internal event triggered at this point is the `afterPingCollection` event, which is triggered after ping collection and logging, and before ping storing.
   * Plugins are built to listen to a specific Glean event. Each plugin must define an `action`, which is executed everytime the event they are listening to is triggered.
-* [#101](https://github.com/mozilla/glean.js/pull/101): BUGFIX: Only validate Debug View Tag and Source Tags when they are present.
 * [#101](https://github.com/mozilla/glean.js/pull/101): BUGFIX: Only validate Debug View Tag and Source Tags when they are present.
 * [#102](https://github.com/mozilla/glean.js/pull/102): BUGFIX: Include a Glean User-Agent header in all pings.
 * [#97](https://github.com/mozilla/glean.js/pull/97): Add support for labeled metric types (string, boolean and counter).

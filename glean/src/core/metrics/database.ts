@@ -2,11 +2,11 @@
 //  * License, v. 2.0. If a copy of the MPL was not distributed with this
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store from "../storage";
-import { MetricType, Lifetime, Metric } from "./";
-import { createMetric, validateMetricInternalRepresentation } from "./utils";
-import { isObject, isUndefined, JSONObject, JSONValue } from "../utils";
-import { StorageBuilder } from "../../platform";
+import Store from "../storage/index.js";
+import { MetricType, Lifetime, Metric } from "./index.js";
+import { createMetric, validateMetricInternalRepresentation } from "./utils.js";
+import { isObject, isUndefined, JSONObject, JSONValue } from "../utils.js";
+import { StorageBuilder } from "../../platform/index.js";
 
 export interface Metrics {
   [aMetricType: string]: {
