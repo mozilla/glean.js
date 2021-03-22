@@ -1,5 +1,9 @@
 # Unreleased changes
 
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.6.0...main)
+
+# v0.6.0 (2021-03-22)
+
 * [#123](https://github.com/mozilla/glean.js/pull/123): BUGFIX: Fix support for ES6 environments.
   * Include `.js` extensions in all local import statements.
     * ES6' module resolution algorithm does not currently support automatic resolution of file extensions and does not have the hability to import directories that have an index file. The extension and the name of the file being import need to _always_ be specified. See: https://nodejs.org/api/esm.html#esm_customizing_esm_specifier_resolution_algorithm
@@ -7,7 +11,7 @@
     * Without this statement, ES6 support is disabled. See: https://nodejs.org/docs/latest-v13.x/api/esm.html#esm_enabling.:
     * To keep support for CommonJS, in our CommonJS build we include a `package.json` that overrides the `type: module` of the main `package.json` with a `type: commonjs`.
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.5.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.5.0...v0.6.0)
 
 # v0.5.0 (2021-03-18)
 
