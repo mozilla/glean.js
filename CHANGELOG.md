@@ -1,7 +1,7 @@
 # Unreleased changes
 
 * [#123](https://github.com/mozilla/glean.js/pull/123): BUGFIX: Fix support for ES6 environments.
-  * Include `.js.` extensions in all local import statements.
+  * Include `.js` extensions in all local import statements.
     * ES6' module resolution algorithm does not currently support automatic resolution of file extensions and does not have the hability to import directories that have an index file. The extension and the name of the file being import need to _always_ be specified. See: https://nodejs.org/api/esm.html#esm_customizing_esm_specifier_resolution_algorithm
   * Add a `type: module` declaration to the main `package.json`.
     * Without this statement, ES6 support is disabled. See: https://nodejs.org/docs/latest-v13.x/api/esm.html#esm_enabling.:
