@@ -1,6 +1,6 @@
 {
   "name": "@mozilla/glean",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "type": "module",
   "exports": {
@@ -97,7 +97,7 @@
     "eslint-plugin-mocha": "^8.0.0",
     "eslint-plugin-notice": "^0.9.10",
     "geckodriver": "^1.22.1",
-    "jsdom": "16.4.0",
+    "jsdom": "16.5.1",
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.0",
     "selenium-webdriver": "^4.0.0-alpha.8",
