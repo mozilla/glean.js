@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { DELETION_REQUEST_PING_NAME } from "./constants";
-import PingType from "./pings";
+import { DELETION_REQUEST_PING_NAME } from "./constants.js";
+import PingType from "./pings/index.js";
 
 /**
  * Glean-provided pings, all enabled by default.

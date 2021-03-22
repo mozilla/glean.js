@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Plugin from "../../plugins";
+import Plugin from "../../plugins/index.js";
 
-import { PingPayload } from "../pings/database";
-import { JSONObject } from "../utils";
+import { PingPayload } from "../pings/database.js";
+import { JSONObject } from "../utils.js";
 
 export class CoreEvent<
    // An array of arguments that the event will provide as context to the plugin action.

@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Metric, MetricType, CommonMetricData } from "../";
-import { isNumber, isUndefined, JSONValue } from "../../utils";
-import Glean from "../../glean";
+import { Metric, MetricType, CommonMetricData } from "../index.js";
+import { isNumber, isUndefined, JSONValue } from "../../utils.js";
+import Glean from "../../glean.js";
 
 export class CounterMetric extends Metric<number, number> {
   constructor(v: unknown) {

@@ -5,6 +5,11 @@
 import { Builder, WebDriver } from "selenium-webdriver";
 import firefox from "selenium-webdriver/firefox";
 import path from "path";
+import { dirname } from "path";
+import { fileURLToPath } from "url";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 /**
  * Setup firefox for testing.
@@ -50,9 +55,9 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
     );
   } catch {
     throw new Error(
-      `Error while trying to read the sample Firefox web extensions.
+      `Error while trying to read the sample Firefox web extension.
       Make sure you built it before running this test.
-      In order to so go into the tests/utils/webext/sample folder and run \`npm run build:xpi\``
+      In order to so go into the tests/platform/utils/webext/sample folder and run \`npm run build:xpi\``
     );
   }
 
@@ -83,7 +88,8 @@ export function webExtensionAPIProxyBuilder(browser: WebDriver, method: string[]
         }
       }));
 
-      const handleTestResponse = (event: Event) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const handleTestResponse: any = (event: CustomEvent) => {
         console.log("Caught a new test response", event.detail);
         document.removeEventListener("testResponse", handleTestResponse, false);
         // This callback will resolve the execution of the current script.

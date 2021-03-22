@@ -4,10 +4,10 @@
 
 import { validate as UUIDvalidate } from "uuid";
 
-import { KNOWN_CLIENT_ID } from "../../constants";
-import { Metric, MetricType, CommonMetricData } from "../";
-import { isString, generateUUIDv4 } from "../../utils";
-import Glean from "../../glean";
+import { KNOWN_CLIENT_ID } from "../../constants.js";
+import { Metric, MetricType, CommonMetricData } from "../index.js";
+import { isString, generateUUIDv4 } from "../../utils.js";
+import Glean from "../../glean.js";
 
 export class UUIDMetric extends Metric<string, string> {
   constructor(v: unknown) {

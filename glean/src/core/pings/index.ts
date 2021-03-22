@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { DELETION_REQUEST_PING_NAME } from "../constants";
-import { generateUUIDv4 } from "../utils";
-import collectAndStorePing from "../pings/maker";
-import Glean from "../glean";
+import { DELETION_REQUEST_PING_NAME } from "../constants.js";
+import { generateUUIDv4 } from "../utils.js";
+import collectAndStorePing from "../pings/maker.js";
+import Glean from "../glean.js";
 
 /**
  * The common set of data for creating a new ping.
