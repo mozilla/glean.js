@@ -2,7 +2,11 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.6.0...main)
 
+* [#130](https://github.com/mozilla/glean.js/pull/130): BUGFIX: Fix destination path of CommonJS' build `package.json`.
+
 # v0.6.0 (2021-03-22)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.5.0...v0.6.0)
 
 * [#123](https://github.com/mozilla/glean.js/pull/123): BUGFIX: Fix support for ES6 environments.
   * Include `.js` extensions in all local import statements.
@@ -10,8 +14,6 @@
   * Add a `type: module` declaration to the main `package.json`.
     * Without this statement, ES6 support is disabled. See: https://nodejs.org/docs/latest-v13.x/api/esm.html#esm_enabling.:
     * To keep support for CommonJS, in our CommonJS build we include a `package.json` that overrides the `type: module` of the main `package.json` with a `type: commonjs`.
-
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.5.0...v0.6.0)
 
 # v0.5.0 (2021-03-18)
 
