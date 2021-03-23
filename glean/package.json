@@ -4,27 +4,16 @@
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "type": "module",
   "exports": {
-    "./package.json": "./package.json",
-    "./webext": {
-      "browser": "./dist/webext/browser/index/webext.js",
-      "import": "./dist/webext/esm/index/webext.js",
-      "require": "./dist/webext/cjs/index/webext.js"
-    },
-    "./webext/private/metrics/*": {
-      "browser": "./dist/webext/browser/core/metrics/types/*.js",
-      "import": "./dist/webext/esm/core/metrics/types/*.js",
-      "require": "./dist/webext/cjs/core/metrics/types/*.js"
-    },
-    "./webext/private/ping": {
-      "browser": "./dist/webext/browser/core/pings/index.js",
-      "import": "./dist/webext/esm/core/pings/index.js",
-      "require": "./dist/webext/cjs/core/pings/index.js"
-    },
-    "./webext/plugins/*": {
-      "browser": "./dist/webext/browser/plugins/*.js",
-      "import": "./dist/webext/esm/plugins/*.js",
-      "require": "./dist/webext/cjs/plugins/*.js"
-    }
+    "./webext": "./dist/webext/lib/index/webext.js",
+    "./webext/private/metrics/boolean": "./dist/webext/lib/core/metrics/types/boolean.js",
+    "./webext/private/metrics/counter": "./dist/webext/lib/core/metrics/types/counter.js",
+    "./webext/private/metrics/datetime": "./dist/webext/lib/core/metrics/types/datetime.js",
+    "./webext/private/metrics/event": "./dist/webext/lib/core/metrics/types/event.js",
+    "./webext/private/metrics/labeled": "./dist/webext/lib/core/metrics/types/labeled.js",
+    "./webext/private/metrics/string": "./dist/webext/lib/core/metrics/types/string.js",
+    "./webext/private/metrics/uuid": "./dist/webext/lib/core/metrics/types/uuid.js",
+    "./webext/private/ping": "./dist/webext/lib/core/pings/index.js",
+    "./webext/plugins/encryption": "./dist/webext/lib/plugins/encryption.js"
   },
   "typesVersions": {
     "*": {
@@ -60,11 +49,9 @@
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:cli": "tsc -p ./tsconfig/cli.json",
-    "build:webext:lib:esm": "tsc -p ./tsconfig/webext/esm.json",
-    "build:webext:lib:cjs": "tsc -p ./tsconfig/webext/cjs.json && echo '{\"type\": \"commonjs\"}'> dist/webext/cjs/package.json",
-    "build:webext:lib:browser": "tsc -p ./tsconfig/webext/browser.json",
+    "build:webext:lib": "tsc -p ./tsconfig/webext/index.json",
     "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
-    "build:webext": "rm -rf dist/webext && npm run build:webext:lib:esm && npm run build:webext:lib:cjs && npm run build:webext:lib:browser && npm run build:webext:types",
+    "build:webext": "rm -rf dist/webext && npm run build:webext:lib && npm run build:webext:types",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
     "prepublishOnly": "cp ../README.md ./README.md && npm run build:cli && npm run build:webext",
     "postpublish": "rm ./README.md"
@@ -110,7 +97,7 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
-    "jose": "^3.7.0",
+    "jose-browser-runtime": "^3.10.0",
     "uuid": "^8.3.2"
   }
 }

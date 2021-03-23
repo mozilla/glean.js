@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import CompactEncrypt from "jose/jwe/compact/encrypt";
-import parseJwk from "jose/jwk/parse";
-import calculateThumbprint from "jose/jwk/thumbprint";
-import { JWK } from "jose/types";
+import CompactEncrypt from "jose-browser-runtime/jwe/compact/encrypt";
+import parseJwk from "jose-browser-runtime/jwk/parse";
+import calculateThumbprint from "jose-browser-runtime/jwk/thumbprint";
+import { JWK } from "jose-browser-runtime/types";
 
 import Plugin from "./index.js";
 import { PingPayload } from "../core/pings/database.js";
