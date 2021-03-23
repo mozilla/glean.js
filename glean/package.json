@@ -101,7 +101,7 @@
     "jsdom-global": "3.0.2",
     "mocha": "^8.3.0",
     "selenium-webdriver": "^4.0.0-alpha.8",
-    "sinon": "^9.2.4",
+    "sinon": "^10.0.0",
     "ts-loader": "^8.0.17",
     "ts-node": "^9.1.1",
     "typescript": "^4.1.5",
