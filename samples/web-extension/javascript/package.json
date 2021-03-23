@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "typescript": "^4.2.3",
-    "webpack": "^5.27.1",
+    "webpack": "^5.27.2",
     "webpack-cli": "^4.2.0"
   }
 }
