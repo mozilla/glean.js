@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "A sample web extension using Glean.js",
   "main": "dist/bundle.js",
+  "type": "module",
   "scripts": {
     "glean": "glean translate src/metrics.yaml src/pings.yaml -f javascript -o src/generated",
     "build": "npm run glean && webpack --watch --config webpack.config.js --mode production",
