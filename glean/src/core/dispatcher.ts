@@ -340,8 +340,14 @@ class Dispatcher {
    * Returns the dispatcher back to an uninitialized state.
    *
    * This will also stop ongoing tasks and clear the queue.
+   *
+   * If the dispatcher is already in an uninitialized state, this is no-op.
    */
   async testUninitialize(): Promise<void> {
+    if (this.state === DispatcherState.Uninitialized) {
+      return;
+    }
+
     this.clear();
     // We need to wait for the clear command to be executed.
     await this.testBlockOnQueue();
