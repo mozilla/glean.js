@@ -126,8 +126,9 @@ export default {
    *        If disabled, all persisted metrics, events and queued pings (except
    *        first_run_date) are cleared. Default to `true`.
    * @param config Glean configuration options.
+   * @returns A promise that resolves when the initialization is complete.
    */
-   async testResetGlean(
+  async testResetGlean(
     applicationId: string,
     uploadEnabled = true,
     config?: ConfigurationInterface
