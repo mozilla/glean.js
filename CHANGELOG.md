@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.6.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.7.0...main)
+
+# v0.7.0 (2021-03-26)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.6.1...v0.7.0)
 
 * [#143](https://github.com/mozilla/glean.js/pull/143): Provide a way to initialize and reset Glean.js in tests.
 
