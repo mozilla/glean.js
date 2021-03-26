@@ -2,13 +2,13 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.6.1...main)
 
+* [#143](https://github.com/mozilla/glean.js/pull/143): Provide a way to initialize and reset Glean.js in tests.
+
 # v0.6.1 (2021-03-22)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.6.0...v0.6.1)
 
 * [#130](https://github.com/mozilla/glean.js/pull/130): BUGFIX: Fix destination path of CommonJS' build `package.json`.
-
-* [#143](https://github.com/mozilla/glean.js/pull/143): Provide a way to initialize and reset Glean.js in tests.
 
 # v0.6.0 (2021-03-22)
 
