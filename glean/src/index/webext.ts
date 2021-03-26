@@ -113,4 +113,25 @@ export default {
   unsetSourceTags(): void {
     Glean.unsetSourceTags();
   },
+
+  /**
+   * **Test-only API**
+   *
+   * Resets the Glean singleton to its initial state and re-initializes it.
+   *
+   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
+   *
+   * @param applicationId The application ID (will be sanitized during initialization).
+   * @param uploadEnabled Determines whether telemetry is enabled.
+   *        If disabled, all persisted metrics, events and queued pings (except
+   *        first_run_date) are cleared. Default to `true`.
+   * @param config Glean configuration options.
+   */
+   async testResetGlean(
+    applicationId: string,
+    uploadEnabled = true,
+    config?: ConfigurationInterface
+  ): Promise<void> {
+    return Glean.testResetGlean(applicationId, uploadEnabled, config);
+  }
 };
