@@ -10,8 +10,9 @@ import CoreEvents from "../../src/core/events";
 import Glean from "../../src/core/glean";
 import { Lifetime } from "../../src/core/metrics";
 import StringMetricType from "../../src/core/metrics/types/string";
+import CounterMetricType from "../../src/core/metrics/types/counter";
 import PingType from "../../src/core/pings";
-import { JSONObject } from "../../src/core/utils";
+import { isObject, JSONObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";
 import Plugin from "../../src/plugins";
 
@@ -429,5 +430,73 @@ describe("Glean", function() {
     await Glean.testResetGlean(testAppId);
 
     assert.strictEqual(await metric.testGetValue(), undefined);
+  });
+
+  // Verification test, does not test anything the Dispatcher suite doesn't cover,
+  // instead tests the same things in a more real world like scenario.
+  //
+  // Related to: https://github.com/mozilla-extensions/bergamot-browser-extension/issues/49
+  it("verify that glean APIs are execute in a block when called inside an async function", async function() {
+    // Disable ping uploading for it not to interfere with this tests.
+    //
+    // This disables the uploading and deletion of pings from the pings database,
+    // this allows us to query the database to check that our pings are as expected.
+    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+
+    const custom = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
+
+    // This is application lifetime so that we can verify the
+    // order of the recorded values in between submissions of the custom ping.
+    const counter = new CounterMetricType({
+      category: "aCategory",
+      name: "aCounterMetric",
+      sendInPings: [ "custom" ],
+      lifetime: Lifetime.Application,
+      disabled: false
+    });
+
+    // Synchoronous function that records and submits a ping.
+    //
+    // This is the catch, even if this is called inside an async function
+    // it will be executed to completion, guaranteeing one count per async action.
+    const recordMetricAndSendPing = () => {
+      counter.add();
+      custom.submit();
+    };
+
+    // Simustaneously execute async actions that include recording metrics and submitting a ping.
+    await Promise.all(
+      [...Array(10).keys()].map(() => {
+        return (async () => {
+          // Sleep for a random amount of time,
+          // this will make the recordingAndSend call below be called at non-deterministic times.
+          await (new Promise<void>(resolve => setTimeout(() => resolve(), Math.random() * 100)));
+          // Record metrics and submit a ping in a synchronous function.
+          recordMetricAndSendPing();
+        })();
+      }),
+    );
+
+    await Glean.dispatcher.testBlockOnQueue();
+    const storedPings = await Glean.pingsDatabase.getAllPings();
+    const counterValues = [];
+    for (const ident in storedPings) {
+      const metrics = storedPings[ident].payload.metrics;
+      const counterValue = isObject(metrics) && isObject(metrics.counter) ? metrics.counter["aCategory.aCounterMetric"] : undefined;
+      // Get the value of `aCounterMetric` inside each submitted ping.
+      counterValues.push(Number(counterValue));
+    }
+
+    // If we really recorded one metric and submitted one ping per async action,
+    // we should have a clean 1,2,3,4,5,6,7,8,9,10 count
+    // as counter.add should have been called only once in between ping submissions.
+    assert.deepStrictEqual(
+      counterValues,
+      [1,2,3,4,5,6,7,8,9,10]
+    );
   });
 });
