@@ -412,4 +412,22 @@ describe("Glean", function() {
     await Glean.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.sourceTags, undefined);
   });
+
+  it("testResetGlean correctly resets", async function () {
+    const metric = new StringMetricType({
+      category: "aCategory",
+      name: "aStringMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    const TEST_VALUE = "TEST VALUE";
+    metric.set(TEST_VALUE);
+
+    assert.strictEqual(await metric.testGetValue(), TEST_VALUE);
+    await Glean.testResetGlean(testAppId);
+
+    assert.strictEqual(await metric.testGetValue(), undefined);
+  });
 });
