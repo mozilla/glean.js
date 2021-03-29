@@ -3,9 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import MockStorage from "../test/storage.js";
-import { UploadResult, UploadResultStatus } from "../../core/upload/index.js";
 import PlatformInfo, { KnownOperatingSystems } from "../../core/platform_info.js";
-import Uploader from "../../core/upload/uploader.js";
+import Uploader, { UploadResult, UploadResultStatus } from "../../core/upload/uploader.js";
 import Platform from "../index.js";
 
 class MockUploader implements Uploader {

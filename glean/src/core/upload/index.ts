@@ -5,6 +5,7 @@
 import { GLEAN_VERSION } from "../constants.js";
 import { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
 import Glean from "../glean.js";
+import { UploadResult, UploadResultStatus } from "./uploader.js";
 
 interface QueuedPing extends PingInternalRepresentation {
   identifier: string
@@ -20,36 +21,6 @@ const enum PingUploaderStatus {
   Uploading,
   // Currently processing a signal to stop uploading pings.
   Cancelling,
-}
-
-/**
- * The resulting status of an attempted ping upload.
- */
-export const enum UploadResultStatus {
-  // A recoverable failure.
-  //
-  // During upload something went wrong,
-  // e.g. the network connection failed.
-  // The upload should be retried at a later time.
-  RecoverableFailure,
-  // An unrecoverable upload failure.
-  //
-  // A possible cause might be a malformed URL.
-  UnrecoverableFailure,
-  // Request was successfull.
-  //
-  // This can still indicate an error, depending on the status code.
-  Success,
-}
-
-/**
- * The result of an attempted ping upload.
- */
-export interface UploadResult {
-  // The status is only present if `result` is UploadResultStatus.Success
-  status?: number,
-  // The status of an upload attempt
-  result: UploadResultStatus
 }
 
 /**

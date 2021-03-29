@@ -9,7 +9,8 @@ import { v4 as UUIDv4 } from "uuid";
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings";
 import collectAndStorePing from "../../../src/core/pings/maker";
-import PingUploader, { UploadResultStatus } from "../../../src/core/upload";
+import PingUploader from "../../../src/core/upload";
+import { UploadResultStatus } from "../../../src/core/upload/uploader";
 
 const sandbox = sinon.createSandbox();
 
