@@ -16,7 +16,7 @@ describe("UUIDMetric", function() {
     await Glean.testResetGlean(testAppId);
   });
  
-  it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
@@ -28,7 +28,7 @@ describe("UUIDMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  it("attemping to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new UUIDMetricType({
@@ -43,7 +43,7 @@ describe("UUIDMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  it("attemping to set an invalid uuid is a no-op", async function() {
+  it("attempting to set an invalid uuid is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new UUIDMetricType({

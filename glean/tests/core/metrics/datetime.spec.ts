@@ -52,7 +52,7 @@ describe("DatetimeMetric", function() {
     assert.doesNotThrow(() => new DatetimeMetric({ timeUnit: "hour", timezone: 300, date: "2021-01-04T16:00:00.000Z" }));
   });
 
-  it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new DatetimeMetricType({
       category: "aCategory",
       name: "aDatetimeMetric",
@@ -64,7 +64,7 @@ describe("DatetimeMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  it("attemping to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new DatetimeMetricType({

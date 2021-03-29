@@ -15,7 +15,7 @@ describe("CounterMetric", function() {
     await Glean.testResetGlean(testAppId);
   });
  
-  it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -27,7 +27,7 @@ describe("CounterMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
   
-  it("attemping to add when glean upload is disabled is a no-op", async function() {
+  it("attempting to add when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new CounterMetricType({
