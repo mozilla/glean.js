@@ -57,7 +57,7 @@ describe("PingType", function() {
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
-  it("empty pings with send if emtpy flag are submitted", async function () {
+  it("empty pings with send if empty flag are submitted", async function () {
     // Disable ping uploading for it not to interfere with this tests.
     sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
 

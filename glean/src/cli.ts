@@ -164,7 +164,7 @@ async function setup(projectRoot: string) {
   if (venvExists) {
     console.log(`Using Glean virtual environment at ${venvRoot}`);
   } else if (!await createPythonVenv(venvRoot)){
-    console.error(`Failed to createa a Glean virtual environment at ${venvRoot}`);
+    console.error(`Failed to create a Glean virtual environment at ${venvRoot}`);
   }
 }
 

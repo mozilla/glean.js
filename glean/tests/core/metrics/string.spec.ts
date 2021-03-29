@@ -15,7 +15,7 @@ describe("StringMetric", function() {
     await Glean.testResetGlean(testAppId);
   });
 
-  it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
@@ -27,7 +27,7 @@ describe("StringMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
  
-  it("attemping to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new StringMetricType({

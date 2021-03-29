@@ -549,7 +549,7 @@ class Glean {
     // Get back to an uninitialized state.
     Glean.instance._initialized = false;
 
-    // Deregiter all plugins
+    // Deregister all plugins
     testResetEvents();
 
     // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.

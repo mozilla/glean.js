@@ -61,7 +61,7 @@ describe("Uploader/browser", function () {
     sandbox.restore();
   });
 
-  it("returns the status for succesfull requests", async function () {
+  it("returns the status for succesful requests", async function () {
     const stub = sandbox.stub(global, "fetch");
     for (const [index, status] of [200, 400, 500].entries()) {
       stub.onCall(index).returns(Promise.resolve(createResponse(status)));
