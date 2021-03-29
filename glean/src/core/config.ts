@@ -5,6 +5,7 @@
 import { DEFAULT_TELEMETRY_ENDPOINT, GLEAN_MAX_SOURCE_TAGS } from "./constants.js";
 import Plugin from "../plugins/index.js";
 import { validateHeader, validateURL } from "./utils.js";
+import Uploader from "./upload/uploader.js";
 
 /**
  * Lists Glean's debug options.
@@ -32,6 +33,8 @@ export interface ConfigurationInterface {
   debug?: DebugOptions,
   // Optional list of plugins to include in current Glean instance.
   plugins?: Plugin[],
+  // The HTTP client implementation to use for uploading pings.
+  httpClient?: Uploader,
 }
 
 export class Configuration implements ConfigurationInterface {
@@ -43,6 +46,8 @@ export class Configuration implements ConfigurationInterface {
   readonly serverEndpoint: string;
   // Debug configuration.
   debug: DebugOptions;
+  // The HTTP client implementation to use for uploading pings.
+  readonly httpClient?: Uploader;
 
   constructor(config?: ConfigurationInterface) {
     this.appBuild = config?.appBuild;
@@ -56,6 +61,8 @@ export class Configuration implements ConfigurationInterface {
     }
     this.serverEndpoint = (config && config.serverEndpoint)
       ? config.serverEndpoint : DEFAULT_TELEMETRY_ENDPOINT;
+
+    this.httpClient = config?.httpClient;
   }
 
   static sanitizeDebugOptions(debug?: DebugOptions): DebugOptions {
