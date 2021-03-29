@@ -4,13 +4,13 @@
 
 import { UploadResult } from "../upload/index.js";
 
+// The timeout, in milliseconds, to use for all operations with the server.
+export const DEFAULT_UPLOAD_TIMEOUT_MS = 10_000;
+
 /**
  * Uploader interface, actualy uploading logic varies per platform.
  */
-export abstract class Uploader {
-  // The timeout, in seconds, to use for all operations with the server.
-  protected defaultTimeout = 10_000;
-
+export interface Uploader {
   /**
    * Makes a POST request to a given url, with the given headers and body.
    *
@@ -20,7 +20,7 @@ export abstract class Uploader {
    *
    * @returns The status code of the response.
    */
-  abstract post(url: string, body: string, headers?: Record<string, string>): Promise<UploadResult>;
+  post(url: string, body: string, headers?: Record<string, string>): Promise<UploadResult>;
 }
 
 export default Uploader;

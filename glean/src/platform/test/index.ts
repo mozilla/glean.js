@@ -8,7 +8,7 @@ import PlatformInfo, { KnownOperatingSystems } from "../../core/platform_info.js
 import Uploader from "../../core/upload/uploader.js";
 import Platform from "../index.js";
 
-class MockUploader extends Uploader {
+class MockUploader implements Uploader {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   post(_url: string, _body: string, _headers?: Record<string, string>): Promise<UploadResult> {
     const result: UploadResult = {
