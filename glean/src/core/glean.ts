@@ -30,8 +30,6 @@ class Glean {
   private _coreMetrics: CoreMetrics;
   // Instances of Glean's core pings.
   private _corePings: CorePings;
-  // The ping uploader.
-  private _pingUploader: PingUploader
   // A task dispatcher to help execute in order asynchronous external API calls.
   private _dispatcher: Dispatcher;
 
@@ -40,6 +38,10 @@ class Glean {
 
   // Properties that will only be set on `initialize`.
 
+  // The ping uploader. Note that we need to use the definite assignment assertion
+  // because initialization will not happen in the constructor, but in the `initialize`
+  // method.
+  private _pingUploader!: PingUploader
   // The application ID (will be sanitized during initialization).
   private _applicationId?: string;
   // Whether or not to record metrics.
@@ -61,7 +63,6 @@ class Glean {
     }
 
     this._dispatcher = new Dispatcher();
-    this._pingUploader = new PingUploader();
     this._coreMetrics = new CoreMetrics();
     this._corePings = new CorePings();
     this._initialized = false;
@@ -221,16 +222,19 @@ class Glean {
       return;
     }
 
-    if (!Glean.instance._db) {
-      Glean.instance._db = {
-        metrics: new MetricsDatabase(Glean.platform.Storage),
-        events: new EventsDatabase(),
-        pings: new PingsDatabase(Glean.platform.Storage, Glean.pingUploader)
-      };
-    }
-
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
+
+    // Initialize the ping uploader with either the platform defaults or a custom
+    // provided uploader from the configuration object.
+    Glean.instance._pingUploader =
+      new PingUploader(correctConfig.httpClient ? correctConfig.httpClient : Glean.platform.uploader);
+
+    Glean.instance._db = {
+      metrics: new MetricsDatabase(Glean.platform.Storage),
+      events: new EventsDatabase(),
+      pings: new PingsDatabase(Glean.platform.Storage, Glean.pingUploader)
+    };
 
     if (config?.plugins) {
       for (const plugin of config.plugins) {
@@ -556,7 +560,11 @@ class Glean {
     await Glean.dispatcher.testUninitialize();
 
     // Stop ongoing jobs and clear pending pings queue.
-    await Glean.pingUploader.clearPendingPingsQueue();
+    if (Glean.pingUploader) {
+      // The first time tests run, before Glean is initialized, we are
+      // not guaranteed to have an uploader. Account for this.
+      await Glean.pingUploader.clearPendingPingsQueue();
+    }
   }
 
   /**

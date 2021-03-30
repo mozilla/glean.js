@@ -9,7 +9,8 @@ import { v4 as UUIDv4 } from "uuid";
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings";
 import collectAndStorePing from "../../../src/core/pings/maker";
-import PingUploader, { UploadResultStatus } from "../../../src/core/upload";
+import PingUploader from "../../../src/core/upload";
+import { UploadResultStatus } from "../../../src/core/upload/uploader";
 
 const sandbox = sinon.createSandbox();
 
@@ -69,7 +70,7 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader();
+    const uploader = new PingUploader(Glean.platform.uploader);
     await uploader.scanPendingPings();
     assert.strictEqual(uploader["queue"].length, 10);
   });
@@ -84,7 +85,7 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader();
+    const uploader = new PingUploader(Glean.platform.uploader);
     await uploader.scanPendingPings();
     assert.strictEqual(uploader["queue"].length, 10);
 
@@ -104,7 +105,7 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader();
+    const uploader = new PingUploader(Glean.platform.uploader);
     await uploader.scanPendingPings();
 
     // Trigger uploading, but don't wait for it to finish,
@@ -156,7 +157,7 @@ describe("PingUploader", function() {
   });
 
   it("duplicates are not enqueued", function() {
-    const uploader = new PingUploader();
+    const uploader = new PingUploader(Glean.platform.uploader);
     for (let i = 0; i < 10; i++) {
       uploader["enqueuePing"]({
         identifier: "id",
