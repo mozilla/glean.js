@@ -70,7 +70,7 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader();
+    const uploader = new PingUploader(Glean.platform.uploader);
     await uploader.scanPendingPings();
     assert.strictEqual(uploader["queue"].length, 10);
   });
@@ -85,7 +85,7 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader();
+    const uploader = new PingUploader(Glean.platform.uploader);
     await uploader.scanPendingPings();
     assert.strictEqual(uploader["queue"].length, 10);
 
@@ -105,7 +105,7 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader();
+    const uploader = new PingUploader(Glean.platform.uploader);
     await uploader.scanPendingPings();
 
     // Trigger uploading, but don't wait for it to finish,
@@ -157,7 +157,7 @@ describe("PingUploader", function() {
   });
 
   it("duplicates are not enqueued", function() {
-    const uploader = new PingUploader();
+    const uploader = new PingUploader(Glean.platform.uploader);
     for (let i = 0; i < 10; i++) {
       uploader["enqueuePing"]({
         identifier: "id",
