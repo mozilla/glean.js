@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.7.0...main)
 
+* [#155](https://github.com/mozilla/glean.js/pull/155): Allow to define custom uploaders in the configuration.
+
 # v0.7.0 (2021-03-26)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.6.1...v0.7.0)
