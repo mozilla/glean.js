@@ -11,7 +11,7 @@ Any form of communication from chat rooms and mailing lists to code comments
 is expected to follow this code of conduct, so that all can enjoy working on Glean.js.
 
 Glean.js' developer document lives in the [`docs/`](https://github.com/mozilla/glean.js/tree/main/docs)
-folder in this repository and Glean.js' user documenting lives in [The Glean Book](https://mozilla.github.io/glean/book/index.html).
+folder in this repository and Glean.js' user documentation lives in [The Glean Book](https://mozilla.github.io/glean/book/index.html).
 
 > **Note** Glean.js' documentation is still very much a work in progress.
 > You will probably find a lot of missing documentation. If what you are missing
