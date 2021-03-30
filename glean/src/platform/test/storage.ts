@@ -6,7 +6,7 @@ import Store, { StorageIndex } from "../../core/storage/index.js";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "../../core/storage/utils.js";
 import { JSONObject, JSONValue } from "../../core/utils.js";
 
-// Enable storing the data outside of `WeakStore` instances to simulate the
+// Enable storing the data outside of `MockStore` instances to simulate the
 // behaviour of the other persistent storages.
 let globalStore: JSONObject = {};
 
@@ -16,7 +16,7 @@ let globalStore: JSONObject = {};
  * This means the data saved in this store does not persist throughout application runs.
  * However, data can be shared across two instances of the store.
  */
-class WeakStore implements Store {
+class MockStore implements Store {
   private rootKey: string;
 
   constructor(rootKey: string) {
@@ -58,4 +58,4 @@ class WeakStore implements Store {
     return Promise.resolve();
   }
 }
-export default WeakStore;
+export default MockStore;

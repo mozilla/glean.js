@@ -30,10 +30,6 @@ class Glean {
   private _coreMetrics: CoreMetrics;
   // Instances of Glean's core pings.
   private _corePings: CorePings;
-  // The ping uploader. Note that we need to use the definite assignment assertion
-  // because initialization will not happen in the constructor, but in the `initialize`
-  // method.
-  private _pingUploader!: PingUploader
   // A task dispatcher to help execute in order asynchronous external API calls.
   private _dispatcher: Dispatcher;
 
@@ -42,6 +38,10 @@ class Glean {
 
   // Properties that will only be set on `initialize`.
 
+  // The ping uploader. Note that we need to use the definite assignment assertion
+  // because initialization will not happen in the constructor, but in the `initialize`
+  // method.
+  private _pingUploader!: PingUploader
   // The application ID (will be sanitized during initialization).
   private _applicationId?: string;
   // Whether or not to record metrics.
