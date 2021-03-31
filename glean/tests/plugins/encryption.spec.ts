@@ -71,6 +71,11 @@ describe("PingEncryptionPlugin", function() {
   it("decrypting encrypted ping returns expected payload and protected headers", async function () {
     const { publicKey, privateKey } = await generateKeyPair("ECDH-ES");
 
+    // If we could use `Promise.defer()` (not cross-browser and deprecated), the following
+    // block of code would not be needed. We're basically replicating the deferred promise
+    // because we need to wait for the `post` method to be called in order to evaluate
+    // the arguments. Doing this with `sinon` alone would require us to use the `Glean.dispatcher`
+    // internals, which would defeat the point of having a custom uploader.
     type UploadSignature = {url: string, body: string, headers?: Record<string, string>};
     let uploadPromiseResolve: (value: UploadSignature) => void;
     const uploadPromise = new Promise<UploadSignature>(r => uploadPromiseResolve = r);
