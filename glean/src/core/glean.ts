@@ -232,7 +232,7 @@ class Glean {
 
     Glean.instance._db = {
       metrics: new MetricsDatabase(Glean.platform.Storage),
-      events: new EventsDatabase(),
+      events: new EventsDatabase(Glean.platform.Storage),
       pings: new PingsDatabase(Glean.platform.Storage, Glean.pingUploader)
     };
 
