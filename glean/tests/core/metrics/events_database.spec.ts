@@ -73,14 +73,14 @@ describe("EventsDatabase", function() {
   // reduce coupling across the components.
 
   it("getPingMetrics returns undefined if nothing is recorded", async function () {
-    const db = new EventsDatabase();
+    const db = new EventsDatabase(Glean.platform.Storage);
     const data = await db.getPingEvents("test-unknown-ping", true);
 
     assert.strictEqual(data, undefined);
   });
 
   it("getPingMetrics correctly clears the store", async function () {
-    const db = new EventsDatabase();
+    const db = new EventsDatabase(Glean.platform.Storage);
 
     const metric = new EventMetricType({
       category: "telemetry",
@@ -121,7 +121,7 @@ describe("EventsDatabase", function() {
   });
 
   it("getPingMetrics sorts the timestamps", async function () {
-    const db = new EventsDatabase();
+    const db = new EventsDatabase(Glean.platform.Storage);
 
     const metric = new EventMetricType({
       category: "telemetry",

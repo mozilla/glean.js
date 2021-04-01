@@ -3,16 +3,12 @@
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Store from "../storage/index.js";
-import { MetricType, Lifetime, Metric } from "./index.js";
+import { MetricType, Lifetime } from "./index.js";
+import { Metric } from "./metric.js";
 import { createMetric, validateMetricInternalRepresentation } from "./utils.js";
 import { isObject, isUndefined, JSONObject, JSONValue } from "../utils.js";
 import { StorageBuilder } from "../../platform/index.js";
-
-export interface Metrics {
-  [aMetricType: string]: {
-    [aMetricIdentifier: string]: JSONValue
-  }
-}
+import { Metrics } from "./metrics_interface";
 
 /**
  * Verifies if a given value is a valid Metrics object.

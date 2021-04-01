@@ -7,7 +7,7 @@ import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
 import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
 import { Lifetime } from "../metrics/index.js";
 import TimeUnit from "../metrics/time_unit.js";
-import { ClientInfo, PingInfo, PingPayload } from "../pings/database.js";
+import { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
 import PingType from "../pings/index.js";
 import Glean from "../glean.js";
 import CoreEvents from "../events/index.js";

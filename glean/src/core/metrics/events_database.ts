@@ -5,13 +5,7 @@
 import Store from "../storage/index.js";
 import { isUndefined, JSONArray, JSONObject, JSONValue } from "../utils.js";
 import EventMetricType from "./types/event.js";
-import Glean from "../glean.js";
-
-export interface Metrics {
-  [aMetricType: string]: {
-    [aMetricIdentifier: string]: JSONValue
-  }
-}
+import { StorageBuilder } from "../../platform/index.js";
 
 // An helper type for the 'extra' map.
 export type ExtraMap = Record<string, string>;
@@ -80,8 +74,8 @@ export class RecordedEvent {
 class EventsDatabase {
   private eventsStore: Store;
 
-  constructor() {
-    this.eventsStore = new Glean.platform.Storage("events");
+  constructor(storage: StorageBuilder) {
+    this.eventsStore = new storage("events");
   }
 
   /**
