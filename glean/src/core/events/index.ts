@@ -4,7 +4,7 @@
 
 import Plugin from "../../plugins/index.js";
 
-import { PingPayload } from "../pings/database.js";
+import { PingPayload } from "../pings/ping_payload.js";
 import { JSONObject } from "../utils.js";
 
 export class CoreEvent<

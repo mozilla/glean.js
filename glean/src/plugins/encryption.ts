@@ -8,7 +8,7 @@ import calculateThumbprint from "jose/jwk/thumbprint";
 import { JWK } from "jose/types";
 
 import Plugin from "./index.js";
-import { PingPayload } from "../core/pings/database.js";
+import { PingPayload } from "../core/pings/ping_payload.js";
 import { JSONObject } from "../core/utils.js";
 import CoreEvents from "../core/events/index.js";
 
