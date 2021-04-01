@@ -5,7 +5,8 @@
 import { validate as UUIDvalidate } from "uuid";
 
 import { KNOWN_CLIENT_ID } from "../../constants.js";
-import { Metric, MetricType, CommonMetricData } from "../index.js";
+import { MetricType, CommonMetricData } from "../index.js";
+import { Metric } from "../metric.js";
 import { isString, generateUUIDv4 } from "../../utils.js";
 import Glean from "../../glean.js";
 
