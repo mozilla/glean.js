@@ -6,7 +6,7 @@
   "main": "dist/bundle.js",
   "scripts": {
     "glean": "glean translate src/metrics.yaml src/pings.yaml -f javascript -o src/generated",
-    "build": "npm run glean && webpack --watch --config webpack.config.js --mode production",
+    "build": "npm run glean && webpack --config webpack.config.js --mode production",
     "dev": "npm run glean && webpack --watch --config webpack.config.js --mode development",
     "test": "mocha --unhandled-rejections=strict \"./tests/unit/*.js\""
   },
