@@ -7,12 +7,6 @@ import { isUndefined, JSONArray, JSONObject, JSONValue } from "../utils.js";
 import EventMetricType from "./types/event.js";
 import { StorageBuilder } from "../../platform/index.js";
 
-export interface Metrics {
-  [aMetricType: string]: {
-    [aMetricIdentifier: string]: JSONValue
-  }
-}
-
 // An helper type for the 'extra' map.
 export type ExtraMap = Record<string, string>;
 
