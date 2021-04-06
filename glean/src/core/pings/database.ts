@@ -64,8 +64,16 @@ class PingsDatabase {
   private store: Store;
   private observer?: Observer;
 
-  constructor(store: StorageBuilder, observer?: Observer) {
+  constructor(store: StorageBuilder) {
     this.store = new store("pings");
+  }
+  
+  /**
+   * Attach an observer that reacts to the pings storage changes.
+   *
+   * @param observer The new observer to attach. 
+   */
+  attachObserver(observer: Observer): void {
     this.observer = observer;
   }
 
@@ -126,6 +134,22 @@ class PingsDatabase {
     }
 
     return finalPings;
+  }
+
+  /**
+   * Scans the database for pending pings and enqueues them.
+   */
+  async scanPendingPings(): Promise<void> {
+    // If there's no observer, then there's no point in iterating.
+    if (!this.observer) {
+      return;
+    }
+
+    const pings = await this.getAllPings();
+    for (const identifier in pings) {
+      // Notify the observer that a new ping has been added to the pings database.
+      this.observer.update(identifier, pings[identifier]);
+    }
   }
 
   /**
