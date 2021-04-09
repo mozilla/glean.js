@@ -6,18 +6,7 @@ import { DEFAULT_TELEMETRY_ENDPOINT, GLEAN_MAX_SOURCE_TAGS } from "./constants.j
 import Plugin from "../plugins/index.js";
 import { validateHeader, validateURL } from "./utils.js";
 import Uploader from "./upload/uploader.js";
-
-/**
- * Lists Glean's debug options.
- */
-interface DebugOptions {
-  // Whether or not lot log pings when they are collected.
-  logPings?: boolean,
-  // The value of the X-Debug-ID header to be included in every ping.
-  debugViewTag?: string,
-  // The value of the X-Source-Tags header to be included in every ping.
-  sourceTags?: string[],
-}
+import { DebugOptions } from "./debug_options.js";
 
 /**
  * Describes how to configure Glean.

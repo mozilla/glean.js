@@ -19,6 +19,7 @@ import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 
 import Platform from "../platform/index.js";
 import TestPlatform from "../platform/test/index.js";
+import { DebugOptions } from "./debug_options.js";
 
 class Glean {
   // The Glean singleton.
@@ -350,6 +351,10 @@ class Glean {
 
   static get sourceTags(): string | undefined {
     return Glean.instance._config?.debug.sourceTags?.toString();
+  }
+
+  static get debugOptions(): DebugOptions | undefined {
+    return Glean.instance._config?.debug;
   }
 
   static get dispatcher(): Dispatcher {
