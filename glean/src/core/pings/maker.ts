@@ -8,7 +8,7 @@ import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js
 import { Lifetime } from "../metrics/index.js";
 import TimeUnit from "../metrics/time_unit.js";
 import { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
-import PingType from "../pings/index.js";
+import CommonPingData from "../pings/ping_data_interface.js";
 import CoreEvents from "../events/index.js";
 import MetricsDatabase from "../metrics/database.js";
 import EventsDatabase from "../metrics/events_database.js";
@@ -26,7 +26,7 @@ const GLEAN_START_TIME = new Date();
  *
  * @returns The current number (before incrementing).
  */
-export async function getSequenceNumber(metricsDatabase: MetricsDatabase, ping: PingType): Promise<number> {
+export async function getSequenceNumber(metricsDatabase: MetricsDatabase, ping: CommonPingData): Promise<number> {
   const seq = new CounterMetricType({
     category: "",
     name: `${ping.name}#sequence`,
@@ -62,7 +62,7 @@ export async function getSequenceNumber(metricsDatabase: MetricsDatabase, ping: 
  *
  * @returns An object containing start and times in their payload format.
  */
-export async function getStartEndTimes(metricsDatabase: MetricsDatabase, ping: PingType): Promise<{ startTime: string, endTime: string }> {
+export async function getStartEndTimes(metricsDatabase: MetricsDatabase, ping: CommonPingData): Promise<{ startTime: string, endTime: string }> {
   const start = new DatetimeMetricType({
     category: "",
     name: `${ping.name}#start`,
@@ -101,7 +101,7 @@ export async function getStartEndTimes(metricsDatabase: MetricsDatabase, ping: P
  *
  * @returns The final `ping_info` section in its payload format.
  */
-export async function buildPingInfoSection(metricsDatabase: MetricsDatabase, ping: PingType, reason?: string): Promise<PingInfo> {
+export async function buildPingInfoSection(metricsDatabase: MetricsDatabase, ping: CommonPingData, reason?: string): Promise<PingInfo> {
   const seq = await getSequenceNumber(metricsDatabase, ping);
   const { startTime, endTime } = await getStartEndTimes(metricsDatabase, ping);
 
@@ -126,7 +126,7 @@ export async function buildPingInfoSection(metricsDatabase: MetricsDatabase, pin
  *
  * @returns The final `client_info` section in its payload format.
  */
-export async function buildClientInfoSection(metricsDatabase: MetricsDatabase, ping: PingType): Promise<ClientInfo> {
+export async function buildClientInfoSection(metricsDatabase: MetricsDatabase, ping: CommonPingData): Promise<ClientInfo> {
   let clientInfo = await metricsDatabase.getPingMetrics(CLIENT_INFO_STORAGE, true);
   if (!clientInfo) {
     // TODO: Watch Bug 1685705 and change behaviour in here accordingly.
@@ -190,7 +190,7 @@ export function getPingHeaders(debugOptions?: DebugOptions): Record<string, stri
  * @returns A fully assembled JSON representation of the ping payload.
  *          If there is no data stored for the ping, `undefined` is returned.
  */
-export async function collectPing(metricsDatabase: MetricsDatabase, eventsDatabase: EventsDatabase, ping: PingType, reason?: string): Promise<PingPayload | undefined> {
+export async function collectPing(metricsDatabase: MetricsDatabase, eventsDatabase: EventsDatabase, ping: CommonPingData, reason?: string): Promise<PingPayload | undefined> {
   const metricsData = await metricsDatabase.getPingMetrics(ping.name, true);
   const eventsData = await eventsDatabase.getPingEvents(ping.name, true);
   if (!metricsData && !eventsData && !ping.sendIfEmpty) {
@@ -221,7 +221,7 @@ export async function collectPing(metricsDatabase: MetricsDatabase, eventsDataba
  *
  * @returns The final submission path.
  */
-export function makePath(applicationId: string, identifier: string, ping: PingType): string {
+export function makePath(applicationId: string, identifier: string, ping: CommonPingData): string {
   // We are sure that the applicationId is not `undefined` at this point,
   // this function is only called when submitting a ping
   // and that function return early when Glean is not initialized.
@@ -246,7 +246,7 @@ export function makePath(applicationId: string, identifier: string, ping: PingTy
  *
  * @returns A promise that is resolved once collection and storing is done.
  */
-export async function collectAndStorePing(metricsDatabase: MetricsDatabase, eventsDatabase: EventsDatabase, pingsDatabase: PingsDatabase, applicationId: string, identifier: string, ping: PingType, reason?: string, debugOptions?: DebugOptions): Promise<void> {
+export async function collectAndStorePing(metricsDatabase: MetricsDatabase, eventsDatabase: EventsDatabase, pingsDatabase: PingsDatabase, applicationId: string, identifier: string, ping: CommonPingData, reason?: string, debugOptions?: DebugOptions): Promise<void> {
   const collectedPayload = await collectPing(metricsDatabase, eventsDatabase, ping, reason);
   if (!collectedPayload) {
     return;

@@ -6,20 +6,7 @@ import { DELETION_REQUEST_PING_NAME } from "../constants.js";
 import { generateUUIDv4 } from "../utils.js";
 import collectAndStorePing from "../pings/maker.js";
 import Glean from "../glean.js";
-
-/**
- * The common set of data for creating a new ping.
- */
-interface CommonPingData {
-  // The name of the ping.
-  readonly name: string,
-  // Whether to include the client ID in the assembled ping when submitting.
-  readonly includeClientId: boolean,
-  // Whether the ping should be sent empty or not.
-  readonly sendIfEmpty: boolean,
-  // Optional. The valid reason codes for this ping.
-  readonly reasonCodes?: string[]
-}
+import CommonPingData from "./ping_data_interface";
 
 /**
  * Stores information about a ping.
