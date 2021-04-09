@@ -19,6 +19,7 @@ import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 
 import Platform from "../platform/index.js";
 import TestPlatform from "../platform/test/index.js";
+import { DebugOptions } from "./debug_options.js";
 
 class Glean {
   // The Glean singleton.
@@ -41,9 +42,9 @@ class Glean {
   // The ping uploader. Note that we need to use the definite assignment assertion
   // because initialization will not happen in the constructor, but in the `initialize`
   // method.
-  private _pingUploader!: PingUploader
+  private _pingUploader!: PingUploader;
   // The application ID (will be sanitized during initialization).
-  private _applicationId?: string;
+  private _applicationId!: string;
   // Whether or not to record metrics.
   private _uploadEnabled?: boolean;
   // The Glean configuration object.
@@ -332,7 +333,7 @@ class Glean {
     return Glean.instance._initialized;
   }
 
-  static get applicationId(): string | undefined {
+  static get applicationId(): string {
     return Glean.instance._applicationId;
   }
 
@@ -350,6 +351,10 @@ class Glean {
 
   static get sourceTags(): string | undefined {
     return Glean.instance._config?.debug.sourceTags?.toString();
+  }
+
+  static get debugOptions(): DebugOptions | undefined {
+    return Glean.instance._config?.debug;
   }
 
   static get dispatcher(): Dispatcher {

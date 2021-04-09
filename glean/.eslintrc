@@ -16,7 +16,8 @@
       "templateFile": "copyright.template.txt"
       }
     ],
-    "semi": ["error", "always"],
+    "semi": "off",
+    "@typescript-eslint/semi": ["error", "always"],
     "no-debugger":  ["error"],
     "no-multi-spaces": "error",
     "jsdoc/no-types": "off",

@@ -34,7 +34,7 @@ type DatetimeInternalRepresentation = {
   // This date string should be the exact output of `Date.toISOString`
   // and as such it is always in UTC.
   date: string,
-}
+};
 
 export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, string> {
   constructor(v: unknown) {
