@@ -150,12 +150,12 @@ describe("PingMaker", function() {
       sendIfEmpty: true,
     });
 
-    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId!, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
     const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
 
     await Glean.testResetGlean(testAppId, true);
-    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId!, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
     const recordedPingNoPlugin = (await Glean.pingsDatabase.getAllPings())["ident"];
     assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
   });
@@ -178,7 +178,7 @@ describe("PingMaker", function() {
     });
 
     const consoleSpy = sandbox.spy(console, "info");
-    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId!, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
 
     const loggedPayload = JSON.parse(consoleSpy.lastCall.args[0]) as JSONObject;
 
@@ -213,7 +213,7 @@ describe("PingMaker", function() {
       sendIfEmpty: true,
     });
 
-    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId!, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
 
     const recordedPings = await Glean.pingsDatabase.getAllPings();
     assert.ok(!("ident" in recordedPings));

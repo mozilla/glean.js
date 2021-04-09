@@ -79,8 +79,7 @@ class PingType implements CommonPingData {
         Glean.metricsDatabase,
         Glean.eventsDatabase,
         Glean.pingsDatabase,
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        Glean.applicationId!,
+        Glean.applicationId,
         identifier,
         this,
         correctedReason,

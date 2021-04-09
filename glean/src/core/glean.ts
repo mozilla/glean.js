@@ -44,7 +44,7 @@ class Glean {
   // method.
   private _pingUploader!: PingUploader
   // The application ID (will be sanitized during initialization).
-  private _applicationId?: string;
+  private _applicationId!: string;
   // Whether or not to record metrics.
   private _uploadEnabled?: boolean;
   // The Glean configuration object.
@@ -333,7 +333,7 @@ class Glean {
     return Glean.instance._initialized;
   }
 
-  static get applicationId(): string | undefined {
+  static get applicationId(): string {
     return Glean.instance._applicationId;
   }
 
