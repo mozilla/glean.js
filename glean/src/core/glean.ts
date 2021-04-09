@@ -225,16 +225,15 @@ class Glean {
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
 
-    // Initialize the ping uploader with either the platform defaults or a custom
-    // provided uploader from the configuration object.
-    Glean.instance._pingUploader =
-      new PingUploader(correctConfig.httpClient ? correctConfig.httpClient : Glean.platform.uploader);
-
     Glean.instance._db = {
       metrics: new MetricsDatabase(Glean.platform.Storage),
       events: new EventsDatabase(Glean.platform.Storage),
-      pings: new PingsDatabase(Glean.platform.Storage, Glean.pingUploader)
+      pings: new PingsDatabase(Glean.platform.Storage)
     };
+
+    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Glean.pingsDatabase);
+
+    Glean.pingsDatabase.attachObserver(Glean.pingUploader);
 
     if (config?.plugins) {
       for (const plugin of config.plugins) {
@@ -264,6 +263,7 @@ class Glean {
       // This is fine, we are inside a dispatched task that is guaranteed to run before any
       // other task. No external API call will be executed before we leave this task.
       Glean.instance._initialized = true;
+      Glean.pingUploader.setInitialized(true);
 
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
@@ -295,7 +295,7 @@ class Glean {
         }
       }
 
-      await Glean.pingUploader.scanPendingPings();
+      await Glean.pingsDatabase.scanPendingPings();
 
       // Even though this returns a promise, there is no need to block on it returning.
       //

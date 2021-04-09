@@ -2,9 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import Platform from "../../platform/index.js";
+import { Configuration } from "../config.js";
 import { GLEAN_VERSION } from "../constants.js";
 import { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
-import Glean from "../glean.js";
+import type PingsDatabase from "../pings/database.js";
+import PlatformInfo from "../platform_info.js";
 import Uploader, { UploadResult, UploadResultStatus } from "./uploader.js";
 
 interface QueuedPing extends PingInternalRepresentation {
@@ -45,10 +48,34 @@ class PingUploader implements PingsDatabaseObserver {
   // The object that concretely handles the ping transmission.
   private readonly uploader: Uploader;
 
-  constructor(uploader: Uploader) {
+  private readonly platformInfo: PlatformInfo;
+  private readonly serverEndpoint: string;
+  private readonly pingsDatabase: PingsDatabase;
+
+  // Whether or not Glean was initialized, as reported by the
+  // singleton object.
+  private initialized = false;
+
+  constructor(config: Configuration, platform: Platform, pingsDatabase: PingsDatabase) {
     this.queue = [];
     this.status = PingUploaderStatus.Idle;
-    this.uploader = uploader;
+    // Initialize the ping uploader with either the platform defaults or a custom
+    // provided uploader from the configuration object.
+    this.uploader = config.httpClient ? config.httpClient : platform.uploader;
+    this.platformInfo = platform.info;
+    this.serverEndpoint = config.serverEndpoint;
+    this.pingsDatabase = pingsDatabase;
+  }
+
+  /**
+   * Signals that initialization of Glean was completed.
+   *
+   * This is required in order to not depend on the Glean object.
+   *
+   * @param state An optional state to set the initialization status to.
+   */
+  setInitialized(state?: boolean): void {
+    this.initialized = state ?? true;
   }
 
   /**
@@ -105,7 +132,7 @@ class PingUploader implements PingsDatabaseObserver {
       "Date": (new Date()).toISOString(),
       "X-Client-Type": "Glean.js",
       "X-Client-Version": GLEAN_VERSION,
-      "User-Agent": `Glean/${GLEAN_VERSION} (JS on ${await Glean.platform.info.os()})`
+      "User-Agent": `Glean/${GLEAN_VERSION} (JS on ${await this.platformInfo.os()})`
     };
 
     return {
@@ -122,7 +149,7 @@ class PingUploader implements PingsDatabaseObserver {
    * @returns The status number of the response or `undefined` if unable to attempt upload.
    */
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
-    if (!Glean.initialized) {
+    if (!this.initialized) {
       console.warn("Attempted to upload a ping, but Glean is not initialized yet. Ignoring.");
       return { result: UploadResultStatus.RecoverableFailure };
     }
@@ -132,9 +159,7 @@ class PingUploader implements PingsDatabaseObserver {
       // We are sure that the applicationId is not `undefined` at this point,
       // this function is only called when submitting a ping
       // and that function return early when Glean is not initialized.
-      //
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      `${Glean.serverEndpoint!}${ping.path}`,
+      `${this.serverEndpoint}${ping.path}`,
       finalPing.payload,
       finalPing.headers
     );
@@ -183,14 +208,14 @@ class PingUploader implements PingsDatabaseObserver {
     const { status, result } = response;
     if (status && status >= 200 && status < 300) {
       console.info(`Ping ${identifier} succesfully sent ${status}.`);
-      await Glean.pingsDatabase.deletePing(identifier);
+      await this.pingsDatabase.deletePing(identifier);
       return false;
     }
 
     if (result === UploadResultStatus.UnrecoverableFailure || (status && status >= 400 && status < 500)) {
       console.warn(
         `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was ${status ?? "no status"}.`);
-      await Glean.pingsDatabase.deletePing(identifier);
+      await this.pingsDatabase.deletePing(identifier);
       return false;
     }
 
@@ -271,16 +296,6 @@ class PingUploader implements PingsDatabaseObserver {
   async clearPendingPingsQueue(): Promise<void> {
     await this.cancelUpload();
     this.queue = [];
-  }
-
-  /**
-   * Scans the database for pending pings and enqueues them.
-   */
-  async scanPendingPings(): Promise<void> {
-    const pings = await Glean.pingsDatabase.getAllPings();
-    for (const identifier in pings) {
-      this.enqueuePing({ identifier, ...pings[identifier] });
-    }
   }
 
   /**

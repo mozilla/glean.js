@@ -6,6 +6,7 @@ import assert from "assert";
 import sinon from "sinon";
 import { v4 as UUIDv4 } from "uuid";
 
+import { Configuration } from "../../../src/core/config";
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings";
 import collectAndStorePing from "../../../src/core/pings/maker";
@@ -66,15 +67,6 @@ describe("PingUploader", function() {
     await Glean.testResetGlean(testAppId);
   });
 
-  it("scanning the pending pings directory fills up the queue", async function() {
-    disableGleanUploader();
-    await fillUpPingsDatabase(10);
-
-    const uploader = new PingUploader(Glean.platform.uploader);
-    await uploader.scanPendingPings();
-    assert.strictEqual(uploader["queue"].length, 10);
-  });
-
   it("whenever the pings dabase records a new ping, upload is triggered", async function() {
     const spy = sandbox.spy(Glean["pingUploader"], "triggerUpload");
     await fillUpPingsDatabase(10);
@@ -85,10 +77,25 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader(Glean.platform.uploader);
-    await uploader.scanPendingPings();
+    // Create a new uploader and attach it to the existing storage.
+    const uploader = new PingUploader(new Configuration(), Glean.platform, Glean.pingsDatabase);
+    uploader.setInitialized();
+    Glean.pingsDatabase.attachObserver(uploader);
+
+    // Mock the 'triggerUpload' function so that 'scanPendingPings' does not
+    // mistakenly trigger ping submission. Note that since we're swapping
+    // the function back later in this test, we can safely shut down the linter.
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const uploadTriggerFunc = uploader.triggerUpload;
+    uploader.triggerUpload = async () => {
+      // Intentionally empty.
+    };
+    
+    await Glean.pingsDatabase.scanPendingPings();
     assert.strictEqual(uploader["queue"].length, 10);
 
+    uploader.triggerUpload = uploadTriggerFunc;
     await uploader.triggerUpload();
     assert.deepStrictEqual(await Glean.pingsDatabase.getAllPings(), {});
     assert.strictEqual(uploader["queue"].length, 0);
@@ -105,8 +112,10 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader(Glean.platform.uploader);
-    await uploader.scanPendingPings();
+    const uploader = new PingUploader(new Configuration(), Glean.platform, Glean.pingsDatabase);
+    uploader.setInitialized();
+    Glean.pingsDatabase.attachObserver(uploader);
+    await Glean.pingsDatabase.scanPendingPings();
 
     // Trigger uploading, but don't wait for it to finish,
     // so that it is ongoing when we cancel.
@@ -157,7 +166,7 @@ describe("PingUploader", function() {
   });
 
   it("duplicates are not enqueued", function() {
-    const uploader = new PingUploader(Glean.platform.uploader);
+    const uploader = new PingUploader(new Configuration(), Glean.platform, Glean.pingsDatabase);
     for (let i = 0; i < 10; i++) {
       uploader["enqueuePing"]({
         identifier: "id",
