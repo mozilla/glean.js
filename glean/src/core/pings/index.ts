@@ -75,7 +75,17 @@ class PingType implements CommonPingData {
       }
   
       const identifier = generateUUIDv4();
-      await collectAndStorePing(identifier, this, correctedReason);
+      await collectAndStorePing(
+        Glean.metricsDatabase,
+        Glean.eventsDatabase,
+        Glean.pingsDatabase,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        Glean.applicationId!,
+        identifier,
+        this,
+        correctedReason,
+        Glean.debugOptions
+      );
       return;
     });
   }
