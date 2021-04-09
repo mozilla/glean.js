@@ -41,7 +41,7 @@ describe("PingMaker", function() {
       includeClientId: true,
       sendIfEmpty: false,
     });
-    const pingInfo = await PingMaker.buildPingInfoSection(ping);
+    const pingInfo = await PingMaker.buildPingInfoSection(Glean.metricsDatabase, ping);
 
     const startTime = new Date(pingInfo.start_time);
     const endTime = new Date(pingInfo.end_time);
@@ -55,7 +55,7 @@ describe("PingMaker", function() {
       includeClientId: true,
       sendIfEmpty: false,
     });
-    const pingInfo = await PingMaker.buildPingInfoSection(ping);
+    const pingInfo = await PingMaker.buildPingInfoSection(Glean.metricsDatabase, ping);
 
     assert.ok("seq" in pingInfo);
     assert.ok("start_time" in pingInfo);
@@ -69,7 +69,7 @@ describe("PingMaker", function() {
       includeClientId: true,
       sendIfEmpty: false,
     });
-    const clientInfo1 = await PingMaker.buildClientInfoSection(ping);
+    const clientInfo1 = await PingMaker.buildClientInfoSection(Glean.metricsDatabase, ping);
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
     // Initialize will also initialize core metrics that are part of the client info.
@@ -79,7 +79,7 @@ describe("PingMaker", function() {
       serverEndpoint: "http://localhost:8080"
     });
 
-    const clientInfo2 = await PingMaker.buildClientInfoSection(ping);
+    const clientInfo2 = await PingMaker.buildClientInfoSection(Glean.metricsDatabase, ping);
     assert.ok("telemetry_sdk_build" in clientInfo2);
     assert.ok("client_id" in clientInfo2);
     assert.ok("first_run_date" in clientInfo2);
@@ -97,7 +97,7 @@ describe("PingMaker", function() {
       includeClientId: true,
       sendIfEmpty: false,
     });
-    assert.strictEqual(await PingMaker.collectPing(ping), undefined);
+    assert.strictEqual(await PingMaker.collectPing(Glean.metricsDatabase, Glean.eventsDatabase, ping), undefined);
   });
 
   it("sequence numbers must be sequential", async function() {
@@ -113,14 +113,14 @@ describe("PingMaker", function() {
     });
 
     for(let i = 0; i <= 10; i++) {
-      assert.strictEqual(await PingMaker.getSequenceNumber(ping1), i);
-      assert.strictEqual(await PingMaker.getSequenceNumber(ping2), i);
+      assert.strictEqual(await PingMaker.getSequenceNumber(Glean.metricsDatabase, ping1), i);
+      assert.strictEqual(await PingMaker.getSequenceNumber(Glean.metricsDatabase, ping2), i);
     }
 
-    await PingMaker.getSequenceNumber(ping1);
-    assert.strictEqual(await PingMaker.getSequenceNumber(ping1), 12);
-    assert.strictEqual(await PingMaker.getSequenceNumber(ping2), 11);
-    assert.strictEqual(await PingMaker.getSequenceNumber(ping1), 13);
+    await PingMaker.getSequenceNumber(Glean.metricsDatabase, ping1);
+    assert.strictEqual(await PingMaker.getSequenceNumber(Glean.metricsDatabase, ping1), 12);
+    assert.strictEqual(await PingMaker.getSequenceNumber(Glean.metricsDatabase, ping2), 11);
+    assert.strictEqual(await PingMaker.getSequenceNumber(Glean.metricsDatabase, ping1), 13);
   });
 
   it("getPingHeaders returns headers when custom headers are set", async function () {
@@ -131,12 +131,12 @@ describe("PingMaker", function() {
     assert.deepStrictEqual({
       "X-Debug-ID": "test",
       "X-Source-Tags": "tag1,tag2,tag3"
-    }, PingMaker.getPingHeaders());
+    }, PingMaker.getPingHeaders(Glean.debugOptions));
 
     Glean.unsetDebugViewTag();
     Glean.unsetSourceTags();
     await Glean.dispatcher.testBlockOnQueue();
-    assert.strictEqual(PingMaker.getPingHeaders(), undefined);
+    assert.strictEqual(PingMaker.getPingHeaders(Glean.debugOptions), undefined);
   });
 
   it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
@@ -150,12 +150,12 @@ describe("PingMaker", function() {
       sendIfEmpty: true,
     });
 
-    await PingMaker.collectAndStorePing("ident", ping);
+    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId!, "ident", ping, undefined, Glean.debugOptions);
     const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
 
     await Glean.testResetGlean(testAppId, true);
-    await PingMaker.collectAndStorePing("ident", ping);
+    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId!, "ident", ping, undefined, Glean.debugOptions);
     const recordedPingNoPlugin = (await Glean.pingsDatabase.getAllPings())["ident"];
     assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
   });
@@ -178,7 +178,7 @@ describe("PingMaker", function() {
     });
 
     const consoleSpy = sandbox.spy(console, "info");
-    await PingMaker.collectAndStorePing("ident", ping);
+    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId!, "ident", ping, undefined, Glean.debugOptions);
 
     const loggedPayload = JSON.parse(consoleSpy.lastCall.args[0]) as JSONObject;
 
@@ -213,7 +213,7 @@ describe("PingMaker", function() {
       sendIfEmpty: true,
     });
 
-    await PingMaker.collectAndStorePing("ident", ping);
+    await PingMaker.collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId!, "ident", ping, undefined, Glean.debugOptions);
 
     const recordedPings = await Glean.pingsDatabase.getAllPings();
     assert.ok(!("ident" in recordedPings));

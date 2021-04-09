@@ -31,7 +31,7 @@ async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
 
   const identifiers = Array.from({ length: numPings }, () => UUIDv4());
   for (const identifier of identifiers) {
-    await collectAndStorePing(identifier, ping);
+    await collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId!, identifier, ping);
   }
 
   return identifiers;
