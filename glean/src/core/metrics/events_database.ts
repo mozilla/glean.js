@@ -4,7 +4,7 @@
 
 import Store from "../storage/index.js";
 import { isUndefined, JSONArray, JSONObject, JSONValue } from "../utils.js";
-import EventMetricType from "./types/event.js";
+import type EventMetricType from "./types/event.js";
 import { StorageBuilder } from "../../platform/index.js";
 
 // An helper type for the 'extra' map.
