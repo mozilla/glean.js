@@ -98,10 +98,10 @@ export class CoreMetrics {
   async initialize(appBuild?: string, appDisplayVersion?: string): Promise<void> {
     await this.initializeClientId();
     await this.initializeFirstRunDate();
-    await this.initializeOs();
-    await this.initializeOsVersion();
-    await this.initializeArchitecture();
-    await this.initializeLocale();
+    await StringMetricType._private_setUndispatched(this.os, await Glean.platform.info.os());
+    await StringMetricType._private_setUndispatched(this.osVersion, await Glean.platform.info.osVersion());
+    await StringMetricType._private_setUndispatched(this.architecture, await Glean.platform.info.arch());
+    await StringMetricType._private_setUndispatched(this.locale, await Glean.platform.info.locale());
     await StringMetricType._private_setUndispatched(this.appBuild, appBuild || "Unknown");
     await StringMetricType._private_setUndispatched(this.appDisplayVersion, appDisplayVersion || "Unknown");
   }
@@ -144,33 +144,5 @@ export class CoreMetrics {
     if (!firstRunDate) {
       await DatetimeMetricType._private_setUndispatched(this.firstRunDate);
     }
-  }
-
-  /**
-   * Gets and sets the os.
-   */
-  async initializeOs(): Promise<void> {
-    await StringMetricType._private_setUndispatched(this.os, await Glean.platform.info.os());
-  }
-
-  /**
-   * Gets and sets the os.
-   */
-  async initializeOsVersion(): Promise<void> {
-    await StringMetricType._private_setUndispatched(this.osVersion, await Glean.platform.info.osVersion());
-  }
-
-  /**
-   * Gets and sets the system architecture.
-   */
-  async initializeArchitecture(): Promise<void> {
-    await StringMetricType._private_setUndispatched(this.architecture, await Glean.platform.info.arch());
-  }
-
-  /**
-   * Gets and sets the system / browser locale.
-   */
-  async initializeLocale(): Promise<void> {
-    await StringMetricType._private_setUndispatched(this.locale, await Glean.platform.info.locale());
   }
 }
