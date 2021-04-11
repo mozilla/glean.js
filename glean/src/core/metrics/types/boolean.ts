@@ -37,7 +37,7 @@ class BooleanMetricType extends MetricType {
    */
   set(value: boolean): void {
     Glean.dispatcher.launch(async () => {
-      if (!this.shouldRecord()) {
+      if (!this.shouldRecord(Glean.isUploadEnabled())) {
         return;
       }
 

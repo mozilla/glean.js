@@ -55,7 +55,7 @@ class UUIDMetricType extends MetricType {
    * @param value The UUID we want to set to.
    */
   static async _private_setUndispatched(instance: UUIDMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord()) {
+    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
       return;
     }
 
@@ -92,7 +92,7 @@ class UUIDMetricType extends MetricType {
    * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
    */
   generateAndSet(): string | undefined {
-    if (!this.shouldRecord()) {
+    if (!this.shouldRecord(Glean.isUploadEnabled())) {
       return;
     }
 

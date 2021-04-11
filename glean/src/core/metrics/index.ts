@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { isUndefined, JSONValue } from "../utils.js";
-import Glean from "../glean.js";
 import LabeledMetricType from "./types/labeled.js";
 import { Metric } from "./metric.js";
 import { Lifetime } from "./lifetime.js";
@@ -91,10 +90,13 @@ export abstract class MetricType implements CommonMetricData {
   /**
    * Verify whether or not this metric instance should be recorded.
    *
+   * @param uploadEnabled Whether or not global upload is enabled or
+   *        disabled.
+   *
    * @returns Whether or not this metric instance should be recorded.
    */
-  shouldRecord(): boolean {
-    return (Glean.isUploadEnabled() && !this.disabled);
+  shouldRecord(uploadEnabled: boolean): boolean {
+    return (uploadEnabled && !this.disabled);
   }
 }
 

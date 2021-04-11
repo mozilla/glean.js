@@ -55,7 +55,7 @@ class StringMetricType extends MetricType {
    * @param value The string we want to set to.
    */
   static async _private_setUndispatched(instance: StringMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord()) {
+    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
       return;
     }
 

@@ -183,7 +183,7 @@ class DatetimeMetricType extends MetricType {
    * @param value The date we want to set to.
    */
   static async _private_setUndispatched(instance: DatetimeMetricType, value?: Date): Promise<void> {
-    if (!instance.shouldRecord()) {
+    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
       return;
     }
 

@@ -53,7 +53,7 @@ class CounterMetricType extends MetricType {
    * @param amount The amount we want to add.
    */
   static async _private_addUndispatched(instance: CounterMetricType, amount?: number): Promise<void> {
-    if (!instance.shouldRecord()) {
+    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
       return;
     }
 

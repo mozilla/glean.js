@@ -46,7 +46,7 @@ class EventMetricType extends MetricType {
    */
   record(extra?: ExtraMap): void {
     Glean.dispatcher.launch(async () => {
-      if (!this.shouldRecord()) {
+      if (!this.shouldRecord(Glean.isUploadEnabled())) {
         return;
       }
   
