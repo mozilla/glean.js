@@ -9,7 +9,6 @@ import PingsDatabase from "./pings/database.js";
 import PingUploader from "./upload/index.js";
 import { isUndefined, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
-import { Lifetime } from "./metrics/index.js";
 import EventsDatabase from "./metrics/events_database.js";
 import UUIDMetricType from "./metrics/types/uuid.js";
 import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
@@ -20,6 +19,7 @@ import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 import Platform from "../platform/index.js";
 import TestPlatform from "../platform/test/index.js";
 import { DebugOptions } from "./debug_options.js";
+import { Lifetime } from "./metrics/lifetime.js";
 
 class Glean {
   // The Glean singleton.

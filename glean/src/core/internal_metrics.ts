@@ -8,11 +8,11 @@ import DatetimeMetricType from "./metrics/types/datetime.js";
 import StringMetricType from "./metrics/types/string.js";
 import { createMetric } from "./metrics/utils.js";
 import TimeUnit from "./metrics/time_unit.js";
-import { Lifetime } from "./metrics/index.js";
 import { generateUUIDv4 } from "./utils.js";
 import { ConfigurationInterface } from "./config.js";
 import Platform from "../platform/index.js";
 import MetricsDatabase from "./metrics/database.js";
+import { Lifetime } from "./metrics/lifetime.js";
 
 /**
  * Glean internal metrics.

@@ -5,8 +5,8 @@
 import assert from "assert";
 
 import Glean from "../../../src/core/glean";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
-import { Lifetime } from "../../../src/core/metrics";
 
 describe("CounterMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;

@@ -16,7 +16,7 @@ import PingEncryptionPlugin from "../../src/plugins/encryption";
 import collectAndStorePing, { makePath } from "../../src/core/pings/maker";
 import Uploader, { UploadResult, UploadResultStatus } from "../../src/core/upload/uploader";
 import CounterMetricType from "../../src/core/metrics/types/counter";
-import { Lifetime } from "../../src/core/metrics";
+import { Lifetime } from "../../src/core/metrics/lifetime";
 
 const sandbox = sinon.createSandbox();
 

@@ -5,7 +5,6 @@
 import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "../constants.js";
 import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
 import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
-import { Lifetime } from "../metrics/index.js";
 import TimeUnit from "../metrics/time_unit.js";
 import { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
 import CommonPingData from "./common_ping_data.js";
@@ -14,6 +13,7 @@ import MetricsDatabase from "../metrics/database.js";
 import EventsDatabase from "../metrics/events_database.js";
 import PingsDatabase from "./database.js";
 import { DebugOptions } from "../debug_options.js";
+import { Lifetime } from "../metrics/lifetime.js";
 
 // The moment the current Glean.js session started.
 const GLEAN_START_TIME = new Date();

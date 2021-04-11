@@ -6,7 +6,7 @@ import assert from "assert";
 import sinon from "sinon";
 
 import Glean from "../../../src/core/glean";
-import { Lifetime } from "../../../src/core/metrics";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 import BooleanMetricType from "../../../src/core/metrics/types/boolean";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import LabeledMetricType from "../../../src/core/metrics/types/labeled";

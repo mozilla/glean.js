@@ -7,7 +7,7 @@ import sinon from "sinon";
 
 import PingType from "../../../src/core/pings";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
-import { Lifetime } from "../../../src/core/metrics";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 import Glean from "../../../src/core/glean";
 
 const sandbox = sinon.createSandbox();
