@@ -10,7 +10,9 @@ import { createMetric } from "./metrics/utils.js";
 import TimeUnit from "./metrics/time_unit.js";
 import { Lifetime } from "./metrics/index.js";
 import { generateUUIDv4 } from "./utils.js";
-import Glean from "./glean.js";
+import { ConfigurationInterface } from "./config.js";
+import Platform from "../platform/index.js";
+import MetricsDatabase from "./metrics/database.js";
 
 /**
  * Glean internal metrics.
@@ -95,24 +97,26 @@ export class CoreMetrics {
     });
   }
 
-  async initialize(appBuild?: string, appDisplayVersion?: string): Promise<void> {
-    await this.initializeClientId();
-    await this.initializeFirstRunDate();
-    await StringMetricType._private_setUndispatched(this.os, await Glean.platform.info.os());
-    await StringMetricType._private_setUndispatched(this.osVersion, await Glean.platform.info.osVersion());
-    await StringMetricType._private_setUndispatched(this.architecture, await Glean.platform.info.arch());
-    await StringMetricType._private_setUndispatched(this.locale, await Glean.platform.info.locale());
-    await StringMetricType._private_setUndispatched(this.appBuild, appBuild || "Unknown");
-    await StringMetricType._private_setUndispatched(this.appDisplayVersion, appDisplayVersion || "Unknown");
+  async initialize(config: ConfigurationInterface, platform: Platform, metricsDatabase: MetricsDatabase): Promise<void> {
+    await this.initializeClientId(metricsDatabase);
+    await this.initializeFirstRunDate(metricsDatabase);
+    await StringMetricType._private_setUndispatched(this.os, await platform.info.os());
+    await StringMetricType._private_setUndispatched(this.osVersion, await platform.info.osVersion());
+    await StringMetricType._private_setUndispatched(this.architecture, await platform.info.arch());
+    await StringMetricType._private_setUndispatched(this.locale, await platform.info.locale());
+    await StringMetricType._private_setUndispatched(this.appBuild, config.appBuild || "Unknown");
+    await StringMetricType._private_setUndispatched(this.appDisplayVersion, config.appDisplayVersion || "Unknown");
   }
 
   /**
    * Generates and sets the client_id if it is not set,
    * or if the current value is currepted.
+   *
+   * @param metricsDatabase The metrics database.
    */
-  private async initializeClientId(): Promise<void> {
+  private async initializeClientId(metricsDatabase: MetricsDatabase): Promise<void> {
     let needNewClientId = false;
-    const clientIdData = await Glean.metricsDatabase.getMetric(CLIENT_INFO_STORAGE, this.clientId);
+    const clientIdData = await metricsDatabase.getMetric(CLIENT_INFO_STORAGE, this.clientId);
     if (clientIdData) {
       try {
         const currentClientId = createMetric("uuid", clientIdData);
@@ -134,9 +138,11 @@ export class CoreMetrics {
 
   /**
    * Generates and sets the first_run_date if it is not set.
+   *
+   * @param metricsDatabase The metrics database.
    */
-  private async initializeFirstRunDate(): Promise<void> {
-    const firstRunDate = await Glean.metricsDatabase.getMetric(
+  private async initializeFirstRunDate(metricsDatabase: MetricsDatabase): Promise<void> {
+    const firstRunDate = await metricsDatabase.getMetric(
       CLIENT_INFO_STORAGE,
       this.firstRunDate
     );
