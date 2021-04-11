@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CommonMetricData, MetricType } from "../index.js";
+import type { CommonMetricData, MetricType } from "../index.js";
 import Glean from "../../glean.js";
-import CounterMetricType from "./counter.js";
-import BooleanMetricType from "./boolean.js";
-import StringMetricType from "./string.js";
+import type CounterMetricType from "./counter.js";
+import type BooleanMetricType from "./boolean.js";
+import type StringMetricType from "./string.js";
 
 const MAX_LABELS = 16;
 const OTHER_LABEL = "__other__";
