@@ -3,8 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "../constants.js";
-import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
-import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
+import CounterMetricType from "../metrics/types/counter.js";
+import { CounterMetric } from "../metrics/types/counter_metric.js";
+import DatetimeMetricType from "../metrics/types/datetime.js";
+import { DatetimeMetric } from "../metrics/types/datetime_metric.js";
 import TimeUnit from "../metrics/time_unit.js";
 import { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
 import CommonPingData from "./common_ping_data.js";

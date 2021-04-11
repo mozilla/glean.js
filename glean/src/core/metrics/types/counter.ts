@@ -3,31 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { MetricType, CommonMetricData } from "../index.js";
-import { Metric } from "../metric.js";
-import { isNumber, isUndefined, JSONValue } from "../../utils.js";
+import { isUndefined, JSONValue } from "../../utils.js";
 import Glean from "../../glean.js";
-
-export class CounterMetric extends Metric<number, number> {
-  constructor(v: unknown) {
-    super(v);
-  }
-
-  validate(v: unknown): v is number {
-    if (!isNumber(v)) {
-      return false;
-    }
-
-    if (v <= 0) {
-      return false;
-    }
-
-    return true;
-  }
-
-  payload(): number {
-    return this._inner;
-  }
-}
+import { CounterMetric } from "./counter_metric.js";
 
 /**
  * A counter metric.

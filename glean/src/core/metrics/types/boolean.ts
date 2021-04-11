@@ -3,22 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { MetricType, CommonMetricData } from "../index.js";
-import { Metric } from "../metric.js";
-import { isBoolean } from "../../utils.js";
 import Glean from "../../glean.js";
-
-export class BooleanMetric extends Metric<boolean, boolean> {
-  constructor(v: unknown) {
-    super(v);
-  }
-
-  validate(v: unknown): v is boolean {
-    return isBoolean(v);
-  }
-  payload(): boolean {
-    return this._inner;
-  }
-}
+import { BooleanMetric } from "./boolean_metric.js";
 
 /**
  *  A boolean metric.
