@@ -4,8 +4,8 @@
 
 import type Plugin from "../../plugins/index.js";
 
-import { PingPayload } from "../pings/ping_payload.js";
-import { JSONObject } from "../utils.js";
+import type { PingPayload } from "../pings/ping_payload.js";
+import type { JSONObject } from "../utils.js";
 
 export class CoreEvent<
    // An array of arguments that the event will provide as context to the plugin action.

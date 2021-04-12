@@ -2,8 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import CoreEvents, { CoreEvent } from "./index.js";
-import Plugin from "../../plugins/index.js";
+import type { CoreEvent } from "./index.js";
+import CoreEvents from "./index.js";
+import type Plugin from "../../plugins/index.js";
 
 /**
  * Registers a plugin to the desired Glean event.

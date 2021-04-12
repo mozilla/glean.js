@@ -3,8 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { LabeledMetric } from "./index.js";
-import { Metric } from "./metric.js";
-import { JSONValue } from "../utils.js";
+import type { Metric } from "./metric.js";
+import type { JSONValue } from "../utils.js";
 
 import { BooleanMetric } from "./types/boolean_metric.js";
 import { CounterMetric } from "./types/counter_metric.js";

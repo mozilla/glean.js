@@ -2,7 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Uploader, { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResult, UploadResultStatus } from "../../core/upload/uploader.js";
+import type { UploadResult} from "../../core/upload/uploader.js";
+import type Uploader from "../../core/upload/uploader.js";
+import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus } from "../../core/upload/uploader.js";
 
 class BrowserUploader implements Uploader {
   async post(url: string, body: string, headers: Record<string, string> = {}): Promise<UploadResult> {

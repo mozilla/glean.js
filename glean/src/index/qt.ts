@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Glean from "../core/glean.js";
-import { ConfigurationInterface } from "../core/config.js";
+import type { ConfigurationInterface } from "../core/config.js";
 
 import platform from "../platform/qt/index.js";
 

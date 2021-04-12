@@ -8,7 +8,7 @@ import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import EventsDatabase, { RecordedEvent } from "../../../src/core/metrics/events_database";
 import EventMetricType from "../../../src/core/metrics/types/event";
-import { JSONObject } from "../../../src/core/utils";
+import type { JSONObject } from "../../../src/core/utils";
 
 describe("EventsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;

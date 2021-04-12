@@ -2,10 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { MetricType, CommonMetricData } from "../index.js";
+import type { CommonMetricData } from "../index.js";
+import { MetricType } from "../index.js";
 import TimeUnit from "../../metrics/time_unit.js";
 import Glean from "../../glean.js";
-import { DatetimeInternalRepresentation, DatetimeMetric } from "./datetime_metric.js";
+import type { DatetimeInternalRepresentation} from "./datetime_metric.js";
+import { DatetimeMetric } from "./datetime_metric.js";
 
 /**
  * A datetime metric.

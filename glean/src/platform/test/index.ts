@@ -3,9 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import MockStorage from "../test/storage.js";
-import PlatformInfo, { KnownOperatingSystems } from "../../core/platform_info.js";
-import Uploader, { UploadResult, UploadResultStatus } from "../../core/upload/uploader.js";
-import Platform from "../index.js";
+import type PlatformInfo from "../../core/platform_info.js";
+import { KnownOperatingSystems } from "../../core/platform_info.js";
+import type { UploadResult} from "../../core/upload/uploader.js";
+import type Uploader from "../../core/upload/uploader.js";
+import { UploadResultStatus } from "../../core/upload/uploader.js";
+import type Platform from "../index.js";
 
 class MockUploader implements Uploader {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars

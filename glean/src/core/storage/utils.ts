@@ -2,8 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { StorageIndex } from "../storage/index.js";
-import { isJSONValue, isObject, JSONObject, JSONValue } from "../utils.js";
+import type { StorageIndex } from "../storage/index.js";
+import type { JSONObject, JSONValue } from "../utils.js";
+import { isJSONValue, isObject } from "../utils.js";
 
 /**
  * Gets an entry in a given object on a given index.
