@@ -432,6 +432,19 @@ describe("Glean", function() {
     assert.strictEqual(await metric.testGetValue(), undefined);
   });
 
+  it("appBuild and appDisplayVersion are correctly reported", async function () {
+    await Glean.testUninitialize();
+
+    const testBuild = "test";
+    const testDisplayVersion = "1.2.3-stella";
+
+    await Glean.testInitialize(testAppId, true, { appBuild: testBuild, appDisplayVersion: testDisplayVersion });
+    await Glean.dispatcher.testBlockOnQueue();
+
+    assert.strictEqual(await Glean.coreMetrics.appBuild.testGetValue(), testBuild);
+    assert.strictEqual(await Glean.coreMetrics.appDisplayVersion.testGetValue(), testDisplayVersion);
+  });
+
   // Verification test, does not test anything the Dispatcher suite doesn't cover,
   // instead tests the same things in a more real world like scenario.
   //

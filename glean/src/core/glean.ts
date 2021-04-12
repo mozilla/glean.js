@@ -82,7 +82,7 @@ class Glean {
     return Glean.instance._pingUploader;
   }
 
-  private static get coreMetrics(): CoreMetrics {
+  static get coreMetrics(): CoreMetrics {
     return Glean.instance._coreMetrics;
   }
 
