@@ -2,10 +2,11 @@
 //  * License, v. 2.0. If a copy of the MPL was not distributed with this
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store from "../storage/index.js";
-import { isUndefined, JSONArray, JSONObject, JSONValue } from "../utils.js";
+import type Store from "../storage/index.js";
+import type { JSONArray, JSONObject, JSONValue } from "../utils.js";
+import { isUndefined } from "../utils.js";
 import type EventMetricType from "./types/event.js";
-import { StorageBuilder } from "../../platform/index.js";
+import type { StorageBuilder } from "../../platform/index.js";
 
 // An helper type for the 'extra' map.
 export type ExtraMap = Record<string, string>;

@@ -3,10 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { DEFAULT_TELEMETRY_ENDPOINT, GLEAN_MAX_SOURCE_TAGS } from "./constants.js";
-import Plugin from "../plugins/index.js";
+import type Plugin from "../plugins/index.js";
 import { validateHeader, validateURL } from "./utils.js";
-import Uploader from "./upload/uploader.js";
-import { DebugOptions } from "./debug_options.js";
+import type Uploader from "./upload/uploader.js";
+import type { DebugOptions } from "./debug_options.js";
 
 /**
  * Describes how to configure Glean.

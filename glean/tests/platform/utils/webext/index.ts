@@ -2,7 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Builder, WebDriver } from "selenium-webdriver";
+import type { WebDriver } from "selenium-webdriver";
+import { Builder } from "selenium-webdriver";
 import firefox from "selenium-webdriver/firefox";
 import path from "path";
 import { dirname } from "path";

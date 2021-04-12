@@ -10,7 +10,7 @@ import * as PingMaker from "../../../src/core/pings/maker";
 import Glean from "../../../src/core/glean";
 import CoreEvents from "../../../src/core/events";
 import Plugin from "../../../src/plugins";
-import { JSONObject } from "../../../src/core/utils";
+import type { JSONObject } from "../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 

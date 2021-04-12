@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Metrics } from "../metrics/metrics_interface.js";
-import { JSONObject, JSONArray } from "../utils.js";
+import type { Metrics } from "../metrics/metrics_interface.js";
+import type { JSONObject, JSONArray } from "../utils.js";
 
 export interface PingInfo extends JSONObject {
   seq: number,

@@ -2,9 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store from "../storage/index.js";
-import { isObject, isJSONValue, JSONObject, isString } from "../utils.js";
-import { StorageBuilder } from "../../platform/index.js";
+import type Store from "../storage/index.js";
+import type { JSONObject} from "../utils.js";
+import { isObject, isJSONValue, isString } from "../utils.js";
+import type { StorageBuilder } from "../../platform/index.js";
 
 export interface PingInternalRepresentation extends JSONObject {
   path: string,

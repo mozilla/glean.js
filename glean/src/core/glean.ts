@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants.js";
-import { Configuration, ConfigurationInterface } from "./config.js";
+import type { ConfigurationInterface } from "./config.js";
+import { Configuration } from "./config.js";
 import MetricsDatabase from "./metrics/database.js";
 import PingsDatabase from "./pings/database.js";
 import PingUploader from "./upload/index.js";
@@ -17,9 +18,9 @@ import Dispatcher from "./dispatcher.js";
 import CorePings from "./internal_pings.js";
 import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 
-import Platform from "../platform/index.js";
+import type Platform from "../platform/index.js";
 import TestPlatform from "../platform/test/index.js";
-import { DebugOptions } from "./debug_options.js";
+import type { DebugOptions } from "./debug_options.js";
 import { Lifetime } from "./metrics/lifetime.js";
 
 class Glean {

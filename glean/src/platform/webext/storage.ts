@@ -2,9 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store, { StorageIndex } from "../../core/storage/index.js";
+import type { StorageIndex } from "../../core/storage/index.js";
+import type Store from "../../core/storage/index.js";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "../../core/storage/utils.js";
-import { isJSONValue, isObject, JSONArray, JSONObject, JSONPrimitive, JSONValue } from "../../core/utils.js";
+import type { JSONArray, JSONObject, JSONPrimitive, JSONValue } from "../../core/utils.js";
+import { isJSONValue, isObject } from "../../core/utils.js";
 
 type WebExtStoreQuery = { [x: string]: WebExtStoreQuery | JSONPrimitive | JSONArray | null; };
 

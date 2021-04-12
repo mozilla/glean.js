@@ -6,7 +6,7 @@ import { DELETION_REQUEST_PING_NAME } from "../constants.js";
 import { generateUUIDv4 } from "../utils.js";
 import collectAndStorePing from "../pings/maker.js";
 import Glean from "../glean.js";
-import CommonPingData from "./common_ping_data.js";
+import type CommonPingData from "./common_ping_data.js";
 
 /**
  * Stores information about a ping.

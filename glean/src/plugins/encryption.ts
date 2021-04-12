@@ -5,11 +5,11 @@
 import CompactEncrypt from "jose/jwe/compact/encrypt";
 import parseJwk from "jose/jwk/parse";
 import calculateThumbprint from "jose/jwk/thumbprint";
-import { JWK } from "jose/types";
+import type { JWK } from "jose/types";
 
 import Plugin from "./index.js";
-import { PingPayload } from "../core/pings/ping_payload.js";
-import { JSONObject } from "../core/utils.js";
+import type { PingPayload } from "../core/pings/ping_payload.js";
+import type { JSONObject } from "../core/utils.js";
 import CoreEvents from "../core/events/index.js";
 
 // These are the chosen defaults, because they are the ones expected by Glean's data pipeline.

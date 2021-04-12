@@ -9,9 +9,9 @@ import StringMetricType from "./metrics/types/string.js";
 import { createMetric } from "./metrics/utils.js";
 import TimeUnit from "./metrics/time_unit.js";
 import { generateUUIDv4 } from "./utils.js";
-import { ConfigurationInterface } from "./config.js";
-import Platform from "../platform/index.js";
-import MetricsDatabase from "./metrics/database.js";
+import type { ConfigurationInterface } from "./config.js";
+import type Platform from "../platform/index.js";
+import type MetricsDatabase from "./metrics/database.js";
 import { Lifetime } from "./metrics/lifetime.js";
 
 /**

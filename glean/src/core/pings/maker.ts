@@ -8,13 +8,13 @@ import { CounterMetric } from "../metrics/types/counter_metric.js";
 import DatetimeMetricType from "../metrics/types/datetime.js";
 import { DatetimeMetric } from "../metrics/types/datetime_metric.js";
 import TimeUnit from "../metrics/time_unit.js";
-import { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
-import CommonPingData from "./common_ping_data.js";
+import type { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
+import type CommonPingData from "./common_ping_data.js";
 import CoreEvents from "../events/index.js";
-import MetricsDatabase from "../metrics/database.js";
-import EventsDatabase from "../metrics/events_database.js";
-import PingsDatabase from "./database.js";
-import { DebugOptions } from "../debug_options.js";
+import type MetricsDatabase from "../metrics/database.js";
+import type EventsDatabase from "../metrics/events_database.js";
+import type PingsDatabase from "./database.js";
+import type { DebugOptions } from "../debug_options.js";
 import { Lifetime } from "../metrics/lifetime.js";
 
 // The moment the current Glean.js session started.

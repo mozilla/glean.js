@@ -2,13 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Platform from "../../platform/index.js";
-import { Configuration } from "../config.js";
+import type Platform from "../../platform/index.js";
+import type { Configuration } from "../config.js";
 import { GLEAN_VERSION } from "../constants.js";
-import { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
+import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
 import type PingsDatabase from "../pings/database.js";
-import PlatformInfo from "../platform_info.js";
-import Uploader, { UploadResult, UploadResultStatus } from "./uploader.js";
+import type PlatformInfo from "../platform_info.js";
+import type { UploadResult} from "./uploader.js";
+import type Uploader from "./uploader.js";
+import { UploadResultStatus } from "./uploader.js";
 
 interface QueuedPing extends PingInternalRepresentation {
   identifier: string
