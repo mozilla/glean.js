@@ -3,33 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { MetricType, CommonMetricData } from "../index.js";
-import { Metric } from "../metric.js";
-import { isString } from "../../utils.js";
 import Glean from "../../glean.js";
-
-export const MAX_LENGTH_VALUE = 100;
-
-export class StringMetric extends Metric<string, string> {
-  constructor(v: unknown) {
-    super(v);
-  }
-
-  validate(v: unknown): v is string {
-    if (!isString(v)) {
-      return false;
-    }
-
-    if (v.length > MAX_LENGTH_VALUE) {
-      return false;
-    }
-
-    return true;
-  }
-
-  payload(): string {
-    return this._inner;
-  }
-}
+import { MAX_LENGTH_VALUE, StringMetric } from "./string_metric.js";
 
 /**
  * A string metric.
@@ -55,7 +30,7 @@ class StringMetricType extends MetricType {
    * @param value The string we want to set to.
    */
   static async _private_setUndispatched(instance: StringMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord()) {
+    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
       return;
     }
 

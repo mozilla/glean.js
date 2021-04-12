@@ -8,13 +8,13 @@ import sinon from "sinon";
 import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "../../src/core/constants";
 import CoreEvents from "../../src/core/events";
 import Glean from "../../src/core/glean";
-import { Lifetime } from "../../src/core/metrics";
 import StringMetricType from "../../src/core/metrics/types/string";
 import CounterMetricType from "../../src/core/metrics/types/counter";
 import PingType from "../../src/core/pings";
 import { isObject, JSONObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";
 import Plugin from "../../src/plugins";
+import { Lifetime } from "../../src/core/metrics/lifetime";
 
 class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor() {
@@ -430,6 +430,19 @@ describe("Glean", function() {
     await Glean.testResetGlean(testAppId);
 
     assert.strictEqual(await metric.testGetValue(), undefined);
+  });
+
+  it("appBuild and appDisplayVersion are correctly reported", async function () {
+    await Glean.testUninitialize();
+
+    const testBuild = "test";
+    const testDisplayVersion = "1.2.3-stella";
+
+    await Glean.testInitialize(testAppId, true, { appBuild: testBuild, appDisplayVersion: testDisplayVersion });
+    await Glean.dispatcher.testBlockOnQueue();
+
+    assert.strictEqual(await Glean.coreMetrics.appBuild.testGetValue(), testBuild);
+    assert.strictEqual(await Glean.coreMetrics.appDisplayVersion.testGetValue(), testDisplayVersion);
   });
 
   // Verification test, does not test anything the Dispatcher suite doesn't cover,

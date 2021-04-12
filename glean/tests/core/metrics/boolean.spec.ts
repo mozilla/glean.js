@@ -5,8 +5,8 @@
 import assert from "assert";
 
 import Glean from "../../../src/core/glean";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 import BooleanMetricType from "../../../src/core/metrics/types/boolean";
-import { Lifetime } from "../../../src/core/metrics";
 
 describe("BooleanMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;

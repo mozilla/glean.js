@@ -9,10 +9,10 @@ import PingsDatabase from "./pings/database.js";
 import PingUploader from "./upload/index.js";
 import { isUndefined, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
-import { Lifetime } from "./metrics/index.js";
 import EventsDatabase from "./metrics/events_database.js";
 import UUIDMetricType from "./metrics/types/uuid.js";
-import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
+import DatetimeMetricType from "./metrics/types/datetime.js";
+import { DatetimeMetric } from "./metrics/types/datetime_metric.js";
 import Dispatcher from "./dispatcher.js";
 import CorePings from "./internal_pings.js";
 import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
@@ -20,6 +20,7 @@ import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 import Platform from "../platform/index.js";
 import TestPlatform from "../platform/test/index.js";
 import { DebugOptions } from "./debug_options.js";
+import { Lifetime } from "./metrics/lifetime.js";
 
 class Glean {
   // The Glean singleton.
@@ -48,7 +49,7 @@ class Glean {
   // Whether or not to record metrics.
   private _uploadEnabled?: boolean;
   // The Glean configuration object.
-  private _config?: Configuration;
+  private _config!: Configuration;
   // The metrics and pings databases.
   private _db?: {
     metrics: MetricsDatabase,
@@ -81,7 +82,7 @@ class Glean {
     return Glean.instance._pingUploader;
   }
 
-  private static get coreMetrics(): CoreMetrics {
+  static get coreMetrics(): CoreMetrics {
     return Glean.instance._coreMetrics;
   }
 
@@ -106,7 +107,7 @@ class Glean {
    */
   private static async onUploadEnabled(): Promise<void> {
     Glean.uploadEnabled = true;
-    await Glean.coreMetrics.initialize();
+    await Glean.coreMetrics.initialize(Glean.instance._config, Glean.platform, Glean.metricsDatabase);
   }
 
   /**
@@ -424,8 +425,7 @@ class Glean {
    */
   static setLogPings(flag: boolean): void {
     Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Glean.instance._config!.debug.logPings = flag;
+      Glean.instance._config.debug.logPings = flag;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -450,8 +450,7 @@ class Glean {
     }
 
     Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Glean.instance._config!.debug.debugViewTag = value;
+      Glean.instance._config.debug.debugViewTag = value;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -465,8 +464,7 @@ class Glean {
    */
   static unsetDebugViewTag(): void {
     Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      delete Glean.instance._config!.debug.debugViewTag;
+      delete Glean.instance._config.debug.debugViewTag;
       return Promise.resolve();
     });
   }
@@ -490,8 +488,7 @@ class Glean {
     }
 
     Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Glean.instance._config!.debug.sourceTags = value;
+      Glean.instance._config.debug.sourceTags = value;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -505,8 +502,7 @@ class Glean {
    */
   static unsetSourceTags(): void {
     Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      delete Glean.instance._config!.debug.sourceTags;
+      delete Glean.instance._config.debug.sourceTags;
       return Promise.resolve();
     });
   }

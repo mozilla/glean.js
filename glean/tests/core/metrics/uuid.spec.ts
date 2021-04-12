@@ -7,7 +7,7 @@ import { v4 as UUIDv4 } from "uuid";
 
 import Glean from "../../../src/core/glean";
 import UUIDMetricType from "../../../src/core/metrics/types/uuid";
-import { Lifetime } from "../../../src/core/metrics";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
  
 describe("UUIDMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;

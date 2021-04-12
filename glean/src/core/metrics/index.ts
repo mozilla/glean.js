@@ -3,21 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { isUndefined, JSONValue } from "../utils.js";
-import Glean from "../glean.js";
 import LabeledMetricType from "./types/labeled.js";
 import { Metric } from "./metric.js";
-
-/**
- * An enum representing the possible metric lifetimes.
- */
-export const enum Lifetime {
-  // The metric is reset with each sent ping
-  Ping = "ping",
-  // The metric is reset on application restart
-  Application = "application",
-  // The metric is reset with each user profile
-  User = "user",
-}
+import { Lifetime } from "./lifetime.js";
 
 /**
  * The common set of data shared across all different metric types.
@@ -102,10 +90,13 @@ export abstract class MetricType implements CommonMetricData {
   /**
    * Verify whether or not this metric instance should be recorded.
    *
+   * @param uploadEnabled Whether or not global upload is enabled or
+   *        disabled.
+   *
    * @returns Whether or not this metric instance should be recorded.
    */
-  shouldRecord(): boolean {
-    return (Glean.isUploadEnabled() && !this.disabled);
+  shouldRecord(uploadEnabled: boolean): boolean {
+    return (uploadEnabled && !this.disabled);
   }
 }
 

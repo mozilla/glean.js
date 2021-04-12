@@ -6,9 +6,10 @@ import assert from "assert";
 import sinon from "sinon";
 
 import Glean from "../../../src/core/glean";
-import DatetimeMetricType, { DatetimeMetric } from "../../../src/core/metrics/types/datetime";
-import { Lifetime } from "../../../src/core/metrics";
+import DatetimeMetricType from "../../../src/core/metrics/types/datetime";
+import { DatetimeMetric } from "../../../src/core/metrics/types/datetime_metric";
 import TimeUnit from "../../../src/core/metrics/time_unit";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 
 const sandbox = sinon.createSandbox();
 

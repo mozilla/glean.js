@@ -2,35 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { validate as UUIDvalidate } from "uuid";
-
-import { KNOWN_CLIENT_ID } from "../../constants.js";
 import { MetricType, CommonMetricData } from "../index.js";
-import { Metric } from "../metric.js";
-import { isString, generateUUIDv4 } from "../../utils.js";
+import { generateUUIDv4 } from "../../utils.js";
 import Glean from "../../glean.js";
-
-export class UUIDMetric extends Metric<string, string> {
-  constructor(v: unknown) {
-    super(v);
-  }
-
-  validate(v: unknown): v is string {
-    if (!isString(v)) {
-      return false;
-    }
-
-    if (v === KNOWN_CLIENT_ID) {
-      return true;
-    }
-
-    return UUIDvalidate(v);
-  }
-
-  payload(): string {
-    return this._inner;
-  }
-}
+import { UUIDMetric } from "./uuid_metric.js";
 
 /**
  *  An UUID metric.
@@ -55,7 +30,7 @@ class UUIDMetricType extends MetricType {
    * @param value The UUID we want to set to.
    */
   static async _private_setUndispatched(instance: UUIDMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord()) {
+    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
       return;
     }
 
@@ -92,7 +67,7 @@ class UUIDMetricType extends MetricType {
    * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
    */
   generateAndSet(): string | undefined {
-    if (!this.shouldRecord()) {
+    if (!this.shouldRecord(Glean.isUploadEnabled())) {
       return;
     }
 

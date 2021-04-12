@@ -5,7 +5,7 @@
 import assert from "assert";
 import Glean from "../../../src/core/glean";
 
-import { Lifetime } from "../../../src/core/metrics";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 import EventsDatabase, { RecordedEvent } from "../../../src/core/metrics/events_database";
 import EventMetricType from "../../../src/core/metrics/types/event";
 import { JSONObject } from "../../../src/core/utils";

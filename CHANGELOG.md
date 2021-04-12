@@ -4,6 +4,7 @@
 
 * [#173](https://github.com/mozilla/glean.js/pull/173): Drop Node.js support from webext entry points
 * [#155](https://github.com/mozilla/glean.js/pull/155): Allow to define custom uploaders in the configuration.
+* [#184](https://github.com/mozilla/glean.js/pull/184): Correctly report `appBuild` and `appDisplayVersion` if provided by the user.
 
 # v0.7.0 (2021-03-26)
 
