@@ -18,6 +18,7 @@
     ],
     "semi": "off",
     "@typescript-eslint/semi": ["error", "always"],
+    "@typescript-eslint/consistent-type-imports": "error",
     "no-debugger":  ["error"],
     "no-multi-spaces": "error",
     "jsdoc/no-types": "off",
