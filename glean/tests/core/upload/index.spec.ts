@@ -7,6 +7,7 @@ import sinon from "sinon";
 import { v4 as UUIDv4 } from "uuid";
 
 import { Configuration } from "../../../src/core/config";
+import { Context } from "../../../src/core/context";
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings";
 import collectAndStorePing from "../../../src/core/pings/maker";
@@ -31,7 +32,7 @@ async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
 
   const identifiers = Array.from({ length: numPings }, () => UUIDv4());
   for (const identifier of identifiers) {
-    await collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, identifier, ping);
+    await collectAndStorePing(identifier, ping);
   }
 
   return identifiers;
@@ -78,9 +79,9 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     // Create a new uploader and attach it to the existing storage.
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Glean.pingsDatabase);
+    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
     uploader.setInitialized();
-    Glean.pingsDatabase.attachObserver(uploader);
+    Context.pingsDatabase.attachObserver(uploader);
 
     // Mock the 'triggerUpload' function so that 'scanPendingPings' does not
     // mistakenly trigger ping submission. Note that since we're swapping
@@ -92,12 +93,12 @@ describe("PingUploader", function() {
       // Intentionally empty.
     };
     
-    await Glean.pingsDatabase.scanPendingPings();
+    await Context.pingsDatabase.scanPendingPings();
     assert.strictEqual(uploader["queue"].length, 10);
 
     uploader.triggerUpload = uploadTriggerFunc;
     await uploader.triggerUpload();
-    assert.deepStrictEqual(await Glean.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
     assert.strictEqual(uploader["queue"].length, 0);
   });
 
@@ -112,10 +113,10 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Glean.pingsDatabase);
+    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
     uploader.setInitialized();
-    Glean.pingsDatabase.attachObserver(uploader);
-    await Glean.pingsDatabase.scanPendingPings();
+    Context.pingsDatabase.attachObserver(uploader);
+    await Context.pingsDatabase.scanPendingPings();
 
     // Trigger uploading, but don't wait for it to finish,
     // so that it is ongoing when we cancel.
@@ -133,7 +134,7 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     await waitForGleanUploader();
-    assert.deepStrictEqual(await Glean.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 0);
   });
 
@@ -146,7 +147,7 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     await waitForGleanUploader();
-    assert.deepStrictEqual(await Glean.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 0);
   });
 
@@ -160,13 +161,13 @@ describe("PingUploader", function() {
 
     await waitForGleanUploader();
     // Ping should still be there.
-    const allPings = await Glean.pingsDatabase.getAllPings();
+    const allPings = await Context.pingsDatabase.getAllPings();
     assert.deepStrictEqual(Object.keys(allPings).length, 1);
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 1);
   });
 
   it("duplicates are not enqueued", function() {
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Glean.pingsDatabase);
+    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
     for (let i = 0; i < 10; i++) {
       uploader["enqueuePing"]({
         identifier: "id",

@@ -16,6 +16,7 @@ import { isObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";
 import Plugin from "../../src/plugins";
 import { Lifetime } from "../../src/core/metrics/lifetime";
+import { Context } from "../../src/core/context";
 
 class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor() {
@@ -41,7 +42,7 @@ describe("Glean", function() {
   });
 
   it("client_id and first_run_date are regenerated if cleared", async function() {
-    await Glean["metricsDatabase"].clearAll();
+    await Context.metricsDatabase.clearAll();
     assert.strictEqual(
       await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE), undefined);
     assert.strictEqual(
@@ -147,7 +148,7 @@ describe("Glean", function() {
     const spy = sandbox.spy(Glean["coreMetrics"], "initialize");
     Glean.setUploadEnabled(true);
     // Wait for `setUploadEnabled` to be executed.
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(spy.callCount, 0);
   });
 
@@ -156,7 +157,7 @@ describe("Glean", function() {
     Glean.setUploadEnabled(false);
     Glean.setUploadEnabled(false);
     // Wait for `setUploadEnabled` to be executed both times.
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(spy.callCount, 1);
   });
 
@@ -226,11 +227,11 @@ describe("Glean", function() {
     await Glean.testUninitialize();
     await Glean.testInitialize(testAppId, true);
     // initialize is dispatched, we must await on the queue being completed to assert things.
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
 
     // This time it should not be called, which means upload should not be switched to `false`.
     await Glean.testInitialize(testAppId, false);
-    assert.ok(Glean.isUploadEnabled());
+    assert.ok(Context.uploadEnabled);
   });
 
   it("flipping upload enabled respects order of events", async function() {
@@ -249,7 +250,7 @@ describe("Glean", function() {
     Glean.setUploadEnabled(false);
     ping.submit();
 
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
     await Glean["pingUploader"]["currentJob"];
 
@@ -263,14 +264,14 @@ describe("Glean", function() {
     const postSpy = sandbox.spy(Glean.platform.uploader, "post");
 
     Glean.setUploadEnabled(false);
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
 
     assert.strictEqual(postSpy.callCount, 1);
     assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
 
     postSpy.resetHistory();
     Glean.setUploadEnabled(true);
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(postSpy.callCount, 0);
   });
 
@@ -278,7 +279,7 @@ describe("Glean", function() {
     const postSpy = sandbox.spy(TestPlatform.uploader, "post");
 
     Glean.setUploadEnabled(true);
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
 
     // Can't use testResetGlean here because it clears all stores
     // and when there is no client_id at all stored, a deletion ping is also not sent.
@@ -297,7 +298,7 @@ describe("Glean", function() {
     const postSpy = sandbox.spy(Glean.platform.uploader, "post");
 
     Glean.setUploadEnabled(false);
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
 
     // A deletion request is sent
     assert.strictEqual(postSpy.callCount, 1);
@@ -307,7 +308,7 @@ describe("Glean", function() {
     // and when there is no client_id at all stored, a deletion ping is also not set.
     await Glean.testUninitialize();
     await Glean.testInitialize(testAppId, false);
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
     await Glean["pingUploader"]["currentJob"];
 
@@ -326,7 +327,7 @@ describe("Glean", function() {
 
     // Setting on initialize.
     await Glean.testInitialize(testAppId, true, { debug: { logPings: true } });
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.ok(Glean.logPings);
 
     await Glean.testUninitialize();
@@ -334,7 +335,7 @@ describe("Glean", function() {
     // Setting before initialize.
     Glean.setLogPings(true);
     await Glean.testInitialize(testAppId, true);
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.ok(Glean.logPings);
 
     // Setting after initialize.
@@ -349,7 +350,7 @@ describe("Glean", function() {
 
     // Setting on initialize.
     await Glean.testInitialize(testAppId, true, { debug: { debugViewTag: testTag } });
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.debugViewTag, testTag);
 
     await Glean.testUninitialize();
@@ -357,7 +358,7 @@ describe("Glean", function() {
     // Setting before initialize.
     Glean.setDebugViewTag(testTag);
     await Glean.testInitialize(testAppId, true);
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.debugViewTag, testTag);
 
     // Setting after initialize.
@@ -367,7 +368,7 @@ describe("Glean", function() {
   });
 
   it("attempting to set an invalid debug view tag is ignored and no task is dispatched", function () {
-    const dispatchSpy = sandbox.spy(Glean.dispatcher, "launch");
+    const dispatchSpy = sandbox.spy(Context.dispatcher, "launch");
 
     const invaligTag = "inv@l!d_t*g";
     Glean.setDebugViewTag(invaligTag);
@@ -383,19 +384,19 @@ describe("Glean", function() {
     Glean.setDebugViewTag("test");
     Glean.unsetDebugViewTag();
 
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.debugViewTag, undefined);
   });
 
   it("setting source tags on initialize works", async function () {
     await Glean.testUninitialize();
     await Glean.testInitialize(testAppId, true, { debug: { sourceTags: ["1", "2", "3", "4", "5"] } });
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.sourceTags, "1,2,3,4,5");
   });
 
   it("attempting to set invalid source tags is ignored and no task is dispatched", function () {
-    const dispatchSpy = sandbox.spy(Glean.dispatcher, "launch");
+    const dispatchSpy = sandbox.spy(Context.dispatcher, "launch");
 
     const invaligTags = ["inv@l!d_t*g"];
     Glean.setSourceTags(invaligTags);
@@ -411,7 +412,7 @@ describe("Glean", function() {
     Glean.setSourceTags(["test"]);
     Glean.unsetSourceTags();
 
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.sourceTags, undefined);
   });
 
@@ -440,7 +441,7 @@ describe("Glean", function() {
     const testDisplayVersion = "1.2.3-stella";
 
     await Glean.testInitialize(testAppId, true, { appBuild: testBuild, appDisplayVersion: testDisplayVersion });
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
 
     assert.strictEqual(await Glean.coreMetrics.appBuild.testGetValue(), testBuild);
     assert.strictEqual(await Glean.coreMetrics.appDisplayVersion.testGetValue(), testDisplayVersion);
@@ -495,8 +496,8 @@ describe("Glean", function() {
       }),
     );
 
-    await Glean.dispatcher.testBlockOnQueue();
-    const storedPings = await Glean.pingsDatabase.getAllPings();
+    await Context.dispatcher.testBlockOnQueue();
+    const storedPings = await Context.pingsDatabase.getAllPings();
     const counterValues = [];
     for (const ident in storedPings) {
       const metrics = storedPings[ident].payload.metrics;

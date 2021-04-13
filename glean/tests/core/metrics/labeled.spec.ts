@@ -4,6 +4,7 @@
 
 import assert from "assert";
 import sinon from "sinon";
+import { Context } from "../../../src/core/context";
 
 import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
@@ -56,9 +57,9 @@ describe("LabeledMetric", function() {
     // TODO: bug 1691033 will allow us to change the code below this point,
     // once a custom uploader for testing will be available.
     ping.submit();
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
     
-    const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -109,9 +110,9 @@ describe("LabeledMetric", function() {
     // TODO: bug 1691033 will allow us to change the code below this point,
     // once a custom uploader for testing will be available.
     ping.submit();
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.

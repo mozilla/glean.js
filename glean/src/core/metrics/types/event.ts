@@ -4,10 +4,10 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import Glean from "../../glean.js";
 import type { ExtraMap} from "../events_database.js";
 import { RecordedEvent } from "../events_database.js";
 import { isUndefined } from "../../utils.js";
+import { Context } from "../../context.js";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
@@ -47,8 +47,8 @@ class EventMetricType extends MetricType {
    *        The maximum length for values is 100 bytes.
    */
   record(extra?: ExtraMap): void {
-    Glean.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Glean.isUploadEnabled())) {
+    Context.dispatcher.launch(async () => {
+      if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
   
@@ -75,7 +75,7 @@ class EventMetricType extends MetricType {
         timestamp,
         truncatedExtra,
       );
-      await Glean.eventsDatabase.record(this, event);
+      await Context.eventsDatabase.record(this, event);
     });
   }
 
@@ -95,8 +95,8 @@ class EventMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
     let events: RecordedEvent[] | undefined;
-    await Glean.dispatcher.testLaunch(async () => {
-      events = await Glean.eventsDatabase.getEvents(ping, this);
+    await Context.dispatcher.testLaunch(async () => {
+      events = await Context.eventsDatabase.getEvents(ping, this);
     });
     return events;
   }

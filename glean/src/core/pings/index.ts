@@ -5,8 +5,8 @@
 import { DELETION_REQUEST_PING_NAME } from "../constants.js";
 import { generateUUIDv4 } from "../utils.js";
 import collectAndStorePing from "../pings/maker.js";
-import Glean from "../glean.js";
 import type CommonPingData from "./common_ping_data.js";
+import { Context } from "../context.js";
 
 /**
  * Stores information about a ping.
@@ -44,13 +44,13 @@ class PingType implements CommonPingData {
    *               `ping_info.reason` part of the payload.
    */
   submit(reason?: string): void {
-    Glean.dispatcher.launch(async () => {
-      if (!Glean.initialized) {
+    Context.dispatcher.launch(async () => {
+      if (!Context.initialized) {
         console.info("Glean must be initialized before submitting pings.");
         return;
       }
 
-      if (!Glean.isUploadEnabled() && !this.isDeletionRequest()) {
+      if (!Context.uploadEnabled && !this.isDeletionRequest()) {
         console.info("Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.");
         return;
       }
@@ -62,16 +62,7 @@ class PingType implements CommonPingData {
       }
   
       const identifier = generateUUIDv4();
-      await collectAndStorePing(
-        Glean.metricsDatabase,
-        Glean.eventsDatabase,
-        Glean.pingsDatabase,
-        Glean.applicationId,
-        identifier,
-        this,
-        correctedReason,
-        Glean.debugOptions
-      );
+      await collectAndStorePing(identifier, this, correctedReason);
       return;
     });
   }
