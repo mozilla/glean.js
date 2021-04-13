@@ -1,6 +1,17 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.7.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.0...main)
+
+# v0.8.0 (2021-04-13)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.7.0...v0.8.0)
+
+* [#173](https://github.com/mozilla/glean.js/pull/173): Drop Node.js support from webext entry points
+* [#155](https://github.com/mozilla/glean.js/pull/155): Allow to define custom uploaders in the configuration.
+* [#184](https://github.com/mozilla/glean.js/pull/184): Correctly report `appBuild` and `appDisplayVersion` if provided by the user.
+* [#198](https://github.com/mozilla/glean.js/pull/198), [#192](https://github.com/mozilla/glean.js/pull/192), [#184](https://github.com/mozilla/glean.js/pull/184), [#180](https://github.com/mozilla/glean.js/pull/180), [#174](https://github.com/mozilla/glean.js/pull/174), [#165](https://github.com/mozilla/glean.js/pull/165): BUGFIX: Remove all circular dependencies.ean and metrics
+  i.e. users attempting to import
+
 
 # v0.7.0 (2021-03-26)
 

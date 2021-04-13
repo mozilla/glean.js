@@ -2,7 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import PlatformInfo, { KnownOperatingSystems } from "../../core/platform_info.js";
+import type PlatformInfo from "../../core/platform_info.js";
+import { KnownOperatingSystems } from "../../core/platform_info.js";
 
 const WebExtPlatformInfo: PlatformInfo = {
   async os(): Promise<KnownOperatingSystems> {

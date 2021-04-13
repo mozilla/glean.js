@@ -2,22 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Metric, MetricType, CommonMetricData } from "../index.js";
-import { isBoolean } from "../../utils.js";
-import Glean from "../../glean.js";
-
-export class BooleanMetric extends Metric<boolean, boolean> {
-  constructor(v: unknown) {
-    super(v);
-  }
-
-  validate(v: unknown): v is boolean {
-    return isBoolean(v);
-  }
-  payload(): boolean {
-    return this._inner;
-  }
-}
+import type { CommonMetricData } from "../index.js";
+import { MetricType } from "../index.js";
+import { BooleanMetric } from "./boolean_metric.js";
+import { Context } from "../../context.js";
 
 /**
  *  A boolean metric.
@@ -35,13 +23,13 @@ class BooleanMetricType extends MetricType {
    * @param value the value to set.
    */
   set(value: boolean): void {
-    Glean.dispatcher.launch(async () => {
-      if (!this.shouldRecord()) {
+    Context.dispatcher.launch(async () => {
+      if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
 
       const metric = new BooleanMetric(value);
-      await Glean.metricsDatabase.record(this, metric);
+      await Context.metricsDatabase.record(this, metric);
     });
   }
 
@@ -61,8 +49,8 @@ class BooleanMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
     let metric: boolean | undefined;
-    await Glean.dispatcher.testLaunch(async () => {
-      metric = await Glean.metricsDatabase.getMetric<boolean>(ping, this);
+    await Context.dispatcher.testLaunch(async () => {
+      metric = await Context.metricsDatabase.getMetric<boolean>(ping, this);
     });
     return metric;
   }

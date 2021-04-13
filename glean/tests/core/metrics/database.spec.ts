@@ -5,10 +5,12 @@
 import assert from "assert";
 
 import Database, { isValidInternalMetricsRepresentation } from "../../../src/core/metrics/database";
-import { Lifetime } from "../../../src/core/metrics";
-import StringMetricType, { StringMetric } from "../../../src/core/metrics/types/string";
-import { JSONValue } from "../../../src/core/utils";
+import StringMetricType from "../../../src/core/metrics/types/string";
+import { StringMetric } from "../../../src/core/metrics/types/string_metric";
+import type { JSONValue } from "../../../src/core/utils";
 import Glean from "../../../src/core/glean";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
+import { Context } from "../../../src/core/context";
 
 describe("MetricsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -492,8 +494,8 @@ describe("MetricsDatabase", function() {
         lifetime: Lifetime.Ping,
         disabled: false
       });
-      await Glean.metricsDatabase.record(metric, new StringMetric("value"));
-      await Glean.metricsDatabase.clear(Lifetime.Ping, "aPing");
+      await Context.metricsDatabase.record(metric, new StringMetric("value"));
+      await Context.metricsDatabase.clear(Lifetime.Ping, "aPing");
 
       assert.strictEqual(await metric.testGetValue("aPing"), undefined);
       assert.strictEqual(await metric.testGetValue("twoPing"), "value");

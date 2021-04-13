@@ -2,10 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { MetricType, CommonMetricData } from "../index.js";
-import Glean from "../../glean.js";
-import { ExtraMap, RecordedEvent } from "../events_database.js";
+import type { CommonMetricData } from "../index.js";
+import { MetricType } from "../index.js";
+import type { ExtraMap} from "../events_database.js";
+import { RecordedEvent } from "../events_database.js";
 import { isUndefined } from "../../utils.js";
+import { Context } from "../../context.js";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
@@ -45,8 +47,8 @@ class EventMetricType extends MetricType {
    *        The maximum length for values is 100 bytes.
    */
   record(extra?: ExtraMap): void {
-    Glean.dispatcher.launch(async () => {
-      if (!this.shouldRecord()) {
+    Context.dispatcher.launch(async () => {
+      if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
   
@@ -73,7 +75,7 @@ class EventMetricType extends MetricType {
         timestamp,
         truncatedExtra,
       );
-      await Glean.eventsDatabase.record(this, event);
+      await Context.eventsDatabase.record(this, event);
     });
   }
 
@@ -93,8 +95,8 @@ class EventMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
     let events: RecordedEvent[] | undefined;
-    await Glean.dispatcher.testLaunch(async () => {
-      events = await Glean.eventsDatabase.getEvents(ping, this);
+    await Context.dispatcher.testLaunch(async () => {
+      events = await Context.eventsDatabase.getEvents(ping, this);
     });
     return events;
   }

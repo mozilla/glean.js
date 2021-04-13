@@ -5,8 +5,10 @@
 import assert from "assert";
 
 import Glean from "../../../src/core/glean";
-import StringMetricType, { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string";
-import { Lifetime } from "../../../src/core/metrics";
+import StringMetricType from "../../../src/core/metrics/types/string";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
+import { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string_metric";
+import { Context } from "../../../src/core/context";
  
 describe("StringMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -15,7 +17,7 @@ describe("StringMetric", function() {
     await Glean.testResetGlean(testAppId);
   });
 
-  it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
@@ -27,7 +29,7 @@ describe("StringMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
  
-  it("attemping to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new StringMetricType({
@@ -54,7 +56,7 @@ describe("StringMetric", function() {
     metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
 
-    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "string": {
         "aCategory.aStringMetric": "test_string_value"

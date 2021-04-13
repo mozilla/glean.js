@@ -3,10 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import { Context } from "../../../src/core/context";
 
 import Glean from "../../../src/core/glean";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 import BooleanMetricType from "../../../src/core/metrics/types/boolean";
-import { Lifetime } from "../../../src/core/metrics";
 
 describe("BooleanMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -15,7 +16,7 @@ describe("BooleanMetric", function() {
     await Glean.testResetGlean(testAppId);
   });
 
-  it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new BooleanMetricType({
       category: "aCategory",
       name: "aBooleanMetric",
@@ -27,7 +28,7 @@ describe("BooleanMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  it("attemping to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new BooleanMetricType({
@@ -54,7 +55,7 @@ describe("BooleanMetric", function() {
     metric.set(true);
     assert.strictEqual(await metric.testGetValue("aPing"), true);
 
-    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "boolean": {
         "aCategory.aBooleanMetric": true

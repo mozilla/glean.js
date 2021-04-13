@@ -7,7 +7,7 @@ import assert from "assert";
 
 import Glean from "../../../src/core/glean";
 import EventMetricType from "../../../src/core/metrics/types/event";
-import { Lifetime } from "../../../src/core/metrics";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 
 // A test event type that exclusively overrides the
 // monotonic timer.

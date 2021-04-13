@@ -6,7 +6,7 @@ import Storage from "./storage.js";
 import uploader from "./uploader.js";
 import info from "./platform_info.js";
 
-import Platform from "../index.js";
+import type Platform from "../index.js";
 
 const WebExtPlatform: Platform = {
   Storage,

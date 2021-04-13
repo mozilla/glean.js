@@ -1,30 +1,14 @@
 {
   "name": "@mozilla/glean",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
-    "./webext": {
-      "browser": "./dist/webext/browser/index/webext.js",
-      "import": "./dist/webext/esm/index/webext.js",
-      "require": "./dist/webext/cjs/index/webext.js"
-    },
-    "./webext/private/metrics/*": {
-      "browser": "./dist/webext/browser/core/metrics/types/*.js",
-      "import": "./dist/webext/esm/core/metrics/types/*.js",
-      "require": "./dist/webext/cjs/core/metrics/types/*.js"
-    },
-    "./webext/private/ping": {
-      "browser": "./dist/webext/browser/core/pings/index.js",
-      "import": "./dist/webext/esm/core/pings/index.js",
-      "require": "./dist/webext/cjs/core/pings/index.js"
-    },
-    "./webext/plugins/*": {
-      "browser": "./dist/webext/browser/plugins/*.js",
-      "import": "./dist/webext/esm/plugins/*.js",
-      "require": "./dist/webext/cjs/plugins/*.js"
-    }
+    "./webext": "./dist/webext/index/webext.js",
+    "./webext/private/metrics/*": "./dist/webext/core/metrics/types/*.js",
+    "./webext/private/ping": "./dist/webext/core/pings/index.js",
+    "./webext/plugins/*": "./dist/webext/plugins/*.js"
   },
   "typesVersions": {
     "*": {
@@ -58,13 +42,12 @@
     "test:base": "node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js",
     "build:test-webext": "cd tests/platform/utils/webext/sample/ && npm install && npm run build:xpi",
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
+    "lint:circular-deps": "madge --circular src/ --extensions ts",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build:cli": "tsc -p ./tsconfig/cli.json",
-    "build:webext:lib:esm": "tsc -p ./tsconfig/webext/esm.json",
-    "build:webext:lib:cjs": "tsc -p ./tsconfig/webext/cjs.json && echo '{\"type\": \"commonjs\"}'> dist/webext/cjs/package.json",
-    "build:webext:lib:browser": "tsc -p ./tsconfig/webext/browser.json",
+    "build:webext:lib": "tsc -p ./tsconfig/webext/index.json",
     "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
-    "build:webext": "rm -rf dist/webext && npm run build:webext:lib:esm && npm run build:webext:lib:cjs && npm run build:webext:lib:browser && npm run build:webext:types",
+    "build:webext": "rm -rf dist/webext && npm run build:webext:lib && npm run build:webext:types",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
     "prepublishOnly": "cp ../README.md ./README.md && npm run build:cli && npm run build:webext",
     "postpublish": "rm ./README.md"
@@ -97,8 +80,9 @@
     "eslint-plugin-mocha": "^8.0.0",
     "eslint-plugin-notice": "^0.9.10",
     "geckodriver": "^1.22.1",
-    "jsdom": "16.5.1",
+    "jsdom": "16.5.3",
     "jsdom-global": "3.0.2",
+    "madge": "^4.0.2",
     "mocha": "^8.3.0",
     "selenium-webdriver": "^4.0.0-alpha.8",
     "sinon": "^10.0.0",

@@ -3,10 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import { Context } from "../../../src/core/context";
 
 import Glean from "../../../src/core/glean";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
-import { Lifetime } from "../../../src/core/metrics";
 
 describe("CounterMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -15,7 +16,7 @@ describe("CounterMetric", function() {
     await Glean.testResetGlean(testAppId);
   });
  
-  it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -27,7 +28,7 @@ describe("CounterMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
   
-  it("attemping to add when glean upload is disabled is a no-op", async function() {
+  it("attempting to add when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new CounterMetricType({
@@ -54,7 +55,7 @@ describe("CounterMetric", function() {
     metric.add(10);
     assert.strictEqual(await metric.testGetValue("aPing"), 10);
   
-    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "counter": {
         "aCategory.aCounterMetric": 10

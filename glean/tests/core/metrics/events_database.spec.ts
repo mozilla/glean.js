@@ -5,10 +5,10 @@
 import assert from "assert";
 import Glean from "../../../src/core/glean";
 
-import { Lifetime } from "../../../src/core/metrics";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
 import EventsDatabase, { RecordedEvent } from "../../../src/core/metrics/events_database";
 import EventMetricType from "../../../src/core/metrics/types/event";
-import { JSONObject } from "../../../src/core/utils";
+import type { JSONObject } from "../../../src/core/utils";
 
 describe("EventsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -73,14 +73,14 @@ describe("EventsDatabase", function() {
   // reduce coupling across the components.
 
   it("getPingMetrics returns undefined if nothing is recorded", async function () {
-    const db = new EventsDatabase();
+    const db = new EventsDatabase(Glean.platform.Storage);
     const data = await db.getPingEvents("test-unknown-ping", true);
 
     assert.strictEqual(data, undefined);
   });
 
   it("getPingMetrics correctly clears the store", async function () {
-    const db = new EventsDatabase();
+    const db = new EventsDatabase(Glean.platform.Storage);
 
     const metric = new EventMetricType({
       category: "telemetry",
@@ -121,7 +121,7 @@ describe("EventsDatabase", function() {
   });
 
   it("getPingMetrics sorts the timestamps", async function () {
-    const db = new EventsDatabase();
+    const db = new EventsDatabase(Glean.platform.Storage);
 
     const metric = new EventMetricType({
       category: "telemetry",

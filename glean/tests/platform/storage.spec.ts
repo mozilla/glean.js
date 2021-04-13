@@ -2,15 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { WebDriver } from "selenium-webdriver";
+import type { WebDriver } from "selenium-webdriver";
 import assert from "assert";
 
 import { setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
-import Store from "../../src/core/storage";
+import type Store from "../../src/core/storage";
 
 import TestStore from "../../src/platform/test/storage";
 import WebExtStore from "../../src/platform/webext/storage";
-import { isUndefined, JSONValue } from "../../src/core/utils";
+import type { JSONValue } from "../../src/core/utils";
+import { isUndefined } from "../../src/core/utils";
 
 let firefox: WebDriver;
 

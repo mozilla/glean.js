@@ -3,55 +3,46 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants.js";
-import { Configuration, ConfigurationInterface } from "./config.js";
+import type { ConfigurationInterface } from "./config.js";
+import { Configuration } from "./config.js";
 import MetricsDatabase from "./metrics/database.js";
 import PingsDatabase from "./pings/database.js";
 import PingUploader from "./upload/index.js";
 import { isUndefined, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
-import { Lifetime } from "./metrics/index.js";
 import EventsDatabase from "./metrics/events_database.js";
 import UUIDMetricType from "./metrics/types/uuid.js";
-import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
+import DatetimeMetricType from "./metrics/types/datetime.js";
+import { DatetimeMetric } from "./metrics/types/datetime_metric.js";
 import Dispatcher from "./dispatcher.js";
 import CorePings from "./internal_pings.js";
 import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 
-import Platform from "../platform/index.js";
+import type Platform from "../platform/index.js";
 import TestPlatform from "../platform/test/index.js";
+import { Lifetime } from "./metrics/lifetime.js";
+import { Context } from "./context.js";
 
 class Glean {
   // The Glean singleton.
   private static _instance?: Glean;
 
-  // Whether or not Glean has been initialized.
-  private _initialized: boolean;
   // Instances of Glean's core metrics.
   private _coreMetrics: CoreMetrics;
   // Instances of Glean's core pings.
   private _corePings: CorePings;
-  // The ping uploader.
-  private _pingUploader: PingUploader
-  // A task dispatcher to help execute in order asynchronous external API calls.
-  private _dispatcher: Dispatcher;
 
   // The environment must be set before initialize.
   private _platform?: Platform;
 
   // Properties that will only be set on `initialize`.
 
-  // The application ID (will be sanitized during initialization).
-  private _applicationId?: string;
-  // Whether or not to record metrics.
-  private _uploadEnabled?: boolean;
+  // The ping uploader. Note that we need to use the definite assignment assertion
+  // because initialization will not happen in the constructor, but in the `initialize`
+  // method.
+  private _pingUploader!: PingUploader;
   // The Glean configuration object.
-  private _config?: Configuration;
-  // The metrics and pings databases.
-  private _db?: {
-    metrics: MetricsDatabase,
-    events: EventsDatabase,
-    pings: PingsDatabase
-  };
+  private _config!: Configuration;
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -60,11 +51,10 @@ class Glean {
       Use Glean.instance instead to access the Glean singleton.`);
     }
 
-    this._dispatcher = new Dispatcher();
-    this._pingUploader = new PingUploader();
+    Context.dispatcher = new Dispatcher();
     this._coreMetrics = new CoreMetrics();
     this._corePings = new CorePings();
-    this._initialized = false;
+    Context.initialized = false;
   }
 
   private static get instance(): Glean {
@@ -79,20 +69,12 @@ class Glean {
     return Glean.instance._pingUploader;
   }
 
-  private static get coreMetrics(): CoreMetrics {
+  static get coreMetrics(): CoreMetrics {
     return Glean.instance._coreMetrics;
   }
 
   private static get corePings(): CorePings {
     return Glean.instance._corePings;
-  }
-
-  private static get uploadEnabled(): boolean {
-    return Glean.instance._uploadEnabled || false;
-  }
-
-  private static set uploadEnabled(value: boolean) {
-    Glean.instance._uploadEnabled = value;
   }
 
   /**
@@ -103,8 +85,8 @@ class Glean {
    * The `uploadEnabled` flag is set to true and the core Glean metrics are recreated.
    */
   private static async onUploadEnabled(): Promise<void> {
-    Glean.uploadEnabled = true;
-    await Glean.coreMetrics.initialize();
+    Context.uploadEnabled = true;
+    await Glean.coreMetrics.initialize(Glean.instance._config, Glean.platform, Context.metricsDatabase);
   }
 
   /**
@@ -117,7 +99,7 @@ class Glean {
    * Afterward, the upload_enabled flag is set to false.
    */
   private static async onUploadDisabled(): Promise<void> {
-    Glean.uploadEnabled = false;
+    Context.uploadEnabled = false;
     await Glean.clearMetrics();
     // Note that `submit` is a dispatched function.
     // The actual submission will only happen after we leave `onUploadDisabled`.
@@ -143,7 +125,7 @@ class Glean {
     let firstRunDate: Date;
     try {
       firstRunDate = new DatetimeMetric(
-        await Glean.metricsDatabase.getMetric(
+        await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
           Glean.coreMetrics.firstRunDate
         )
@@ -153,9 +135,9 @@ class Glean {
     }
 
     // Clear the databases.
-    await Glean.eventsDatabase.clearAll();
-    await Glean.metricsDatabase.clearAll();
-    await Glean.pingsDatabase.clearAll();
+    await Context.eventsDatabase.clearAll();
+    await Context.metricsDatabase.clearAll();
+    await Context.pingsDatabase.clearAll();
 
     // We need to briefly set upload_enabled to true here so that `set`
     // is not a no-op.
@@ -167,7 +149,7 @@ class Glean {
     // called after them will only be executed after they are done.
     // Since all external API calls are dispatched, it is not possible
     // for any other API call to be execute concurrently with this one.
-    Glean.uploadEnabled = true;
+    Context.uploadEnabled = true;
 
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
@@ -177,7 +159,7 @@ class Glean {
     // Restore the first_run_date.
     await DatetimeMetricType._private_setUndispatched(Glean.coreMetrics.firstRunDate, firstRunDate);
 
-    Glean.uploadEnabled = false;
+    Context.uploadEnabled = false;
   }
 
   /**
@@ -206,7 +188,7 @@ class Glean {
     uploadEnabled: boolean,
     config?: ConfigurationInterface
   ): void {
-    if (Glean.initialized) {
+    if (Context.initialized) {
       console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
       return;
     }
@@ -221,16 +203,16 @@ class Glean {
       return;
     }
 
-    if (!Glean.instance._db) {
-      Glean.instance._db = {
-        metrics: new MetricsDatabase(Glean.platform.Storage),
-        events: new EventsDatabase(),
-        pings: new PingsDatabase(Glean.platform.Storage, Glean.pingUploader)
-      };
-    }
-
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
+
+    Context.metricsDatabase = new MetricsDatabase(Glean.platform.Storage);
+    Context.eventsDatabase = new EventsDatabase(Glean.platform.Storage);
+    Context.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
+
+    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Context.pingsDatabase);
+
+    Context.pingsDatabase.attachObserver(Glean.pingUploader);
 
     if (config?.plugins) {
       for (const plugin of config.plugins) {
@@ -244,22 +226,24 @@ class Glean {
     // because they will throw if configuration is incorrect and we want them to throw.
     //
     // The dispatcher will catch and log any exceptions.
-    Glean.dispatcher.flushInit(async () => {
-      Glean.instance._applicationId = sanitizeApplicationId(applicationId);
+    Context.dispatcher.flushInit(async () => {
+      Context.applicationId = sanitizeApplicationId(applicationId);
+      Context.debugOptions = correctConfig.debug;
       Glean.instance._config = correctConfig;
 
       // Clear application lifetime metrics.
       //
       // IMPORTANT!
       // Any pings we want to send upon initialization should happen before this.
-      await Glean.metricsDatabase.clear(Lifetime.Application);
+      await Context.metricsDatabase.clear(Lifetime.Application);
 
       // We need to mark Glean as initialized before dealing with the upload status,
       // otherwise we will not be able to submit deletion-request pings if necessary.
       //
       // This is fine, we are inside a dispatched task that is guaranteed to run before any
       // other task. No external API call will be executed before we leave this task.
-      Glean.instance._initialized = true;
+      Context.initialized = true;
+      Glean.pingUploader.setInitialized(true);
 
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
@@ -275,7 +259,7 @@ class Glean {
         // the KNOWN_CLIENT_ID, do the full upload disabled operations to
         // clear metrics, set the client_id to KNOWN_CLIENT_ID, and send a
         // deletion request ping.
-        const clientId = await Glean.metricsDatabase.getMetric(
+        const clientId = await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
           Glean.coreMetrics.clientId
         );
@@ -291,45 +275,13 @@ class Glean {
         }
       }
 
-      await Glean.pingUploader.scanPendingPings();
+      await Context.pingsDatabase.scanPendingPings();
 
       // Even though this returns a promise, there is no need to block on it returning.
       //
       // On the contrary we _want_ the uploading tasks to be executed async.
       void Glean.pingUploader.triggerUpload();
     });
-  }
-
-  static get metricsDatabase(): MetricsDatabase {
-    if (!Glean.instance._db) {
-      throw new Error("IMPOSSIBLE: Attempted to access the metrics database before Glean was initialized.");
-    }
-
-    return Glean.instance._db.metrics;
-  }
-
-  static get eventsDatabase(): EventsDatabase {
-    if (!Glean.instance._db) {
-      throw new Error("IMPOSSIBLE: Attempted to access the events database before Glean was initialized.");
-    }
-
-    return Glean.instance._db.events;
-  }
-
-  static get pingsDatabase(): PingsDatabase {
-    if (!Glean.instance._db) {
-      throw new Error("IMPOSSIBLE: Attempted to access the pings database before Glean was initialized.");
-    }
-
-    return Glean.instance._db.pings;
-  }
-
-  static get initialized(): boolean {
-    return Glean.instance._initialized;
-  }
-
-  static get applicationId(): string | undefined {
-    return Glean.instance._applicationId;
   }
 
   static get serverEndpoint(): string | undefined {
@@ -348,27 +300,12 @@ class Glean {
     return Glean.instance._config?.debug.sourceTags?.toString();
   }
 
-  static get dispatcher(): Dispatcher {
-    return Glean.instance._dispatcher;
-  }
-
   static get platform(): Platform {
     if (!Glean.instance._platform) {
       throw new Error("IMPOSSIBLE: Attempted to access environment specific APIs before Glean was initialized.");
     }
 
     return Glean.instance._platform;
-  }
-
-  /**
-   * Determines whether upload is enabled.
-   *
-   * When upload is disabled, no data will be recorded.
-   *
-   * @returns Whether upload is enabled.
-   */
-  static isUploadEnabled(): boolean {
-    return Glean.uploadEnabled;
   }
 
   /**
@@ -386,8 +323,8 @@ class Glean {
    * @param flag When true, enable metric collection.
    */
   static setUploadEnabled(flag: boolean): void {
-    Glean.dispatcher.launch(async () => {
-      if (!Glean.initialized) {
+    Context.dispatcher.launch(async () => {
+      if (!Context.initialized) {
         console.error(
           "Changing upload enabled before Glean is initialized is not supported.\n",
           "Pass the correct state into `Glean.initialize\n`.",
@@ -396,7 +333,7 @@ class Glean {
         return;
       }
 
-      if (Glean.uploadEnabled !== flag) {
+      if (Context.uploadEnabled !== flag) {
         if (flag) {
           await Glean.onUploadEnabled();
         } else {
@@ -414,9 +351,8 @@ class Glean {
    * @param flag Whether or not to log pings.
    */
   static setLogPings(flag: boolean): void {
-    Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Glean.instance._config!.debug.logPings = flag;
+    Context.dispatcher.launch(() => {
+      Glean.instance._config.debug.logPings = flag;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -440,9 +376,8 @@ class Glean {
       return;
     }
 
-    Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Glean.instance._config!.debug.debugViewTag = value;
+    Context.dispatcher.launch(() => {
+      Glean.instance._config.debug.debugViewTag = value;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -455,9 +390,8 @@ class Glean {
    * This is a no-op is case there is no `debugViewTag` set at the moment.
    */
   static unsetDebugViewTag(): void {
-    Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      delete Glean.instance._config!.debug.debugViewTag;
+    Context.dispatcher.launch(() => {
+      delete Glean.instance._config.debug.debugViewTag;
       return Promise.resolve();
     });
   }
@@ -480,9 +414,8 @@ class Glean {
       return;
     }
 
-    Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      Glean.instance._config!.debug.sourceTags = value;
+    Context.dispatcher.launch(() => {
+      Glean.instance._config.debug.sourceTags = value;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -495,9 +428,8 @@ class Glean {
    * This is a no-op is case there are no `sourceTags` set at the moment.
    */
   static unsetSourceTags(): void {
-    Glean.dispatcher.launch(() => {
-      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-      delete Glean.instance._config!.debug.sourceTags;
+    Context.dispatcher.launch(() => {
+      delete Glean.instance._config.debug.sourceTags;
       return Promise.resolve();
     });
   }
@@ -535,7 +467,7 @@ class Glean {
     Glean.setPlatform(TestPlatform);
     Glean.initialize(applicationId, uploadEnabled, config);
 
-    await Glean.dispatcher.testBlockOnQueue();
+    await Context.dispatcher.testBlockOnQueue();
   }
 
   /**
@@ -547,16 +479,22 @@ class Glean {
    */
   static async testUninitialize(): Promise<void> {
     // Get back to an uninitialized state.
-    Glean.instance._initialized = false;
+    Context.initialized = false;
 
-    // Deregiter all plugins
+    // Deregister all plugins
     testResetEvents();
 
     // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
-    await Glean.dispatcher.testUninitialize();
+    if (Context.dispatcher) {
+      await Context.dispatcher.testUninitialize();
+    }
 
     // Stop ongoing jobs and clear pending pings queue.
-    await Glean.pingUploader.clearPendingPingsQueue();
+    if (Glean.pingUploader) {
+      // The first time tests run, before Glean is initialized, we are
+      // not guaranteed to have an uploader. Account for this.
+      await Glean.pingUploader.clearPendingPingsQueue();
+    }
   }
 
   /**
@@ -581,9 +519,9 @@ class Glean {
 
     // Clear the databases.
     try {
-      await Glean.eventsDatabase.clearAll();
-      await Glean.metricsDatabase.clearAll();
-      await Glean.pingsDatabase.clearAll();
+      await Context.eventsDatabase.clearAll();
+      await Context.metricsDatabase.clearAll();
+      await Context.pingsDatabase.clearAll();
     } catch {
       // Nothing to do here.
       // It is expected that these will fail in case we are initializing Glean for the first time.

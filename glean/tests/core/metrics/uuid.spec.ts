@@ -7,7 +7,8 @@ import { v4 as UUIDv4 } from "uuid";
 
 import Glean from "../../../src/core/glean";
 import UUIDMetricType from "../../../src/core/metrics/types/uuid";
-import { Lifetime } from "../../../src/core/metrics";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
+import { Context } from "../../../src/core/context";
  
 describe("UUIDMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -16,7 +17,7 @@ describe("UUIDMetric", function() {
     await Glean.testResetGlean(testAppId);
   });
  
-  it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
@@ -28,7 +29,7 @@ describe("UUIDMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  it("attemping to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new UUIDMetricType({
@@ -43,7 +44,7 @@ describe("UUIDMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  it("attemping to set an invalid uuid is a no-op", async function() {
+  it("attempting to set an invalid uuid is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new UUIDMetricType({
@@ -71,7 +72,7 @@ describe("UUIDMetric", function() {
     metric.set(expected);
     assert.strictEqual(await metric.testGetValue("aPing"), expected);
 
-    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "uuid": {
         "aCategory.aUUIDMetric": expected

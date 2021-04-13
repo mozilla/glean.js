@@ -18,6 +18,10 @@ jobs:
       - run:
           name: Run linter
           command: npm --prefix ./glean run lint
+      # Disabled because of bug 1704794.
+      # - run:
+      #    name: Run circular dependencies checker
+      #    command: npm --prefix ./glean run lint:circular-deps
 
   unit-tests:
     docker:
@@ -36,6 +40,32 @@ jobs:
       - run:
           name: Run unit tests
           command: export PATH=.:$PATH && npm --prefix ./glean run test
+
+  samples-tests:
+    docker:
+      - image: cimg/python:3.8.8-node
+    steps:
+      - checkout
+      - run:
+          name: Install Javascript dependencies for Glean
+          command: npm --prefix ./glean install
+      - run:
+          name: Build & link Glean.js to use it in the samples
+          command: |
+              npm --prefix ./glean run build:webext
+              npm --prefix ./glean run build:cli
+              npm --prefix ./glean link
+      - run:
+          name: Install Javascript dependencies for the JS sample
+          command: |
+              npm --prefix ./samples/web-extension/javascript install
+              npm --prefix ./samples/web-extension/javascript link @mozilla/glean
+      - run:
+          name: Build the JS sample
+          command: npm --prefix ./samples/web-extension/javascript run build
+      - run:
+          name: Run samples tests
+          command: export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
 
   check-size:
     docker:
@@ -87,6 +117,7 @@ workflows:
       - lint
       - unit-tests
       - check-qt-js
+      - samples-tests
       - publish:
           filters:
             branches:

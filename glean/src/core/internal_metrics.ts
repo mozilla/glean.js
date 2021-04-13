@@ -8,9 +8,11 @@ import DatetimeMetricType from "./metrics/types/datetime.js";
 import StringMetricType from "./metrics/types/string.js";
 import { createMetric } from "./metrics/utils.js";
 import TimeUnit from "./metrics/time_unit.js";
-import { Lifetime } from "./metrics/index.js";
 import { generateUUIDv4 } from "./utils.js";
-import Glean from "./glean.js";
+import type { ConfigurationInterface } from "./config.js";
+import type Platform from "../platform/index.js";
+import type MetricsDatabase from "./metrics/database.js";
+import { Lifetime } from "./metrics/lifetime.js";
 
 /**
  * Glean internal metrics.
@@ -95,24 +97,26 @@ export class CoreMetrics {
     });
   }
 
-  async initialize(appBuild?: string, appDisplayVersion?: string): Promise<void> {
-    await this.initializeClientId();
-    await this.initializeFirstRunDate();
-    await this.initializeOs();
-    await this.initializeOsVersion();
-    await this.initializeArchitecture();
-    await this.initializeLocale();
-    await StringMetricType._private_setUndispatched(this.appBuild, appBuild || "Unknown");
-    await StringMetricType._private_setUndispatched(this.appDisplayVersion, appDisplayVersion || "Unknown");
+  async initialize(config: ConfigurationInterface, platform: Platform, metricsDatabase: MetricsDatabase): Promise<void> {
+    await this.initializeClientId(metricsDatabase);
+    await this.initializeFirstRunDate(metricsDatabase);
+    await StringMetricType._private_setUndispatched(this.os, await platform.info.os());
+    await StringMetricType._private_setUndispatched(this.osVersion, await platform.info.osVersion());
+    await StringMetricType._private_setUndispatched(this.architecture, await platform.info.arch());
+    await StringMetricType._private_setUndispatched(this.locale, await platform.info.locale());
+    await StringMetricType._private_setUndispatched(this.appBuild, config.appBuild || "Unknown");
+    await StringMetricType._private_setUndispatched(this.appDisplayVersion, config.appDisplayVersion || "Unknown");
   }
 
   /**
    * Generates and sets the client_id if it is not set,
    * or if the current value is currepted.
+   *
+   * @param metricsDatabase The metrics database.
    */
-  private async initializeClientId(): Promise<void> {
+  private async initializeClientId(metricsDatabase: MetricsDatabase): Promise<void> {
     let needNewClientId = false;
-    const clientIdData = await Glean.metricsDatabase.getMetric(CLIENT_INFO_STORAGE, this.clientId);
+    const clientIdData = await metricsDatabase.getMetric(CLIENT_INFO_STORAGE, this.clientId);
     if (clientIdData) {
       try {
         const currentClientId = createMetric("uuid", clientIdData);
@@ -134,9 +138,11 @@ export class CoreMetrics {
 
   /**
    * Generates and sets the first_run_date if it is not set.
+   *
+   * @param metricsDatabase The metrics database.
    */
-  private async initializeFirstRunDate(): Promise<void> {
-    const firstRunDate = await Glean.metricsDatabase.getMetric(
+  private async initializeFirstRunDate(metricsDatabase: MetricsDatabase): Promise<void> {
+    const firstRunDate = await metricsDatabase.getMetric(
       CLIENT_INFO_STORAGE,
       this.firstRunDate
     );
@@ -144,33 +150,5 @@ export class CoreMetrics {
     if (!firstRunDate) {
       await DatetimeMetricType._private_setUndispatched(this.firstRunDate);
     }
-  }
-
-  /**
-   * Gets and sets the os.
-   */
-  async initializeOs(): Promise<void> {
-    await StringMetricType._private_setUndispatched(this.os, await Glean.platform.info.os());
-  }
-
-  /**
-   * Gets and sets the os.
-   */
-  async initializeOsVersion(): Promise<void> {
-    await StringMetricType._private_setUndispatched(this.osVersion, await Glean.platform.info.osVersion());
-  }
-
-  /**
-   * Gets and sets the system architecture.
-   */
-  async initializeArchitecture(): Promise<void> {
-    await StringMetricType._private_setUndispatched(this.architecture, await Glean.platform.info.arch());
-  }
-
-  /**
-   * Gets and sets the system / browser locale.
-   */
-  async initializeLocale(): Promise<void> {
-    await StringMetricType._private_setUndispatched(this.locale, await Glean.platform.info.locale());
   }
 }

@@ -2,31 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { Metric, MetricType, CommonMetricData } from "../index.js";
-import { isNumber, isUndefined, JSONValue } from "../../utils.js";
-import Glean from "../../glean.js";
-
-export class CounterMetric extends Metric<number, number> {
-  constructor(v: unknown) {
-    super(v);
-  }
-
-  validate(v: unknown): v is number {
-    if (!isNumber(v)) {
-      return false;
-    }
-
-    if (v <= 0) {
-      return false;
-    }
-
-    return true;
-  }
-
-  payload(): number {
-    return this._inner;
-  }
-}
+import type { CommonMetricData } from "../index.js";
+import { MetricType } from "../index.js";
+import type { JSONValue } from "../../utils.js";
+import { isUndefined } from "../../utils.js";
+import { CounterMetric } from "./counter_metric.js";
+import { Context } from "../../context.js";
 
 /**
  * A counter metric.
@@ -52,7 +33,7 @@ class CounterMetricType extends MetricType {
    * @param amount The amount we want to add.
    */
   static async _private_addUndispatched(instance: CounterMetricType, amount?: number): Promise<void> {
-    if (!instance.shouldRecord()) {
+    if (!instance.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
@@ -87,7 +68,7 @@ class CounterMetricType extends MetricType {
       };
     })(amount);
 
-    await Glean.metricsDatabase.transform(instance, transformFn);
+    await Context.metricsDatabase.transform(instance, transformFn);
   }
 
   /**
@@ -103,7 +84,7 @@ class CounterMetricType extends MetricType {
    *               If not provided will default to `1`.
    */
   add(amount?: number): void {
-    Glean.dispatcher.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
+    Context.dispatcher.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
   }
 
   /**
@@ -122,8 +103,8 @@ class CounterMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
     let metric: number | undefined;
-    await Glean.dispatcher.testLaunch(async () => {
-      metric = await Glean.metricsDatabase.getMetric<number>(ping, this);
+    await Context.dispatcher.testLaunch(async () => {
+      metric = await Context.metricsDatabase.getMetric<number>(ping, this);
     });
     return metric;
   }

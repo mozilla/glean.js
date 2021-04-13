@@ -2,16 +2,11 @@
 //  * License, v. 2.0. If a copy of the MPL was not distributed with this
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import Store from "../storage/index.js";
-import { isUndefined, JSONArray, JSONObject, JSONValue } from "../utils.js";
-import EventMetricType from "./types/event.js";
-import Glean from "../glean.js";
-
-export interface Metrics {
-  [aMetricType: string]: {
-    [aMetricIdentifier: string]: JSONValue
-  }
-}
+import type Store from "../storage/index.js";
+import type { JSONArray, JSONObject, JSONValue } from "../utils.js";
+import { isUndefined } from "../utils.js";
+import type EventMetricType from "./types/event.js";
+import type { StorageBuilder } from "../../platform/index.js";
 
 // An helper type for the 'extra' map.
 export type ExtraMap = Record<string, string>;
@@ -80,8 +75,8 @@ export class RecordedEvent {
 class EventsDatabase {
   private eventsStore: Store;
 
-  constructor() {
-    this.eventsStore = new Glean.platform.Storage("events");
+  constructor(storage: StorageBuilder) {
+    this.eventsStore = new storage("events");
   }
 
   /**

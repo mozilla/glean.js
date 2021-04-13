@@ -6,9 +6,11 @@ import assert from "assert";
 import sinon from "sinon";
 
 import Glean from "../../../src/core/glean";
-import DatetimeMetricType, { DatetimeMetric } from "../../../src/core/metrics/types/datetime";
-import { Lifetime } from "../../../src/core/metrics";
+import DatetimeMetricType from "../../../src/core/metrics/types/datetime";
+import { DatetimeMetric } from "../../../src/core/metrics/types/datetime_metric";
 import TimeUnit from "../../../src/core/metrics/time_unit";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
+import { Context } from "../../../src/core/context";
 
 const sandbox = sinon.createSandbox();
 
@@ -52,7 +54,7 @@ describe("DatetimeMetric", function() {
     assert.doesNotThrow(() => new DatetimeMetric({ timeUnit: "hour", timezone: 300, date: "2021-01-04T16:00:00.000Z" }));
   });
 
-  it("attemping to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new DatetimeMetricType({
       category: "aCategory",
       name: "aDatetimeMetric",
@@ -64,7 +66,7 @@ describe("DatetimeMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  it("attemping to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
     const metric = new DatetimeMetricType({
@@ -95,7 +97,7 @@ describe("DatetimeMetric", function() {
     metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15+05:00");
 
-    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "datetime": {
         "aCategory.aDatetimeMetric": "1995-05-25T08:15+05:00"
@@ -205,7 +207,7 @@ describe("DatetimeMetric", function() {
       timezone: 60,
       date: "2021-01-07T14:41:26.312Z"
     });
-    await Glean.metricsDatabase.record(metric, concreteMetric);
+    await Context.metricsDatabase.record(metric, concreteMetric);
 
     // 1. The monkeypatched timezone it -300 (+05:00)
     // 2. The timezone manually set on the metric above is 60 (-01:00)

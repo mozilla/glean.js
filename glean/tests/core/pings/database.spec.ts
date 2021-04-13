@@ -4,7 +4,8 @@
 
 import assert from "assert";
 
-import Database, { Observer, isValidPingInternalRepresentation } from "../../../src/core/pings/database";
+import type { Observer} from "../../../src/core/pings/database";
+import Database, { isValidPingInternalRepresentation } from "../../../src/core/pings/database";
 import Glean from "../../../src/core/glean";
 
 describe("PingsDatabase", function() {
@@ -48,13 +49,14 @@ describe("PingsDatabase", function() {
       let wasNotified = false;
       const identifier = "THE IDENTIFIER";
       const observer: Observer = {
-        update: (id: string): void => {
+        update(id: string): void {
           wasNotified = true;
           assert.strictEqual(id, identifier);
         }
       };
   
-      const db = new Database(Glean.platform.Storage, observer);
+      const db = new Database(Glean.platform.Storage);
+      db.attachObserver(observer);
       const path = "some/random/path/doesnt/matter";
 
       const payload = {
@@ -232,6 +234,53 @@ describe("PingsDatabase", function() {
   
       await db.clearAll();
       assert.strictEqual(Object.keys(await db["store"]._getWholeStore()).length, 0);
+    });
+  });
+
+  describe("pending pings", function() {
+    it("scanning the pending pings directory fills up the queue", async function() {
+      let resolver: (value: unknown) => void;
+      const testPromise = new Promise(r => resolver = r);
+      let pingIds: string[] = [];
+      const observer: Observer = {
+        update(id: string): void {
+          pingIds.push(id);
+
+          if (pingIds.length == 10) {
+            resolver(pingIds);
+          }
+        }
+      };
+      const db = new Database(Glean.platform.Storage);
+      db.attachObserver(observer);
+
+      const path = "some/random/path/doesnt/matter";
+      const payload = {
+        ping_info: {
+          seq: 1,
+          start_time: "2018-02-24+01:00",
+          end_time: "2018-02-25+11:00",
+        },
+        client_info: {
+          telemetry_sdk_build: "32.0.0"
+        }
+      };
+
+      for (let id = 0; id < 10; id++) {
+        const newPayload = payload;
+        newPayload.ping_info.seq = id;
+        await db.recordPing(path, `id-${id}`, payload);
+      }
+
+      // Reset the ids we've seen because `Observer` will get called once again in `record`.
+      pingIds = [];
+
+      await db.scanPendingPings();
+      await testPromise;
+      assert.strictEqual(pingIds.length, 10);
+      for (let id = 0; id < 10; id++) {
+        assert.ok(id in pingIds);
+      }
     });
   });
 });

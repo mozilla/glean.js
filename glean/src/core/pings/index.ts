@@ -5,21 +5,8 @@
 import { DELETION_REQUEST_PING_NAME } from "../constants.js";
 import { generateUUIDv4 } from "../utils.js";
 import collectAndStorePing from "../pings/maker.js";
-import Glean from "../glean.js";
-
-/**
- * The common set of data for creating a new ping.
- */
-interface CommonPingData {
-  // The name of the ping.
-  readonly name: string,
-  // Whether to include the client ID in the assembled ping when submitting.
-  readonly includeClientId: boolean,
-  // Whether the ping should be sent empty or not.
-  readonly sendIfEmpty: boolean,
-  // Optional. The valid reason codes for this ping.
-  readonly reasonCodes?: string[]
-}
+import type CommonPingData from "./common_ping_data.js";
+import { Context } from "../context.js";
 
 /**
  * Stores information about a ping.
@@ -57,13 +44,13 @@ class PingType implements CommonPingData {
    *               `ping_info.reason` part of the payload.
    */
   submit(reason?: string): void {
-    Glean.dispatcher.launch(async () => {
-      if (!Glean.initialized) {
+    Context.dispatcher.launch(async () => {
+      if (!Context.initialized) {
         console.info("Glean must be initialized before submitting pings.");
         return;
       }
 
-      if (!Glean.isUploadEnabled() && !this.isDeletionRequest()) {
+      if (!Context.uploadEnabled && !this.isDeletionRequest()) {
         console.info("Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.");
         return;
       }
