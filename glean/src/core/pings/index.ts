@@ -8,6 +8,7 @@ import collectAndStorePing from "../pings/maker.js";
 import Glean from "../glean.js";
 import type CommonPingData from "./common_ping_data.js";
 import Dispatcher from "../dispatcher.js";
+import { Context } from "../context.js";
 
 /**
  * Stores information about a ping.
@@ -51,7 +52,7 @@ class PingType implements CommonPingData {
         return;
       }
 
-      if (!Glean.isUploadEnabled() && !this.isDeletionRequest()) {
+      if (!Context.instance.uploadEnabled && !this.isDeletionRequest()) {
         console.info("Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.");
         return;
       }
@@ -64,7 +65,7 @@ class PingType implements CommonPingData {
   
       const identifier = generateUUIDv4();
       await collectAndStorePing(
-        Glean.metricsDatabase,
+        Context.instance.metricsDatabase,
         Glean.eventsDatabase,
         Glean.pingsDatabase,
         Glean.applicationId,

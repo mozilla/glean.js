@@ -5,10 +5,10 @@
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import TimeUnit from "../../metrics/time_unit.js";
-import Glean from "../../glean.js";
 import type { DatetimeInternalRepresentation} from "./datetime_metric.js";
 import { DatetimeMetric } from "./datetime_metric.js";
 import Dispatcher from "../../dispatcher.js";
+import { Context } from "../../context.js";
 
 /**
  * A datetime metric.
@@ -37,7 +37,7 @@ class DatetimeMetricType extends MetricType {
    * @param value The date we want to set to.
    */
   static async _private_setUndispatched(instance: DatetimeMetricType, value?: Date): Promise<void> {
-    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
+    if (!instance.shouldRecord(Context.instance.uploadEnabled)) {
       return;
     }
 
@@ -69,7 +69,7 @@ class DatetimeMetricType extends MetricType {
     }
 
     const metric = DatetimeMetric.fromDate(value, instance.timeUnit);
-    await Glean.metricsDatabase.record(instance, metric);
+    await Context.instance.metricsDatabase.record(instance, metric);
   }
 
   /**
@@ -97,7 +97,7 @@ class DatetimeMetricType extends MetricType {
   private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
     let value: DatetimeInternalRepresentation | undefined;
     await Dispatcher.instance.testLaunch(async () => {
-      value = await Glean.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
+      value = await Context.instance.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
     });
     if (value) {
       return new DatetimeMetric(value);

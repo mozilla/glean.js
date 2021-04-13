@@ -4,9 +4,9 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import Glean from "../../glean.js";
 import { BooleanMetric } from "./boolean_metric.js";
 import Dispatcher from "../../dispatcher.js";
+import { Context } from "../../context.js";
 
 /**
  *  A boolean metric.
@@ -25,12 +25,12 @@ class BooleanMetricType extends MetricType {
    */
   set(value: boolean): void {
     Dispatcher.instance.launch(async () => {
-      if (!this.shouldRecord(Glean.isUploadEnabled())) {
+      if (!this.shouldRecord(Context.instance.uploadEnabled)) {
         return;
       }
 
       const metric = new BooleanMetric(value);
-      await Glean.metricsDatabase.record(this, metric);
+      await Context.instance.metricsDatabase.record(this, metric);
     });
   }
 
@@ -51,7 +51,7 @@ class BooleanMetricType extends MetricType {
   async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
     let metric: boolean | undefined;
     await Dispatcher.instance.testLaunch(async () => {
-      metric = await Glean.metricsDatabase.getMetric<boolean>(ping, this);
+      metric = await Context.instance.metricsDatabase.getMetric<boolean>(ping, this);
     });
     return metric;
   }

@@ -9,6 +9,7 @@ import type { ExtraMap} from "../events_database.js";
 import { RecordedEvent } from "../events_database.js";
 import { isUndefined } from "../../utils.js";
 import Dispatcher from "../../dispatcher.js";
+import { Context } from "../../context.js";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
@@ -49,7 +50,7 @@ class EventMetricType extends MetricType {
    */
   record(extra?: ExtraMap): void {
     Dispatcher.instance.launch(async () => {
-      if (!this.shouldRecord(Glean.isUploadEnabled())) {
+      if (!this.shouldRecord(Context.instance.uploadEnabled)) {
         return;
       }
   

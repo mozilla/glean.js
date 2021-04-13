@@ -6,9 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import { isUndefined } from "../../utils.js";
-import Glean from "../../glean.js";
 import { CounterMetric } from "./counter_metric.js";
 import Dispatcher from "../../dispatcher.js";
+import { Context } from "../../context.js";
 
 /**
  * A counter metric.
@@ -34,7 +34,7 @@ class CounterMetricType extends MetricType {
    * @param amount The amount we want to add.
    */
   static async _private_addUndispatched(instance: CounterMetricType, amount?: number): Promise<void> {
-    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
+    if (!instance.shouldRecord(Context.instance.uploadEnabled)) {
       return;
     }
 
@@ -69,7 +69,7 @@ class CounterMetricType extends MetricType {
       };
     })(amount);
 
-    await Glean.metricsDatabase.transform(instance, transformFn);
+    await Context.instance.metricsDatabase.transform(instance, transformFn);
   }
 
   /**
@@ -105,7 +105,7 @@ class CounterMetricType extends MetricType {
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
     let metric: number | undefined;
     await Dispatcher.instance.testLaunch(async () => {
-      metric = await Glean.metricsDatabase.getMetric<number>(ping, this);
+      metric = await Context.instance.metricsDatabase.getMetric<number>(ping, this);
     });
     return metric;
   }

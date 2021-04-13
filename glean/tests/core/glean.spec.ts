@@ -17,6 +17,7 @@ import TestPlatform from "../../src/platform/qt";
 import Plugin from "../../src/plugins";
 import { Lifetime } from "../../src/core/metrics/lifetime";
 import Dispatcher from "../../src/core/dispatcher";
+import { Context } from "../../src/core/context";
 
 class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor() {
@@ -42,7 +43,7 @@ describe("Glean", function() {
   });
 
   it("client_id and first_run_date are regenerated if cleared", async function() {
-    await Glean["metricsDatabase"].clearAll();
+    await Context.instance.metricsDatabase.clearAll();
     assert.strictEqual(
       await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE), undefined);
     assert.strictEqual(
@@ -231,7 +232,7 @@ describe("Glean", function() {
 
     // This time it should not be called, which means upload should not be switched to `false`.
     await Glean.testInitialize(testAppId, false);
-    assert.ok(Glean.isUploadEnabled());
+    assert.ok(Context.instance.uploadEnabled);
   });
 
   it("flipping upload enabled respects order of events", async function() {

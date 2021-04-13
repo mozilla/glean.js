@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import { Context } from "../../../src/core/context";
 
 import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
@@ -54,7 +55,7 @@ describe("CounterMetric", function() {
     metric.add(10);
     assert.strictEqual(await metric.testGetValue("aPing"), 10);
   
-    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.instance.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "counter": {
         "aCategory.aCounterMetric": 10

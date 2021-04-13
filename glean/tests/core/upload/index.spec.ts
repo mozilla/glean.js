@@ -7,6 +7,7 @@ import sinon from "sinon";
 import { v4 as UUIDv4 } from "uuid";
 
 import { Configuration } from "../../../src/core/config";
+import { Context } from "../../../src/core/context";
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings";
 import collectAndStorePing from "../../../src/core/pings/maker";
@@ -31,7 +32,7 @@ async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
 
   const identifiers = Array.from({ length: numPings }, () => UUIDv4());
   for (const identifier of identifiers) {
-    await collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, identifier, ping);
+    await collectAndStorePing(Context.instance.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, identifier, ping);
   }
 
   return identifiers;

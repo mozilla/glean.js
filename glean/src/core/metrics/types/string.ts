@@ -4,9 +4,9 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import Glean from "../../glean.js";
 import { MAX_LENGTH_VALUE, StringMetric } from "./string_metric.js";
 import Dispatcher from "../../dispatcher.js";
+import { Context } from "../../context.js";
 
 /**
  * A string metric.
@@ -32,7 +32,7 @@ class StringMetricType extends MetricType {
    * @param value The string we want to set to.
    */
   static async _private_setUndispatched(instance: StringMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
+    if (!instance.shouldRecord(Context.instance.uploadEnabled)) {
       return;
     }
 
@@ -42,7 +42,7 @@ class StringMetricType extends MetricType {
     }
 
     const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
-    await Glean.metricsDatabase.record(instance, metric);
+    await Context.instance.metricsDatabase.record(instance, metric);
   }
 
   /**
@@ -76,7 +76,7 @@ class StringMetricType extends MetricType {
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     let metric: string | undefined;
     await Dispatcher.instance.testLaunch(async () => {
-      metric = await Glean.metricsDatabase.getMetric<string>(ping, this);
+      metric = await Context.instance.metricsDatabase.getMetric<string>(ping, this);
     });
     return metric;
   }

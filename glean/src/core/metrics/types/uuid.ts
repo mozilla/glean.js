@@ -7,7 +7,7 @@ import { MetricType } from "../index.js";
 import { generateUUIDv4 } from "../../utils.js";
 import { UUIDMetric } from "./uuid_metric.js";
 import Dispatcher from "../../dispatcher.js";
-import Glean from "../../glean.js";
+import { Context } from "../../context.js";
 
 /**
  *  An UUID metric.
@@ -32,7 +32,7 @@ class UUIDMetricType extends MetricType {
    * @param value The UUID we want to set to.
    */
   static async _private_setUndispatched(instance: UUIDMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord(Glean.isUploadEnabled())) {
+    if (!instance.shouldRecord(Context.instance.uploadEnabled)) {
       return;
     }
 
@@ -49,7 +49,7 @@ class UUIDMetricType extends MetricType {
       return;
     }
 
-    await Glean.metricsDatabase.record(instance, metric);
+    await Context.instance.metricsDatabase.record(instance, metric);
   }
 
   /**
@@ -69,7 +69,7 @@ class UUIDMetricType extends MetricType {
    * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
    */
   generateAndSet(): string | undefined {
-    if (!this.shouldRecord(Glean.isUploadEnabled())) {
+    if (!this.shouldRecord(Context.instance.uploadEnabled)) {
       return;
     }
 
@@ -96,7 +96,7 @@ class UUIDMetricType extends MetricType {
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     let metric: string | undefined;
     await Dispatcher.instance.testLaunch(async () => {
-      metric = await Glean.metricsDatabase.getMetric<string>(ping, this);
+      metric = await Context.instance.metricsDatabase.getMetric<string>(ping, this);
     });
     return metric;
   }

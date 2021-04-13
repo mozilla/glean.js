@@ -8,6 +8,7 @@ import { v4 as UUIDv4 } from "uuid";
 import Glean from "../../../src/core/glean";
 import UUIDMetricType from "../../../src/core/metrics/types/uuid";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
+import { Context } from "../../../src/core/context";
  
 describe("UUIDMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -71,7 +72,7 @@ describe("UUIDMetric", function() {
     metric.set(expected);
     assert.strictEqual(await metric.testGetValue("aPing"), expected);
 
-    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.instance.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "uuid": {
         "aCategory.aUUIDMetric": expected

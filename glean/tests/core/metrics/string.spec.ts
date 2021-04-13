@@ -8,6 +8,7 @@ import Glean from "../../../src/core/glean";
 import StringMetricType from "../../../src/core/metrics/types/string";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string_metric";
+import { Context } from "../../../src/core/context";
  
 describe("StringMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -55,7 +56,7 @@ describe("StringMetric", function() {
     metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
 
-    const snapshot = await Glean.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.instance.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "string": {
         "aCategory.aStringMetric": "test_string_value"
