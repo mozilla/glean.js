@@ -56,7 +56,7 @@ describe("StringMetric", function() {
     metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
 
-    const snapshot = await Context.instance.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "string": {
         "aCategory.aStringMetric": "test_string_value"

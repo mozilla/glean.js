@@ -7,7 +7,6 @@ import { MetricType } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import { isUndefined } from "../../utils.js";
 import { CounterMetric } from "./counter_metric.js";
-import Dispatcher from "../../dispatcher.js";
 import { Context } from "../../context.js";
 
 /**
@@ -34,7 +33,7 @@ class CounterMetricType extends MetricType {
    * @param amount The amount we want to add.
    */
   static async _private_addUndispatched(instance: CounterMetricType, amount?: number): Promise<void> {
-    if (!instance.shouldRecord(Context.instance.uploadEnabled)) {
+    if (!instance.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
@@ -69,7 +68,7 @@ class CounterMetricType extends MetricType {
       };
     })(amount);
 
-    await Context.instance.metricsDatabase.transform(instance, transformFn);
+    await Context.metricsDatabase.transform(instance, transformFn);
   }
 
   /**
@@ -85,7 +84,7 @@ class CounterMetricType extends MetricType {
    *               If not provided will default to `1`.
    */
   add(amount?: number): void {
-    Dispatcher.instance.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
+    Context.dispatcher.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
   }
 
   /**
@@ -104,8 +103,8 @@ class CounterMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
     let metric: number | undefined;
-    await Dispatcher.instance.testLaunch(async () => {
-      metric = await Context.instance.metricsDatabase.getMetric<number>(ping, this);
+    await Context.dispatcher.testLaunch(async () => {
+      metric = await Context.metricsDatabase.getMetric<number>(ping, this);
     });
     return metric;
   }

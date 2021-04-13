@@ -5,7 +5,6 @@
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { MAX_LENGTH_VALUE, StringMetric } from "./string_metric.js";
-import Dispatcher from "../../dispatcher.js";
 import { Context } from "../../context.js";
 
 /**
@@ -32,7 +31,7 @@ class StringMetricType extends MetricType {
    * @param value The string we want to set to.
    */
   static async _private_setUndispatched(instance: StringMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord(Context.instance.uploadEnabled)) {
+    if (!instance.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
@@ -42,7 +41,7 @@ class StringMetricType extends MetricType {
     }
 
     const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
-    await Context.instance.metricsDatabase.record(instance, metric);
+    await Context.metricsDatabase.record(instance, metric);
   }
 
   /**
@@ -56,7 +55,7 @@ class StringMetricType extends MetricType {
    * @param value the value to set.
    */
   set(value: string): void {
-    Dispatcher.instance.launch(() => StringMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(() => StringMetricType._private_setUndispatched(this, value));
   }
 
   /**
@@ -75,8 +74,8 @@ class StringMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     let metric: string | undefined;
-    await Dispatcher.instance.testLaunch(async () => {
-      metric = await Context.instance.metricsDatabase.getMetric<string>(ping, this);
+    await Context.dispatcher.testLaunch(async () => {
+      metric = await Context.metricsDatabase.getMetric<string>(ping, this);
     });
     return metric;
   }

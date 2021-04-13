@@ -7,7 +7,6 @@ import { MetricType } from "../index.js";
 import type { ExtraMap} from "../events_database.js";
 import { RecordedEvent } from "../events_database.js";
 import { isUndefined } from "../../utils.js";
-import Dispatcher from "../../dispatcher.js";
 import { Context } from "../../context.js";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
@@ -48,8 +47,8 @@ class EventMetricType extends MetricType {
    *        The maximum length for values is 100 bytes.
    */
   record(extra?: ExtraMap): void {
-    Dispatcher.instance.launch(async () => {
-      if (!this.shouldRecord(Context.instance.uploadEnabled)) {
+    Context.dispatcher.launch(async () => {
+      if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
   
@@ -76,7 +75,7 @@ class EventMetricType extends MetricType {
         timestamp,
         truncatedExtra,
       );
-      await Context.instance.eventsDatabase.record(this, event);
+      await Context.eventsDatabase.record(this, event);
     });
   }
 
@@ -96,8 +95,8 @@ class EventMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
     let events: RecordedEvent[] | undefined;
-    await Dispatcher.instance.testLaunch(async () => {
-      events = await Context.instance.eventsDatabase.getEvents(ping, this);
+    await Context.dispatcher.testLaunch(async () => {
+      events = await Context.eventsDatabase.getEvents(ping, this);
     });
     return events;
   }

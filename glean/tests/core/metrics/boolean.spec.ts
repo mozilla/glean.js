@@ -55,7 +55,7 @@ describe("BooleanMetric", function() {
     metric.set(true);
     assert.strictEqual(await metric.testGetValue("aPing"), true);
 
-    const snapshot = await Context.instance.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "boolean": {
         "aCategory.aBooleanMetric": true

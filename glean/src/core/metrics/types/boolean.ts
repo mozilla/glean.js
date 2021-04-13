@@ -5,7 +5,6 @@
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { BooleanMetric } from "./boolean_metric.js";
-import Dispatcher from "../../dispatcher.js";
 import { Context } from "../../context.js";
 
 /**
@@ -24,13 +23,13 @@ class BooleanMetricType extends MetricType {
    * @param value the value to set.
    */
   set(value: boolean): void {
-    Dispatcher.instance.launch(async () => {
-      if (!this.shouldRecord(Context.instance.uploadEnabled)) {
+    Context.dispatcher.launch(async () => {
+      if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
 
       const metric = new BooleanMetric(value);
-      await Context.instance.metricsDatabase.record(this, metric);
+      await Context.metricsDatabase.record(this, metric);
     });
   }
 
@@ -50,8 +49,8 @@ class BooleanMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
     let metric: boolean | undefined;
-    await Dispatcher.instance.testLaunch(async () => {
-      metric = await Context.instance.metricsDatabase.getMetric<boolean>(ping, this);
+    await Context.dispatcher.testLaunch(async () => {
+      metric = await Context.metricsDatabase.getMetric<boolean>(ping, this);
     });
     return metric;
   }

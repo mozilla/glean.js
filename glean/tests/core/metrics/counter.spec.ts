@@ -55,7 +55,7 @@ describe("CounterMetric", function() {
     metric.add(10);
     assert.strictEqual(await metric.testGetValue("aPing"), 10);
   
-    const snapshot = await Context.instance.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "counter": {
         "aCategory.aCounterMetric": 10

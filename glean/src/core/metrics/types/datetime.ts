@@ -7,7 +7,6 @@ import { MetricType } from "../index.js";
 import TimeUnit from "../../metrics/time_unit.js";
 import type { DatetimeInternalRepresentation} from "./datetime_metric.js";
 import { DatetimeMetric } from "./datetime_metric.js";
-import Dispatcher from "../../dispatcher.js";
 import { Context } from "../../context.js";
 
 /**
@@ -37,7 +36,7 @@ class DatetimeMetricType extends MetricType {
    * @param value The date we want to set to.
    */
   static async _private_setUndispatched(instance: DatetimeMetricType, value?: Date): Promise<void> {
-    if (!instance.shouldRecord(Context.instance.uploadEnabled)) {
+    if (!instance.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
@@ -69,7 +68,7 @@ class DatetimeMetricType extends MetricType {
     }
 
     const metric = DatetimeMetric.fromDate(value, instance.timeUnit);
-    await Context.instance.metricsDatabase.record(instance, metric);
+    await Context.metricsDatabase.record(instance, metric);
   }
 
   /**
@@ -78,7 +77,7 @@ class DatetimeMetricType extends MetricType {
    * @param value The Date value to set. If not provided, will record the current time.
    */
   set(value?: Date): void {
-    Dispatcher.instance.launch(() => DatetimeMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(() => DatetimeMetricType._private_setUndispatched(this, value));
   }
 
   /**
@@ -96,8 +95,8 @@ class DatetimeMetricType extends MetricType {
    */
   private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
     let value: DatetimeInternalRepresentation | undefined;
-    await Dispatcher.instance.testLaunch(async () => {
-      value = await Context.instance.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
+    await Context.dispatcher.testLaunch(async () => {
+      value = await Context.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
     });
     if (value) {
       return new DatetimeMetric(value);

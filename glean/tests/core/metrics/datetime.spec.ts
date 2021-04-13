@@ -97,7 +97,7 @@ describe("DatetimeMetric", function() {
     metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
     assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15+05:00");
 
-    const snapshot = await Context.instance.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "datetime": {
         "aCategory.aDatetimeMetric": "1995-05-25T08:15+05:00"
@@ -207,7 +207,7 @@ describe("DatetimeMetric", function() {
       timezone: 60,
       date: "2021-01-07T14:41:26.312Z"
     });
-    await Context.instance.metricsDatabase.record(metric, concreteMetric);
+    await Context.metricsDatabase.record(metric, concreteMetric);
 
     // 1. The monkeypatched timezone it -300 (+05:00)
     // 2. The timezone manually set on the metric above is 60 (-01:00)

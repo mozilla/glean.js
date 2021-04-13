@@ -72,7 +72,7 @@ describe("UUIDMetric", function() {
     metric.set(expected);
     assert.strictEqual(await metric.testGetValue("aPing"), expected);
 
-    const snapshot = await Context.instance.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "uuid": {
         "aCategory.aUUIDMetric": expected

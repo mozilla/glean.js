@@ -32,7 +32,7 @@ async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
 
   const identifiers = Array.from({ length: numPings }, () => UUIDv4());
   for (const identifier of identifiers) {
-    await collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Context.instance.applicationId, identifier, ping);
+    await collectAndStorePing(identifier, ping);
   }
 
   return identifiers;
@@ -79,9 +79,9 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     // Create a new uploader and attach it to the existing storage.
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.instance.pingsDatabase);
+    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
     uploader.setInitialized();
-    Context.instance.pingsDatabase.attachObserver(uploader);
+    Context.pingsDatabase.attachObserver(uploader);
 
     // Mock the 'triggerUpload' function so that 'scanPendingPings' does not
     // mistakenly trigger ping submission. Note that since we're swapping
@@ -93,12 +93,12 @@ describe("PingUploader", function() {
       // Intentionally empty.
     };
     
-    await Context.instance.pingsDatabase.scanPendingPings();
+    await Context.pingsDatabase.scanPendingPings();
     assert.strictEqual(uploader["queue"].length, 10);
 
     uploader.triggerUpload = uploadTriggerFunc;
     await uploader.triggerUpload();
-    assert.deepStrictEqual(await Context.instance.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
     assert.strictEqual(uploader["queue"].length, 0);
   });
 
@@ -113,10 +113,10 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.instance.pingsDatabase);
+    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
     uploader.setInitialized();
-    Context.instance.pingsDatabase.attachObserver(uploader);
-    await Context.instance.pingsDatabase.scanPendingPings();
+    Context.pingsDatabase.attachObserver(uploader);
+    await Context.pingsDatabase.scanPendingPings();
 
     // Trigger uploading, but don't wait for it to finish,
     // so that it is ongoing when we cancel.
@@ -134,7 +134,7 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     await waitForGleanUploader();
-    assert.deepStrictEqual(await Context.instance.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 0);
   });
 
@@ -147,7 +147,7 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     await waitForGleanUploader();
-    assert.deepStrictEqual(await Context.instance.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 0);
   });
 
@@ -161,13 +161,13 @@ describe("PingUploader", function() {
 
     await waitForGleanUploader();
     // Ping should still be there.
-    const allPings = await Context.instance.pingsDatabase.getAllPings();
+    const allPings = await Context.pingsDatabase.getAllPings();
     assert.deepStrictEqual(Object.keys(allPings).length, 1);
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 1);
   });
 
   it("duplicates are not enqueued", function() {
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.instance.pingsDatabase);
+    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
     for (let i = 0; i < 10; i++) {
       uploader["enqueuePing"]({
         identifier: "id",

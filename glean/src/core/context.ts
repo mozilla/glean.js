@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { DebugOptions } from "./debug_options";
+import type Dispatcher from "./dispatcher";
 import type MetricsDatabase from "./metrics/database";
 import type EventsDatabase from "./metrics/events_database";
 import type PingsDatabase from "./pings/database";
@@ -12,6 +13,8 @@ import type PingsDatabase from "./pings/database";
  */
 export class Context {
   private static _instance: Context;
+
+  private _dispatcher!: Dispatcher;
 
   private _uploadEnabled!: boolean;
   private _metricsDatabase!: MetricsDatabase;
@@ -36,59 +39,67 @@ export class Context {
     return Context._instance;
   }
 
-  get uploadEnabled(): boolean {
-    return this._uploadEnabled;
+  static get dispatcher(): Dispatcher {
+    return Context.instance._dispatcher;
   }
 
-  set uploadEnabled(upload: boolean) {
-    this._uploadEnabled = upload;
+  static set dispatcher(dispatcher: Dispatcher) {
+    Context.instance._dispatcher = dispatcher;
   }
 
-  get metricsDatabase(): MetricsDatabase {
-    return this._metricsDatabase;
+  static get uploadEnabled(): boolean {
+    return Context.instance._uploadEnabled;
   }
 
-  set metricsDatabase(db: MetricsDatabase) {
-    this._metricsDatabase = db;
+  static set uploadEnabled(upload: boolean) {
+    Context.instance._uploadEnabled = upload;
   }
 
-  get eventsDatabase(): EventsDatabase {
-    return this._eventsDatabase;
+  static get metricsDatabase(): MetricsDatabase {
+    return Context.instance._metricsDatabase;
   }
 
-  set eventsDatabase(db: EventsDatabase) {
-    this._eventsDatabase = db;
+  static set metricsDatabase(db: MetricsDatabase) {
+    Context.instance._metricsDatabase = db;
   }
 
-  get pingsDatabase(): PingsDatabase {
-    return this._pingsDatabase;
+  static get eventsDatabase(): EventsDatabase {
+    return Context.instance._eventsDatabase;
   }
 
-  set pingsDatabase(db: PingsDatabase) {
-    this._pingsDatabase = db;
+  static set eventsDatabase(db: EventsDatabase) {
+    Context.instance._eventsDatabase = db;
   }
 
-  get applicatinId(): string {
-    return this._applicationId;
+  static get pingsDatabase(): PingsDatabase {
+    return Context.instance._pingsDatabase;
   }
 
-  set applicationId(id: string) {
-    this._applicationId = id;
+  static set pingsDatabase(db: PingsDatabase) {
+    Context.instance._pingsDatabase = db;
   }
 
-  get initialized(): boolean {
-    return this._initialized;
+  static get applicatinId(): string {
+    return Context.instance._applicationId;
   }
 
-  set initialized(init: boolean) {
-    this._initialized = init;
+  static set applicationId(id: string) {
+    Context.instance._applicationId = id;
   }
 
-  get debugOptions(): DebugOptions {
-    return this._debugOptions;
+  static get initialized(): boolean {
+    return Context.instance._initialized;
   }
 
-  set debugOptions(options: DebugOptions) {
-    this._debugOptions = options;
+  static set initialized(init: boolean) {
+    Context.instance._initialized = init;
+  }
+
+  static get debugOptions(): DebugOptions {
+    return Context.instance._debugOptions;
+  }
+
+  static set debugOptions(options: DebugOptions) {
+    Context.instance._debugOptions = options;
   }
 }

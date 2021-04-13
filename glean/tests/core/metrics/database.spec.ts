@@ -494,8 +494,8 @@ describe("MetricsDatabase", function() {
         lifetime: Lifetime.Ping,
         disabled: false
       });
-      await Context.instance.metricsDatabase.record(metric, new StringMetric("value"));
-      await Context.instance.metricsDatabase.clear(Lifetime.Ping, "aPing");
+      await Context.metricsDatabase.record(metric, new StringMetric("value"));
+      await Context.metricsDatabase.clear(Lifetime.Ping, "aPing");
 
       assert.strictEqual(await metric.testGetValue("aPing"), undefined);
       assert.strictEqual(await metric.testGetValue("twoPing"), "value");

@@ -13,9 +13,9 @@ import type CommonPingData from "./common_ping_data.js";
 import CoreEvents from "../events/index.js";
 import type MetricsDatabase from "../metrics/database.js";
 import type EventsDatabase from "../metrics/events_database.js";
-import type PingsDatabase from "./database.js";
 import type { DebugOptions } from "../debug_options.js";
 import { Lifetime } from "../metrics/lifetime.js";
+import { Context } from "../context.js";
 
 // The moment the current Glean.js session started.
 const GLEAN_START_TIME = new Date();
@@ -237,19 +237,14 @@ export function makePath(applicationId: string, identifier: string, ping: Common
  * This event is triggered **after** logging the ping, which happens if `logPings` is set.
  * We will log the payload before it suffers any change by plugins listening to this event.
  *
- * @param metricsDatabase The metrics database.
- * @param eventsDatabase The events database.
- * @param pingsDatabase The pings database.
- * @param applicationId The user-provided application id.
  * @param identifier The pings UUID identifier.
  * @param ping The ping to submit.
  * @param reason An optional reason code to include in the ping.
- * @param debugOptions The debug options.
  *
  * @returns A promise that is resolved once collection and storing is done.
  */
-export async function collectAndStorePing(metricsDatabase: MetricsDatabase, eventsDatabase: EventsDatabase, pingsDatabase: PingsDatabase, applicationId: string, identifier: string, ping: CommonPingData, reason?: string, debugOptions?: DebugOptions): Promise<void> {
-  const collectedPayload = await collectPing(metricsDatabase, eventsDatabase, ping, reason);
+export async function collectAndStorePing(identifier: string, ping: CommonPingData, reason?: string): Promise<void> {
+  const collectedPayload = await collectPing(Context.metricsDatabase, Context.eventsDatabase, ping, reason);
   if (!collectedPayload) {
     return;
   }
@@ -268,13 +263,13 @@ export async function collectAndStorePing(metricsDatabase: MetricsDatabase, even
     return;
   }
 
-  if (debugOptions?.logPings) {
+  if (Context.debugOptions.logPings) {
     console.info(JSON.stringify(collectedPayload, null, 2));
   }
   const finalPayload = modifiedPayload ? modifiedPayload : collectedPayload;
-  const headers = getPingHeaders(debugOptions);
-  return pingsDatabase.recordPing(
-    makePath(applicationId, identifier, ping),
+  const headers = getPingHeaders(Context.debugOptions);
+  return Context.pingsDatabase.recordPing(
+    makePath(Context.applicationId, identifier, ping),
     identifier,
     finalPayload,
     headers
