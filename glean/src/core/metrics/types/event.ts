@@ -4,7 +4,6 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import Glean from "../../glean.js";
 import type { ExtraMap} from "../events_database.js";
 import { RecordedEvent } from "../events_database.js";
 import { isUndefined } from "../../utils.js";
@@ -77,7 +76,7 @@ class EventMetricType extends MetricType {
         timestamp,
         truncatedExtra,
       );
-      await Glean.eventsDatabase.record(this, event);
+      await Context.instance.eventsDatabase.record(this, event);
     });
   }
 
@@ -98,7 +97,7 @@ class EventMetricType extends MetricType {
   async testGetValue(ping: string = this.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
     let events: RecordedEvent[] | undefined;
     await Dispatcher.instance.testLaunch(async () => {
-      events = await Glean.eventsDatabase.getEvents(ping, this);
+      events = await Context.instance.eventsDatabase.getEvents(ping, this);
     });
     return events;
   }

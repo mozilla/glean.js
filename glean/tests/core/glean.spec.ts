@@ -498,7 +498,7 @@ describe("Glean", function() {
     );
 
     await Dispatcher.instance.testBlockOnQueue();
-    const storedPings = await Glean.pingsDatabase.getAllPings();
+    const storedPings = await Context.instance.pingsDatabase.getAllPings();
     const counterValues = [];
     for (const ident in storedPings) {
       const metrics = storedPings[ident].payload.metrics;

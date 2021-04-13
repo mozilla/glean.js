@@ -3,6 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type MetricsDatabase from "./metrics/database";
+import type EventsDatabase from "./metrics/events_database";
+import type PingsDatabase from "./pings/database";
 
 /**
  * TODO: Why do we need this?
@@ -12,6 +14,8 @@ export class Context {
 
   private _uploadEnabled!: boolean;
   private _metricsDatabase!: MetricsDatabase;
+  private _eventsDatabase!: EventsDatabase;
+  private _pingsDatabase!: PingsDatabase;
 
   private constructor() {
     // Intentionally empty, exclusively defined to mark the
@@ -32,6 +36,22 @@ export class Context {
 
   set metricsDatabase(db: MetricsDatabase) {
     this._metricsDatabase = db;
+  }
+
+  get eventsDatabase(): EventsDatabase {
+    return this._eventsDatabase;
+  }
+
+  set eventsDatabase(db: EventsDatabase) {
+    this._eventsDatabase = db;
+  }
+
+  get pingsDatabase(): PingsDatabase {
+    return this._pingsDatabase;
+  }
+
+  set pingsDatabase(db: PingsDatabase) {
+    this._pingsDatabase = db;
   }
 
   get uploadEnabled(): boolean {

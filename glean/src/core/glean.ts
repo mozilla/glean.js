@@ -48,11 +48,6 @@ class Glean {
   private _applicationId!: string;
   // The Glean configuration object.
   private _config!: Configuration;
-  // The metrics and pings databases.
-  private _db?: {
-    events: EventsDatabase,
-    pings: PingsDatabase
-  };
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -144,9 +139,9 @@ class Glean {
     }
 
     // Clear the databases.
-    await Glean.eventsDatabase.clearAll();
+    await Context.instance.eventsDatabase.clearAll();
     await Context.instance.metricsDatabase.clearAll();
-    await Glean.pingsDatabase.clearAll();
+    await Context.instance.pingsDatabase.clearAll();
 
     // We need to briefly set upload_enabled to true here so that `set`
     // is not a no-op.
@@ -215,15 +210,13 @@ class Glean {
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
 
-    Glean.instance._db = {
-      events: new EventsDatabase(Glean.platform.Storage),
-      pings: new PingsDatabase(Glean.platform.Storage)
-    };
-
     Context.instance.metricsDatabase = new MetricsDatabase(Glean.platform.Storage);
-    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Glean.pingsDatabase);
+    Context.instance.eventsDatabase = new EventsDatabase(Glean.platform.Storage);
+    Context.instance.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
 
-    Glean.pingsDatabase.attachObserver(Glean.pingUploader);
+    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Context.instance.pingsDatabase);
+
+    Context.instance.pingsDatabase.attachObserver(Glean.pingUploader);
 
     if (config?.plugins) {
       for (const plugin of config.plugins) {
@@ -285,29 +278,13 @@ class Glean {
         }
       }
 
-      await Glean.pingsDatabase.scanPendingPings();
+      await Context.instance.pingsDatabase.scanPendingPings();
 
       // Even though this returns a promise, there is no need to block on it returning.
       //
       // On the contrary we _want_ the uploading tasks to be executed async.
       void Glean.pingUploader.triggerUpload();
     });
-  }
-
-  static get eventsDatabase(): EventsDatabase {
-    if (!Glean.instance._db) {
-      throw new Error("IMPOSSIBLE: Attempted to access the events database before Glean was initialized.");
-    }
-
-    return Glean.instance._db.events;
-  }
-
-  static get pingsDatabase(): PingsDatabase {
-    if (!Glean.instance._db) {
-      throw new Error("IMPOSSIBLE: Attempted to access the pings database before Glean was initialized.");
-    }
-
-    return Glean.instance._db.pings;
   }
 
   static get initialized(): boolean {
@@ -555,9 +532,9 @@ class Glean {
 
     // Clear the databases.
     try {
-      await Glean.eventsDatabase.clearAll();
+      await Context.instance.eventsDatabase.clearAll();
       await Context.instance.metricsDatabase.clearAll();
-      await Glean.pingsDatabase.clearAll();
+      await Context.instance.pingsDatabase.clearAll();
     } catch {
       // Nothing to do here.
       // It is expected that these will fail in case we are initializing Glean for the first time.

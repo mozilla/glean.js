@@ -10,6 +10,7 @@ import CounterMetricType from "../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import Glean from "../../../src/core/glean";
 import Dispatcher from "../../../src/core/dispatcher";
+import { Context } from "../../../src/core/context";
 
 const sandbox = sinon.createSandbox();
 
@@ -54,7 +55,7 @@ describe("PingType", function() {
     counter.add();
 
     await submitSync(ping);
-    const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.instance.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
@@ -74,11 +75,11 @@ describe("PingType", function() {
     });
 
     await submitSync(ping1);
-    let storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    let storedPings = await Context.instance.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);
 
     await submitSync(ping2);
-    storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    storedPings = await Context.instance.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
@@ -91,7 +92,7 @@ describe("PingType", function() {
       sendIfEmpty: false,
     });
     await submitSync(ping);
-    const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.instance.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);
   });
 
@@ -104,7 +105,7 @@ describe("PingType", function() {
       sendIfEmpty: false,
     });
     await submitSync(ping);
-    const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.instance.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);
   });
 });

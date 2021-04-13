@@ -4,6 +4,7 @@
 
 import assert from "assert";
 import sinon from "sinon";
+import { Context } from "../../../src/core/context";
 import Dispatcher from "../../../src/core/dispatcher";
 
 import Glean from "../../../src/core/glean";
@@ -59,7 +60,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Dispatcher.instance.testBlockOnQueue();
     
-    const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.instance.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -112,7 +113,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Dispatcher.instance.testBlockOnQueue();
 
-    const storedPings = await Glean.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.instance.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.

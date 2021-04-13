@@ -19,6 +19,7 @@ import type Uploader from "../../src/core/upload/uploader";
 import { UploadResultStatus } from "../../src/core/upload/uploader";
 import CounterMetricType from "../../src/core/metrics/types/counter";
 import { Lifetime } from "../../src/core/metrics/lifetime";
+import { Context } from "../../src/core/context";
 
 const sandbox = sinon.createSandbox();
 
@@ -62,7 +63,7 @@ describe("PingEncryptionPlugin", function() {
       sinon.match.string
     );
 
-    await collectAndStorePing(Glean.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, pingId, ping, undefined, Glean.debugOptions);
+    await collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, pingId, ping, undefined, Glean.debugOptions);
     assert.ok(postSpy.calledOnce);
 
     const payload = JSON.parse(postSpy.args[0][1]) as JSONObject;

@@ -99,7 +99,7 @@ describe("PingMaker", function() {
       includeClientId: true,
       sendIfEmpty: false,
     });
-    assert.strictEqual(await PingMaker.collectPing(Context.instance.metricsDatabase, Glean.eventsDatabase, ping), undefined);
+    assert.strictEqual(await PingMaker.collectPing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, ping), undefined);
   });
 
   it("sequence numbers must be sequential", async function() {
@@ -152,13 +152,13 @@ describe("PingMaker", function() {
       sendIfEmpty: true,
     });
 
-    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
-    const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
+    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
+    const recordedPing = (await Context.instance.pingsDatabase.getAllPings())["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
 
     await Glean.testResetGlean(testAppId, true);
-    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
-    const recordedPingNoPlugin = (await Glean.pingsDatabase.getAllPings())["ident"];
+    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
+    const recordedPingNoPlugin = (await Context.instance.pingsDatabase.getAllPings())["ident"];
     assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
   });
 
@@ -180,11 +180,11 @@ describe("PingMaker", function() {
     });
 
     const consoleSpy = sandbox.spy(console, "info");
-    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
 
     const loggedPayload = JSON.parse(consoleSpy.lastCall.args[0]) as JSONObject;
 
-    const recordedPing = (await Glean.pingsDatabase.getAllPings())["ident"];
+    const recordedPing = (await Context.instance.pingsDatabase.getAllPings())["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
     assert.notDeepStrictEqual(loggedPayload, { "you": "got mocked!" });
     assert.ok("client_info" in loggedPayload);
@@ -215,9 +215,9 @@ describe("PingMaker", function() {
       sendIfEmpty: true,
     });
 
-    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Glean.eventsDatabase, Glean.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
 
-    const recordedPings = await Glean.pingsDatabase.getAllPings();
+    const recordedPings = await Context.instance.pingsDatabase.getAllPings();
     assert.ok(!("ident" in recordedPings));
   });
 });

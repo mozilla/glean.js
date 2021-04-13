@@ -66,8 +66,8 @@ class PingType implements CommonPingData {
       const identifier = generateUUIDv4();
       await collectAndStorePing(
         Context.instance.metricsDatabase,
-        Glean.eventsDatabase,
-        Glean.pingsDatabase,
+        Context.instance.eventsDatabase,
+        Context.instance.pingsDatabase,
         Glean.applicationId,
         identifier,
         this,
