@@ -443,6 +443,14 @@ class Glean {
    *        Please check out the available environments in the platform/ module.
    */
   static setPlatform(platform: Platform): void {
+    if (Context.initialized) {
+      console.info(
+        "Attempted to set the platform but Glean has already been initialized. Ignoring.",
+        `Current platform is: ${Glean.platform.name}}`
+      );
+      return;
+    }
+
     Glean.instance._platform = platform;
   }
 

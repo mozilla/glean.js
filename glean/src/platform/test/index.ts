@@ -43,6 +43,7 @@ const TestPlatform: Platform = {
   Storage: MockStorage,
   uploader: new MockUploader(),
   info: MockPlatformInfo,
+  name: "test"
 };
 
 export default TestPlatform;

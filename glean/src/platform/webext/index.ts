@@ -12,6 +12,7 @@ const WebExtPlatform: Platform = {
   Storage,
   uploader,
   info,
+  name: "webext"
 };
 
 export default WebExtPlatform;

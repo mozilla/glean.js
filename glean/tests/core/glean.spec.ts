@@ -514,4 +514,15 @@ describe("Glean", function() {
       [1,2,3,4,5,6,7,8,9,10]
     );
   });
+
+  it("disallow changing the platform after Glean is initialized", async function() {
+    const MockPlatform = {
+      ...TestPlatform,
+      name: "mock"
+    };
+
+    Glean.setPlatform(MockPlatform);
+
+    assert.strictEqual(TestPlatform.name, Glean.platform.name);
+  });
 });
