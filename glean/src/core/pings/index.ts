@@ -7,6 +7,7 @@ import { generateUUIDv4 } from "../utils.js";
 import collectAndStorePing from "../pings/maker.js";
 import Glean from "../glean.js";
 import type CommonPingData from "./common_ping_data.js";
+import Dispatcher from "../dispatcher.js";
 
 /**
  * Stores information about a ping.
@@ -44,7 +45,7 @@ class PingType implements CommonPingData {
    *               `ping_info.reason` part of the payload.
    */
   submit(reason?: string): void {
-    Glean.dispatcher.launch(async () => {
+    Dispatcher.instance.launch(async () => {
       if (!Glean.initialized) {
         console.info("Glean must be initialized before submitting pings.");
         return;

@@ -8,6 +8,7 @@ import type { JSONValue } from "../../utils.js";
 import { isUndefined } from "../../utils.js";
 import Glean from "../../glean.js";
 import { CounterMetric } from "./counter_metric.js";
+import Dispatcher from "../../dispatcher.js";
 
 /**
  * A counter metric.
@@ -84,7 +85,7 @@ class CounterMetricType extends MetricType {
    *               If not provided will default to `1`.
    */
   add(amount?: number): void {
-    Glean.dispatcher.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
+    Dispatcher.instance.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
   }
 
   /**
@@ -103,7 +104,7 @@ class CounterMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
     let metric: number | undefined;
-    await Glean.dispatcher.testLaunch(async () => {
+    await Dispatcher.instance.testLaunch(async () => {
       metric = await Glean.metricsDatabase.getMetric<number>(ping, this);
     });
     return metric;

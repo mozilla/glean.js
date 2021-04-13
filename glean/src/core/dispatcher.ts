@@ -79,10 +79,22 @@ class Dispatcher {
   // This is private, because we only expect `testLaunch` to attach observers as of yet.
   private observers: DispatcherObserver[];
 
+  private static _instance: Dispatcher;
+
+  // While this constructor should be private to prevent direct instantiation,
+  // it's left as public in order to make testing simpler.
   constructor(readonly maxPreInitQueueSize = 100) {
     this.observers = [];
     this.queue = [];
     this.state = DispatcherState.Uninitialized;
+  }
+
+  static get instance(): Dispatcher {
+    if (!Dispatcher._instance) {
+      Dispatcher._instance = new Dispatcher();
+    }
+
+    return Dispatcher._instance;
   }
 
   /**

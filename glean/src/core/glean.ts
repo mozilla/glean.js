@@ -33,8 +33,6 @@ class Glean {
   private _coreMetrics: CoreMetrics;
   // Instances of Glean's core pings.
   private _corePings: CorePings;
-  // A task dispatcher to help execute in order asynchronous external API calls.
-  private _dispatcher: Dispatcher;
 
   // The environment must be set before initialize.
   private _platform?: Platform;
@@ -65,7 +63,6 @@ class Glean {
       Use Glean.instance instead to access the Glean singleton.`);
     }
 
-    this._dispatcher = new Dispatcher();
     this._coreMetrics = new CoreMetrics();
     this._corePings = new CorePings();
     this._initialized = false;
@@ -250,7 +247,7 @@ class Glean {
     // because they will throw if configuration is incorrect and we want them to throw.
     //
     // The dispatcher will catch and log any exceptions.
-    Glean.dispatcher.flushInit(async () => {
+    Dispatcher.instance.flushInit(async () => {
       Glean.instance._applicationId = sanitizeApplicationId(applicationId);
       Glean.instance._config = correctConfig;
 
@@ -359,10 +356,6 @@ class Glean {
     return Glean.instance._config?.debug;
   }
 
-  static get dispatcher(): Dispatcher {
-    return Glean.instance._dispatcher;
-  }
-
   static get platform(): Platform {
     if (!Glean.instance._platform) {
       throw new Error("IMPOSSIBLE: Attempted to access environment specific APIs before Glean was initialized.");
@@ -397,7 +390,7 @@ class Glean {
    * @param flag When true, enable metric collection.
    */
   static setUploadEnabled(flag: boolean): void {
-    Glean.dispatcher.launch(async () => {
+    Dispatcher.instance.launch(async () => {
       if (!Glean.initialized) {
         console.error(
           "Changing upload enabled before Glean is initialized is not supported.\n",
@@ -425,7 +418,7 @@ class Glean {
    * @param flag Whether or not to log pings.
    */
   static setLogPings(flag: boolean): void {
-    Glean.dispatcher.launch(() => {
+    Dispatcher.instance.launch(() => {
       Glean.instance._config.debug.logPings = flag;
 
       // The dispatcher requires that dispatched functions return promises.
@@ -450,7 +443,7 @@ class Glean {
       return;
     }
 
-    Glean.dispatcher.launch(() => {
+    Dispatcher.instance.launch(() => {
       Glean.instance._config.debug.debugViewTag = value;
 
       // The dispatcher requires that dispatched functions return promises.
@@ -464,7 +457,7 @@ class Glean {
    * This is a no-op is case there is no `debugViewTag` set at the moment.
    */
   static unsetDebugViewTag(): void {
-    Glean.dispatcher.launch(() => {
+    Dispatcher.instance.launch(() => {
       delete Glean.instance._config.debug.debugViewTag;
       return Promise.resolve();
     });
@@ -488,7 +481,7 @@ class Glean {
       return;
     }
 
-    Glean.dispatcher.launch(() => {
+    Dispatcher.instance.launch(() => {
       Glean.instance._config.debug.sourceTags = value;
 
       // The dispatcher requires that dispatched functions return promises.
@@ -502,7 +495,7 @@ class Glean {
    * This is a no-op is case there are no `sourceTags` set at the moment.
    */
   static unsetSourceTags(): void {
-    Glean.dispatcher.launch(() => {
+    Dispatcher.instance.launch(() => {
       delete Glean.instance._config.debug.sourceTags;
       return Promise.resolve();
     });
@@ -541,7 +534,7 @@ class Glean {
     Glean.setPlatform(TestPlatform);
     Glean.initialize(applicationId, uploadEnabled, config);
 
-    await Glean.dispatcher.testBlockOnQueue();
+    await Dispatcher.instance.testBlockOnQueue();
   }
 
   /**
@@ -559,7 +552,7 @@ class Glean {
     testResetEvents();
 
     // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
-    await Glean.dispatcher.testUninitialize();
+    await Dispatcher.instance.testUninitialize();
 
     // Stop ongoing jobs and clear pending pings queue.
     if (Glean.pingUploader) {

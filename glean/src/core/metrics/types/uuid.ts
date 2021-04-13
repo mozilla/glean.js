@@ -5,8 +5,9 @@
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { generateUUIDv4 } from "../../utils.js";
-import Glean from "../../glean.js";
 import { UUIDMetric } from "./uuid_metric.js";
+import Dispatcher from "../../dispatcher.js";
+import Glean from "../../glean.js";
 
 /**
  *  An UUID metric.
@@ -59,7 +60,7 @@ class UUIDMetricType extends MetricType {
    * @throws In case `value` is not a valid UUID.
    */
   set(value: string): void {
-    Glean.dispatcher.launch(() => UUIDMetricType._private_setUndispatched(this, value));
+    Dispatcher.instance.launch(() => UUIDMetricType._private_setUndispatched(this, value));
   }
 
   /**
@@ -94,7 +95,7 @@ class UUIDMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     let metric: string | undefined;
-    await Glean.dispatcher.testLaunch(async () => {
+    await Dispatcher.instance.testLaunch(async () => {
       metric = await Glean.metricsDatabase.getMetric<string>(ping, this);
     });
     return metric;

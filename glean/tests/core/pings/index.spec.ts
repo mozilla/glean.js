@@ -9,6 +9,7 @@ import PingType from "../../../src/core/pings";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import Glean from "../../../src/core/glean";
+import Dispatcher from "../../../src/core/dispatcher";
 
 const sandbox = sinon.createSandbox();
 
@@ -20,7 +21,7 @@ const sandbox = sinon.createSandbox();
 async function submitSync(ping: PingType): Promise<void> {
   ping.submit();
   // TODO: Drop this whole approach once Bug 1691033 is resolved.
-  await Glean.dispatcher.testBlockOnQueue();
+  await Dispatcher.instance.testBlockOnQueue();
 }
 
 describe("PingType", function() {

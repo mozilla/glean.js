@@ -11,6 +11,7 @@ import Glean from "../../../src/core/glean";
 import CoreEvents from "../../../src/core/events";
 import Plugin from "../../../src/plugins";
 import type { JSONObject } from "../../../src/core/utils";
+import Dispatcher from "../../../src/core/dispatcher";
 
 const sandbox = sinon.createSandbox();
 
@@ -126,7 +127,7 @@ describe("PingMaker", function() {
   it("getPingHeaders returns headers when custom headers are set", async function () {
     Glean.setDebugViewTag("test");
     Glean.setSourceTags(["tag1", "tag2", "tag3"]);
-    await Glean.dispatcher.testBlockOnQueue();
+    await Dispatcher.instance.testBlockOnQueue();
 
     assert.deepStrictEqual({
       "X-Debug-ID": "test",
@@ -135,7 +136,7 @@ describe("PingMaker", function() {
 
     Glean.unsetDebugViewTag();
     Glean.unsetSourceTags();
-    await Glean.dispatcher.testBlockOnQueue();
+    await Dispatcher.instance.testBlockOnQueue();
     assert.strictEqual(PingMaker.getPingHeaders(Glean.debugOptions), undefined);
   });
 

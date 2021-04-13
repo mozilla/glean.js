@@ -8,6 +8,7 @@ import TimeUnit from "../../metrics/time_unit.js";
 import Glean from "../../glean.js";
 import type { DatetimeInternalRepresentation} from "./datetime_metric.js";
 import { DatetimeMetric } from "./datetime_metric.js";
+import Dispatcher from "../../dispatcher.js";
 
 /**
  * A datetime metric.
@@ -77,7 +78,7 @@ class DatetimeMetricType extends MetricType {
    * @param value The Date value to set. If not provided, will record the current time.
    */
   set(value?: Date): void {
-    Glean.dispatcher.launch(() => DatetimeMetricType._private_setUndispatched(this, value));
+    Dispatcher.instance.launch(() => DatetimeMetricType._private_setUndispatched(this, value));
   }
 
   /**
@@ -95,7 +96,7 @@ class DatetimeMetricType extends MetricType {
    */
   private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
     let value: DatetimeInternalRepresentation | undefined;
-    await Glean.dispatcher.testLaunch(async () => {
+    await Dispatcher.instance.testLaunch(async () => {
       value = await Glean.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
     });
     if (value) {

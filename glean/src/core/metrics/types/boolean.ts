@@ -6,6 +6,7 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import Glean from "../../glean.js";
 import { BooleanMetric } from "./boolean_metric.js";
+import Dispatcher from "../../dispatcher.js";
 
 /**
  *  A boolean metric.
@@ -23,7 +24,7 @@ class BooleanMetricType extends MetricType {
    * @param value the value to set.
    */
   set(value: boolean): void {
-    Glean.dispatcher.launch(async () => {
+    Dispatcher.instance.launch(async () => {
       if (!this.shouldRecord(Glean.isUploadEnabled())) {
         return;
       }
@@ -49,7 +50,7 @@ class BooleanMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
     let metric: boolean | undefined;
-    await Glean.dispatcher.testLaunch(async () => {
+    await Dispatcher.instance.testLaunch(async () => {
       metric = await Glean.metricsDatabase.getMetric<boolean>(ping, this);
     });
     return metric;

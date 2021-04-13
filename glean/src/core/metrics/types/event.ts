@@ -8,6 +8,7 @@ import Glean from "../../glean.js";
 import type { ExtraMap} from "../events_database.js";
 import { RecordedEvent } from "../events_database.js";
 import { isUndefined } from "../../utils.js";
+import Dispatcher from "../../dispatcher.js";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
@@ -47,7 +48,7 @@ class EventMetricType extends MetricType {
    *        The maximum length for values is 100 bytes.
    */
   record(extra?: ExtraMap): void {
-    Glean.dispatcher.launch(async () => {
+    Dispatcher.instance.launch(async () => {
       if (!this.shouldRecord(Glean.isUploadEnabled())) {
         return;
       }
@@ -95,7 +96,7 @@ class EventMetricType extends MetricType {
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
     let events: RecordedEvent[] | undefined;
-    await Glean.dispatcher.testLaunch(async () => {
+    await Dispatcher.instance.testLaunch(async () => {
       events = await Glean.eventsDatabase.getEvents(ping, this);
     });
     return events;
