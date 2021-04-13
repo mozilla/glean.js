@@ -3,9 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Glean from "../core/glean.js";
-import type { ConfigurationInterface } from "../core/config.js";
 
-import platform from "../platform/qt/index.js";
+import type { QtConfigurationInterface } from "../platform/qt/config.js";
+import Utils from "../platform/qt/utils.js";
 
 // Private Glean types to export.
 import PingType from "../core/pings/index.js";
@@ -32,14 +32,18 @@ export default {
    * @param uploadEnabled Determines whether telemetry is enabled.
    *                      If disabled, all persisted metrics, events and queued pings (except
    *                      first_run_date) are cleared.
-   * @param config Glean configuration options.
+   * @param config Glean QT configuration options.
    */
   initialize(
     applicationId: string,
     uploadEnabled: boolean,
-    config?: ConfigurationInterface
+    config: QtConfigurationInterface
   ): void {
-    Glean.setPlatform(platform);
+    if ("Qt" in this) {
+      throw new Error("The current global doesn't contain `Qt`. This doesn't look like a Qt environment");
+    }
+
+    Glean.setPlatform(Utils.qtToPlatform(config));
     Glean.initialize(applicationId, uploadEnabled, config);
   },
 
