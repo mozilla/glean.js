@@ -18,6 +18,9 @@ jobs:
       - run:
           name: Run linter
           command: npm --prefix ./glean run lint
+      - run:
+          name: Run circular dependencies checker
+          command: npm --prefix ./glean run lint:circular-deps
 
   unit-tests:
     docker:
