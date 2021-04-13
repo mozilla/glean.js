@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.7.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.0...main)
+
+# v0.8.0 (2021-04-13)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.7.0...v0.8.0)
 
 * [#173](https://github.com/mozilla/glean.js/pull/173): Drop Node.js support from webext entry points
 * [#155](https://github.com/mozilla/glean.js/pull/155): Allow to define custom uploaders in the configuration.
