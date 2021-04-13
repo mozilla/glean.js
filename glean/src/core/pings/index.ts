@@ -5,7 +5,6 @@
 import { DELETION_REQUEST_PING_NAME } from "../constants.js";
 import { generateUUIDv4 } from "../utils.js";
 import collectAndStorePing from "../pings/maker.js";
-import Glean from "../glean.js";
 import type CommonPingData from "./common_ping_data.js";
 import Dispatcher from "../dispatcher.js";
 import { Context } from "../context.js";
@@ -47,7 +46,7 @@ class PingType implements CommonPingData {
    */
   submit(reason?: string): void {
     Dispatcher.instance.launch(async () => {
-      if (!Glean.initialized) {
+      if (!Context.instance.initialized) {
         console.info("Glean must be initialized before submitting pings.");
         return;
       }
@@ -68,11 +67,11 @@ class PingType implements CommonPingData {
         Context.instance.metricsDatabase,
         Context.instance.eventsDatabase,
         Context.instance.pingsDatabase,
-        Glean.applicationId,
+        Context.instance.applicationId,
         identifier,
         this,
         correctedReason,
-        Glean.debugOptions
+        Context.instance.debugOptions
       );
       return;
     });

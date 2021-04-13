@@ -59,11 +59,11 @@ describe("PingEncryptionPlugin", function() {
     const pingId = "ident";
 
     const postSpy = sandbox.spy(TestPlatform.uploader, "post").withArgs(
-      sinon.match(makePath(Glean.applicationId, pingId, ping)),
+      sinon.match(makePath(Context.instance.applicationId, pingId, ping)),
       sinon.match.string
     );
 
-    await collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, pingId, ping, undefined, Glean.debugOptions);
+    await collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Context.instance.applicationId, pingId, ping, undefined, Context.instance.debugOptions);
     assert.ok(postSpy.calledOnce);
 
     const payload = JSON.parse(postSpy.args[0][1]) as JSONObject;

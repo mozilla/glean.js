@@ -20,7 +20,6 @@ import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 
 import type Platform from "../platform/index.js";
 import TestPlatform from "../platform/test/index.js";
-import type { DebugOptions } from "./debug_options.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import { Context } from "./context.js";
 
@@ -28,8 +27,6 @@ class Glean {
   // The Glean singleton.
   private static _instance?: Glean;
 
-  // Whether or not Glean has been initialized.
-  private _initialized: boolean;
   // Instances of Glean's core metrics.
   private _coreMetrics: CoreMetrics;
   // Instances of Glean's core pings.
@@ -44,8 +41,6 @@ class Glean {
   // because initialization will not happen in the constructor, but in the `initialize`
   // method.
   private _pingUploader!: PingUploader;
-  // The application ID (will be sanitized during initialization).
-  private _applicationId!: string;
   // The Glean configuration object.
   private _config!: Configuration;
 
@@ -58,7 +53,7 @@ class Glean {
 
     this._coreMetrics = new CoreMetrics();
     this._corePings = new CorePings();
-    this._initialized = false;
+    Context.instance.initialized = false;
   }
 
   private static get instance(): Glean {
@@ -192,7 +187,7 @@ class Glean {
     uploadEnabled: boolean,
     config?: ConfigurationInterface
   ): void {
-    if (Glean.initialized) {
+    if (Context.instance.initialized) {
       console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
       return;
     }
@@ -231,7 +226,8 @@ class Glean {
     //
     // The dispatcher will catch and log any exceptions.
     Dispatcher.instance.flushInit(async () => {
-      Glean.instance._applicationId = sanitizeApplicationId(applicationId);
+      Context.instance.applicationId = sanitizeApplicationId(applicationId);
+      Context.instance.debugOptions = correctConfig.debug;
       Glean.instance._config = correctConfig;
 
       // Clear application lifetime metrics.
@@ -245,7 +241,7 @@ class Glean {
       //
       // This is fine, we are inside a dispatched task that is guaranteed to run before any
       // other task. No external API call will be executed before we leave this task.
-      Glean.instance._initialized = true;
+      Context.instance.initialized = true;
       Glean.pingUploader.setInitialized(true);
 
       // The upload enabled flag may have changed since the last run, for
@@ -287,14 +283,6 @@ class Glean {
     });
   }
 
-  static get initialized(): boolean {
-    return Glean.instance._initialized;
-  }
-
-  static get applicationId(): string {
-    return Glean.instance._applicationId;
-  }
-
   static get serverEndpoint(): string | undefined {
     return Glean.instance._config?.serverEndpoint;
   }
@@ -309,10 +297,6 @@ class Glean {
 
   static get sourceTags(): string | undefined {
     return Glean.instance._config?.debug.sourceTags?.toString();
-  }
-
-  static get debugOptions(): DebugOptions | undefined {
-    return Glean.instance._config?.debug;
   }
 
   static get platform(): Platform {
@@ -339,7 +323,7 @@ class Glean {
    */
   static setUploadEnabled(flag: boolean): void {
     Dispatcher.instance.launch(async () => {
-      if (!Glean.initialized) {
+      if (!Context.instance.initialized) {
         console.error(
           "Changing upload enabled before Glean is initialized is not supported.\n",
           "Pass the correct state into `Glean.initialize\n`.",
@@ -494,7 +478,7 @@ class Glean {
    */
   static async testUninitialize(): Promise<void> {
     // Get back to an uninitialized state.
-    Glean.instance._initialized = false;
+    Context.instance.initialized = false;
 
     // Deregister all plugins
     testResetEvents();

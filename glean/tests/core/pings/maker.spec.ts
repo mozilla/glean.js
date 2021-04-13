@@ -133,12 +133,12 @@ describe("PingMaker", function() {
     assert.deepStrictEqual({
       "X-Debug-ID": "test",
       "X-Source-Tags": "tag1,tag2,tag3"
-    }, PingMaker.getPingHeaders(Glean.debugOptions));
+    }, PingMaker.getPingHeaders(Context.instance.debugOptions));
 
     Glean.unsetDebugViewTag();
     Glean.unsetSourceTags();
     await Dispatcher.instance.testBlockOnQueue();
-    assert.strictEqual(PingMaker.getPingHeaders(Glean.debugOptions), undefined);
+    assert.strictEqual(PingMaker.getPingHeaders(Context.instance.debugOptions), undefined);
   });
 
   it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
@@ -152,12 +152,12 @@ describe("PingMaker", function() {
       sendIfEmpty: true,
     });
 
-    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Context.instance.applicationId, "ident", ping, undefined, Context.instance.debugOptions);
     const recordedPing = (await Context.instance.pingsDatabase.getAllPings())["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
 
     await Glean.testResetGlean(testAppId, true);
-    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Context.instance.applicationId, "ident", ping, undefined, Context.instance.debugOptions);
     const recordedPingNoPlugin = (await Context.instance.pingsDatabase.getAllPings())["ident"];
     assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
   });
@@ -180,7 +180,7 @@ describe("PingMaker", function() {
     });
 
     const consoleSpy = sandbox.spy(console, "info");
-    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Context.instance.applicationId, "ident", ping, undefined, Context.instance.debugOptions);
 
     const loggedPayload = JSON.parse(consoleSpy.lastCall.args[0]) as JSONObject;
 
@@ -215,7 +215,7 @@ describe("PingMaker", function() {
       sendIfEmpty: true,
     });
 
-    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Glean.applicationId, "ident", ping, undefined, Glean.debugOptions);
+    await PingMaker.collectAndStorePing(Context.instance.metricsDatabase, Context.instance.eventsDatabase, Context.instance.pingsDatabase, Context.instance.applicationId, "ident", ping, undefined, Context.instance.debugOptions);
 
     const recordedPings = await Context.instance.pingsDatabase.getAllPings();
     assert.ok(!("ident" in recordedPings));
