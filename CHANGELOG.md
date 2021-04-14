@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.1...main)
 
+* [#201](https://github.com/mozilla/glean.js/pull/201): BUGFIX: Do not let the platform be changed after Glean is initialized.
+
 # v0.8.1 (2021-04-14)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.0...v0.8.1)
@@ -9,7 +11,6 @@
 * [#206](https://github.com/mozilla/glean.js/pull/206): BUGFIX: Fix ping URL path.
   * Application ID was being reporting as `undefined`.
 
-* [#201](https://github.com/mozilla/glean.js/pull/201): BUGFIX: Do not let the platform be changed after Glean is initialized.
 # v0.8.0 (2021-04-13)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.7.0...v0.8.0)
