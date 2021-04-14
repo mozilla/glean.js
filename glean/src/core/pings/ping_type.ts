@@ -8,6 +8,9 @@ import collectAndStorePing from "../pings/maker.js";
 import type CommonPingData from "./common_ping_data.js";
 import { Context } from "../context.js";
 
+type ValidatorFunction = (reason?: string) => Promise<void>;
+type PromiseCallback = (value: void | PromiseLike<void>) => void;
+
 /**
  * Stores information about a ping.
  *
@@ -19,6 +22,12 @@ class PingType implements CommonPingData {
   readonly includeClientId: boolean;
   readonly sendIfEmpty: boolean;
   readonly reasonCodes: string[];
+
+  // The functions and promises required for the test API to
+  // execute and synchronize with the submission API.
+  private resolveTestPromiseFunction?: PromiseCallback;
+  private rejectTestPromiseFunction?: PromiseCallback;
+  private testValidator?: ValidatorFunction;
 
   constructor (meta: CommonPingData) {
     this.name = meta.name;
@@ -44,6 +53,49 @@ class PingType implements CommonPingData {
    *               `ping_info.reason` part of the payload.
    */
   submit(reason?: string): void {
+    // **** Read this before changing the following code! ****
+    //
+    // The Dispatcher does not allow dispatched tasks to await on
+    // other dispatched tasks. Unfortunately, this causes a deadlock.
+    // In order to work around that problem, we kick off validation
+    // right before the actual submission takes place, through another
+    // async function (and not through the dispatcher). We then await
+    // in the dispatched submission task on the related promise, which
+    // will always resolve due to the use of `finally`.
+    if (this.testValidator) {
+      const cleanup = () => {
+        this.resolveTestPromiseFunction = undefined;
+        this.rejectTestPromiseFunction = undefined;
+        this.testValidator = undefined;
+      };
+
+      this.testValidator(reason)
+        .then(() => {
+          // Temporarily store the function and then clean up, so that fast consecutive
+          // calls to `testBeforeNextSubmit` don't fail because things are still set
+          // after the calling promise is resolved.
+          const resolver = this.resolveTestPromiseFunction;
+          cleanup();
+
+          this.internalSubmit(reason, resolver);
+        })
+        .catch(e => {
+          console.error(`There was an error validating "${this.name}" (${reason ?? "no reason"}):`, e);
+
+          // Temporarily store the function and then clean up, so that fast consecutive
+          // calls to `testBeforeNextSubmit` don't fail because things are still set
+          // after the calling promise is resolved.
+          const rejecter = this.rejectTestPromiseFunction;
+          cleanup();
+
+          this.internalSubmit(reason, rejecter);
+        });
+    } else {
+      this.internalSubmit(reason);
+    }
+  }
+
+  private internalSubmit(reason?: string, testResolver?: PromiseCallback): void {
     Context.dispatcher.launch(async () => {
       if (!Context.initialized) {
         console.info("Glean must be initialized before submitting pings.");
@@ -63,7 +115,40 @@ class PingType implements CommonPingData {
 
       const identifier = generateUUIDv4();
       await collectAndStorePing(identifier, this, correctedReason);
+
+      // This guarantees that, when running tests, the promise returned by
+      // `testBeforeNextSubmit` is resolved after the ping is collected: this is
+      // needed to make sure calling the testing APIs on metrics behave consistently
+      // if tests run fast.
+      if (testResolver) {
+        testResolver();
+      }
+    });
+  }
+
+  /**
+   * **Test-only API**
+   *
+   * Runs a validation function before the ping is collected.
+   *
+   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
+   *
+   * @param validatorFn The asynchronous validation function to run in order to validate
+   *                    the ping content.
+   *
+   * @returns A `Promise` resolved when the ping is collected and the validation function
+   *          is executed.
+   */
+  async testBeforeNextSubmit(validatorFn: ValidatorFunction): Promise<void> {
+    if (this.testValidator) {
+      console.error(`There is an existing test call for ping "${this.name}". Ignoring.`);
       return;
+    }
+
+    return new Promise((resolve, reject) => {
+      this.resolveTestPromiseFunction = resolve;
+      this.rejectTestPromiseFunction = reject;
+      this.testValidator = validatorFn;
     });
   }
 }
