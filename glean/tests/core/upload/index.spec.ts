@@ -207,10 +207,12 @@ describe("PingUploader", function() {
     await waitForGleanUploader();
 
     const url = postSpy.firstCall.args[0].split("/");
+    const appId = url[url.length - 4];
     const documentId = url[url.length - 1];
     const headers = postSpy.firstCall.args[2] || {};
 
     assert.strictEqual(documentId, expectedDocumentId);
+    assert.strictEqual(appId, Context.applicationId)
 
     assert.ok("Date" in headers);
     assert.ok("User-Agent" in headers);
