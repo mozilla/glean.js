@@ -161,7 +161,7 @@ export async function buildClientInfoSection(metricsDatabase: MetricsDatabase, p
  * - [X-Source-Tags]
  *
  * @param debugOptions The debug options.
- * 
+ *
  * @returns An object containing all the headers and their values
  *          or `undefined` in case no custom headers were set.
  */

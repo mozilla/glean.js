@@ -15,7 +15,7 @@ class TestEventMetricType extends EventMetricType {
   getMonotonicNow(): number {
     return Math.round(performance.now() / 1000);
   }
-} 
+}
 
 describe("EventMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -132,7 +132,7 @@ describe("EventMetric", function() {
 
   it("records properly without optional arguments", async function () {
     const pings = ["store1", "store2"];
-  
+
     const metric = new TestEventMetricType({
       category: "telemetry",
       name: "test_event_no_optional",
@@ -155,7 +155,7 @@ describe("EventMetric", function() {
 
   it("records properly with optional arguments", async function () {
     const pings = ["store1", "store2"];
-  
+
     const metric = new TestEventMetricType({
       category: "telemetry",
       name: "test_event_with_optional",

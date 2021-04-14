@@ -108,7 +108,7 @@ describe("EventsDatabase", function() {
     // If we snapshot a second time, the store must be empty.
     const empty_snapshot = await db.getPingEvents("store1", false);
     assert.strictEqual(empty_snapshot, undefined);
-    
+
     const store2 = await db.getPingEvents("store2", false);
     for (const events of [snapshot, store2]) {
       assert.ok(events != undefined);

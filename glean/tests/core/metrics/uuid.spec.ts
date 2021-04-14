@@ -9,14 +9,14 @@ import Glean from "../../../src/core/glean";
 import UUIDMetricType from "../../../src/core/metrics/types/uuid";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
- 
+
 describe("UUIDMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
     await Glean.testResetGlean(testAppId);
   });
- 
+
   it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new UUIDMetricType({
       category: "aCategory",
@@ -25,7 +25,7 @@ describe("UUIDMetric", function() {
       lifetime: Lifetime.Ping,
       disabled: false
     });
- 
+
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
@@ -79,7 +79,7 @@ describe("UUIDMetric", function() {
       }
     });
   });
- 
+
   it("set properly sets the value in all pings", async function() {
     const metric = new UUIDMetricType({
       category: "aCategory",

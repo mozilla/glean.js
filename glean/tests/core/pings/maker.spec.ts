@@ -195,7 +195,7 @@ describe("PingMaker", function() {
       constructor() {
         super(CoreEvents["afterPingCollection"].name, "mockPlugin");
       }
-    
+
       action(): Promise<JSONObject> {
         throw new Error();
       }

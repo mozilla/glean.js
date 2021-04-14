@@ -124,7 +124,7 @@ for (const store in stores) {
         const value = await store.get(["bip", "bok"]);
         assert.deepStrictEqual(value, expected["bip"]["bok"]);
       });
-  
+
       it("Attempting to get an index that contains a string works", async function () {
         const value = await store.get(["bump"]);
         assert.deepStrictEqual(value, expected["bump"]);
@@ -150,19 +150,19 @@ for (const store in stores) {
         await store.update(index, () => value);
         assert.strictEqual(value, await store.get(index));
       });
-  
+
       it("Attempting to update an existing entry doesn't error ", async function () {
         const updater = (v?: JSONValue): string => `${JSON.stringify(v)} new and improved!`;
         await store.update(index, updater);
         assert.strictEqual(updater(value), await store.get(index));
       });
-  
+
       it("Attempting to update a nested entry doesn't error and overwrites", async function () {
         const updatedIndex = index.slice(1);
         await store.update(updatedIndex, () => value);
         assert.strictEqual(value, await store.get(updatedIndex));
       });
-  
+
       it("Attempting to update an empty index throws an error", function () {
         store
           .update([], () => "should never get here!")

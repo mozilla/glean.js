@@ -92,7 +92,7 @@ describe("PingUploader", function() {
     uploader.triggerUpload = async () => {
       // Intentionally empty.
     };
-    
+
     await Context.pingsDatabase.scanPendingPings();
     assert.strictEqual(uploader["queue"].length, 10);
 

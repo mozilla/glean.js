@@ -15,7 +15,7 @@ describe("CounterMetric", function() {
   beforeEach(async function() {
     await Glean.testResetGlean(testAppId);
   });
- 
+
   it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
     const metric = new CounterMetricType({
       category: "aCategory",
@@ -27,7 +27,7 @@ describe("CounterMetric", function() {
 
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
-  
+
   it("attempting to add when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
@@ -38,7 +38,7 @@ describe("CounterMetric", function() {
       lifetime: Lifetime.Ping,
       disabled: false
     });
-  
+
     metric.add(10);
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
@@ -51,10 +51,10 @@ describe("CounterMetric", function() {
       lifetime: Lifetime.Ping,
       disabled: false
     });
-  
+
     metric.add(10);
     assert.strictEqual(await metric.testGetValue("aPing"), 10);
-  
+
     const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "counter": {
@@ -62,7 +62,7 @@ describe("CounterMetric", function() {
       }
     });
   });
-  
+
   it("set properly sets the value in all pings", async function() {
     const metric = new CounterMetricType({
       category: "aCategory",
