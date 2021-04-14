@@ -2,6 +2,9 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.0...main)
 
+* [#206](https://github.com/mozilla/glean.js/pull/206): BUGFIX: Fix ping URL path.
+  * Application ID was being reporting as `undefined`.
+
 # v0.8.0 (2021-04-13)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.7.0...v0.8.0)
