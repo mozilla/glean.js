@@ -459,8 +459,9 @@ class Glean {
     // In case the platform is being swapped in the test scenario described above,
     // we log a debug message about the change.
     if (Glean.instance._platform && Glean.instance._platform.name !== platform.name) {
+      // TODO: Only show this message outside of test mode, and rephrase it as an error (depends on Bug 1682771).
       console.debug(
-        `Changing Glean platform from "${Glean.platform.name}" to "${platform.name}".`
+        `Changing Glean platform from "${Glean.platform.name}" to "${platform.name}".`,
       );
     }
 
