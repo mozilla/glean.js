@@ -212,7 +212,7 @@ describe("PingUploader", function() {
     const headers = postSpy.firstCall.args[2] || {};
 
     assert.strictEqual(documentId, expectedDocumentId);
-    assert.strictEqual(appId, Context.applicationId)
+    assert.strictEqual(appId, Context.applicationId);
 
     assert.ok("Date" in headers);
     assert.ok("User-Agent" in headers);
