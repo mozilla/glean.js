@@ -515,7 +515,7 @@ describe("Glean", function() {
     );
   });
 
-  it("disallow changing the platform after Glean is initialized", async function() {
+  it("disallow changing the platform after Glean is initialized", function() {
     const MockPlatform = {
       ...TestPlatform,
       name: "mock"
