@@ -79,7 +79,7 @@ export class Context {
     Context.instance._pingsDatabase = db;
   }
 
-  static get applicatinId(): string {
+  static get applicationId(): string {
     return Context.instance._applicationId;
   }
 
