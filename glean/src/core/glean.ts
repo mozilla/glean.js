@@ -443,19 +443,20 @@ class Glean {
    *        Please check out the available environments in the platform/ module.
    */
   static setPlatform(platform: Platform): void {
-    // Platform can only be changed if Glean is uninitialized,
+    // Platform can only be set if Glean is uninitialized,
     // because Glean.initialize will make sure to recreate any
-    // databases with the platform specific databases in this case.
+    // databases in case another platform was set previously.
     //
-    // Users should only be able to replace the platform in testing situations,
-    // if they call Glean.initialize before calling Glean.testResetGlean. We want
-    // to replace whatever platform was set by Glean.initialize with the testing platforms
-    // in this case.
+    // **Note**: Users should only be able to replace the platform in testing
+    // situations, if they call Glean.initialize before calling Glean.testResetGlean.
+    // We want to replace whatever platform was set by Glean.initialize with the
+    // testing platforms in this case and that is possible because Glean.testResetGlean
+    // uninitializes Glean before setting the testing platform.
     if (Context.initialized) {
       return;
     }
 
-    // In case platform is being swapped in the test scenario descrbied above,
+    // In case the platform is being swapped in the test scenario described above,
     // we log a debug message about the change.
     if (Glean.instance._platform && Glean.instance._platform.name !== platform.name) {
       console.debug(
