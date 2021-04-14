@@ -107,4 +107,175 @@ describe("PingType", function() {
     const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 0);
   });
+
+  it("runs a validator with no metrics tests", async function() {
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+      reasonCodes: ["test"]
+    });
+
+    // We did not call the testing API yet, internals should be undefined.
+    assert.strictEqual(ping["resolveTestPromiseFunction"], undefined);
+    assert.strictEqual(ping["testValidator"], undefined);
+
+    let validatorRun = false;
+    const p = ping.testBeforeNextSubmit(r => {
+      assert.strictEqual(r, "test");
+      validatorRun = true;
+      return Promise.resolve();
+    });
+
+    // Internals should be defined after the API was called.
+    assert.notStrictEqual(ping["resolveTestPromiseFunction"], undefined);
+    assert.notStrictEqual(ping["testValidator"], undefined);
+
+    ping.submit("test");
+    await p;
+
+    assert.ok(validatorRun);
+  });
+
+  it("runs a validator with metrics tests", async function() {
+    const TEST_VALUE = 2908;
+
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+      reasonCodes: ["test"]
+    });
+    const counter = new CounterMetricType({
+      category: "aCategory",
+      name: "aCounterMetric",
+      sendInPings: ["custom"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    counter.add(TEST_VALUE);
+
+    let validatorRun = false;
+    const p = ping.testBeforeNextSubmit(async r => {
+      assert.strictEqual(r, "test");
+      assert.strictEqual(await counter.testGetValue(), TEST_VALUE);
+      validatorRun = true;
+    });
+
+    ping.submit("test");
+    await p;
+
+    assert.ok(validatorRun);
+  });
+
+  it("runs a validator multiple times on the same ping", async function() {
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+      reasonCodes: ["test1", "test2"]
+    });
+    const counter = new CounterMetricType({
+      category: "aCategory",
+      name: "aCounterMetric",
+      sendInPings: ["custom"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    for (let i = 1; i < 3; i++) {
+      counter.add(i);
+
+      let validatorRun = false;
+      const testPromise = ping.testBeforeNextSubmit(async r => {
+        assert.strictEqual(r, `test${i}`);
+        assert.strictEqual(await counter.testGetValue(), i);
+        validatorRun = true;
+      });
+
+      await new Promise(r => setTimeout(r, 100));
+
+      ping.submit(`test${i}`);
+      await testPromise;
+  
+      assert.ok(validatorRun);
+    }
+  });
+
+  it("runs a validator multiple times fails when not awaiting", function() {
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false
+    });
+
+    assert.strictEqual(ping["testValidator"], undefined);
+
+    const testFunction = async () => Promise.resolve();
+    void ping.testBeforeNextSubmit(testFunction);
+    assert.strictEqual(ping["testValidator"], testFunction);
+
+    void ping.testBeforeNextSubmit(() => Promise.resolve());
+    assert.strictEqual(ping["testValidator"], testFunction);
+  });
+
+  it("runs a validator that rejects", async function() {
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false
+    });
+
+    // eslint-disable-next-line @typescript-eslint/require-await
+    const p = ping.testBeforeNextSubmit(async () => {
+      throw new Error("This should reject!");
+    });
+    
+    ping.submit();
+
+    await assert.rejects(p);
+  });
+
+  it("runs a validator: sorry", async function() {
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+      reasonCodes: ["test"]
+    });
+
+    const counter = new CounterMetricType({
+      category: "aCategory",
+      name: "aCounterMetric",
+      sendInPings: ["custom"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    let validatorRun = false;
+
+    const p = ping.testBeforeNextSubmit(async () => {
+      await new Promise<void>(resolve => {
+        setTimeout(() => resolve(), 100);
+      });
+      const value = await counter.testGetValue();
+      console.log("!!!", value);
+      assert.strictEqual(value, 100);
+      validatorRun = true;
+    });
+    ping.submit("test");
+
+    for (let i = 0; i < 100; i++) {
+      counter.add();
+      Context.dispatcher.launch(async () => {
+        await new Promise<void>(resolve => {
+          setTimeout(() => resolve(), 10);
+        });
+      });
+    }
+
+    await p;
+
+    assert.ok(validatorRun);
+  });
 });
