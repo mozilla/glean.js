@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.1...main)
 
+* [#201](https://github.com/mozilla/glean.js/pull/201): BUGFIX: Do not let the platform be changed after Glean is initialized.
+
 # v0.8.1 (2021-04-14)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.0...v0.8.1)
@@ -16,8 +18,7 @@
 * [#173](https://github.com/mozilla/glean.js/pull/173): Drop Node.js support from webext entry points
 * [#155](https://github.com/mozilla/glean.js/pull/155): Allow to define custom uploaders in the configuration.
 * [#184](https://github.com/mozilla/glean.js/pull/184): Correctly report `appBuild` and `appDisplayVersion` if provided by the user.
-* [#198](https://github.com/mozilla/glean.js/pull/198), [#192](https://github.com/mozilla/glean.js/pull/192), [#184](https://github.com/mozilla/glean.js/pull/184), [#180](https://github.com/mozilla/glean.js/pull/180), [#174](https://github.com/mozilla/glean.js/pull/174), [#165](https://github.com/mozilla/glean.js/pull/165): BUGFIX: Remove all circular dependencies.ean and metrics
-  i.e. users attempting to import
+* [#198](https://github.com/mozilla/glean.js/pull/198), [#192](https://github.com/mozilla/glean.js/pull/192), [#184](https://github.com/mozilla/glean.js/pull/184), [#180](https://github.com/mozilla/glean.js/pull/180), [#174](https://github.com/mozilla/glean.js/pull/174), [#165](https://github.com/mozilla/glean.js/pull/165): BUGFIX: Remove all circular dependencies.
 
 
 # v0.7.0 (2021-03-26)

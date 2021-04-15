@@ -20,6 +20,8 @@ interface Platform {
   uploader: Uploader,
   // The environment specifici implemtation of platform information getters
   info: PlatformInfo,
+  // The name of the platform, useful for logging and debugging purposes.
+  name: string,
 }
 
 export default Platform;
