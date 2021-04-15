@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import sinon from "sinon";
 
 import { Context } from "../../src/core/context";
 import Dispatcher from "../../src/core/dispatcher";
@@ -12,8 +11,6 @@ import MetricsDatabase from "../../src/core/metrics/database";
 import EventsDatabase from "../../src/core/metrics/events_database";
 import PingsDatabase from "../../src/core/pings/database";
 import { sanitizeApplicationId } from "../../src/core/utils";
-
-const sandbox = sinon.createSandbox();
 
 describe("Context", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -61,7 +58,7 @@ describe("Context", function() {
     assert.deepStrictEqual(Context.debugOptions, { logPings: true });
   });
 
-  it("databases contain the expected values", async function () {
+  it("databases contain the expected values", function () {
     assert.notStrictEqual(Context.metricsDatabase, undefined);
     assert.ok(Context.metricsDatabase instanceof MetricsDatabase);
 
