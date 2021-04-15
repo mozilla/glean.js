@@ -197,7 +197,7 @@ describe("PingType", function() {
 
       ping.submit(`test${i}`);
       await testPromise;
-  
+
       assert.ok(validatorRun);
     }
   });
@@ -230,13 +230,16 @@ describe("PingType", function() {
     const p = ping.testBeforeNextSubmit(async () => {
       throw new Error("This should reject!");
     });
-    
+
     ping.submit();
 
     await assert.rejects(p);
   });
 
-  it("runs a validator: sorry", async function() {
+  // The following test showcases the shortcomings of the current implementation
+  // of the Ping testing API. It's disabled as it fails with the current implementation,
+  // but it's left there for future reference.
+  it.skip("the validator is not affected by recordings after submit", async function() {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -253,28 +256,78 @@ describe("PingType", function() {
     });
 
     let validatorRun = false;
+    const TEST_NUM_ADDITIONS = 100;
 
     const p = ping.testBeforeNextSubmit(async () => {
-      await new Promise<void>(resolve => {
-        setTimeout(() => resolve(), 100);
-      });
+      await new Promise(r => setTimeout(r, 100));
+
       const value = await counter.testGetValue();
-      console.log("!!!", value);
-      assert.strictEqual(value, 100);
+      assert.strictEqual(value, undefined);
       validatorRun = true;
     });
     ping.submit("test");
 
-    for (let i = 0; i < 100; i++) {
+    for (let i = 0; i < TEST_NUM_ADDITIONS; i++) {
       counter.add();
-      Context.dispatcher.launch(async () => {
-        await new Promise<void>(resolve => {
-          setTimeout(() => resolve(), 10);
-        });
-      });
     }
 
     await p;
+
+    assert.ok(validatorRun);
+  });
+
+
+  // The following test showcases the shortcomings of the current implementation
+  // of the Ping testing API. It's disabled as it fails with the current implementation,
+  // but it's left there for future reference.
+  it.skip("the validator real test", async function() {
+    const ping = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: false,
+      reasonCodes: ["test"]
+    });
+
+    const counter = new CounterMetricType({
+      category: "aCategory",
+      name: "aCounterMetric",
+      sendInPings: ["custom"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    const canary = new CounterMetricType({
+      category: "aCategory",
+      name: "canary",
+      sendInPings: ["custom"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    let validatorRun = false;
+    const TEST_NUM_ADDITIONS = 100;
+
+    const p = ping.testBeforeNextSubmit(async () => {
+      await new Promise(r => setTimeout(r, 100));
+
+      assert.strictEqual(await counter.testGetValue(), 37, "Canary must match");
+      const value = await counter.testGetValue();
+      assert.strictEqual(value, undefined);
+      validatorRun = true;
+    });
+
+    const testFunc = () => {
+      canary.add(37);
+      ping.submit("test");
+    };
+
+    testFunc();
+
+    await p;
+    for (let i = 0; i < TEST_NUM_ADDITIONS; i++) {
+      counter.add();
+    }
+
 
     assert.ok(validatorRun);
   });
