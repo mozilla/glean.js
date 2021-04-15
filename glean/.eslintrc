@@ -9,6 +9,7 @@
     "indent": ["error", 2],
     "quotes": ["error", "double"],
     "no-var": "error",
+    "no-trailing-spaces": "error",
     "prefer-const": "error",
     "strict": ["error", "global"],
     "notice/notice":[ "error", {

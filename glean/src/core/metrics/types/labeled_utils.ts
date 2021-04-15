@@ -101,4 +101,3 @@ export async function getValidDynamicLabel(metricsDatabase: MetricsDatabase, met
     ? combineIdentifierAndLabel(metric.baseIdentifier(), OTHER_LABEL)
     : key;
 }
- 

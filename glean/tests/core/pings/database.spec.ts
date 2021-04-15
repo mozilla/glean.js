@@ -34,14 +34,14 @@ describe("PingsDatabase", function() {
       assert.deepStrictEqual(await db["store"].get([identifier]), {
         path, payload
       });
-  
+
       const headers = { "X-Debug-ID": "test" };
       const otherIdentifier = "THE OTHER IDENTIFIER";
       await db.recordPing(path, otherIdentifier, payload, headers);
       assert.deepStrictEqual(await db["store"].get([otherIdentifier]), {
         path, payload, headers
       });
-  
+
       assert.strictEqual(Object.keys(await db["store"]._getWholeStore()).length, 2);
     });
 
@@ -54,7 +54,7 @@ describe("PingsDatabase", function() {
           assert.strictEqual(id, identifier);
         }
       };
-  
+
       const db = new Database(Glean.platform.Storage);
       db.attachObserver(observer);
       const path = "some/random/path/doesnt/matter";
@@ -231,7 +231,7 @@ describe("PingsDatabase", function() {
       for (const identifier of identifiers) {
         await db.recordPing(path, identifier, payload);
       }
-  
+
       await db.clearAll();
       assert.strictEqual(Object.keys(await db["store"]._getWholeStore()).length, 0);
     });

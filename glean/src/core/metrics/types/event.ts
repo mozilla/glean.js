@@ -26,7 +26,7 @@ class EventMetricType extends MetricType {
    * An helper function to aid mocking the time in tests.
    *
    * This is only meant to be overridden in tests.
-   * 
+   *
    * @returns the number of milliseconds since the time origin.
    */
   protected getMonotonicNow(): number {
@@ -51,7 +51,7 @@ class EventMetricType extends MetricType {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
-  
+
       const timestamp = this.getMonotonicNow();
 
       // Truncate the extra keys, if needed.
@@ -68,7 +68,7 @@ class EventMetricType extends MetricType {
           }
         }
       }
-  
+
       const event = new RecordedEvent(
         this.category,
         this.name,
