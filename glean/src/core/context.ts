@@ -9,7 +9,16 @@ import type EventsDatabase from "./metrics/events_database";
 import type PingsDatabase from "./pings/database";
 
 /**
- * TODO: Why do we need this?
+ * This class holds all of the Glean singleton's state and internal dependencies.
+ *
+ * It is necessary so that internal modules don't need to import Glean directly.
+ * Doing that should be avoided at all costs because that singleton imports
+ * most of our internal modules by value. That causes bad circular dependency issues,
+ * due to the module being imported by Glean and also importing Glean.
+ *
+ * This singleton breaks the cycle, by serving as a bridge between the Glean singleton
+ * and the internal modules. All of the imports in this file should be `import type`
+ * which only matter for Typescript and don't cause circular dependency issues.
  */
 export class Context {
   private static _instance: Context;
