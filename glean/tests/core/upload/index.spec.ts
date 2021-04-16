@@ -9,7 +9,7 @@ import { v4 as UUIDv4 } from "uuid";
 import { Configuration } from "../../../src/core/config";
 import { Context } from "../../../src/core/context";
 import Glean from "../../../src/core/glean";
-import PingType from "../../../src/core/pings";
+import PingType from "../../../src/core/pings/ping_type";
 import collectAndStorePing from "../../../src/core/pings/maker";
 import PingUploader from "../../../src/core/upload";
 import { UploadResultStatus } from "../../../src/core/upload/uploader";

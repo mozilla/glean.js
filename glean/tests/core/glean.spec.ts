@@ -10,7 +10,7 @@ import CoreEvents from "../../src/core/events";
 import Glean from "../../src/core/glean";
 import StringMetricType from "../../src/core/metrics/types/string";
 import CounterMetricType from "../../src/core/metrics/types/counter";
-import PingType from "../../src/core/pings";
+import PingType from "../../src/core/pings/ping_type";
 import type { JSONObject } from "../../src/core/utils";
 import { isObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";

@@ -12,7 +12,7 @@ import BooleanMetricType from "../../../src/core/metrics/types/boolean";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import LabeledMetricType from "../../../src/core/metrics/types/labeled";
 import StringMetricType from "../../../src/core/metrics/types/string";
-import PingType from "../../../src/core/pings";
+import PingType from "../../../src/core/pings/ping_type";
 import type { JSONObject } from "../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
