@@ -9,7 +9,7 @@ import fromKeyLike from "jose/jwk/from_key_like";
 import compactDecrypt from "jose/jwe/compact/decrypt";
 
 import Glean from "../../src/core/glean";
-import PingType from "../../src/core/pings";
+import PingType from "../../src/core/pings/ping_type";
 import type { JSONObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";
 import PingEncryptionPlugin from "../../src/plugins/encryption";
