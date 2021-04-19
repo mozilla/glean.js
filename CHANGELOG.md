@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.9.1...main)
 
+* [#220](https://github.com/mozilla/glean.js/pull/220): Update `glean_parser` to version 3.1.1.
+
 # v0.9.1 (2021-04-19)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.9.0...v0.9.1)
