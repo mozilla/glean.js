@@ -4,6 +4,7 @@
 
 * [#201](https://github.com/mozilla/glean.js/pull/201): BUGFIX: Do not let the platform be changed after Glean is initialized.
 * [#215](https://github.com/mozilla/glean.js/pull/215): Update the `glean-parser` to version 3.1.0.
+* [#214](https://github.com/mozilla/glean.js/pull/215): Improve error reporting of the Glean command.
 
 # v0.8.1 (2021-04-14)
 
