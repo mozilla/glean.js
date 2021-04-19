@@ -8,7 +8,7 @@ import type { ConfigurationInterface } from "../core/config.js";
 import platform from "../platform/qt/index.js";
 
 // Private Glean types to export.
-import PingType from "../core/pings/index.js";
+import PingType from "../core/pings/ping_type.js";
 import BooleanMetricType from "../core/metrics/types/boolean.js";
 import CounterMetricType from "../core/metrics/types/counter.js";
 import DatetimeMetricType from "../core/metrics/types/datetime.js";

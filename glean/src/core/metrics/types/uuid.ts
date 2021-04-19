@@ -77,7 +77,7 @@ class UUIDMetricType extends MetricType {
 
     return value;
   }
- 
+
   /**
    * **Test-only API**
    *
@@ -100,5 +100,5 @@ class UUIDMetricType extends MetricType {
     return metric;
   }
 }
- 
+
 export default UUIDMetricType;

@@ -10,15 +10,12 @@ import * as path from "path";
 import { argv, platform } from "process";
 import { promisify } from "util";
 
-// Define an async/await version of "exec".
-const execAsync = promisify(exec.exec);
-
 // The name of the directory which will contain the Python virtual environment
 // used to run the glean-parser.
 const VIRTUAL_ENVIRONMENT_DIR = ".venv";
 
 // The version of glean_parser to install from PyPI.
-const GLEAN_PARSER_VERSION = "2.5.0";
+const GLEAN_PARSER_VERSION = "3.1.0";
 
 // This script runs a given Python module as a "main" module, like
 // `python -m module`. However, it first checks that the installed
@@ -140,10 +137,12 @@ async function createPythonVenv(venvPath: string): Promise<boolean> {
   const venvCmd = `${getSystemPythonBinName()} -m venv ${VIRTUAL_ENVIRONMENT_DIR}`;
 
   for (const cmd of [venvCmd, pipCmd]) {
-    try {
-      await execAsync(cmd);
-    } catch (e) {
-      console.error(e);
+    const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
+      exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
+    });
+
+    if (err) {
+      console.error(`${stdout}\n${stderr}`);
       return false;
     }
   }
@@ -178,10 +177,13 @@ async function runGlean(projectRoot: string, parserArgs: string[]) {
   const venvRoot = path.join(projectRoot, VIRTUAL_ENVIRONMENT_DIR);
   const pythonBin = path.join(getPythonVenvBinariesPath(venvRoot), getSystemPythonBinName());
   const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" online glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
-  try {
-    await execAsync(cmd);
-  } catch (e) {
-    console.error(e);
+
+  const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
+    exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
+  });
+
+  if (err) {
+    console.error(`${stdout}\n${stderr}`);
   }
 }
 

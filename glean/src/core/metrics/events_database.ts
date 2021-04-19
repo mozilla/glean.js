@@ -108,7 +108,7 @@ class EventsDatabase {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    * @param metric the metric we're looking for.
-   * 
+   *
    * @returns an array of `RecordedEvent` containing the found events or `undefined`
    *          if no recorded event was found.
    */

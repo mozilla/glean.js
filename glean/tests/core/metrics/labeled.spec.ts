@@ -12,7 +12,7 @@ import BooleanMetricType from "../../../src/core/metrics/types/boolean";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import LabeledMetricType from "../../../src/core/metrics/types/labeled";
 import StringMetricType from "../../../src/core/metrics/types/string";
-import PingType from "../../../src/core/pings";
+import PingType from "../../../src/core/pings/ping_type";
 import type { JSONObject } from "../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
@@ -58,7 +58,7 @@ describe("LabeledMetric", function() {
     // once a custom uploader for testing will be available.
     ping.submit();
     await Context.dispatcher.testBlockOnQueue();
-    
+
     const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
@@ -288,7 +288,7 @@ describe("LabeledMetric", function() {
 
     let value = await metric["label1"].testGetValue();
     assert.strictEqual(value, false);
-    
+
     value = await metric["label2"].testGetValue();
     assert.strictEqual(value, true);
   });

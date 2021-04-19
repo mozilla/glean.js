@@ -10,7 +10,7 @@ import CoreEvents from "../../src/core/events";
 import Glean from "../../src/core/glean";
 import StringMetricType from "../../src/core/metrics/types/string";
 import CounterMetricType from "../../src/core/metrics/types/counter";
-import PingType from "../../src/core/pings";
+import PingType from "../../src/core/pings/ping_type";
 import type { JSONObject } from "../../src/core/utils";
 import { isObject } from "../../src/core/utils";
 import TestPlatform from "../../src/platform/qt";
@@ -513,5 +513,16 @@ describe("Glean", function() {
       counterValues,
       [1,2,3,4,5,6,7,8,9,10]
     );
+  });
+
+  it("disallow changing the platform after Glean is initialized", function() {
+    const MockPlatform = {
+      ...TestPlatform,
+      name: "mock"
+    };
+
+    Glean.setPlatform(MockPlatform);
+
+    assert.strictEqual(TestPlatform.name, Glean.platform.name);
   });
 });

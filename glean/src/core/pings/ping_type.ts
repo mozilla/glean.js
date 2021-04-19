@@ -54,13 +54,13 @@ class PingType implements CommonPingData {
         console.info("Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.");
         return;
       }
-  
+
       let correctedReason = reason;
       if (reason && !this.reasonCodes.includes(reason)) {
         console.error(`Invalid reason code ${reason} from ${this.name}. Ignoring.`);
         correctedReason = undefined;
       }
-  
+
       const identifier = generateUUIDv4();
       await collectAndStorePing(identifier, this, correctedReason);
       return;

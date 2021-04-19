@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import PingType from "../../../src/core/pings";
+import PingType from "../../../src/core/pings/ping_type";
 import * as PingMaker from "../../../src/core/pings/maker";
 import Glean from "../../../src/core/glean";
 import CoreEvents from "../../../src/core/events";
@@ -195,7 +195,7 @@ describe("PingMaker", function() {
       constructor() {
         super(CoreEvents["afterPingCollection"].name, "mockPlugin");
       }
-    
+
       action(): Promise<JSONObject> {
         throw new Error();
       }

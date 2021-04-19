@@ -9,7 +9,7 @@ import StringMetricType from "../../../src/core/metrics/types/string";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string_metric";
 import { Context } from "../../../src/core/context";
- 
+
 describe("StringMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
@@ -28,7 +28,7 @@ describe("StringMetric", function() {
 
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
- 
+
   it("attempting to set when glean upload is disabled is a no-op", async function() {
     Glean.setUploadEnabled(false);
 
@@ -39,7 +39,7 @@ describe("StringMetric", function() {
       lifetime: Lifetime.Ping,
       disabled: false
     });
- 
+
     metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
@@ -52,7 +52,7 @@ describe("StringMetric", function() {
       lifetime: Lifetime.Ping,
       disabled: false
     });
- 
+
     metric.set("test_string_value");
     assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
 
@@ -63,7 +63,7 @@ describe("StringMetric", function() {
       }
     });
   });
- 
+
   it("set properly sets the value in all pings", async function() {
     const metric = new StringMetricType({
       category: "aCategory",

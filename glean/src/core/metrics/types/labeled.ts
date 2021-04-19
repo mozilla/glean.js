@@ -13,7 +13,7 @@ type SupportedLabeledTypes = CounterMetricType | BooleanMetricType | StringMetri
 class LabeledMetricType<T extends SupportedLabeledTypes> {
   // Define an index signature to make the Proxy aware of the expected return type.
   // Note that this is required because TypeScript does not allow different input and
-  // output types in Proxy (https://github.com/microsoft/TypeScript/issues/20846). 
+  // output types in Proxy (https://github.com/microsoft/TypeScript/issues/20846).
   [label: string]: T;
 
   constructor(

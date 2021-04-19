@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { DELETION_REQUEST_PING_NAME } from "./constants.js";
-import PingType from "./pings/index.js";
+import PingType from "./pings/ping_type.js";
 
 /**
  * Glean-provided pings, all enabled by default.

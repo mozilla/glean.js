@@ -68,11 +68,11 @@ class PingsDatabase {
   constructor(store: StorageBuilder) {
     this.store = new store("pings");
   }
-  
+
   /**
    * Attach an observer that reacts to the pings storage changes.
    *
-   * @param observer The new observer to attach. 
+   * @param observer The new observer to attach.
    */
   attachObserver(observer: Observer): void {
     this.observer = observer;
