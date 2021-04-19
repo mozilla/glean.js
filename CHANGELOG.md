@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.9.0...main)
+
+# v0.9.0 (2021-04-19)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.1...v0.9.0)
 
 * [#201](https://github.com/mozilla/glean.js/pull/201): BUGFIX: Do not let the platform be changed after Glean is initialized.
 * [#215](https://github.com/mozilla/glean.js/pull/215): Update the `glean-parser` to version 3.1.0.
