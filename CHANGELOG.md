@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.9.0...main)
 
+* [#219](https://github.com/mozilla/glean.js/pull/219): BUGFIX: Fix path to ping entry point in package.json.
 # v0.9.0 (2021-04-19)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.8.1...v0.9.0)
