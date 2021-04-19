@@ -1,13 +1,13 @@
 {
   "name": "@mozilla/glean",
-  "version": "0.9.0",
+  "version": "0.9.1",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
   "type": "module",
   "exports": {
     "./package.json": "./package.json",
     "./webext": "./dist/webext/index/webext.js",
     "./webext/private/metrics/*": "./dist/webext/core/metrics/types/*.js",
-    "./webext/private/ping": "./dist/webext/core/pings/index.js",
+    "./webext/private/ping": "./dist/webext/core/pings/ping_type.js",
     "./webext/plugins/*": "./dist/webext/plugins/*.js"
   },
   "typesVersions": {
@@ -16,7 +16,7 @@
         "./dist/webext/types/index/webext.d.ts"
       ],
       "webext/private/ping": [
-        "./dist/webext/types/core/pings/index.d.ts"
+        "./dist/webext/types/core/pings/ping_type.d.ts"
       ],
       "webext/private/metrics/*": [
         "./dist/webext/types/core/metrics/types/*"
