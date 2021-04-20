@@ -87,24 +87,24 @@ jobs:
             npm --prefix ./glean install
             npm --prefix ./glean run build:qt
       - run:
-          name: Setup Python environment
+          name: Setup Qt dependency
+          command: |
+            # The following commands are copied from the VPN Qt setup for Linux
+            # See: https://github.com/mozilla-mobile/mozilla-vpn-client/blob/main/.github/workflows/linux.yaml#L18-L21
+            #
+            # Add external PPA, latest version of QT is 5.12.x for Ubuntu 20.04
+            sudo add-apt-repository ppa:beineri/opt-qt-5.15.2-focal -y
+            sudo apt update
+            sudo apt install git qt515tools qt515svg qt515networkauth-no-lgpl qt515charts-no-lgpl libgl-dev libpolkit-gobject-1-dev devscripts debhelper cdbs quilt qt515graphicaleffects qt515imageformats  qt515quickcontrols2   libxcb-image0-dev libxcb-shape0-dev libxcb-sync0-dev libxcb-render-util0-dev libxcb-xfixes0-dev libxcb-icccm4-dev libx11-xcb-dev libxcb-keysyms1-dev libasound2-dev libaudio-dev libcups2-dev libdbus-1-dev libglu1-mesa-dev  libmng-dev libtiff5-dev libxcursor-dev libxi-dev libxinerama-dev libxmu-dev libxrandr-dev libxv-dev libedit-dev libvulkan-dev qt515websockets -y
+      - run:
+          name: Run the Qt sample app and check for errors
           command: |
             cd samples/qt-qml-app
             python3 -m venv venv
             source venv/bin/activate
             pip install -r requirements.txt
-            glean_parser translate metrics.yaml pings.yaml -f javascript -o generated
-      - run:
-          name: Setup Qt dependency
-          command: |
-            # Setting this gives us enhanced output on plugin errors.
-            export QT_DEBUG_PLUGINS=1
+
             sudo apt-get install xvfb
-            sudo apt-get install libxcb-icccm4 libxcb-image0 libdbus-1-3 libxcb-xfixes0 libxkbcommon-x11-0 libxcb-xkb1 libxcb-xinerama0 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxrender1 libxcb-render-util0
-            xvfb-run python main.py &> qml.log &
-      - run:
-          name: Run the Qt sample app and check for errors
-          command: |
             xvfb-run python main.py &> qml.log &
             # Wait for app to start
             sleep 10
