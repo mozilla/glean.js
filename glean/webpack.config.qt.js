@@ -33,13 +33,19 @@ class TsResolvePlugin {
 
 export default {
   entry: "./src/index/qt.ts",
+  devtool : "cheap-source-map",
   module: {
     rules: [
       {
         test: /\.tsx?$/,
         loader: "ts-loader",
         exclude: /node_modules/,
-        options: { onlyCompileBundledFiles: true },
+        options: {
+          onlyCompileBundledFiles: true,
+          // This path is resolved relative to the entry file, ./src/index/qt.ts
+          // See: https://github.com/TypeStrong/ts-loader#configfile
+          configFile: "../../tsconfig/qt.json"
+        },
       },
     ],
   },
