@@ -3,6 +3,7 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.9.2...main)
 
 * [#227](https://github.com/mozilla/glean.js/pull/227): BUGFIX: Fix a bug that prevented using `labeled_string` and `labeled_boolean`.
+* [#226](https://github.com/mozilla/glean.js/pull/226): Fix Qt build configuration to target ES5.
 
 # v0.9.2 (2021-04-19)
 
