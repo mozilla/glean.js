@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.9.2...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.0...main)
+
+# v0.10.0 (2021-04-20)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.9.2...v0.10.0)
 
 * [#228](https://github.com/mozilla/glean.js/pull/228): Provide a Qt build with every new release.
 * [#227](https://github.com/mozilla/glean.js/pull/227): BUGFIX: Fix a bug that prevented using `labeled_string` and `labeled_boolean`.
