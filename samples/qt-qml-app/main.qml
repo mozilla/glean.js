@@ -68,5 +68,8 @@ Rectangle {
     // Initialize Glean.
     Glean.Glean.initialize("qt-qml-app", true, { debug: { logPings: true }});
     Metrics.sample.appStarted.set();
+    // !IMPORTANT!
+    // If this message is changed the check in bin/qt-js-check **must** be updated.
+    console.log("Initialized Glean succesfully.");
   }
 }

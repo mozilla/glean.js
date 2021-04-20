@@ -19,7 +19,7 @@ xvfb-run python main.py &> qml.log &
 
 sleep 10
 
-if grep -q "Error executing task:" "qml.log"; then
+if ! grep -q "Initialized Glean succesfully." "qml.log"; then
   echo "Failed to initialize Glean in QML! See more logs below."
   cat qml.log
   exit 1
