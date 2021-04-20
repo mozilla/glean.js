@@ -109,6 +109,23 @@ jobs:
       - run:
           name: Publish to npm
           command: export PATH=.:$PATH && (cd glean && npm publish --access public)
+      - run:
+          name: Get ghr release tool
+          command: |
+            GHR=ghr_v0.13.0_linux_amd64
+            GHR_SHA256=c428627270ae26e206cb526cb8c7bdfba475dd278f6691ddaf863355adadfa13
+            curl -sfSL --retry 5 -O "https://github.com/tcnksm/ghr/releases/download/v0.13.0/${GHR}.tar.gz"
+            echo "${GHR_SHA256} *${GHR}.tar.gz" | sha256sum -c -
+            tar -xf "${GHR}.tar.gz"
+            cp ./${GHR}/ghr ghr
+      - run:
+          name: Publish to Github
+          command: |
+            # Attach Qt build to release
+            npm --prefix ./glean install
+            npm --prefix ./glean run build:qt
+            cp glean/dist/glean.js glean/dist/glean_js-${CIRCLE_TAG}-qt.js
+            ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.js
 
 workflows:
   version: 2
