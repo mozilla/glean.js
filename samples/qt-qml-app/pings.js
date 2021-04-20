@@ -10,8 +10,6 @@
  * A custom ping to help showcase Glean.js.
  * It is sent everytime the user clicks the "Submit ping" button
  * on this sample app.
- *
- * Generated from `custom`.
  */
 const custom = new Glean.Glean.default._private.PingType({
     includeClientId: true,

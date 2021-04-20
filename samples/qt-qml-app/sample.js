@@ -8,8 +8,6 @@
 
 /**
  * The time the sample app was started.
- *
- * Generated from `sample.app_started`.
  */
 const appStarted = new Glean.Glean.default._private.DatetimeMetricType({
     category: "sample",
@@ -18,10 +16,9 @@ const appStarted = new Glean.Glean.default._private.DatetimeMetricType({
     lifetime: "ping",
     disabled: false,
 }, "millisecond");
+
 /**
  * The number of time the "Record" button was clicked.
- *
- * Generated from `sample.button_clicked`.
  */
 const buttonClicked =  new Glean.Glean.default._private.CounterMetricType({
     category: "sample",

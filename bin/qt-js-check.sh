@@ -13,6 +13,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 glean_parser translate metrics.yaml pings.yaml -f javascript -o generated
 
+# Setting this gives us enhanced output on plugin errors.
 export QT_DEBUG_PLUGINS=1
 sudo apt-get install xvfb
 sudo apt-get install libxcb-icccm4 libxcb-image0 libdbus-1-3 libxcb-xfixes0 libxkbcommon-x11-0 libxcb-xkb1 libxcb-xinerama0 libxcb-keysyms1 libxcb-randr0 libxcb-shape0 libxrender1 libxcb-render-util0
