@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.9.2...main)
 
+* [#227](https://github.com/mozilla/glean.js/pull/227): BUGFIX: Fix a bug that prevented using `labeled_string` and `labeled_boolean`.
+
 # v0.9.2 (2021-04-19)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.9.1...v0.9.2)

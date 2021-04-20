@@ -21,7 +21,9 @@ const METRIC_MAP: {
   "boolean": BooleanMetric,
   "counter": CounterMetric,
   "datetime": DatetimeMetric,
+  "labeled_boolean": LabeledMetric,
   "labeled_counter": LabeledMetric,
+  "labeled_string": LabeledMetric,
   "string": StringMetric,
   "uuid": UUIDMetric,
 });
