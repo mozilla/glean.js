@@ -141,8 +141,10 @@ async function createPythonVenv(venvPath: string): Promise<boolean> {
       exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
     });
 
+    console.log(`${stdout}`);
+
     if (err) {
-      console.error(`${stdout}\n${stderr}`);
+      console.error(`${stderr}`);
       return false;
     }
   }
@@ -182,8 +184,10 @@ async function runGlean(projectRoot: string, parserArgs: string[]) {
     exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
   });
 
+  console.log(`${stdout}`);
+
   if (err) {
-    console.error(`${stdout}\n${stderr}`);
+    console.error(`${stderr}`);
   }
 }
 
