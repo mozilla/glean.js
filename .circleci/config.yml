@@ -18,10 +18,9 @@ jobs:
       - run:
           name: Run linter
           command: npm --prefix ./glean run lint
-      # Disabled because of bug 1704794.
-      # - run:
-      #    name: Run circular dependencies checker
-      #    command: npm --prefix ./glean run lint:circular-deps
+      - run:
+          name: Run circular dependencies checker
+          command: npm --prefix ./glean run lint:circular-deps
 
   unit-tests:
     docker:
