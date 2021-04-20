@@ -250,11 +250,17 @@ describe("LabeledMetric", function() {
   });
 
   it("test labeled string metric type", async function() {
+    const ping = new PingType({
+      name: "test",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
+
     const labeledStringMetric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_string_metric",
-        sendInPings: ["metrics"],
+        sendInPings: ["test"],
         lifetime: Lifetime.Application,
         disabled: false
       },
@@ -269,14 +275,40 @@ describe("LabeledMetric", function() {
     assert.strictEqual(await labeledStringMetric["label1"].testGetValue(), "foo");
     assert.strictEqual(await labeledStringMetric["label2"].testGetValue(), "bar");
     assert.strictEqual(await labeledStringMetric["__other__"].testGetValue(), undefined);
+
+    // TODO: bug 1691033 will allow us to change the code below this point,
+    // once a custom uploader for testing will be available.
+    ping.submit();
+    await Context.dispatcher.testBlockOnQueue();
+
+    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
+    assert.strictEqual(Object.keys(storedPings).length, 1);
+
+    // TODO: bug 1682282 will validate the payload schema.
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const stored: JSONObject = storedPings[Object.keys(storedPings)[0]] as JSONObject;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const payloadAsString = JSON.stringify(stored.payload);
+
+    // Do the same checks again on the JSON structure
+    assert.strict(
+      payloadAsString.includes("\"labeled_string\":{\"telemetry.labeled_string_metric\":{\"label1\":\"foo\",\"label2\":\"bar\"}}}")
+    );
   });
 
   it("test labeled boolean metric type", async function() {
+    const ping = new PingType({
+      name: "test",
+      includeClientId: true,
+      sendIfEmpty: false,
+    });
+
     const metric = new LabeledMetricType(
       {
         category: "telemetry",
         name: "labeled_bool",
-        sendInPings: ["metrics"],
+        sendInPings: ["test"],
         lifetime: Lifetime.Application,
         disabled: false
       },
@@ -291,6 +323,26 @@ describe("LabeledMetric", function() {
 
     value = await metric["label2"].testGetValue();
     assert.strictEqual(value, true);
+
+    // TODO: bug 1691033 will allow us to change the code below this point,
+    // once a custom uploader for testing will be available.
+    ping.submit();
+    await Context.dispatcher.testBlockOnQueue();
+
+    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
+    assert.strictEqual(Object.keys(storedPings).length, 1);
+
+    // TODO: bug 1682282 will validate the payload schema.
+
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-assignment
+    const stored: JSONObject = storedPings[Object.keys(storedPings)[0]] as JSONObject;
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    const payloadAsString = JSON.stringify(stored.payload);
+
+    // Do the same checks again on the JSON structure
+    assert.strict(
+      payloadAsString.includes("\"labeled_boolean\":{\"telemetry.labeled_bool\":{\"label1\":false,\"label2\":true}}}")
+    );
   });
 
   it("dynamic labels regex mismatch", async function() {
