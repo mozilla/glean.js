@@ -39,7 +39,7 @@ const enum PingUploaderStatus {
  * If three retriable upload failures are hit in a row,
  * we bail out before uploading all enqued pings.
  */
-class PingUploader implements PingsDatabaseObserver {
+class PingUploaderManager implements PingsDatabaseObserver {
   // A FIFO queue of pings.
   private queue: QueuedPing[];
   // The current status of the uploader.
@@ -314,4 +314,4 @@ class PingUploader implements PingsDatabaseObserver {
   }
 }
 
-export default PingUploader;
+export default PingUploaderManager;
