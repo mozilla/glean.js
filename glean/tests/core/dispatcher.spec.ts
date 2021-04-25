@@ -340,16 +340,6 @@ describe("Dispatcher", function() {
     assert.strictEqual(dispatcher["state"], DispatcherState.Idle);
   });
 
-  it("testLaunch will reject in case the dispatcher is uninitialized for too long", async function () {
-    dispatcher = new Dispatcher();
-    try {
-      await dispatcher.testLaunch(sampleTask);
-      assert.ok(false);
-    } catch {
-      assert.ok(true);
-    }
-  });
-
   it("testLaunch will not reject in case the dispatcher is uninitialized, but quickly initializes", async function () {
     dispatcher = new Dispatcher();
     const testLaunchedTask = dispatcher.testLaunch(sampleTask);
@@ -377,23 +367,5 @@ describe("Dispatcher", function() {
     await Promise.all([test1, test2, test3]);
 
     sinon.assert.callOrder(stub1, stub2, stub3);
-  });
-
-  it("testLaunch observers are unattached after promise is resolved or rejected", async function() {
-    dispatcher = new Dispatcher();
-
-    const willReject = dispatcher.testLaunch(sampleTask);
-    assert.strictEqual(dispatcher["observers"].length, 1);
-    try {
-      await willReject;
-    } catch {
-      assert.strictEqual(dispatcher["observers"].length, 0);
-    }
-
-    dispatcher.flushInit();
-    const willNotReject = dispatcher.testLaunch(sampleTask);
-    assert.strictEqual(dispatcher["observers"].length, 1);
-    await willNotReject;
-    assert.strictEqual(dispatcher["observers"].length, 0);
   });
 });

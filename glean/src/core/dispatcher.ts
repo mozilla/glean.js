@@ -29,6 +29,8 @@ const enum Commands {
   Stop,
   // The dispatcher should stop executing the queued tasks and clear the queue.
   Clear,
+  // Exactly like a normal Task, but spawned for tests.
+  TestTask,
 }
 
 // A task the dispatcher knows how to execute.
@@ -36,28 +38,16 @@ type Task = () => Promise<void>;
 
 // An executable command.
 type Command = {
-  testId?: string,
   task: Task,
   command: Commands.Task,
 } | {
-  command: Exclude<Commands, Commands.Task>,
+  testId?: string,
+  resolver: (value: void | PromiseLike<void>) => void,
+  task: Task,
+  command: Commands.TestTask,
+} | {
+  command: Exclude<Commands, Commands.Task | Commands.TestTask>,
 };
-
-/**
- * An observer of the commands being executed by the dispatcher.
- */
-class DispatcherObserver {
-  constructor(private cb: (command: Command) => void) {}
-
-  /**
-   * Updates an observer when the dispatcher finishes executing a command.
-   *
-   * @param command The command that was just executed by the dispatcher.
-   */
-  update(command: Command): void {
-    this.cb(command);
-  }
-}
 
 /**
  * A task dispatcher for async tasks.
@@ -74,54 +64,9 @@ class Dispatcher {
   // This is `undefined` in case there is no ongoing execution of tasks.
   private currentJob?: Promise<void>;
 
-  // Observers that are notified about every executed command in this dispacther.
-  //
-  // This is private, because we only expect `testLaunch` to attach observers as of yet.
-  private observers: DispatcherObserver[];
-
   constructor(readonly maxPreInitQueueSize = 100) {
-    this.observers = [];
     this.queue = [];
     this.state = DispatcherState.Uninitialized;
-  }
-
-  /**
-   * Attaches an observer that will be notified about state changes on the Dispatcher.
-   *
-   * # Note
-   *
-   * This is a private function because only the `testLaunch` function
-   * is expected to watch the state of the Dispatcher as of yet.
-   *
-   * @param observer The observer to attach.
-   */
-  private attachObserver(observer: DispatcherObserver): void {
-    this.observers.push(observer);
-  }
-
-  /**
-   * Un-attaches an observer that will be notified about state changes on the Dispatcher.
-   *
-   * # Note
-   *
-   * This is a private function because only the `testLaunch` function
-   * is expected to watch the state of the Dispatcher as of yet.
-   *
-   * @param observer The observer to attach.
-   */
-  private unattachObserver(observer: DispatcherObserver): void {
-    this.observers = this.observers.filter(curr => observer !== curr);
-  }
-
-  /**
-   * Notify any currently attached observer that a new command was executed.
-   *
-   * @param command The command to notify about
-   */
-  private notifyObservers(command: Command): void {
-    for (const observer of this.observers) {
-      observer.update(command);
-    }
   }
 
   /**
@@ -155,16 +100,25 @@ class Dispatcher {
       switch(nextCommand.command) {
       case(Commands.Stop):
         this.state = DispatcherState.Stopped;
-        this.notifyObservers(nextCommand);
         return;
       case(Commands.Clear):
+        // Unblock test resolvers before clearing the queue.
+        this.queue.forEach(c => {
+          if (c.command === Commands.TestTask) {
+            c.resolver();
+          }
+        });
+
         this.queue = [];
         this.state = DispatcherState.Stopped;
-        this.notifyObservers(nextCommand);
         return;
+      case (Commands.TestTask):
+        await this.executeTask(nextCommand.task);
+        nextCommand.resolver();
+        nextCommand = this.getNextCommand();
+        continue;
       case(Commands.Task):
         await this.executeTask(nextCommand.task);
-        this.notifyObservers(nextCommand);
         nextCommand = this.getNextCommand();
       }
     }
@@ -368,55 +322,23 @@ class Dispatcher {
    *
    * @returns A promise which only resolves once the task is done being executed
    *          or is guaranteed to not be executed ever i.e. if the queue gets cleared.
-   *          This promise is rejected if the dispatcher takes more than 1s
-   *          to execute the current task i.e. if the dispatcher is uninitialized.
    */
   testLaunch(task: Task): Promise<void> {
     const testId = generateUUIDv4();
     console.info("Launching a test task.", testId);
 
-    this.resume();
-    const wasLaunched = this.launchInternal({
-      testId,
-      task,
-      command: Commands.Task
-    });
-
-    if (!wasLaunched) {
-      return Promise.reject();
-    }
-
-    // This promise will resolve:
-    //
-    // - If the dispatcher gets a Clear command;
-    // - If a task with `testId` is executed;
-    //
-    // This promise will reject if:
-    //
-    // - If we wait for this task to be execute for more than 1s.
-    //   This is to attend to the case where the dispatcher is Stopped
-    //   and the task takes to long to be executed.
-    return new Promise((resolve, reject) => {
-      const observer = new DispatcherObserver((command: Command) => {
-        const isCurrentTask = (command.command === Commands.Task && command.testId === testId);
-        if (isCurrentTask || command.command === Commands.Clear) {
-          this.unattachObserver(observer);
-          clearTimeout(timeout);
-          resolve();
-        }
+    return new Promise((resolver, reject) => {
+      this.resume();
+      const wasLaunched = this.launchInternal({
+        testId,
+        resolver,
+        task,
+        command: Commands.TestTask
       });
 
-      const timeout = setTimeout(() => {
-        console.error(
-          `Test task ${testId} took to long to execute.`,
-          "Please check if the dispatcher was initialized and is not stopped.",
-          "Bailing out."
-        );
-        this.unattachObserver(observer);
+      if (!wasLaunched) {
         reject();
-      }, 1000);
-
-      this.attachObserver(observer);
+      }
     });
   }
 }
