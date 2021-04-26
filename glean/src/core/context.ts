@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { DebugOptions } from "./debug_options";
-import type Dispatcher from "./dispatcher";
+import Dispatcher from "./dispatcher";
 import type MetricsDatabase from "./metrics/database";
 import type EventsDatabase from "./metrics/events_database";
 import type PingsDatabase from "./pings/database";
@@ -23,7 +23,7 @@ import type PingsDatabase from "./pings/database";
 export class Context {
   private static _instance: Context;
 
-  private _dispatcher!: Dispatcher;
+  private _dispatcher!: Dispatcher | null;
 
   private _uploadEnabled!: boolean;
   private _metricsDatabase!: MetricsDatabase;
@@ -31,13 +31,12 @@ export class Context {
   private _pingsDatabase!: PingsDatabase;
 
   private _applicationId!: string;
-  private _initialized!: boolean;
+  private _initialized: boolean;
 
   private _debugOptions!: DebugOptions;
 
   private constructor() {
-    // Intentionally empty, exclusively defined to mark the
-    // constructor as private.
+    this._initialized = false;
   }
 
   static get instance(): Context {
@@ -48,7 +47,30 @@ export class Context {
     return Context._instance;
   }
 
+  /**
+   * **Test-only API**
+   *
+   * Resets the Context to an uninitialized state.
+   */
+  static async testUninitialize(): Promise<void> {
+    // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
+    if (Context.instance._dispatcher) {
+      await Context.instance._dispatcher.testUninitialize();
+    }
+
+    Context.instance._dispatcher = null;
+    Context.initialized = false;
+  }
+
   static get dispatcher(): Dispatcher {
+    // Create a dispatcher if one isn't available already.
+    // This is required since the dispatcher may be used
+    // earlier than Glean initialization, so we can't rely
+    // on `Glean.initialize` to set it.
+    if (!Context.instance._dispatcher) {
+      Context.instance._dispatcher = new Dispatcher();
+    }
+
     return Context.instance._dispatcher;
   }
 
