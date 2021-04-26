@@ -58,6 +58,9 @@ export class Context {
       await Context.instance._dispatcher.testUninitialize();
     }
 
+    // Due to the test requirement of keeping storage in place,
+    // we can't simply wipe out the full `Context` instance.
+    // The closest thing we can do is making the dispatcher `null`.
     Context.instance._dispatcher = null;
     Context.initialized = false;
   }
