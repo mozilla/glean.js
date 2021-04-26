@@ -17,7 +17,7 @@ import { Metric } from "../metric.js";
  * whatever is stored internally, without performing any specific
  * validation.
  */
- export class LabeledMetric extends Metric<JSONValue, JSONValue> {
+export class LabeledMetric extends Metric<JSONValue, JSONValue> {
   constructor(v: unknown) {
     super(v);
   }
