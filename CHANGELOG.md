@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.1...main)
+
+# v0.10.1 (2021-04-26)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.0...v0.10.1)
 
 * [#254](https://github.com/mozilla/glean.js/pull/254): BUGFIX: Allow the usage of the Glean specific metrics API before Glean is initialized.
 
