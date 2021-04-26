@@ -1,6 +1,12 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.2...main)
+
+# v0.10.2 (2021-04-26)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.1...v0.10.2)
+
+* [#256](https://github.com/mozilla/glean.js/pull/256): BUGFIX: Add the missing `js` extension to the dispatcher.
 
 # v0.10.1 (2021-04-26)
 
