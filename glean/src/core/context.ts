@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { DebugOptions } from "./debug_options";
-import Dispatcher from "./dispatcher";
+import Dispatcher from "./dispatcher.js";
 import type MetricsDatabase from "./metrics/database";
 import type EventsDatabase from "./metrics/events_database";
 import type PingsDatabase from "./pings/database";
