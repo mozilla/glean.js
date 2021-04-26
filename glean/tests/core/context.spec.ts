@@ -68,4 +68,20 @@ describe("Context", function() {
     assert.notStrictEqual(Context.pingsDatabase, undefined);
     assert.ok(Context.pingsDatabase instanceof PingsDatabase);
   });
+
+  it("the dispatcher is always available", async function () {
+    const originalDispatcher = Context.dispatcher;
+    assert.notStrictEqual(originalDispatcher, null);
+
+    await Context.testUninitialize();
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    assert.strictEqual(Context.instance._dispatcher, null);
+
+    // Trying to access the dispatcher will instantiate a new one.
+    const newDispatcher = Context.instance;
+    assert.notStrictEqual(newDispatcher, null);
+    assert.notStrictEqual(newDispatcher, originalDispatcher);
+  });
 });

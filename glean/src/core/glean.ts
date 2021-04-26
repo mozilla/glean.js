@@ -14,7 +14,6 @@ import EventsDatabase from "./metrics/events_database.js";
 import UUIDMetricType from "./metrics/types/uuid.js";
 import DatetimeMetricType from "./metrics/types/datetime.js";
 import { DatetimeMetric } from "./metrics/types/datetime_metric.js";
-import Dispatcher from "./dispatcher.js";
 import CorePings from "./internal_pings.js";
 import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 
@@ -51,10 +50,8 @@ class Glean {
       Use Glean.instance instead to access the Glean singleton.`);
     }
 
-    Context.dispatcher = new Dispatcher();
     this._coreMetrics = new CoreMetrics();
     this._corePings = new CorePings();
-    Context.initialized = false;
   }
 
   private static get instance(): Glean {
@@ -501,15 +498,10 @@ class Glean {
    */
   static async testUninitialize(): Promise<void> {
     // Get back to an uninitialized state.
-    Context.initialized = false;
+    await Context.testUninitialize();
 
     // Deregister all plugins
     testResetEvents();
-
-    // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
-    if (Context.dispatcher) {
-      await Context.dispatcher.testUninitialize();
-    }
 
     // Stop ongoing jobs and clear pending pings queue.
     if (Glean.pingUploader) {
