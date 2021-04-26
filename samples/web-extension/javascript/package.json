@@ -13,7 +13,7 @@
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "webextension-polyfill": "^0.7.0"
+    "webextension-polyfill": "^0.8.0"
   },
   "devDependencies": {
     "mocha": "^8.3.2",
