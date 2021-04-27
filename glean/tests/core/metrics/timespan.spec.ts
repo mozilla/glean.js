@@ -210,7 +210,7 @@ describe("TimespanMetric", function() {
     assert.deepStrictEqual(consoleErrorSpy.callCount, 1);
   });
 
-  it("cancel does not store", async function() {
+  it("cancel does not store and clears start time", async function() {
     const metric = new TimespanMetricType({
       category: "aCategory",
       name: "aTimespan",
@@ -222,6 +222,7 @@ describe("TimespanMetric", function() {
     metric.start();
     metric.cancel();
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric["startTime"], undefined);
   });
 
   it("nothing is stored before stop", async function() {

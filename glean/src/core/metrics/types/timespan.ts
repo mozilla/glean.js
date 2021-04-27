@@ -166,7 +166,10 @@ class TimespanMetricType extends MetricType {
    * No error is recorded if no `start()` was called.
    */
   cancel(): void {
-    this.startTime = undefined;
+    Context.dispatcher.launch(() => {
+      this.startTime = undefined;
+      return Promise.resolve();
+    });
   }
 
   /**
@@ -190,6 +193,7 @@ class TimespanMetricType extends MetricType {
     });
 
     if (value) {
+      // `payload` will truncate to the defined time_unit at the time of recording.
       return (new TimespanMetric(value)).payload();
     }
   }
