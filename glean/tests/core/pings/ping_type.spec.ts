@@ -118,7 +118,8 @@ describe("PingType", function() {
 
     // We did not call the testing API yet, internals should be undefined.
     assert.strictEqual(ping["resolveTestPromiseFunction"], undefined);
-    assert.strictEqual(ping["testValidator"], undefined);
+    assert.strictEqual(ping["rejectTestPromiseFunction"], undefined);
+    assert.strictEqual(ping["testCallback"], undefined);
 
     let validatorRun = false;
     const p = ping.testBeforeNextSubmit(r => {
@@ -129,7 +130,8 @@ describe("PingType", function() {
 
     // Internals should be defined after the API was called.
     assert.notStrictEqual(ping["resolveTestPromiseFunction"], undefined);
-    assert.notStrictEqual(ping["testValidator"], undefined);
+    assert.notStrictEqual(ping["rejectTestPromiseFunction"], undefined);
+    assert.notStrictEqual(ping["testCallback"], undefined);
 
     ping.submit("test");
     await p;
@@ -202,21 +204,21 @@ describe("PingType", function() {
     }
   });
 
-  it("runs a validator multiple times fails when not awaiting", function() {
+  it("running a validator multiple times fails when not awaiting", function() {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false
     });
 
-    assert.strictEqual(ping["testValidator"], undefined);
+    assert.strictEqual(ping["testCallback"], undefined);
 
     const testFunction = async () => Promise.resolve();
     void ping.testBeforeNextSubmit(testFunction);
-    assert.strictEqual(ping["testValidator"], testFunction);
+    assert.strictEqual(ping["testCallback"], testFunction);
 
     void ping.testBeforeNextSubmit(() => Promise.resolve());
-    assert.strictEqual(ping["testValidator"], testFunction);
+    assert.strictEqual(ping["testCallback"], testFunction);
   });
 
   it("runs a validator that rejects", async function() {
@@ -259,9 +261,13 @@ describe("PingType", function() {
     const TEST_NUM_ADDITIONS = 100;
 
     const p = ping.testBeforeNextSubmit(async () => {
+      // The timeout is here to make the test fail more
+      // reliably with the current implementation.
       await new Promise(r => setTimeout(r, 100));
 
       const value = await counter.testGetValue();
+      // We don't expect any value to be stored, because the
+      // calls to 'add' happen after the ping submission.
       assert.strictEqual(value, undefined);
       validatorRun = true;
     });
@@ -288,7 +294,7 @@ describe("PingType", function() {
       reasonCodes: ["test"]
     });
 
-    const counter = new CounterMetricType({
+    const delayedCounter = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
       sendInPings: ["custom"],
@@ -310,8 +316,8 @@ describe("PingType", function() {
     const p = ping.testBeforeNextSubmit(async () => {
       await new Promise(r => setTimeout(r, 100));
 
-      assert.strictEqual(await counter.testGetValue(), 37, "Canary must match");
-      const value = await counter.testGetValue();
+      assert.strictEqual(await canary.testGetValue(), 37, "Canary must match");
+      const value = await delayedCounter.testGetValue();
       assert.strictEqual(value, undefined);
       validatorRun = true;
     });
@@ -325,9 +331,8 @@ describe("PingType", function() {
 
     await p;
     for (let i = 0; i < TEST_NUM_ADDITIONS; i++) {
-      counter.add();
+      delayedCounter.add();
     }
-
 
     assert.ok(validatorRun);
   });
