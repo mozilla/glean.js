@@ -7,7 +7,7 @@ import type { ConfigurationInterface } from "./config.js";
 import { Configuration } from "./config.js";
 import MetricsDatabase from "./metrics/database.js";
 import PingsDatabase from "./pings/database.js";
-import PingUploader from "./upload/index.js";
+import PingUploadManager from "./upload/index.js";
 import { isUndefined, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
 import EventsDatabase from "./metrics/events_database.js";
@@ -40,7 +40,7 @@ class Glean {
   // The ping uploader. Note that we need to use the definite assignment assertion
   // because initialization will not happen in the constructor, but in the `initialize`
   // method.
-  private _pingUploader!: PingUploader;
+  private _pingUploadManager!: PingUploadManager;
   // The Glean configuration object.
   private _config!: Configuration;
 
@@ -65,8 +65,8 @@ class Glean {
     return Glean._instance;
   }
 
-  private static get pingUploader(): PingUploader {
-    return Glean.instance._pingUploader;
+  private static get pingUploadManager(): PingUploadManager {
+    return Glean.instance._pingUploadManager;
   }
 
   static get coreMetrics(): CoreMetrics {
@@ -113,7 +113,7 @@ class Glean {
    */
   private static async clearMetrics(): Promise<void> {
     // Stop ongoing upload jobs and clear pending pings queue.
-    await Glean.pingUploader.clearPendingPingsQueue();
+    await Glean.pingUploadManager.clearPendingPingsQueue();
 
     // There is only one metric that we want to survive after clearing all
     // metrics: first_run_date. Here, we store its value
@@ -210,9 +210,9 @@ class Glean {
     Context.eventsDatabase = new EventsDatabase(Glean.platform.Storage);
     Context.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
 
-    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Context.pingsDatabase);
+    Glean.instance._pingUploadManager = new PingUploadManager(correctConfig, Glean.platform, Context.pingsDatabase);
 
-    Context.pingsDatabase.attachObserver(Glean.pingUploader);
+    Context.pingsDatabase.attachObserver(Glean.pingUploadManager);
 
     if (config?.plugins) {
       for (const plugin of config.plugins) {
@@ -243,7 +243,7 @@ class Glean {
       // This is fine, we are inside a dispatched task that is guaranteed to run before any
       // other task. No external API call will be executed before we leave this task.
       Context.initialized = true;
-      Glean.pingUploader.setInitialized(true);
+      Glean.pingUploadManager.setInitialized(true);
 
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
@@ -280,7 +280,7 @@ class Glean {
       // Even though this returns a promise, there is no need to block on it returning.
       //
       // On the contrary we _want_ the uploading tasks to be executed async.
-      void Glean.pingUploader.triggerUpload();
+      void Glean.pingUploadManager.triggerUpload();
     });
   }
 
@@ -512,10 +512,10 @@ class Glean {
     }
 
     // Stop ongoing jobs and clear pending pings queue.
-    if (Glean.pingUploader) {
+    if (Glean.pingUploadManager) {
       // The first time tests run, before Glean is initialized, we are
       // not guaranteed to have an uploader. Account for this.
-      await Glean.pingUploader.clearPendingPingsQueue();
+      await Glean.pingUploadManager.clearPendingPingsQueue();
     }
   }
 

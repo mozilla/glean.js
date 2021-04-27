@@ -23,7 +23,7 @@ describe("LabeledMetric", function() {
   beforeEach(async function() {
     await Glean.testResetGlean(testAppId);
     // Disable ping uploading for it not to interfere with this tests.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    sandbox.stub(Glean["pingUploadManager"], "triggerUpload").callsFake(() => Promise.resolve());
   });
 
   afterEach(function () {

@@ -153,7 +153,7 @@ describe("Glean", function() {
   });
 
   it("disabling when already disabled is a no-op", async function() {
-    const spy = sandbox.spy(Glean["pingUploader"], "clearPendingPingsQueue");
+    const spy = sandbox.spy(Glean["pingUploadManager"], "clearPendingPingsQueue");
     Glean.setUploadEnabled(false);
     Glean.setUploadEnabled(false);
     // Wait for `setUploadEnabled` to be executed both times.
@@ -252,7 +252,7 @@ describe("Glean", function() {
 
     await Context.dispatcher.testBlockOnQueue();
     // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
-    await Glean["pingUploader"]["currentJob"];
+    await Glean["pingUploadManager"]["currentJob"];
 
     // Check that one ping was sent,
     // but that ping is not our custom ping, but the deletion-request.
@@ -287,7 +287,7 @@ describe("Glean", function() {
     await Glean.testInitialize(testAppId, false);
 
     // TODO: Make this nicer once Bug 1691033 is resolved.
-    await Glean["pingUploader"]["currentJob"];
+    await Glean["pingUploadManager"]["currentJob"];
 
     // A deletion request is sent
     assert.strictEqual(postSpy.callCount, 1);
@@ -310,7 +310,7 @@ describe("Glean", function() {
     await Glean.testInitialize(testAppId, false);
     await Context.dispatcher.testBlockOnQueue();
     // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
-    await Glean["pingUploader"]["currentJob"];
+    await Glean["pingUploadManager"]["currentJob"];
 
     postSpy.resetHistory();
     assert.strictEqual(postSpy.callCount, 0);
@@ -456,7 +456,7 @@ describe("Glean", function() {
     //
     // This disables the uploading and deletion of pings from the pings database,
     // this allows us to query the database to check that our pings are as expected.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    sandbox.stub(Glean["pingUploadManager"], "triggerUpload").callsFake(() => Promise.resolve());
 
     const custom = new PingType({
       name: "custom",

@@ -37,7 +37,7 @@ describe("PingType", function() {
 
   it("collects and stores ping on submit", async function () {
     // Disable ping uploading for it not to interfere with this tests.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    sandbox.stub(Glean["pingUploadManager"], "triggerUpload").callsFake(() => Promise.resolve());
 
     const ping = new PingType({
       name: "custom",
@@ -60,7 +60,7 @@ describe("PingType", function() {
 
   it("empty pings with send if empty flag are submitted", async function () {
     // Disable ping uploading for it not to interfere with this tests.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    sandbox.stub(Glean["pingUploadManager"], "triggerUpload").callsFake(() => Promise.resolve());
 
     const ping1 = new PingType({
       name: "ping1",

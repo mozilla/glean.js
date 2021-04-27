@@ -11,7 +11,7 @@ import { Context } from "../../../src/core/context";
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings/ping_type";
 import collectAndStorePing from "../../../src/core/pings/maker";
-import PingUploader from "../../../src/core/upload";
+import PingUploadManager from "../../../src/core/upload";
 import { UploadResultStatus } from "../../../src/core/upload/uploader";
 
 const sandbox = sinon.createSandbox();
@@ -43,8 +43,8 @@ async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
  * if it's actualy doing any.
  */
 async function waitForGleanUploader(): Promise<void> {
-  if (Glean["pingUploader"]["currentJob"]) {
-    await Glean["pingUploader"]["currentJob"];
+  if (Glean["pingUploadManager"]["currentJob"]) {
+    await Glean["pingUploadManager"]["currentJob"];
   }
 }
 
@@ -53,11 +53,11 @@ async function waitForGleanUploader(): Promise<void> {
  * so that it doesn't interefe with tests.
  */
 function disableGleanUploader(): void {
-  sandbox.stub(Glean["pingUploader"], "triggerUpload")
+  sandbox.stub(Glean["pingUploadManager"], "triggerUpload")
     .callsFake(() => Promise.resolve());
 }
 
-describe("PingUploader", function() {
+describe("PingUploadManager", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   afterEach(function () {
@@ -69,7 +69,7 @@ describe("PingUploader", function() {
   });
 
   it("whenever the pings dabase records a new ping, upload is triggered", async function() {
-    const spy = sandbox.spy(Glean["pingUploader"], "triggerUpload");
+    const spy = sandbox.spy(Glean["pingUploadManager"], "triggerUpload");
     await fillUpPingsDatabase(10);
     assert.strictEqual(spy.callCount, 10);
   });
@@ -79,7 +79,7 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     // Create a new uploader and attach it to the existing storage.
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration(), Glean.platform, Context.pingsDatabase);
     uploader.setInitialized();
     Context.pingsDatabase.attachObserver(uploader);
 
@@ -113,7 +113,7 @@ describe("PingUploader", function() {
     disableGleanUploader();
     await fillUpPingsDatabase(10);
 
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration(), Glean.platform, Context.pingsDatabase);
     uploader.setInitialized();
     Context.pingsDatabase.attachObserver(uploader);
     await Context.pingsDatabase.scanPendingPings();
@@ -135,7 +135,7 @@ describe("PingUploader", function() {
 
     await waitForGleanUploader();
     assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
-    assert.strictEqual(Glean["pingUploader"]["queue"].length, 0);
+    assert.strictEqual(Glean["pingUploadManager"]["queue"].length, 0);
   });
 
   it("correctly deletes pings when upload is unrecoverably unsuccesfull", async function() {
@@ -148,7 +148,7 @@ describe("PingUploader", function() {
 
     await waitForGleanUploader();
     assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
-    assert.strictEqual(Glean["pingUploader"]["queue"].length, 0);
+    assert.strictEqual(Glean["pingUploadManager"]["queue"].length, 0);
   });
 
   it("correctly re-enqueues pings when upload is recovarbly unsuccesfull", async function() {
@@ -163,11 +163,11 @@ describe("PingUploader", function() {
     // Ping should still be there.
     const allPings = await Context.pingsDatabase.getAllPings();
     assert.deepStrictEqual(Object.keys(allPings).length, 1);
-    assert.strictEqual(Glean["pingUploader"]["queue"].length, 1);
+    assert.strictEqual(Glean["pingUploadManager"]["queue"].length, 1);
   });
 
   it("duplicates are not enqueued", function() {
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration(), Glean.platform, Context.pingsDatabase);
     for (let i = 0; i < 10; i++) {
       uploader["enqueuePing"]({
         identifier: "id",

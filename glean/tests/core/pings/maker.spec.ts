@@ -142,7 +142,7 @@ describe("PingMaker", function() {
 
   it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
     // Disable ping uploading for it not to interfere with this tests.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    sandbox.stub(Glean["pingUploadManager"], "triggerUpload").callsFake(() => Promise.resolve());
 
     await Glean.testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ]});
     const ping = new PingType({
@@ -163,7 +163,7 @@ describe("PingMaker", function() {
 
   it("ping payload is logged before it is modified by a plugin", async function () {
     // Disable ping uploading for it not to interfere with this tests.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    sandbox.stub(Glean["pingUploadManager"], "triggerUpload").callsFake(() => Promise.resolve());
 
     await Glean.testResetGlean(testAppId, true, {
       debug: {
