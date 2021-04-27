@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { generateUUIDv4 } from "./utils.js";
-
 // The possible states a dispatcher instance can be in.
 export const enum DispatcherState {
   // The dispatcher has not been initialized yet.
@@ -41,7 +39,6 @@ type Command = {
   task: Task,
   command: Commands.Task,
 } | {
-  testId?: string,
   resolver: (value: void | PromiseLike<void>) => void,
   task: Task,
   command: Commands.TestTask,
@@ -324,13 +321,9 @@ class Dispatcher {
    *          or is guaranteed to not be executed ever i.e. if the queue gets cleared.
    */
   testLaunch(task: Task): Promise<void> {
-    const testId = generateUUIDv4();
-    console.info("Launching a test task.", testId);
-
     return new Promise((resolver, reject) => {
       this.resume();
       const wasLaunched = this.launchInternal({
-        testId,
         resolver,
         task,
         command: Commands.TestTask
