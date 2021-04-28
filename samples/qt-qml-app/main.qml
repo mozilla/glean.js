@@ -8,8 +8,8 @@ import QtGraphicalEffects 1.15
 
 import "../../glean/dist/glean.js" as Glean;
 // These must be imported after Glean because they rely on Glean being in the environment.
-import "./pings.js" as Pings;
-import "./sample.js" as Metrics;
+import "./generated/pings.js" as Pings;
+import "./generated/sample.js" as Metrics;
 
 Rectangle {
   id: screen
