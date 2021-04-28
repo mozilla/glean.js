@@ -3,17 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "../constants.js";
-import CounterMetricType from "../metrics/types/counter.js";
-import { CounterMetric } from "../metrics/types/counter_metric.js";
-import DatetimeMetricType from "../metrics/types/datetime.js";
-import { DatetimeMetric } from "../metrics/types/datetime_metric.js";
-import TimeUnit from "../metrics/time_unit.js";
 import type { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
 import type CommonPingData from "./common_ping_data.js";
-import CoreEvents from "../events/index.js";
 import type MetricsDatabase from "../metrics/database.js";
 import type EventsDatabase from "../metrics/events_database.js";
 import type { DebugOptions } from "../debug_options.js";
+import CounterMetricType from "../metrics/types/counter.js";
+import { CounterMetric } from "../metrics/types/counter.js";
+import DatetimeMetricType from "../metrics/types/datetime.js";
+import { DatetimeMetric } from "../metrics/types/datetime.js";
+import TimeUnit from "../metrics/time_unit.js";
+import CoreEvents from "../events/index.js";
 import { Lifetime } from "../metrics/lifetime.js";
 import { Context } from "../context.js";
 

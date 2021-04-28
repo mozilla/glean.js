@@ -3,6 +3,7 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.2...main)
 
 * [#202](https://github.com/mozilla/glean.js/pull/202): Add a testing API for the ping type.
+* [#253](https://github.com/mozilla/glean.js/pull/253): Implement the timespan metric type.
 
 # v0.10.2 (2021-04-26)
 

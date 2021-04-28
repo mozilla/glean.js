@@ -2,20 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { performance } from "perf_hooks";
 import assert from "assert";
 
 import Glean from "../../../src/core/glean";
 import EventMetricType from "../../../src/core/metrics/types/event";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
-
-// A test event type that exclusively overrides the
-// monotonic timer.
-class TestEventMetricType extends EventMetricType {
-  getMonotonicNow(): number {
-    return Math.round(performance.now() / 1000);
-  }
-}
 
 describe("EventMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -25,7 +16,7 @@ describe("EventMetric", function() {
   });
 
   it("the API records to its storage engine", async function () {
-    const click = new TestEventMetricType({
+    const click = new EventMetricType({
       category: "ui",
       name: "click",
       sendInPings: ["store1"],
@@ -58,7 +49,7 @@ describe("EventMetric", function() {
   });
 
   it("the API records when category is empty", async function () {
-    const click = new TestEventMetricType({
+    const click = new EventMetricType({
       category: "",
       name: "click",
       sendInPings: ["store1"],
@@ -86,7 +77,7 @@ describe("EventMetric", function() {
   });
 
   it("disabled events must not record data", async function () {
-    const click = new TestEventMetricType({
+    const click = new EventMetricType({
       category: "ui",
       name: "click",
       sendInPings: ["store1"],
@@ -101,7 +92,7 @@ describe("EventMetric", function() {
   });
 
   it("events should not record when upload is disabled", async function () {
-    const click = new TestEventMetricType({
+    const click = new EventMetricType({
       category: "ui",
       name: "click",
       sendInPings: ["store1"],
@@ -133,7 +124,7 @@ describe("EventMetric", function() {
   it("records properly without optional arguments", async function () {
     const pings = ["store1", "store2"];
 
-    const metric = new TestEventMetricType({
+    const metric = new EventMetricType({
       category: "telemetry",
       name: "test_event_no_optional",
       sendInPings: pings,
@@ -156,7 +147,7 @@ describe("EventMetric", function() {
   it("records properly with optional arguments", async function () {
     const pings = ["store1", "store2"];
 
-    const metric = new TestEventMetricType({
+    const metric = new EventMetricType({
       category: "telemetry",
       name: "test_event_with_optional",
       sendInPings: pings,
@@ -186,7 +177,7 @@ describe("EventMetric", function() {
   it.skip("bug 1690253: send an event ping when it fills up");
 
   it("extra keys must be recorded and truncated if needed", async function () {
-    const testEvent = new TestEventMetricType({
+    const testEvent = new EventMetricType({
       category: "ui",
       name: "testEvent",
       sendInPings: ["store1"],
