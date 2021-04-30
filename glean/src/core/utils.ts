@@ -159,3 +159,17 @@ export function generateUUIDv4(): string {
     });
   }
 }
+
+/**
+ * A helper function to aid mocking the time in tests.
+ *
+ * This is only meant to be overridden in tests.
+ *
+ * @returns The number of milliseconds since the time origin.
+ */
+export function getMonotonicNow(): number {
+  // Sadly, `performance.now` is not available on Qt, which
+  // means we should get creative to find a proper clock for that platform.
+  // Fall back to `Date.now` for now, until bug 1690528 is fixed.
+  return typeof performance === "undefined" ? Date.now() : performance.now();
+}

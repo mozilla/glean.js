@@ -3,11 +3,33 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { MetricType } from "../index.js";
 import type { JSONValue } from "../../utils.js";
-import { isUndefined } from "../../utils.js";
-import { CounterMetric } from "./counter_metric.js";
+import { MetricType } from "../index.js";
+import { isUndefined, isNumber } from "../../utils.js";
 import { Context } from "../../context.js";
+import { Metric } from "../metric.js";
+
+export class CounterMetric extends Metric<number, number> {
+  constructor(v: unknown) {
+    super(v);
+  }
+
+  validate(v: unknown): v is number {
+    if (!isNumber(v)) {
+      return false;
+    }
+
+    if (v <= 0) {
+      return false;
+    }
+
+    return true;
+  }
+
+  payload(): number {
+    return this._inner;
+  }
+}
 
 /**
  * A counter metric.

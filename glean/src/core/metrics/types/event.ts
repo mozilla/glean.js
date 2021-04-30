@@ -6,7 +6,7 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import type { ExtraMap} from "../events_database.js";
 import { RecordedEvent } from "../events_database.js";
-import { isUndefined } from "../../utils.js";
+import { getMonotonicNow } from "../../utils.js";
 import { Context } from "../../context.js";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
@@ -20,21 +20,6 @@ class EventMetricType extends MetricType {
   constructor(meta: CommonMetricData, allowedExtraKeys?: string[]) {
     super("event", meta);
     this.allowedExtraKeys = allowedExtraKeys;
-  }
-
-  /**
-   * An helper function to aid mocking the time in tests.
-   *
-   * This is only meant to be overridden in tests.
-   *
-   * @returns the number of milliseconds since the time origin.
-   */
-  protected getMonotonicNow(): number {
-    // Sadly, `performance.now` is not available outside of browsers, which
-    // means we should get creative to find a proper clock. Fall back to `Date.now`
-    // for now, until bug 1690528 is fixed.
-    const now = isUndefined(performance) ? Date.now() : performance.now();
-    return Math.round(now / 1000);
   }
 
   /**
@@ -52,7 +37,7 @@ class EventMetricType extends MetricType {
         return;
       }
 
-      const timestamp = this.getMonotonicNow();
+      const timestamp = getMonotonicNow();
 
       // Truncate the extra keys, if needed.
       let truncatedExtra: ExtraMap | undefined = undefined;
