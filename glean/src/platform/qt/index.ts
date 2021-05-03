@@ -3,5 +3,5 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 // Qt does not have its implementations yet,
-// we leavet his here so that the sample will still work.
+// we leave this here so that the sample will still work.
 export { default } from "../test";
