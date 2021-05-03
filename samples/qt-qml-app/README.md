@@ -37,4 +37,4 @@ python3 -m venv .venv
 .venv/bin/python3 main.py
 ```
 
-> *Important*: if running the application fails, turn on QT debugging by setting the `QT_DEBUG_PLUGINS` environment variable to `1`, e.g. `export QT_DEBUG_PLUGINS=1`.
+> *Important*: if running the application fails, turn on Qt debugging by setting the `QT_DEBUG_PLUGINS` environment variable to `1`, e.g. `export QT_DEBUG_PLUGINS=1`.
