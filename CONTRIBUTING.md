@@ -18,6 +18,8 @@ folder in this repository and Glean.js' user documentation lives in [The Glean B
 > does not have a related bug filed with the [`[docdays]`](https://bugzilla.mozilla.org/buglist.cgi?query_format=advanced&f2=component&o1=substring&o2=equals&f1=status_whiteboard&v1=%5Bdocdays%5D&classification=Client%20Software&classification=Developer%20Infrastructure&classification=Components&classification=Server%20Software&classification=Other&list_id=15653426&resolution=---&v2=Glean.js) tag,
 > please file a bug.
 
+Here's the [guide](https://github.com/mozilla/glean.js/tree/main/docs/getting_started.md) to get you started!
+
 ## Bug reports / Feature Requests
 
 If you are using Glean.js and found a bug or a missing feature, please file a bug.
