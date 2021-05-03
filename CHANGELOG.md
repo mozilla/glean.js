@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.2...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.11.0...main)
+
+# v0.11.0 (2021-05-03)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.2...v0.11.0)
 
 * [#260](https://github.com/mozilla/glean.js/pull/260): Set minimum node (>= 12.0.0) and npm (>= 7.0.0) versions.
 * [#202](https://github.com/mozilla/glean.js/pull/202): Add a testing API for the ping type.
