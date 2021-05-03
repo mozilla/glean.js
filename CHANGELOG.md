@@ -7,6 +7,7 @@
 * [#253](https://github.com/mozilla/glean.js/pull/253):
   * Implement the timespan metric type.
   * BUGFIX: Report event timestamps in milliseconds.
+* [#261](https://github.com/mozilla/glean.js/pull/261): Show a spinner while setting up python virtual environment
 
 # v0.10.2 (2021-04-26)
 
