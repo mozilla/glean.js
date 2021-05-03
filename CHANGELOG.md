@@ -4,8 +4,9 @@
 
 * [#260](https://github.com/mozilla/glean.js/pull/260): Set minimum node (>= 12.0.0) and npm (>= 7.0.0) versions.
 * [#202](https://github.com/mozilla/glean.js/pull/202): Add a testing API for the ping type.
-* [#253](https://github.com/mozilla/glean.js/pull/253): Implement the timespan metric type.
-* [#253](https://github.com/mozilla/glean.js/pull/253): BUGFIX: Report event timestamps in milliseconds.
+* [#253](https://github.com/mozilla/glean.js/pull/253):
+  * Implement the timespan metric type.
+  * BUGFIX: Report event timestamps in milliseconds.
 
 # v0.10.2 (2021-04-26)
 
