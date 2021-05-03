@@ -13,20 +13,28 @@ The app will display a button that when clicked should trigger Glean.js events.
 npm run build:qt
 ```
 
+2. Whithin this sample directory, run the command to create a Python 3 virtual environment.
+
+```bash
+python3 -m venv .venv
+```
+
 2. Install the dependencies.
 
 ```bash
-pip install -r requirements.txt
+.venv/bin/pip3 install -r requirements.txt
 ```
 
 3. Generate metrics and pings files.
 
 ```bash
-glean_parser translate metrics.yaml pings.yaml -f javascript -o generated --option platform=qt
+.venv/bin/python3 -m glean_parser translate metrics.yaml pings.yaml -f javascript -o generated --option platform=qt
 ```
 
 4. Run the application.
 
 ```bash
-python main.py
+.venv/bin/python3 main.py
 ```
+
+> *Important*: if running the application fails, turn on QT debugging by setting the `QT_DEBUG_PLUGINS` environment variable to `1`, e.g. `export QT_DEBUG_PLUGINS=1`.
