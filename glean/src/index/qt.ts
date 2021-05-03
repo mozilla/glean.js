@@ -13,7 +13,9 @@ import BooleanMetricType from "../core/metrics/types/boolean.js";
 import CounterMetricType from "../core/metrics/types/counter.js";
 import DatetimeMetricType from "../core/metrics/types/datetime.js";
 import EventMetricType from "../core/metrics/types/event.js";
+import LabeledMetricType from "../core/metrics/types/labeled.js";
 import StringMetricType from "../core/metrics/types/string.js";
+import TimespanMetricType from "../core/metrics/types/timespan.js";
 import UUIDMetricType from "../core/metrics/types/uuid.js";
 
 export default {
@@ -129,7 +131,9 @@ export default {
     CounterMetricType,
     DatetimeMetricType,
     EventMetricType,
+    LabeledMetricType,
     StringMetricType,
+    TimespanMetricType,
     UUIDMetricType
   }
 };
