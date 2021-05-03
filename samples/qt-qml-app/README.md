@@ -19,6 +19,12 @@ npm run build:qt
 pip install -r requirements.txt
 ```
 
+3. Generate metrics and pings files.
+
+```bash
+glean_parser translate metrics.yaml pings.yaml -f javascript -o generated --option platform=qt
+```
+
 4. Run the application.
 
 ```bash

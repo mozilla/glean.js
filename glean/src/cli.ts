@@ -15,7 +15,7 @@ import { promisify } from "util";
 const VIRTUAL_ENVIRONMENT_DIR = ".venv";
 
 // The version of glean_parser to install from PyPI.
-const GLEAN_PARSER_VERSION = "3.1.1";
+const GLEAN_PARSER_VERSION = "3.2.0";
 
 // This script runs a given Python module as a "main" module, like
 // `python -m module`. However, it first checks that the installed
@@ -137,10 +137,12 @@ async function createPythonVenv(venvPath: string): Promise<boolean> {
   const venvCmd = `${getSystemPythonBinName()} -m venv ${VIRTUAL_ENVIRONMENT_DIR}`;
 
   for (const cmd of [venvCmd, pipCmd]) {
+    const spinner = getStartedSpinner();
     const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
       exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
     });
 
+    stopSpinner(spinner);
     console.log(`${stdout}`);
 
     if (err) {
@@ -176,6 +178,7 @@ async function setup(projectRoot: string) {
  * @param parserArgs the list of arguments passed to this command.
  */
 async function runGlean(projectRoot: string, parserArgs: string[]) {
+  const spinner = getStartedSpinner();
   const venvRoot = path.join(projectRoot, VIRTUAL_ENVIRONMENT_DIR);
   const pythonBin = path.join(getPythonVenvBinariesPath(venvRoot), getSystemPythonBinName());
   const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" online glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
@@ -184,6 +187,7 @@ async function runGlean(projectRoot: string, parserArgs: string[]) {
     exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
   });
 
+  stopSpinner(spinner);
   console.log(`${stdout}`);
 
   if (err) {
@@ -214,3 +218,27 @@ async function run(args: string[]) {
 run(argv).catch(e => {
   console.error("There was an error running Glean", e);
 });
+
+/**
+ * Returns a spinner
+ *
+ * @returns an Interval ID that logs certain characters
+ */
+function getStartedSpinner() {
+  const ticks = ["\\", "|", "/", "-"];
+  let i = 0;
+  return setInterval(function() {
+    process.stdout.write(" "+ticks[i++]+"\r\r");
+    i %= 4;
+  }, 250);
+}
+
+/**
+ * Stops the spinner
+ *
+ * @param spinner is created by getStartedSpinner
+ */
+function stopSpinner(spinner: NodeJS.Timeout) {
+  process.stdout.write("  \r");
+  clearInterval(spinner);
+}

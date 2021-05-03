@@ -4,8 +4,8 @@
 
 import assert from "assert";
 import sinon from "sinon";
-import { Context } from "../../../src/core/context";
 
+import { Context } from "../../../src/core/context";
 import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import BooleanMetricType from "../../../src/core/metrics/types/boolean";

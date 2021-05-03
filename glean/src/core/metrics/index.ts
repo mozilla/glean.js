@@ -3,11 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { JSONValue } from "../utils.js";
-import { isUndefined } from "../utils.js";
-import { Metric } from "./metric.js";
 import type { Lifetime } from "./lifetime.js";
 import type MetricsDatabase from "./database.js";
-import { getValidDynamicLabel } from "./types/labeled_utils.js";
+import { isUndefined } from "../utils.js";
+import { getValidDynamicLabel } from "./types/labeled.js";
+
+export interface Metrics {
+  [aMetricType: string]: {
+    [aMetricIdentifier: string]: JSONValue;
+  };
+}
+
 
 /**
  * The common set of data shared across all different metric types.
@@ -101,29 +107,5 @@ export abstract class MetricType implements CommonMetricData {
    */
   shouldRecord(uploadEnabled: boolean): boolean {
     return (uploadEnabled && !this.disabled);
-  }
-}
-
-/**
- * This is an internal metric representation for labeled metrics.
- *
- * This can be used to instruct the validators to simply report
- * whatever is stored internally, without performing any specific
- * validation.
- *
- * This needs to live here, instead of labeled.ts, in order to avoid
- * a cyclic dependency.
- */
-export class LabeledMetric extends Metric<JSONValue, JSONValue> {
-  constructor(v: unknown) {
-    super(v);
-  }
-
-  validate(v: unknown): v is JSONValue {
-    return true;
-  }
-
-  payload(): JSONValue {
-    return this._inner;
   }
 }

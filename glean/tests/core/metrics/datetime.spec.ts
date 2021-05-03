@@ -7,7 +7,7 @@ import sinon from "sinon";
 
 import Glean from "../../../src/core/glean";
 import DatetimeMetricType from "../../../src/core/metrics/types/datetime";
-import { DatetimeMetric } from "../../../src/core/metrics/types/datetime_metric";
+import { DatetimeMetric } from "../../../src/core/metrics/types/datetime";
 import TimeUnit from "../../../src/core/metrics/time_unit";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";

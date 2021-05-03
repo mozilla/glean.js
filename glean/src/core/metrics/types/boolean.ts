@@ -4,8 +4,23 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { BooleanMetric } from "./boolean_metric.js";
 import { Context } from "../../context.js";
+import { Metric } from "../metric.js";
+import { isBoolean } from "../../utils.js";
+
+export class BooleanMetric extends Metric<boolean, boolean> {
+  constructor(v: unknown) {
+    super(v);
+  }
+
+  validate(v: unknown): v is boolean {
+    return isBoolean(v);
+  }
+  payload(): boolean {
+    return this._inner;
+  }
+}
+
 
 /**
  *  A boolean metric.

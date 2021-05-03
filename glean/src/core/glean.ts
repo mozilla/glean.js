@@ -12,8 +12,7 @@ import { isUndefined, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
 import EventsDatabase from "./metrics/events_database.js";
 import UUIDMetricType from "./metrics/types/uuid.js";
-import DatetimeMetricType from "./metrics/types/datetime.js";
-import { DatetimeMetric } from "./metrics/types/datetime_metric.js";
+import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
 import CorePings from "./internal_pings.js";
 import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
 
@@ -161,14 +160,6 @@ class Glean {
 
   /**
    * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
-   *
-   * # Note
-   *
-   * Before this method is called Glean will not be able to upload pings or record metrics,
-   * all such operations will be no-op.
-   *
-   * This is _not_ the way glean-core deals with this. It will record tasks performed before init
-   * and flush them on init. We have a bug to figure out how to do that for Glean.js, Bug 1687491.
    *
    * @param applicationId The application ID (will be sanitized during initialization).
    * @param uploadEnabled Determines whether telemetry is enabled.

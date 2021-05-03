@@ -4,9 +4,33 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { generateUUIDv4 } from "../../utils.js";
-import { UUIDMetric } from "./uuid_metric.js";
+import { generateUUIDv4, isString } from "../../utils.js";
 import { Context } from "../../context.js";
+import { validate as UUIDvalidate } from "uuid";
+import { KNOWN_CLIENT_ID } from "../../constants.js";
+import { Metric } from "../metric.js";
+
+export class UUIDMetric extends Metric<string, string> {
+  constructor(v: unknown) {
+    super(v);
+  }
+
+  validate(v: unknown): v is string {
+    if (!isString(v)) {
+      return false;
+    }
+
+    if (v === KNOWN_CLIENT_ID) {
+      return true;
+    }
+
+    return UUIDvalidate(v);
+  }
+
+  payload(): string {
+    return this._inner;
+  }
+}
 
 /**
  *  An UUID metric.

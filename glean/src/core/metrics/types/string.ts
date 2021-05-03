@@ -4,8 +4,33 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { MAX_LENGTH_VALUE, StringMetric } from "./string_metric.js";
 import { Context } from "../../context.js";
+import { Metric } from "../metric.js";
+import { isString } from "../../utils.js";
+
+export const MAX_LENGTH_VALUE = 100;
+
+export class StringMetric extends Metric<string, string> {
+  constructor(v: unknown) {
+    super(v);
+  }
+
+  validate(v: unknown): v is string {
+    if (!isString(v)) {
+      return false;
+    }
+
+    if (v.length > MAX_LENGTH_VALUE) {
+      return false;
+    }
+
+    return true;
+  }
+
+  payload(): string {
+    return this._inner;
+  }
+}
 
 /**
  * A string metric.

@@ -7,7 +7,7 @@ import assert from "assert";
 import Glean from "../../../src/core/glean";
 import StringMetricType from "../../../src/core/metrics/types/string";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
-import { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string_metric";
+import { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string";
 import { Context } from "../../../src/core/context";
 
 describe("StringMetric", function() {
