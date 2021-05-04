@@ -76,7 +76,7 @@
     "@typescript-eslint/parser": "^4.15.1",
     "eslint": "^7.19.0",
     "eslint-plugin-jsdoc": "^33.0.0",
-    "eslint-plugin-json": "^2.1.2",
+    "eslint-plugin-json": "^3.0.0",
     "eslint-plugin-mocha": "^8.0.0",
     "eslint-plugin-notice": "^0.9.10",
     "geckodriver": "^1.22.1",
