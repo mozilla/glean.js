@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.11.0...main)
 
+* [#279](https://github.com/mozilla/glean.js/pull/279): BUGFIX: Ensure only empty pings triggers logging of "empty ping" messages.
+
 # v0.11.0 (2021-05-03)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.10.2...v0.11.0)
