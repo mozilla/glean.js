@@ -2,6 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// Qt does not have its implementations yet,
-// we leave this here so that the sample will still work.
-export { default } from "../test";
+// Qt does not have its implementations yet, we use pieces of
+// the `TestPlatform` so that the sample will still work.
+import TestPlatform from "../test";
+
+import info from "./platform_info.js";
+import type Platform from "../index.js";
+
+const QtPlatform: Platform = {
+  Storage: TestPlatform.Storage,
+  uploader: TestPlatform.uploader,
+  info,
+  name: "Qt"
+};
+
+export default QtPlatform;
