@@ -3,6 +3,7 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.11.0...main)
 
 * [#279](https://github.com/mozilla/glean.js/pull/279): BUGFIX: Ensure only empty pings triggers logging of "empty ping" messages.
+* [#288](https://github.com/mozilla/glean.js/pull/288): Support collecting `PlatformInfo` from `Qt` applications. Only OS name and locale are supported.
 
 # v0.11.0 (2021-05-03)
 
