@@ -10,6 +10,7 @@ import { LabeledMetric } from "./types/labeled.js";
 import { BooleanMetric } from "./types/boolean.js";
 import { CounterMetric } from "./types/counter.js";
 import { DatetimeMetric } from "./types/datetime.js";
+import { QuantityMetric } from "./types/quantity.js";
 import { StringMetric } from "./types/string.js";
 import { TimespanMetric } from "./types/timespan.js";
 import { UUIDMetric } from "./types/uuid.js";
@@ -26,6 +27,7 @@ const METRIC_MAP: {
   "labeled_boolean": LabeledMetric,
   "labeled_counter": LabeledMetric,
   "labeled_string": LabeledMetric,
+  "quantity": QuantityMetric,
   "string": StringMetric,
   "timespan": TimespanMetric,
   "uuid": UUIDMetric,
