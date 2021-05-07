@@ -48,7 +48,7 @@ const QtPlatformInfo: PlatformInfo = {
 
   async locale(): Promise<string> {
     const locale = Qt.locale();
-    return Promise.resolve(locale ? locale.name : "und");
+    return Promise.resolve(locale ? locale.name.replace("_", "-") : "und");
   }
 };
 
