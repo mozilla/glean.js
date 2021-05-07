@@ -11,7 +11,7 @@ import compactDecrypt from "jose/jwe/compact/decrypt";
 import Glean from "../../src/core/glean";
 import PingType from "../../src/core/pings/ping_type";
 import type { JSONObject } from "../../src/core/utils";
-import TestPlatform from "../../src/platform/qt";
+import TestPlatform from "../../src/platform/test";
 import PingEncryptionPlugin from "../../src/plugins/encryption";
 import collectAndStorePing, { makePath } from "../../src/core/pings/maker";
 import type { UploadResult} from "../../src/core/upload/uploader";
