@@ -6,9 +6,13 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { generateUUIDv4, isString } from "../../utils.js";
 import { Context } from "../../context.js";
-import { validate as UUIDvalidate } from "uuid";
-import { KNOWN_CLIENT_ID } from "../../constants.js";
 import { Metric } from "../metric.js";
+
+// Loose UUID regex for checking if a string has a UUID _shape_. Does not contain version checks.
+//
+// This is necessary in order to accept non RFC compliant UUID values,
+// which might be passed to Glean by legacy systems we aim to support e.g. Firefox Desktop.
+const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export class UUIDMetric extends Metric<string, string> {
   constructor(v: unknown) {
@@ -20,11 +24,7 @@ export class UUIDMetric extends Metric<string, string> {
       return false;
     }
 
-    if (v === KNOWN_CLIENT_ID) {
-      return true;
-    }
-
-    return UUIDvalidate(v);
+    return UUID_REGEX.test(v);
   }
 
   payload(): string {
