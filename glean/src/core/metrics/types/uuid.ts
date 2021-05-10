@@ -8,8 +8,10 @@ import { generateUUIDv4, isString } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 
-// Loose UUID regex for checking if a string has a UUID shape.
-// Note: This does not contain version checks.
+// Loose UUID regex for checking if a string has a UUID _shape_. Does not contain version checks.
+//
+// This is necessary in order to accept non RFC compliant UUID values,
+// which might be passed to Glean by legacy systems we aim to support e.g. Firefox Desktop.
 const UUID_REGEX = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export class UUIDMetric extends Metric<string, string> {

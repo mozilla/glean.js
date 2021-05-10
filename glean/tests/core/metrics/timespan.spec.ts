@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import sinon from "sinon";
+import sinon, { SinonStub } from "sinon";
 
 import { Context } from "../../../src/core/context";
 import Glean from "../../../src/core/glean";
@@ -15,9 +15,11 @@ const sandbox = sinon.createSandbox();
 
 describe("TimespanMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
+  let fakeNow: SinonStub;
 
   beforeEach(async function() {
     await Glean.testResetGlean(testAppId);
+    fakeNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
   });
 
   afterEach(function () {
@@ -76,9 +78,8 @@ describe("TimespanMetric", function() {
   });
 
   it("ping payload is correct", async function() {
-    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
-    fakeDateNow.onCall(0).callsFake(() => 0);
-    fakeDateNow.onCall(1).callsFake(() => 100);
+    fakeNow.onCall(0).callsFake(() => 0);
+    fakeNow.onCall(1).callsFake(() => 100);
 
     const metric = new TimespanMetricType({
       category: "aCategory",
@@ -101,9 +102,8 @@ describe("TimespanMetric", function() {
   });
 
   it("recording APIs properly sets the value in all pings", async function() {
-    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
-    fakeDateNow.onCall(0).callsFake(() => 0);
-    fakeDateNow.onCall(1).callsFake(() => 100);
+    fakeNow.onCall(0).callsFake(() => 0);
+    fakeNow.onCall(1).callsFake(() => 100);
 
     const metric = new TimespanMetricType({
       category: "aCategory",
@@ -152,35 +152,34 @@ describe("TimespanMetric", function() {
       },
     ];
 
-    for (const testCase of testCases) {
-      const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
-      fakeDateNow.onCall(0).callsFake(() => 0);
-      fakeDateNow.onCall(1).callsFake(() => 3600000); // One hour.
+    for (let i = 0; i < testCases.length; i++) {
+      fakeNow.onCall(0).callsFake(() => 0);
+      fakeNow.onCall(1).callsFake(() => 3600000); // One hour.
 
       const metric = new TimespanMetricType({
         category: "aCategory",
-        name: `aDatetimeMetric_${testCase.unit}`,
+        name: `aDatetimeMetric_${testCases[i].unit}`,
         sendInPings: ["aPing"],
         lifetime: Lifetime.Ping,
         disabled: false
-      }, testCase.unit);
+      }, testCases[i].unit);
 
       metric.start();
       metric.stop();
-      assert.strictEqual(await metric.testGetValue("aPing"), testCase.expected);
+      assert.strictEqual(await metric.testGetValue("aPing"), testCases[i].expected);
 
       sandbox.restore();
+      fakeNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
     }
   });
 
   it("second timer run is skipped", async function() {
-    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
     // First check, duration: 100
-    fakeDateNow.onCall(0).callsFake(() => 0);
-    fakeDateNow.onCall(1).callsFake(() => 100);
+    fakeNow.onCall(0).callsFake(() => 0);
+    fakeNow.onCall(1).callsFake(() => 100);
     // Second check, duration 99
-    fakeDateNow.onCall(2).callsFake(() => 101);
-    fakeDateNow.onCall(3).callsFake(() => 200);
+    fakeNow.onCall(2).callsFake(() => 101);
+    fakeNow.onCall(3).callsFake(() => 200);
 
     // TODO: check number of recorded errors instead once Bug 1682574 is resolved.
     const consoleErrorSpy = sandbox.spy(console, "error");
@@ -226,9 +225,8 @@ describe("TimespanMetric", function() {
   });
 
   it("nothing is stored before stop", async function() {
-    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
-    fakeDateNow.onCall(0).callsFake(() => 0);
-    fakeDateNow.onCall(1).callsFake(() => 100);
+    fakeNow.onCall(0).callsFake(() => 0);
+    fakeNow.onCall(1).callsFake(() => 100);
 
     const metric = new TimespanMetricType({
       category: "aCategory",
@@ -274,13 +272,12 @@ describe("TimespanMetric", function() {
     // Nothing should have been recorded.
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
 
-    // TODO: Make sure also incalid state error was recorded.
+    // TODO: Make sure also invalid state error was recorded.
   });
 
   it("time cannot go backwards", async function() {
-    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
-    fakeDateNow.onCall(0).callsFake(() => 100);
-    fakeDateNow.onCall(1).callsFake(() => 0);
+    fakeNow.onCall(0).callsFake(() => 100);
+    fakeNow.onCall(1).callsFake(() => 0);
 
     const metric = new TimespanMetricType({
       category: "aCategory",
