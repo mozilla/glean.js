@@ -2,11 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { WebDriver } from "selenium-webdriver";
+import { Capabilities, WebDriver } from "selenium-webdriver";
 import { Builder } from "selenium-webdriver";
 import firefox from "selenium-webdriver/firefox";
-import path from "path";
-import { dirname } from "path";
+
+import fs from "fs";
+import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
 const __filename = fileURLToPath(import.meta.url);
@@ -28,20 +29,35 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
   // Unset this to run the UI (useful for local testing).
   headless && firefoxOptions.headless();
 
-  // This is the path to Firefox Nightly on Ubuntu with the Mozilla PPA.
   if (process.platform === "linux") {
-    firefoxOptions.setBinary("/usr/bin/firefox-trunk");
+    // Look for the Firefox executable in different locations.
+    const FIREFOX_PATHS = [
+      "/usr/bin/firefox-trunk",
+      "/usr/bin/firefox",
+    ];
+
+    for (const path of FIREFOX_PATHS) {
+      if (fs.existsSync(path)) {
+        firefoxOptions.setBinary(path);
+        break;
+      }
+    }
   } else if (process.platform === "darwin") {
-    firefoxOptions.setBinary("/Applications/Firefox Nightly.app/Contents/MacOS/firefox");
+    firefoxOptions.setBinary(
+      "/Applications/Firefox Nightly.app/Contents/MacOS/firefox"
+    );
+  } else {
+    throw new Error(`Unable to run Glean.js web extension tests! Platform not supported: ${process.platform}`);
   }
 
   const browser = await new Builder()
     .forBrowser("firefox")
+    .withCapabilities(Capabilities.firefox())
     .setFirefoxOptions(firefoxOptions)
     .build();
 
   // Load the sample web extension as temporary addon.
-  // Any web entension with storage permissions would do here,
+  // Any web extension with storage permissions would do here,
   // we only need the web extensions context to run code that relies on the web extensions API.
   try {
     // The selenium-webdriver @types package don't include the `installAddon` function,
@@ -50,7 +66,7 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    browser.installAddon(
+    await browser.installAddon(
       path.resolve(__dirname, "sample/web-ext-artifacts/gleanjs-test-addon-0.0.1.zip"),
       true
     );
