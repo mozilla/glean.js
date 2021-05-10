@@ -9,7 +9,7 @@ version: 2.1
 jobs:
   lint:
     docker:
-      - image: cimg/node:14.13.1
+      - image: cimg/node:16.1.0
     steps:
       - checkout
       - run:
@@ -24,7 +24,7 @@ jobs:
 
   unit-tests:
     docker:
-      - image: cimg/node:14.13.1
+      - image: cimg/node:16.1.0
     steps:
       - checkout
       - run:
@@ -68,7 +68,7 @@ jobs:
 
   check-size:
     docker:
-      - image: cimg/node:14.13.1
+      - image: cimg/node:16.1.0
     steps:
       - checkout
       - run:
@@ -116,7 +116,7 @@ jobs:
 
   publish:
     docker:
-      - image: cimg/node:14.13.1
+      - image: cimg/node:16.1.0
     steps:
       - checkout
       - run:
