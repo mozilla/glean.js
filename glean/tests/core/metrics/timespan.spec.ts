@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import sinon, { SinonStub } from "sinon";
+import sinon from "sinon";
+import type { SinonStub } from "sinon";
 
 import { Context } from "../../../src/core/context";
 import Glean from "../../../src/core/glean";
@@ -19,7 +20,7 @@ describe("TimespanMetric", function() {
 
   beforeEach(async function() {
     await Glean.testResetGlean(testAppId);
-    fakeNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
+    fakeNow = typeof performance === "undefined" ? sandbox.stub(Date, "now") : sandbox.stub(performance, "now");
   });
 
   afterEach(function () {
