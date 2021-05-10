@@ -76,7 +76,7 @@ describe("TimespanMetric", function() {
   });
 
   it("ping payload is correct", async function() {
-    const fakeDateNow = sandbox.stub(Date, "now");
+    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
     fakeDateNow.onCall(0).callsFake(() => 0);
     fakeDateNow.onCall(1).callsFake(() => 100);
 
@@ -101,7 +101,7 @@ describe("TimespanMetric", function() {
   });
 
   it("recording APIs properly sets the value in all pings", async function() {
-    const fakeDateNow = sandbox.stub(Date, "now");
+    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
     fakeDateNow.onCall(0).callsFake(() => 0);
     fakeDateNow.onCall(1).callsFake(() => 100);
 
@@ -153,7 +153,7 @@ describe("TimespanMetric", function() {
     ];
 
     for (const testCase of testCases) {
-      const fakeDateNow = sandbox.stub(Date, "now");
+      const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
       fakeDateNow.onCall(0).callsFake(() => 0);
       fakeDateNow.onCall(1).callsFake(() => 3600000); // One hour.
 
@@ -174,7 +174,7 @@ describe("TimespanMetric", function() {
   });
 
   it("second timer run is skipped", async function() {
-    const fakeDateNow = sandbox.stub(Date, "now");
+    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
     // First check, duration: 100
     fakeDateNow.onCall(0).callsFake(() => 0);
     fakeDateNow.onCall(1).callsFake(() => 100);
@@ -226,7 +226,7 @@ describe("TimespanMetric", function() {
   });
 
   it("nothing is stored before stop", async function() {
-    const fakeDateNow = sandbox.stub(Date, "now");
+    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
     fakeDateNow.onCall(0).callsFake(() => 0);
     fakeDateNow.onCall(1).callsFake(() => 100);
 
@@ -278,7 +278,7 @@ describe("TimespanMetric", function() {
   });
 
   it("time cannot go backwards", async function() {
-    const fakeDateNow = sandbox.stub(Date, "now");
+    const fakeDateNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
     fakeDateNow.onCall(0).callsFake(() => 100);
     fakeDateNow.onCall(1).callsFake(() => 0);
 
