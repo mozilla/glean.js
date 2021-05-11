@@ -12,6 +12,10 @@ updates:
     directory: "/samples/web-extension/javascript"
     schedule:
       interval: "daily"
+  - package-ecosystem: "npm"
+    directory: "/glean/tests/platform/utils/webext/sample"
+    schedule:
+      interval: "daily"
   - package-ecosystem: "pip"
     directory: "/samples/qt-qml-app"
     schedule:
