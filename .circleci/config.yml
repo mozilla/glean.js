@@ -114,6 +114,38 @@ jobs:
               exit 1
             fi
 
+  # via https://circleci.com/blog/deploying-documentation-to-github-pages-with-continuous-integration/
+  docs-deploy:
+    docker:
+      - image: cimg/node:16.1.0
+    steps:
+      - checkout
+      - run:
+          name: Install Javascript dependencies
+          command: npm --prefix ./glean install
+      - run:
+          name: Build documentation
+          command: npm --prefix ./glean run build:docs
+      - run:
+          name: Disable jekyll builds
+          command: touch glean/dist/docs/.nojekyll
+      - run:
+          name: Show contents
+          command: ls -R glean/dist/docs
+      # Needed for write access to the GitHub repository;
+      # see https://circleci.com/docs/2.0/gh-bb-integration/#deployment-keys-and-user-keys
+      - add_ssh_keys:
+          fingerprints:
+            - "0c:0b:f8:f0:45:60:92:79:60:34:b2:12:9c:55:1d:fa"
+      # The gh-pages npm package can be used to push a directory to a git branch;
+      # see https://www.npmjs.com/package/gh-pages
+      - run:
+          name: Deploy docs to gh-pages branch
+          command: |
+            git config user.email "brizental@mozilla.com"
+            git config user.name "brizental"
+            npm --prefix ./glean run publish:docs
+
   publish:
     docker:
       - image: cimg/node:16.1.0
@@ -154,6 +186,12 @@ workflows:
       - unit-tests
       - check-qt-js
       - samples-tests
+      - docs-deploy:
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
       - publish:
           filters:
             branches:
