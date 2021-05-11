@@ -214,9 +214,6 @@ class TimespanMetricType extends MetricType {
   setRawNanos(elapsed: number): void {
     Context.dispatcher.launch(async () => {
       // `elapsed` is in nanoseconds in order to match the glean-core API.
-      // Javascript actually does not provide nanosecond precision,
-      // the highest resolution it provides is milliseconds
-      // and that is the unit in which we will record the value, so we convert.
       const elapsedMillis = elapsed * 10**(-6);
       await TimespanMetricType._private_setRawUndispatched(this, elapsedMillis);
     });
