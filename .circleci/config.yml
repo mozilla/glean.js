@@ -186,7 +186,12 @@ workflows:
       - unit-tests
       - check-qt-js
       - samples-tests
-      - docs-deploy
+      - docs-deploy:
+        filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
       - publish:
           filters:
             branches:
