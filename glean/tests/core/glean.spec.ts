@@ -13,7 +13,7 @@ import CounterMetricType from "../../src/core/metrics/types/counter";
 import PingType from "../../src/core/pings/ping_type";
 import type { JSONObject } from "../../src/core/utils";
 import { isObject } from "../../src/core/utils";
-import TestPlatform from "../../src/platform/qt";
+import TestPlatform from "../../src/platform/test";
 import Plugin from "../../src/plugins";
 import { Lifetime } from "../../src/core/metrics/lifetime";
 import { Context } from "../../src/core/context";

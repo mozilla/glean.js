@@ -90,7 +90,7 @@ class StringMetric extends Metric<string, string> {
 }
 ```
 
-Oce you have your `Metric` subclass, include it in Glean.js'
+Once you have your `Metric` subclass, include it in Glean.js'
 [`METRIC_MAP`](https://github.com/mozilla/glean.js/blob/main/glean/src/core/metrics/utils.ts#L17).
 This map will be used as a template for creating metric instances from the metrics database.
 
@@ -111,6 +111,10 @@ Still, metric type classes will always have at least one recording function and 
 > It's value is the name of the section for this metric type on the ping payload.
 > Make sure that, when you included your `Metric` class on the `METRIC_MAP` the property has the
 > same value as the `type` property on the corresponding `MetricType`.
+
+Once you are done implementing the `MetricType` class for your new metric type,
+make sure to manually expose it for Qt platforms by adding it to
+[the Qt entry point file](https://github.com/mozilla/glean.js/blob/main/glean/src/index/qt.ts).
 
 #### Recording functions
 

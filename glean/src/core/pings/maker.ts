@@ -195,10 +195,11 @@ export function getPingHeaders(debugOptions?: DebugOptions): Record<string, stri
 export async function collectPing(metricsDatabase: MetricsDatabase, eventsDatabase: EventsDatabase, ping: CommonPingData, reason?: string): Promise<PingPayload | undefined> {
   const metricsData = await metricsDatabase.getPingMetrics(ping.name, true);
   const eventsData = await eventsDatabase.getPingEvents(ping.name, true);
-  if (!metricsData && !eventsData && !ping.sendIfEmpty) {
-    console.info(`Storage for ${ping.name} empty. Bailing out.`);
-    return;
-  } else if (!metricsData) {
+  if (!metricsData && !eventsData) {
+    if (!ping.sendIfEmpty) {
+      console.info(`Storage for ${ping.name} empty. Bailing out.`);
+      return;
+    }
     console.info(`Storage for ${ping.name} empty. Ping will still be sent.`);
   }
 

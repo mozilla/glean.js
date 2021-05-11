@@ -1,7 +1,11 @@
 {
   "extends": "./base.json",
   "compilerOptions": {
-    "target": "ES5"
+    "target": "ES5",
+    "typeRoots": [
+      "../node_modules/@types",
+      "../types"
+    ]
   },
   "include": ["../src/index/qt.ts" ]
 }

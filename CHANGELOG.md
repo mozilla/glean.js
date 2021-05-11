@@ -1,6 +1,15 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.11.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.12.0...main)
+
+# v0.12.0 (2021-05-11)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.11.0...v0.12.0)
+
+* [#279](https://github.com/mozilla/glean.js/pull/279): BUGFIX: Ensure only empty pings triggers logging of "empty ping" messages.
+* [#288](https://github.com/mozilla/glean.js/pull/288): Support collecting `PlatformInfo` from `Qt` applications. Only OS name and locale are supported.
+* [#281](https://github.com/mozilla/glean.js/pull/281): Add the QuantityMetricType.
+* [#303](https://github.com/mozilla/glean.js/pull/303): Implement setRawNanos API for the TimespanMetricType.
 
 # v0.11.0 (2021-05-03)
 
@@ -8,8 +17,11 @@
 
 * [#260](https://github.com/mozilla/glean.js/pull/260): Set minimum node (>= 12.0.0) and npm (>= 7.0.0) versions.
 * [#202](https://github.com/mozilla/glean.js/pull/202): Add a testing API for the ping type.
-* [#253](https://github.com/mozilla/glean.js/pull/253): Implement the timespan metric type.
+* [#253](https://github.com/mozilla/glean.js/pull/253):
+  * Implement the timespan metric type.
+  * BUGFIX: Report event timestamps in milliseconds.
 * [#261](https://github.com/mozilla/glean.js/pull/261): Show a spinner while setting up python virtual environment
+* [#273](https://github.com/mozilla/glean.js/pull/273): BUGFIX: Expose the missing `LabeledMetricType` and `TimespanMetricType` in Qt.
 
 # v0.10.2 (2021-04-26)
 
