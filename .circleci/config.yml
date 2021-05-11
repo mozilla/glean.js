@@ -142,10 +142,10 @@ jobs:
       - run:
           name: Deploy docs to gh-pages branch
           command: |
-            npm install -g --silent gh-pages
             git config user.email "brizental+moz-glean@mozilla.com"
             git config user.name "moz-glean"
-            NODE_DEBUG=gh-pages gh-pages --dist glean/dist/docs
+            npm install -g --silent gh-pages@2.0.1
+            NODE_DEBUG=gh-pages gh-pages --dotfiles --message "[skip ci] Updates" --dist glean/dist/docs
 
   publish:
     docker:
