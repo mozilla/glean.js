@@ -131,7 +131,7 @@ jobs:
           command: touch glean/dist/docs/.nojekyll
       - run:
           name: Show contents
-          command: ls -R
+          command: ls -R glean/dist/docs/
       # Needed for write access to the GitHub repository;
       # see https://circleci.com/docs/2.0/gh-bb-integration/#deployment-keys-and-user-keys
       - add_ssh_keys:
