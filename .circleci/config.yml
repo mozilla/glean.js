@@ -114,7 +114,8 @@ jobs:
               exit 1
             fi
 
-  docs-build:
+  # via https://circleci.com/blog/deploying-documentation-to-github-pages-with-continuous-integration/
+  docs-deploy:
     docker:
       - image: cimg/node:16.1.0
     steps:
@@ -125,18 +126,6 @@ jobs:
       - run:
           name: Build documentation
           command: npm --prefix ./glean run build:docs
-      - persist_to_workspace:
-          root: glean/dist
-          paths: docs
-
-  # via https://circleci.com/blog/deploying-documentation-to-github-pages-with-continuous-integration/
-  docs-deploy:
-    docker:
-      - image: cimg/node:16.1.0
-    steps:
-      - checkout
-      - attach_workspace:
-          at: glean/dist
       - run:
           name: Disable jekyll builds
           command: touch glean/dist/docs/.nojekyll
@@ -190,7 +179,6 @@ jobs:
             cp glean/dist/glean.js glean/dist/glean_js-${CIRCLE_TAG}-qt.js
             ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.js
 
-
 workflows:
   version: 2
   ci:
@@ -199,7 +187,6 @@ workflows:
       - unit-tests
       - check-qt-js
       - samples-tests
-      - docs-build
       - docs-deploy
       - publish:
           filters:
