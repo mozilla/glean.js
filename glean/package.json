@@ -50,6 +50,7 @@
     "build:webext": "rm -rf dist/webext && npm run build:webext:lib && npm run build:webext:types",
     "build:qt": "webpack --config webpack.config.qt.js --mode production",
     "build:docs": "rm -rf dist/docs && typedoc --out dist/docs src/ --theme minimal",
+    "publish:docs": "NODE_DEBUG=gh-pages gh-pages --dotfiles --message \"[skip ci] Updates\" --dist dist/docs",
     "prepublishOnly": "cp ../README.md ./README.md && npm run build:cli && npm run build:webext",
     "postpublish": "rm ./README.md"
   },
@@ -81,6 +82,7 @@
     "eslint-plugin-mocha": "^8.0.0",
     "eslint-plugin-notice": "^0.9.10",
     "geckodriver": "^1.22.1",
+    "gh-pages": "^3.1.0",
     "jsdom": "16.5.3",
     "jsdom-global": "3.0.2",
     "madge": "^4.0.2",

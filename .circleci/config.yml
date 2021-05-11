@@ -131,7 +131,7 @@ jobs:
           command: touch glean/dist/docs/.nojekyll
       - run:
           name: Show contents
-          command: ls -R glean/dist/docs/
+          command: ls -R glean/dist/docs
       # Needed for write access to the GitHub repository;
       # see https://circleci.com/docs/2.0/gh-bb-integration/#deployment-keys-and-user-keys
       - add_ssh_keys:
@@ -144,8 +144,7 @@ jobs:
           command: |
             git config user.email "brizental@mozilla.com"
             git config user.name "brizental"
-            npm install -g --silent gh-pages@2.0.1
-            NODE_DEBUG=gh-pages gh-pages --dotfiles --message "[skip ci] Updates" --dist glean/dist/docs
+            npm --prefix ./glean run publish:docs
 
   publish:
     docker:
