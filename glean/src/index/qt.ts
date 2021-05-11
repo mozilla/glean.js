@@ -133,6 +133,7 @@ export default {
     DatetimeMetricType,
     EventMetricType,
     LabeledMetricType,
+    QuantityMetricType,
     StringMetricType,
     TimespanMetricType,
     UUIDMetricType
