@@ -145,7 +145,7 @@ jobs:
             npm install -g --silent gh-pages
             git config user.email "brizental+moz-glean@mozilla.com"
             git config user.name "moz-glean"
-            gh-pages --dist glean/dist/docs
+            NODE_DEBUG=gh-pages gh-pages --dist glean/dist/docs
 
   publish:
     docker:
