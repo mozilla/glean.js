@@ -70,6 +70,57 @@ class TimespanMetricType extends MetricType {
   }
 
   /**
+   * An internal implemention of `setRaw` that does not dispatch the recording task.
+   *
+   * # Important
+   *
+   * This is absolutely not meant to be used outside of Glean itself.
+   * It may cause multiple issues because it cannot guarantee
+   * that the recording of the metric will happen in order with other Glean API calls.
+   *
+   * @param instance The metric instance to record to.
+   * @param elapsed The elapsed time to record, in milliseconds.
+   */
+  static async _private_setRawUndispatched(instance: TimespanMetricType, elapsed: number): Promise<void> {
+    if (!instance.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    if (!isUndefined(instance.startTime)) {
+      // TODO: record error once Bug 1682574 is resolved.
+      console.error("Timespan already running. Raw value not recorded.");
+      return;
+    }
+
+    let reportValueExists = false;
+    const transformFn = ((elapsed) => {
+      return (old?: JSONValue): TimespanMetric => {
+        let metric: TimespanMetric;
+        try {
+          metric = new TimespanMetric(old);
+          // If creating the metric didn't error,
+          // there is a valid timespan already recorded for this metric.
+          reportValueExists = true;
+        } catch {
+          metric = new TimespanMetric({
+            timespan: elapsed,
+            timeUnit: instance.timeUnit,
+          });
+        }
+
+        return metric;
+      };
+    })(elapsed);
+
+    await Context.metricsDatabase.transform(instance, transformFn);
+
+    if (reportValueExists) {
+      // TODO: record error once Bug 1682574 is resolved.
+      console.error("Timespan value already recorded. New value discarded.");
+    }
+  }
+
+  /**
    * Starts tracking time for the provided metric.
    *
    * This records an error if it's already tracking time (i.e. start was
@@ -131,32 +182,7 @@ class TimespanMetricType extends MetricType {
         return;
       }
 
-      let reportValueExists = false;
-      const transformFn = ((elapsed) => {
-        return (old?: JSONValue): TimespanMetric => {
-          let metric: TimespanMetric;
-          try {
-            metric = new TimespanMetric(old);
-            // If creating the metric didn't error,
-            // there is a valid timespan already recorded for this metric.
-            reportValueExists = true;
-          } catch {
-            metric = new TimespanMetric({
-              timespan: elapsed,
-              timeUnit: this.timeUnit,
-            });
-          }
-
-          return metric;
-        };
-      })(elapsed);
-
-      await Context.metricsDatabase.transform(this, transformFn);
-
-      if (reportValueExists) {
-        // TODO: record error once Bug 1682574 is resolved.
-        console.error("Timespan value already recorded. New value discarded.");
-      }
+      await TimespanMetricType._private_setRawUndispatched(this, elapsed);
     });
   }
 
@@ -169,6 +195,30 @@ class TimespanMetricType extends MetricType {
     Context.dispatcher.launch(() => {
       this.startTime = undefined;
       return Promise.resolve();
+    });
+  }
+
+  /**
+   * Explicitly sets the timespan value.
+   *
+   * This API should only be used if your library or application requires
+   * recording times in a way that can not make use of
+   * {@link TimespanMetricType#start}/{@link TimespanMetricType#stop}.
+   *
+   * Care should be taken using this if the ping lifetime might contain more
+   * than one timespan measurement. To be safe, this function should generally
+   * be followed by sending a custom ping containing the timespan.
+   *
+   * @param elapsed The elapsed time to record, in nanoseconds.
+   */
+  setRawNanos(elapsed: number): void {
+    Context.dispatcher.launch(async () => {
+      // `elapsed` is in nanoseconds in order to match the glean-core API.
+      // Javascript actually does not provide nanosecond precision,
+      // the highest resolution it provides is milliseconds
+      // and that is the unit in which we will record the value, so we convert.
+      const elapsedMillis = elapsed * 10**(-6);
+      await TimespanMetricType._private_setRawUndispatched(this, elapsedMillis);
     });
   }
 

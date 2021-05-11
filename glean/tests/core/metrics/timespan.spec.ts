@@ -297,4 +297,39 @@ describe("TimespanMetric", function() {
 
     assert.deepStrictEqual(consoleErrorSpy.callCount, 1);
   });
+
+  it("setting raw time works correctly", async function () {
+    const metric = new TimespanMetricType({
+      category: "aCategory",
+      name: "aTimespan",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, "millisecond");
+
+    metric.setRawNanos(1000000); // 1ms
+    assert.strictEqual(await metric.testGetValue("aPing"), 1);
+  });
+
+  it("setting raw time does nothing when times is running", async function () {
+    fakeNow.onCall(0).callsFake(() => 0);
+    fakeNow.onCall(1).callsFake(() => 100);
+
+    const metric = new TimespanMetricType({
+      category: "aCategory",
+      name: "aTimespan",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, "millisecond");
+
+    metric.start();
+    metric.setRawNanos(42);
+    metric.stop();
+
+    // We expect the start/stop value, not the raw value.
+    assert.strictEqual(await metric.testGetValue("aPing"), 100);
+
+    // TODO: check number of recorded errors instead once Bug 1682574 is resolved.
+  });
 });
