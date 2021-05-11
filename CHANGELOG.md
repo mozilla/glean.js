@@ -4,7 +4,8 @@
 
 * [#279](https://github.com/mozilla/glean.js/pull/279): BUGFIX: Ensure only empty pings triggers logging of "empty ping" messages.
 * [#288](https://github.com/mozilla/glean.js/pull/288): Support collecting `PlatformInfo` from `Qt` applications. Only OS name and locale are supported.
-* [#281](https://github.com/mozilla/glean.js/pull/281): Add the QuantityMetricType
+* [#281](https://github.com/mozilla/glean.js/pull/281): Add the QuantityMetricType.
+* [#303](https://github.com/mozilla/glean.js/pull/303): Implement setRawNanos API for the TimespanMetricType.
 
 # v0.11.0 (2021-05-03)
 
