@@ -4,6 +4,7 @@
 
 import assert from "assert";
 import { Context } from "../../../src/core/context";
+import { ErrorType } from "../../../src/core/error_recording";
 
 import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
@@ -95,6 +96,8 @@ describe("CounterMetric", function() {
 
     metric.add(1);
     assert.strictEqual(await metric.testGetValue("aPing"), 1);
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 2);
   });
 
   it("transformation works", async function() {
