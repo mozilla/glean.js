@@ -76,6 +76,19 @@ export function combineIdentifierAndLabel(
 }
 
 /**
+ * Strips the label from a metric identifier.
+ *
+ * This is a no-op in case the identifier does not contain a label.
+ *
+ * @param identifier The identifier to strip a label from.
+ *
+ * @returns The identifier without the label.
+ */
+export function stripLabel(identifier: string): string {
+  return identifier.split("/")[0];
+}
+
+/**
  * Checks if the dynamic label stored in the metric data is
  * valid. If not, record an error and store data in the "__other__"
  * label.

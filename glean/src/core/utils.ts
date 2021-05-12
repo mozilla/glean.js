@@ -3,6 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { v4 as UUIDv4 } from "uuid";
+import { ErrorType, recordError } from "./error_recording";
+import { MetricType } from "./metrics";
 
 // We will intentionaly leave `null` out even though it is a valid JSON primitive.
 export type JSONPrimitive = string | number | boolean;
@@ -172,4 +174,28 @@ export function getMonotonicNow(): number {
   // means we should get creative to find a proper clock for that platform.
   // Fall back to `Date.now` for now, until bug 1690528 is fixed.
   return typeof performance === "undefined" ? Date.now() : performance.now();
+}
+
+/**
+ * Truncates a string to agiven max length.
+ *
+ * If the string required truncation, records an error through the error
+ * reporting mechanism.
+ *
+ * @param metric The metric to record an error to, if necessary,
+ * @param value The string to truncate.
+ * @param length The lenght to truncate to.
+ *
+ * @returns A string with at most `length` bytes.
+ */
+export async function truncateStringAtBoundaryWithError(metric: MetricType, value: string, length: number): Promise<string> {
+  const truncated = value.substr(0, length);
+  if (truncated !== value) {
+    await recordError(
+      metric,
+      ErrorType.InvalidOverflow,
+      `Value length ${value.length} exceeds maximum of ${length}.`
+    );
+  }
+  return truncated;
 }
