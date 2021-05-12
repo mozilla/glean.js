@@ -7,6 +7,7 @@ import { MetricType } from "../index.js";
 import { isNumber } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
+import { ErrorType, recordError, testGetNumRecordedErrors } from "../../error_recording.js";
 
 export class QuantityMetric extends Metric<number, number> {
   constructor(v: unknown) {
@@ -59,12 +60,15 @@ class QuantityMetricType extends MetricType {
     }
 
     if (value < 0) {
-      console.warn(`Attempted to set an invalid value ${value}. Ignoring.`);
+      await recordError(
+        instance,
+        ErrorType.InvalidValue,
+        `Set negative value ${value}`
+      );
       return;
     }
 
     if (value > Number.MAX_SAFE_INTEGER) {
-      console.warn(`Attempted to set a big value ${value}. Capped at ${Number.MAX_SAFE_INTEGER}.`);
       value = Number.MAX_SAFE_INTEGER;
     }
 
@@ -102,6 +106,19 @@ class QuantityMetricType extends MetricType {
       metric = await Context.metricsDatabase.getMetric<number>(ping, this);
     });
     return metric;
+  }
+
+  /**
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param pingName represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   *
+   * @return the number of errors recorded for the metric.
+   */
+   async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
+    return testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }
 

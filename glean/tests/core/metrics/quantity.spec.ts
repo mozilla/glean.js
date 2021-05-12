@@ -4,6 +4,7 @@
 
 import assert from "assert";
 import { Context } from "../../../src/core/context";
+import { ErrorType } from "../../../src/core/error_recording";
 
 import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
@@ -89,6 +90,8 @@ describe("QuantityMetric", function() {
 
     metric.set(-1);
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue, "aPing"), 1);
   });
 
   it("saturates at boundary", async function() {
