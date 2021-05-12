@@ -7,6 +7,7 @@ import assert from "assert";
 import Glean from "../../../src/core/glean";
 import EventMetricType from "../../../src/core/metrics/types/event";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
+import { ErrorType } from "../../../src/core/error_recording";
 
 describe("EventMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -117,7 +118,33 @@ describe("EventMetric", function() {
 
   it.skip("bug 1690253: flush queued events on startup");
   it.skip("bug 1690253: flush queued events on startup and correctly handle pre init events");
-  it.skip("bug 1682574: long extra values record an error");
+
+  it("long extra values record an error", async function () {
+    const metric = new EventMetricType({
+      category: "telemetry",
+      name: "test_event",
+      sendInPings: ["store1", "store2"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, ["label"]);
+
+    metric.record({ label: "01234567890".repeat(20) });
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1);
+  });
+
+  it("attempting to record with an invalid key index records an error", async function () {
+    const metric = new EventMetricType({
+      category: "telemetry",
+      name: "test_event",
+      sendInPings: ["store1", "store2"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, ["label"]);
+
+    metric.record({ nonRegisteredLabel: "01234567890" });
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1);
+  });
+
   it.skip("bug 1690301: overdue events are submitted in registered custom pings");
   it.skip("bug 1690301: overdue events are discarded if ping is not registered");
 

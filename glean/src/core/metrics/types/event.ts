@@ -6,8 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import type { ExtraMap} from "../events_database.js";
 import { RecordedEvent } from "../events_database.js";
-import { getMonotonicNow } from "../../utils.js";
+import { getMonotonicNow, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
+import { ErrorType, recordError, testGetNumRecordedErrors } from "../../error_recording.js";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
@@ -45,10 +46,9 @@ class EventMetricType extends MetricType {
         truncatedExtra = {};
         for (const [name, value] of Object.entries(extra)) {
           if (this.allowedExtraKeys.includes(name)) {
-            truncatedExtra[name] = value.substr(0, MAX_LENGTH_EXTRA_KEY_VALUE);
+            truncatedExtra[name] = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_EXTRA_KEY_VALUE);
           } else {
-            // TODO: bug 1682574 - record an error.
-            console.error(`Invalid key index ${name}`);
+            await recordError(this, ErrorType.InvalidValue, `Invalid key index: ${name}`);
             continue;
           }
         }
@@ -84,6 +84,19 @@ class EventMetricType extends MetricType {
       events = await Context.eventsDatabase.getEvents(ping, this);
     });
     return events;
+  }
+
+  /**
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param pingName represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   *
+   * @return the number of errors recorded for the metric.
+   */
+   async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
+    return testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }
 
