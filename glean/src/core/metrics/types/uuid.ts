@@ -7,6 +7,7 @@ import { MetricType } from "../index.js";
 import { generateUUIDv4, isString } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
+import { ErrorType, recordError, testGetNumRecordedErrors } from "../../error_recording.js";
 
 // Loose UUID regex for checking if a string has a UUID _shape_. Does not contain version checks.
 //
@@ -67,8 +68,11 @@ class UUIDMetricType extends MetricType {
     try {
       metric = new UUIDMetric(value);
     } catch {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`"${value}" is not a valid UUID. Ignoring`);
+      await recordError(
+        instance,
+        ErrorType.InvalidValue,
+        `"${value}" is not a valid UUID.`
+      );
       return;
     }
 
@@ -122,6 +126,19 @@ class UUIDMetricType extends MetricType {
       metric = await Context.metricsDatabase.getMetric<string>(ping, this);
     });
     return metric;
+  }
+
+  /**
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param pingName represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   *
+   * @return the number of errors recorded for the metric.
+   */
+   async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
+    return testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }
 

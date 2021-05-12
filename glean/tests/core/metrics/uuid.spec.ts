@@ -9,6 +9,7 @@ import Glean from "../../../src/core/glean";
 import UUIDMetricType from "../../../src/core/metrics/types/uuid";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
+import { ErrorType } from "../../../src/core/error_recording";
 
 describe("UUIDMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -45,8 +46,6 @@ describe("UUIDMetric", function() {
   });
 
   it("attempting to set an invalid uuid is a no-op", async function() {
-    Glean.setUploadEnabled(false);
-
     const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
@@ -57,6 +56,7 @@ describe("UUIDMetric", function() {
 
     metric.set("not valid");
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1);
   });
 
   it("ping payload is correct", async function() {
