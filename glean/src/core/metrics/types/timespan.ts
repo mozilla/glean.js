@@ -9,6 +9,7 @@ import { MetricType } from "../index.js";
 import { isString, isObject, isNumber, isUndefined, getMonotonicNow } from "../../utils.js";
 import { Metric } from "../metric.js";
 import { Context } from "../../context.js";
+import { ErrorType, recordError, testGetNumRecordedErrors } from "../../error_recording.js";
 
 export type TimespanInternalRepresentation = {
   // The time unit of the metric type at the time of recording.
@@ -87,8 +88,11 @@ class TimespanMetricType extends MetricType {
     }
 
     if (!isUndefined(instance.startTime)) {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.error("Timespan already running. Raw value not recorded.");
+      await recordError(
+        instance,
+        ErrorType.InvalidState,
+        "Timespan already running. Raw value not recorded."
+      );
       return;
     }
 
@@ -115,8 +119,11 @@ class TimespanMetricType extends MetricType {
     await Context.metricsDatabase.transform(instance, transformFn);
 
     if (reportValueExists) {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.error("Timespan value already recorded. New value discarded.");
+      await recordError(
+        instance,
+        ErrorType.InvalidState,
+        "Timespan value already recorded. New value discarded."
+      );
     }
   }
 
@@ -138,8 +145,11 @@ class TimespanMetricType extends MetricType {
       }
 
       if (!isUndefined(this.startTime)) {
-        // TODO: record error once Bug 1682574 is resolved.
-        console.error("Timespan already started.");
+        await recordError(
+          this,
+          ErrorType.InvalidState,
+          "Timespan already started"
+        );
         return;
       }
 
@@ -168,8 +178,11 @@ class TimespanMetricType extends MetricType {
       }
 
       if (isUndefined(this.startTime)) {
-        // TODO: record error once Bug 1682574 is resolved.
-        console.error("Timespan not running.");
+        await recordError(
+          this,
+          ErrorType.InvalidState,
+          "Timespan not running"
+        );
         return;
       }
 
@@ -177,8 +190,11 @@ class TimespanMetricType extends MetricType {
       this.startTime = undefined;
 
       if (elapsed < 0) {
-        // TODO: record error once Bug 1682574 is resolved.
-        console.error("Timespan was negative.");
+        await recordError(
+          this,
+          ErrorType.InvalidState,
+          "Timespan was negative."
+        );
         return;
       }
 
@@ -243,6 +259,19 @@ class TimespanMetricType extends MetricType {
       // `payload` will truncate to the defined time_unit at the time of recording.
       return (new TimespanMetric(value)).payload();
     }
+  }
+
+  /**
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param pingName represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   *
+   * @return the number of errors recorded for the metric.
+   */
+   async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
+    return testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }
 
