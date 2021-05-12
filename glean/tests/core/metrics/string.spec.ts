@@ -9,6 +9,7 @@ import StringMetricType from "../../../src/core/metrics/types/string";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string";
 import { Context } from "../../../src/core/context";
+import { ErrorType } from "../../../src/core/error_recording";
 
 describe("StringMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -95,5 +96,9 @@ describe("StringMetric", function() {
       await metric.testGetValue("aPing"),
       testString.substring(0, MAX_LENGTH_VALUE)
     );
+
+    assert.strictEqual(
+      await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1
+    )
   });
 });
