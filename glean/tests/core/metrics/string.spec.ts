@@ -99,6 +99,6 @@ describe("StringMetric", function() {
 
     assert.strictEqual(
       await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1
-    )
+    );
   });
 });

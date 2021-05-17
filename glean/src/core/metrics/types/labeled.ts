@@ -9,7 +9,7 @@ import type StringMetricType from "./string.js";
 import type MetricsDatabase from "../database";
 import type { JSONValue } from "../../utils.js";
 import { Metric } from "../metric.js";
-import { ErrorType, recordError, testGetNumRecordedErrors } from "../../error_recording.js";
+import { ErrorType, recordError } from "../../error_recording.js";
 
 /**
  * This is an internal metric representation for labeled metrics.

@@ -2,13 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { MetricType } from "./metrics";
+import type { MetricType } from "./metrics";
 import CounterMetricType from "./metrics/types/counter";
 import { combineIdentifierAndLabel, stripLabel } from "./metrics/types/labeled";
 
- /**
-  * The possible error types for metric recording.
-  */
+/**
+ * The possible error types for metric recording.
+ */
 export enum ErrorType {
   // For when the value to be recorded does not match the metric-specific restrictions
   InvalidValue = "invalid_value",

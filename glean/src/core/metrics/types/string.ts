@@ -7,7 +7,8 @@ import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { isString, truncateStringAtBoundaryWithError } from "../../utils.js";
-import { ErrorType, testGetNumRecordedErrors } from "../../error_recording.js";
+import type { ErrorType} from "../../error_recording.js";
+import { testGetNumRecordedErrors } from "../../error_recording.js";
 
 export const MAX_LENGTH_VALUE = 100;
 
@@ -61,11 +62,6 @@ class StringMetricType extends MetricType {
       return;
     }
 
-    if (value.length > MAX_LENGTH_VALUE) {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`String ${value} is longer than ${MAX_LENGTH_VALUE} chars. Truncating.`);
-    }
-
     const truncatedValue = await truncateStringAtBoundaryWithError(instance, value, MAX_LENGTH_VALUE);
     const metric = new StringMetric(truncatedValue);
     await Context.metricsDatabase.record(instance, metric);
@@ -111,12 +107,12 @@ class StringMetricType extends MetricType {
    * Returns the number of errors recorded for the given metric.
    *
    * @param errorType The type of the error recorded.
-   * @param pingName represents the name of the ping to retrieve the metric for.
+   * @param ping represents the name of the ping to retrieve the metric for.
    *        Defaults to the first value in `sendInPings`.
    *
-   * @return the number of errors recorded for the metric.
+   * @returns the number of errors recorded for the metric.
    */
-   async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
     return testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }

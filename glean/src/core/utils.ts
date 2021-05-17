@@ -4,7 +4,7 @@
 
 import { v4 as UUIDv4 } from "uuid";
 import { ErrorType, recordError } from "./error_recording";
-import { MetricType } from "./metrics";
+import type { MetricType } from "./metrics";
 
 // We will intentionaly leave `null` out even though it is a valid JSON primitive.
 export type JSONPrimitive = string | number | boolean;
