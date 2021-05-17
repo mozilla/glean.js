@@ -6,6 +6,7 @@ import assert from "assert";
 import sinon from "sinon";
 
 import { Context } from "../../../src/core/context";
+import { ErrorType } from "../../../src/core/error/error_type";
 import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import BooleanMetricType from "../../../src/core/metrics/types/boolean";
@@ -200,9 +201,11 @@ describe("LabeledMetric", function() {
     labeledCounterMetric["with/slash"].add(1);
     labeledCounterMetric["this_string_has_more_than_thirty_characters"].add(1);
 
-    // TODO: test error recording in bug 1682574
-
     assert.strictEqual(await labeledCounterMetric["__other__"].testGetValue(), 4);
+    assert.strictEqual(
+      await labeledCounterMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
+      4
+    );
   });
 
   it("Ensure invalid labels on labeled boolean go to __other__", async function() {
@@ -222,9 +225,11 @@ describe("LabeledMetric", function() {
     labeledBooleanMetric["with/slash"].set(true);
     labeledBooleanMetric["this_string_has_more_than_thirty_characters"].set(true);
 
-    // TODO: test error recording in bug 1682574
-
     assert.strictEqual(await labeledBooleanMetric["__other__"].testGetValue(), true);
+    assert.strictEqual(
+      await labeledBooleanMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
+      4
+    );
   });
 
   it("Ensure invalid labels on labeled string go to __other__", async function() {
@@ -244,9 +249,11 @@ describe("LabeledMetric", function() {
     labeledStringMetric["with/slash"].set("foo");
     labeledStringMetric["this_string_has_more_than_thirty_characters"].set("foo");
 
-    // TODO: test error recording in bug 1682574
-
     assert.strictEqual(await labeledStringMetric["__other__"].testGetValue(), "foo");
+    assert.strictEqual(
+      await labeledStringMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
+      4
+    );
   });
 
   it("test labeled string metric type", async function() {
@@ -270,11 +277,13 @@ describe("LabeledMetric", function() {
     labeledStringMetric["label1"].set("foo");
     labeledStringMetric["label2"].set("bar");
 
-    // TODO: test error recording in bug 1682574
-
     assert.strictEqual(await labeledStringMetric["label1"].testGetValue(), "foo");
     assert.strictEqual(await labeledStringMetric["label2"].testGetValue(), "bar");
     assert.strictEqual(await labeledStringMetric["__other__"].testGetValue(), undefined);
+    assert.strictEqual(
+      await labeledStringMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
+      0
+    );
 
     // TODO: bug 1691033 will allow us to change the code below this point,
     // once a custom uploader for testing will be available.

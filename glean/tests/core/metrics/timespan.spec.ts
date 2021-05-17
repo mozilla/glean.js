@@ -11,6 +11,7 @@ import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import TimeUnit from "../../../src/core/metrics/time_unit";
 import TimespanMetricType, { TimespanMetric } from "../../../src/core/metrics/types/timespan";
+import { ErrorType } from "../../../src/core/error/error_type";
 
 const sandbox = sinon.createSandbox();
 
@@ -182,9 +183,6 @@ describe("TimespanMetric", function() {
     fakeNow.onCall(2).callsFake(() => 101);
     fakeNow.onCall(3).callsFake(() => 200);
 
-    // TODO: check number of recorded errors instead once Bug 1682574 is resolved.
-    const consoleErrorSpy = sandbox.spy(console, "error");
-
     const metric = new TimespanMetricType({
       category: "aCategory",
       name: "aTimespan",
@@ -198,7 +196,7 @@ describe("TimespanMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), 100);
 
     // No error should be logged here: we had no prior value stored.
-    assert.deepStrictEqual(consoleErrorSpy.callCount, 0);
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 0);
 
     metric.start();
     metric.stop();
@@ -207,7 +205,7 @@ describe("TimespanMetric", function() {
 
     // Make sure that the error has been logged: we had a stored value,
     // the new measurement was dropped.
-    assert.deepStrictEqual(consoleErrorSpy.callCount, 1);
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
 
   it("cancel does not store and clears start time", async function() {
@@ -288,14 +286,11 @@ describe("TimespanMetric", function() {
       disabled: false
     }, "millisecond");
 
-    // TODO: check number of recorded errors instead once Bug 1682574 is resolved.
-    const consoleErrorSpy = sandbox.spy(console, "error");
-
     metric.start();
     metric.stop();
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
 
-    assert.deepStrictEqual(consoleErrorSpy.callCount, 1);
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
 
   it("setting raw time works correctly", async function () {
@@ -329,7 +324,6 @@ describe("TimespanMetric", function() {
 
     // We expect the start/stop value, not the raw value.
     assert.strictEqual(await metric.testGetValue("aPing"), 100);
-
-    // TODO: check number of recorded errors instead once Bug 1682574 is resolved.
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
 });

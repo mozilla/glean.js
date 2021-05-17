@@ -8,6 +8,7 @@ import { MetricType } from "../index.js";
 import { isUndefined, isNumber } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
+import { ErrorType } from "../../error/error_type.js";
 
 export class CounterMetric extends Metric<number, number> {
   constructor(v: unknown) {
@@ -64,8 +65,11 @@ class CounterMetricType extends MetricType {
     }
 
     if (amount <= 0) {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`Attempted to add an invalid amount ${amount}. Ignoring.`);
+      await Context.errorManager.record(
+        instance,
+        ErrorType.InvalidValue,
+        `Added negative and zero value ${amount}`
+      );
       return;
     }
 

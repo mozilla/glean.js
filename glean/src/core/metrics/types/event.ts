@@ -3,11 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { ExtraMap } from "../events_database.js";
 import { MetricType } from "../index.js";
-import type { ExtraMap} from "../events_database.js";
 import { RecordedEvent } from "../events_database.js";
-import { getMonotonicNow } from "../../utils.js";
+import { getMonotonicNow, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
+import { ErrorType } from "../../error/error_type.js";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
@@ -45,10 +46,9 @@ class EventMetricType extends MetricType {
         truncatedExtra = {};
         for (const [name, value] of Object.entries(extra)) {
           if (this.allowedExtraKeys.includes(name)) {
-            truncatedExtra[name] = value.substr(0, MAX_LENGTH_EXTRA_KEY_VALUE);
+            truncatedExtra[name] = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_EXTRA_KEY_VALUE);
           } else {
-            // TODO: bug 1682574 - record an error.
-            console.error(`Invalid key index ${name}`);
+            await Context.errorManager.record(this, ErrorType.InvalidValue, `Invalid key index: ${name}`);
             continue;
           }
         }

@@ -7,6 +7,7 @@ import { MetricType } from "../index.js";
 import { generateUUIDv4, isString } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
+import { ErrorType } from "../../error/error_type.js";
 
 // Loose UUID regex for checking if a string has a UUID _shape_. Does not contain version checks.
 //
@@ -67,8 +68,11 @@ class UUIDMetricType extends MetricType {
     try {
       metric = new UUIDMetric(value);
     } catch {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`"${value}" is not a valid UUID. Ignoring`);
+      await Context.errorManager.record(
+        instance,
+        ErrorType.InvalidValue,
+        `"${value}" is not a valid UUID.`
+      );
       return;
     }
 
