@@ -3,12 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { ExtraMap } from "../events_database.js";
 import { MetricType } from "../index.js";
-import type { ExtraMap} from "../events_database.js";
 import { RecordedEvent } from "../events_database.js";
 import { getMonotonicNow, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
-import { ErrorType, recordError, testGetNumRecordedErrors } from "../../error_recording.js";
+import { ErrorType } from "../../error/error_type.js";
 
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
@@ -48,7 +48,7 @@ class EventMetricType extends MetricType {
           if (this.allowedExtraKeys.includes(name)) {
             truncatedExtra[name] = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_EXTRA_KEY_VALUE);
           } else {
-            await recordError(this, ErrorType.InvalidValue, `Invalid key index: ${name}`);
+            await Context.errorManager.record(this, ErrorType.InvalidValue, `Invalid key index: ${name}`);
             continue;
           }
         }
@@ -84,19 +84,6 @@ class EventMetricType extends MetricType {
       events = await Context.eventsDatabase.getEvents(ping, this);
     });
     return events;
-  }
-
-  /**
-   * Returns the number of errors recorded for the given metric.
-   *
-   * @param errorType The type of the error recorded.
-   * @param ping represents the name of the ping to retrieve the metric for.
-   *        Defaults to the first value in `sendInPings`.
-   *
-   * @returns the number of errors recorded for the metric.
-   */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
-    return testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }
 

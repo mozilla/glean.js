@@ -9,7 +9,7 @@ import { MetricType } from "../index.js";
 import { isString, isObject, isNumber, isUndefined, getMonotonicNow } from "../../utils.js";
 import { Metric } from "../metric.js";
 import { Context } from "../../context.js";
-import { ErrorType, recordError, testGetNumRecordedErrors } from "../../error_recording.js";
+import { ErrorType } from "../../error/error_type.js";
 
 export type TimespanInternalRepresentation = {
   // The time unit of the metric type at the time of recording.
@@ -88,7 +88,7 @@ class TimespanMetricType extends MetricType {
     }
 
     if (!isUndefined(instance.startTime)) {
-      await recordError(
+      await Context.errorManager.record(
         instance,
         ErrorType.InvalidState,
         "Timespan already running. Raw value not recorded."
@@ -119,7 +119,7 @@ class TimespanMetricType extends MetricType {
     await Context.metricsDatabase.transform(instance, transformFn);
 
     if (reportValueExists) {
-      await recordError(
+      await Context.errorManager.record(
         instance,
         ErrorType.InvalidState,
         "Timespan value already recorded. New value discarded."
@@ -145,7 +145,7 @@ class TimespanMetricType extends MetricType {
       }
 
       if (!isUndefined(this.startTime)) {
-        await recordError(
+        await Context.errorManager.record(
           this,
           ErrorType.InvalidState,
           "Timespan already started"
@@ -178,7 +178,7 @@ class TimespanMetricType extends MetricType {
       }
 
       if (isUndefined(this.startTime)) {
-        await recordError(
+        await Context.errorManager.record(
           this,
           ErrorType.InvalidState,
           "Timespan not running"
@@ -190,7 +190,7 @@ class TimespanMetricType extends MetricType {
       this.startTime = undefined;
 
       if (elapsed < 0) {
-        await recordError(
+        await Context.errorManager.record(
           this,
           ErrorType.InvalidState,
           "Timespan was negative."
@@ -259,19 +259,6 @@ class TimespanMetricType extends MetricType {
       // `payload` will truncate to the defined time_unit at the time of recording.
       return (new TimespanMetric(value)).payload();
     }
-  }
-
-  /**
-   * Returns the number of errors recorded for the given metric.
-   *
-   * @param errorType The type of the error recorded.
-   * @param ping represents the name of the ping to retrieve the metric for.
-   *        Defaults to the first value in `sendInPings`.
-   *
-   * @returns the number of errors recorded for the metric.
-   */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
-    return testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }
 

@@ -9,7 +9,8 @@ import type StringMetricType from "./string.js";
 import type MetricsDatabase from "../database";
 import type { JSONValue } from "../../utils.js";
 import { Metric } from "../metric.js";
-import { ErrorType, recordError } from "../../error_recording.js";
+import { Context } from "../../context.js";
+import { ErrorType } from "../../error/error_type.js";
 
 /**
  * This is an internal metric representation for labeled metrics.
@@ -129,14 +130,14 @@ export async function getValidDynamicLabel(metricsDatabase: MetricsDatabase, met
     hitError = true;
   } else if (metric.dynamicLabel.length > MAX_LABEL_LENGTH) {
     hitError = true;
-    await recordError(
+    await Context.errorManager.record(
       metric,
       ErrorType.InvalidLabel,
       `Label length ${metric.dynamicLabel.length} exceeds maximum of ${MAX_LABEL_LENGTH}.`
     );
   } else if (!LABEL_REGEX.test(metric.dynamicLabel)) {
     hitError = true;
-    await recordError(
+    await Context.errorManager.record(
       metric,
       ErrorType.InvalidLabel,
       `Label must be snake_case, got '${metric.dynamicLabel}'.`

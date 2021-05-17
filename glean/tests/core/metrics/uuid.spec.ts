@@ -9,7 +9,7 @@ import Glean from "../../../src/core/glean";
 import UUIDMetricType from "../../../src/core/metrics/types/uuid";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
-import { ErrorType } from "../../../src/core/error_recording";
+import { ErrorType } from "../../../src/core/error/error_type";
 
 describe("UUIDMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;

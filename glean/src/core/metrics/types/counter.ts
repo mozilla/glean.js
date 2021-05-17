@@ -8,7 +8,7 @@ import { MetricType } from "../index.js";
 import { isUndefined, isNumber } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
-import { ErrorType, recordError, testGetNumRecordedErrors } from "../../error_recording.js";
+import { ErrorType } from "../../error/error_type.js";
 
 export class CounterMetric extends Metric<number, number> {
   constructor(v: unknown) {
@@ -65,7 +65,7 @@ class CounterMetricType extends MetricType {
     }
 
     if (amount <= 0) {
-      await recordError(
+      await Context.errorManager.record(
         instance,
         ErrorType.InvalidValue,
         `Added negative and zero value ${amount}`
@@ -133,19 +133,6 @@ class CounterMetricType extends MetricType {
       metric = await Context.metricsDatabase.getMetric<number>(ping, this);
     });
     return metric;
-  }
-
-  /**
-   * Returns the number of errors recorded for the given metric.
-   *
-   * @param errorType The type of the error recorded.
-   * @param ping represents the name of the ping to retrieve the metric for.
-   *        Defaults to the first value in `sendInPings`.
-   *
-   * @returns the number of errors recorded for the metric.
-   */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
-    return testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }
 

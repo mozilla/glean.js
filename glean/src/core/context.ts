@@ -7,6 +7,7 @@ import Dispatcher from "./dispatcher.js";
 import type MetricsDatabase from "./metrics/database";
 import type EventsDatabase from "./metrics/events_database";
 import type PingsDatabase from "./pings/database";
+import type ErrorManager from "./error";
 
 /**
  * This class holds all of the Glean singleton's state and internal dependencies.
@@ -29,6 +30,7 @@ export class Context {
   private _metricsDatabase!: MetricsDatabase;
   private _eventsDatabase!: EventsDatabase;
   private _pingsDatabase!: PingsDatabase;
+  private _errorManager!: typeof ErrorManager;
 
   private _applicationId!: string;
   private _initialized: boolean;
@@ -111,6 +113,14 @@ export class Context {
 
   static set pingsDatabase(db: PingsDatabase) {
     Context.instance._pingsDatabase = db;
+  }
+
+  static get errorManager(): typeof ErrorManager {
+    return Context.instance._errorManager;
+  }
+
+  static set errorManager(db: typeof ErrorManager) {
+    Context.instance._errorManager = db;
   }
 
   static get applicationId(): string {

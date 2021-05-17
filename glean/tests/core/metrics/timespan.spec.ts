@@ -11,7 +11,7 @@ import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import TimeUnit from "../../../src/core/metrics/time_unit";
 import TimespanMetricType, { TimespanMetric } from "../../../src/core/metrics/types/timespan";
-import { ErrorType } from "../../../src/core/error_recording";
+import { ErrorType } from "../../../src/core/error/error_type";
 
 const sandbox = sinon.createSandbox();
 

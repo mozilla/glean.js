@@ -2,9 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import type { MetricType } from "./metrics/index.js";
 import { v4 as UUIDv4 } from "uuid";
-import { ErrorType, recordError } from "./error_recording";
-import type { MetricType } from "./metrics";
+import { Context } from "./context.js";
+import { ErrorType } from "./error/error_type.js";
 
 // We will intentionaly leave `null` out even though it is a valid JSON primitive.
 export type JSONPrimitive = string | number | boolean;
@@ -191,7 +192,7 @@ export function getMonotonicNow(): number {
 export async function truncateStringAtBoundaryWithError(metric: MetricType, value: string, length: number): Promise<string> {
   const truncated = value.substr(0, length);
   if (truncated !== value) {
-    await recordError(
+    await Context.errorManager.record(
       metric,
       ErrorType.InvalidOverflow,
       `Value length ${value.length} exceeds maximum of ${length}.`

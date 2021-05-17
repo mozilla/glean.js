@@ -15,7 +15,7 @@ import UUIDMetricType from "./metrics/types/uuid.js";
 import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
 import CorePings from "./internal_pings.js";
 import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
-
+import ErrorManager from "./error/index.js";
 import type Platform from "../platform/index.js";
 import TestPlatform from "../platform/test/index.js";
 import { Lifetime } from "./metrics/lifetime.js";
@@ -197,6 +197,7 @@ class Glean {
     Context.metricsDatabase = new MetricsDatabase(Glean.platform.Storage);
     Context.eventsDatabase = new EventsDatabase(Glean.platform.Storage);
     Context.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
+    Context.errorManager = ErrorManager;
 
     Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Context.pingsDatabase);
 
