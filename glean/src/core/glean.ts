@@ -197,7 +197,7 @@ class Glean {
     Context.metricsDatabase = new MetricsDatabase(Glean.platform.Storage);
     Context.eventsDatabase = new EventsDatabase(Glean.platform.Storage);
     Context.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
-    Context.errorManager = ErrorManager;
+    Context.errorManager = new ErrorManager();
 
     Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Context.pingsDatabase);
 

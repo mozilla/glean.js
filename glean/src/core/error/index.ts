@@ -35,7 +35,7 @@ function getErrorMetricForMetric(metric: MetricType, error: ErrorType): CounterM
   });
 }
 
-export default {
+export default class ErrorManager {
   /**
    * Records an error into Glean.
    *
@@ -48,12 +48,12 @@ export default {
    *        prepended to the message.
    * @param numErrors The number of errors of the same type to report.
    */
-  record: async (
+  async record (
     metric: MetricType,
     error: ErrorType,
     message: string,
     numErrors = 1
-  ): Promise<void> => {
+  ): Promise<void> {
     const errorMetric = getErrorMetricForMetric(metric, error);
     console.warn(`${metric.baseIdentifier()}: ${message}`);
     if (numErrors > 0) {
@@ -61,7 +61,7 @@ export default {
     } else {
       // TODO: Throw error only when in test mode. Depends on Bug 1682771.
     }
-  },
+  }
 
   /**
    * Gets the number of recorded errors for the given metric and error type.
@@ -73,14 +73,14 @@ export default {
    *
    * @returns The number of errors reported.
    */
-  testGetNumRecordedErrors: async (
+  async testGetNumRecordedErrors (
     metric: MetricType,
     error: ErrorType,
     ping?: string
-  ): Promise<number> => {
+  ): Promise<number> {
     const errorMetric = getErrorMetricForMetric(metric, error);
     const numErrors = await errorMetric.testGetValue(ping);
     return numErrors || 0;
   }
-};
+}
 

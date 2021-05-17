@@ -30,7 +30,10 @@ export class Context {
   private _metricsDatabase!: MetricsDatabase;
   private _eventsDatabase!: EventsDatabase;
   private _pingsDatabase!: PingsDatabase;
-  private _errorManager!: typeof ErrorManager;
+  // The reason this was added to the Context,
+  // is to avoid a circular dependency between
+  // the ErrorManager's module and the CounterMetricType module.
+  private _errorManager!: ErrorManager;
 
   private _applicationId!: string;
   private _initialized: boolean;
@@ -115,11 +118,11 @@ export class Context {
     Context.instance._pingsDatabase = db;
   }
 
-  static get errorManager(): typeof ErrorManager {
+  static get errorManager(): ErrorManager {
     return Context.instance._errorManager;
   }
 
-  static set errorManager(db: typeof ErrorManager) {
+  static set errorManager(db: ErrorManager) {
     Context.instance._errorManager = db;
   }
 

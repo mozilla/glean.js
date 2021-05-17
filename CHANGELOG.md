@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.12.0...main)
 
+* [#313](https://github.com/mozilla/glean.js/pull/313): Implement error recording mechanism and error checking testing API.
+
 # v0.12.0 (2021-05-11)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.11.0...v0.12.0)
