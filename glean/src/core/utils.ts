@@ -103,6 +103,21 @@ export function isNumber(v: unknown): v is number {
 }
 
 /**
+ * Checks whether or not `v` is an integer.
+ *
+ * @param v The value to verify.
+ *
+ * @returns A special Typescript value (which compiles down to a boolean)
+ *          stating whether `v` is a number.
+ */
+export function isInteger(v: unknown): v is number {
+  // Decided against using `Number.isInteger` here,
+  // because that fails if you pass it a number created through `new Number(...)`.
+  return isNumber(v) && v % 1 === 0;
+}
+
+
+/**
  * Generates a pipeline-friendly string
  * that replaces non alphanumeric characters with dashes.
  *

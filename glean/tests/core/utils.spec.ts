@@ -79,6 +79,20 @@ describe("utils", function() {
     assert.strictEqual(utils.isNumber(new Number(10)), true);
   });
 
+  it("isInteger validates correctly", function() {
+    // Invalid values
+    assert.strictEqual(utils.isInteger(undefined), false);
+    assert.strictEqual(utils.isInteger("10"), false);
+    assert.strictEqual(utils.isInteger({}), false);
+    assert.strictEqual(utils.isInteger(NaN), false);
+    assert.strictEqual(utils.isInteger(0.1), false);
+
+    // Valid values
+    assert.strictEqual(utils.isInteger(10), true);
+    assert.strictEqual(utils.isInteger(-10), true);
+    assert.strictEqual(utils.isInteger(new Number(10)), true);
+  });
+
   it("sanitizeApplicationId works correctly", function() {
     assert.strictEqual(utils.sanitizeApplicationId("org.mozilla.test-app"), "org-mozilla-test-app");
     assert.strictEqual(utils.sanitizeApplicationId("org.mozilla..test---app"), "org-mozilla-test-app");

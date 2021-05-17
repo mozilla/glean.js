@@ -5,7 +5,7 @@
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import { MetricType } from "../index.js";
-import { isUndefined, isNumber } from "../../utils.js";
+import { isUndefined, isInteger } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -16,7 +16,7 @@ export class CounterMetric extends Metric<number, number> {
   }
 
   validate(v: unknown): v is number {
-    if (!isNumber(v)) {
+    if (!isInteger(v)) {
       return false;
     }
 
