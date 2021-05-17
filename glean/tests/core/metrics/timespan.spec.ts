@@ -324,7 +324,6 @@ describe("TimespanMetric", function() {
 
     // We expect the start/stop value, not the raw value.
     assert.strictEqual(await metric.testGetValue("aPing"), 100);
-
-    // TODO: check number of recorded errors instead once Bug 1682574 is resolved.
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
 });

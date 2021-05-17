@@ -3,10 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { ErrorType } from "../../error_recording.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { isBoolean } from "../../utils.js";
+import { testGetNumRecordedErrors } from "../../error_recording.js";
 
 export class BooleanMetric extends Metric<boolean, boolean> {
   constructor(v: unknown) {
@@ -68,6 +70,19 @@ class BooleanMetricType extends MetricType {
       metric = await Context.metricsDatabase.getMetric<boolean>(ping, this);
     });
     return metric;
+  }
+
+  /**
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   *
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
+    return testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }
 

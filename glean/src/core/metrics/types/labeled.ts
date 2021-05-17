@@ -95,7 +95,7 @@ export function stripLabel(identifier: string): string {
  * label.
  *
  * @param metricsDatabase the metrics database.
- * @param metric the metric metadata.
+ * @param metric the metric to record to.
  *
  * @returns a valid label that can be used to store data.
  */
