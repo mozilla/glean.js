@@ -75,7 +75,7 @@ export function isUndefined(v: unknown): v is undefined {
  *          stating whether `v` is a string.
  */
 export function isString(v: unknown): v is string {
-  return (typeof v === "string" || (typeof v === "object" && v !== null && v.constructor === String));
+  return typeof v === "string";
 }
 
 /**
@@ -87,7 +87,7 @@ export function isString(v: unknown): v is string {
  *          stating whether `v` is a boolean.
  */
 export function isBoolean(v: unknown): v is boolean {
-  return (typeof v === "boolean" || (typeof v === "object" && v !== null && v.constructor === Boolean));
+  return typeof v === "boolean";
 }
 
 /**
@@ -99,7 +99,7 @@ export function isBoolean(v: unknown): v is boolean {
  *          stating whether `v` is a number.
  */
 export function isNumber(v: unknown): v is number {
-  return ((typeof v === "number" || (typeof v === "object" && v !== null && v.constructor === Number)) && !isNaN(v));
+  return typeof v === "number" && !isNaN(v);
 }
 
 /**
@@ -111,11 +111,8 @@ export function isNumber(v: unknown): v is number {
  *          stating whether `v` is a number.
  */
 export function isInteger(v: unknown): v is number {
-  // Decided against using `Number.isInteger` here,
-  // because that fails if you pass it a number created through `new Number(...)`.
-  return isNumber(v) && v % 1 === 0;
+  return isNumber(v) && Number.isInteger(v);
 }
-
 
 /**
  * Generates a pipeline-friendly string
