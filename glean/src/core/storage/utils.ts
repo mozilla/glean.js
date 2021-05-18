@@ -11,9 +11,7 @@ import { isJSONValue, isObject } from "../utils.js";
  *
  * @param obj The object to update
  * @param index The index of the entry to update
- *
  * @returns The value of the entry if any was found and `undefined` otherwise.
- *
  * @throws In case the index is an empty array.
  */
 export function getValueFromNestedObject(obj: JSONObject, index: StorageIndex): JSONValue | undefined {
@@ -43,9 +41,7 @@ export function getValueFromNestedObject(obj: JSONObject, index: StorageIndex): 
  * @param obj The object to update
  * @param index The index of the entry to update
  * @param transformFn A transformation function to apply to the currently persisted value.
- *
  * @returns An updated copy of the object.
- *
  * @throws In case the index is an empty array.
  */
 export function updateNestedObject(
@@ -97,9 +93,7 @@ export function updateNestedObject(
  *
  * @param obj The object to update
  * @param index The index of the entry to delete
- *
  * @returns An updated copy of the object.
- *
  * @throws In case the index is invalid i.e. doesn't contain an entry or doesn't exist.
  */
 export function deleteKeyFromNestedObject(obj: JSONObject, index: StorageIndex): JSONObject {

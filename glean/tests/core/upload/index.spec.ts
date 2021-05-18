@@ -20,7 +20,6 @@ const sandbox = sinon.createSandbox();
  * Fills the pings database with dummmy pings.
  *
  * @param numPings number of pings we want to add to the database.
- *
  * @returns The array of identifiers of the pings added to the database.
  */
 async function fillUpPingsDatabase(numPings: number): Promise<string[]> {

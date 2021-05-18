@@ -108,7 +108,6 @@ class EventsDatabase {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    * @param metric the metric we're looking for.
-   *
    * @returns an array of `RecordedEvent` containing the found events or `undefined`
    *          if no recorded event was found.
    */
@@ -138,7 +137,6 @@ class EventsDatabase {
    * the whole ping payload for that lifetime will be thrown away.
    *
    * @param ping The ping we want to get the data from
-   *
    * @returns The ping payload found for the given parameters or an empty object
    *          in case no data was found or the data that was found, was invalid.
    */
@@ -163,7 +161,6 @@ class EventsDatabase {
    *
    * @param ping The name of the ping to retrieve.
    * @param clearPingLifetimeData Whether or not to clear the ping lifetime metrics retrieved.
-   *
    * @returns An object containing all the metrics recorded to the given ping,
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */

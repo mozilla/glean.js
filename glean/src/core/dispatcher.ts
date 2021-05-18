@@ -164,7 +164,6 @@ class Dispatcher {
    * @param command The command to enqueue.
    * @param priorityTask Whether or not this task is a priority task
    *        and should be enqueued at the front of the queue.
-   *
    * @returns Wheter or not the task was queued.
    */
   private launchInternal(command: Command, priorityTask = false): boolean {
@@ -272,7 +271,7 @@ class Dispatcher {
   }
 
   /**
-   * **Test-Only API**
+   * Test-Only API**
    *
    * Returns a promise that resolves once the current task execution in finished.
    *
@@ -286,7 +285,7 @@ class Dispatcher {
   }
 
   /**
-   * **Test-Only API**
+   * Test-Only API**
    *
    * Returns the dispatcher back to an uninitialized state.
    *
@@ -316,7 +315,6 @@ class Dispatcher {
    * This is important in order not to hang forever in case the dispatcher is stopped.
    *
    * @param task The task to launch.
-   *
    * @returns A promise which only resolves once the task is done being executed
    *          or is guaranteed to not be executed ever i.e. if the queue gets cleared.
    */

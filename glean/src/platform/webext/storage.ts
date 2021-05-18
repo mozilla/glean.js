@@ -74,7 +74,6 @@ class WebExtStore implements Store {
    * Build a query object to retrieve / update a given entry from the storage.
    *
    * @param index The index to the given entry on the storage.
-   *
    * @returns The query object.
    */
   private _buildQuery(index: StorageIndex): WebExtStoreQuery {
@@ -90,7 +89,6 @@ class WebExtStore implements Store {
    * Retrieves the full store and builds a query object on top of it.
    *
    * @param transformFn The transformation function to apply to the store.
-   *
    * @returns The query object with the modified store.
    */
   private async _buildQueryFromStore(transformFn: (s: JSONObject) => JSONObject): Promise<JSONObject> {

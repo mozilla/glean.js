@@ -87,7 +87,7 @@ class QuantityMetricType extends MetricType {
   }
 
   /**
-   * **Test-only API.**
+   * Test-only API.**
    *
    * Gets the currently stored value as a number.
    *
@@ -97,7 +97,6 @@ class QuantityMetricType extends MetricType {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {

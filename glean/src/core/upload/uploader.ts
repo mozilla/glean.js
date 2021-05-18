@@ -45,7 +45,6 @@ export interface Uploader {
    * @param url The URL to make the POST request
    * @param body The stringified body of this post request
    * @param headers Optional header to include in the request
-   *
    * @returns The status code of the response.
    */
   post(url: string, body: string, headers?: Record<string, string>): Promise<UploadResult>;

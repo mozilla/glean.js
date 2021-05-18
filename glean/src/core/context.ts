@@ -53,7 +53,7 @@ export class Context {
   }
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Resets the Context to an uninitialized state.
    */

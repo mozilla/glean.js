@@ -38,9 +38,7 @@ const METRIC_MAP: {
  *
  * @param type The type of the metric to create.
  * @param v The value with which to instantiate the metric.
- *
  * @returns A metric instance.
- *
  * @throws
  * - In case type is not listed in the `METRIC_MAP`;
  * - In case `v` is not in the correct representation for the wanted metric type.
@@ -59,7 +57,6 @@ export function createMetric(type: string, v: unknown): Metric<JSONValue, JSONVa
  *
  * @param type The type of the metric to validate
  * @param v The value to verify
- *
  * @returns Whether or not `v` is of the correct type.
  */
 export function validateMetricInternalRepresentation<T extends JSONValue>(

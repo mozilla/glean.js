@@ -55,7 +55,6 @@ export class CoreEvent<
    * Will execute the action of the registered plugin, if there is any.
    *
    * @param args The arguments to be passed as context to the registered plugin.
-   *
    * @returns The result from the plugin execution.
    */
   trigger(...args: Context): Result | void {

@@ -166,7 +166,6 @@ class Glean {
    *        If disabled, all persisted metrics, events and queued pings
    *        (except first_run_date) are cleared.
    * @param config Glean configuration options.
-   *
    * @throws
    * - If config.serverEndpoint is an invalid URL;
    * - If the application if is an empty string.
@@ -390,7 +389,7 @@ class Glean {
    *
    * Ping tags will show in the destination datasets, after ingestion.
    *
-   * **Note** Setting `sourceTags` will override all previously set tags.
+   * Note** Setting `sourceTags` will override all previously set tags.
    *
    * To unset the `sourceTags` call `Glean.unsetSourceTags();
    *
@@ -458,7 +457,7 @@ class Glean {
   }
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Initializes Glean in testing mode.
    *
@@ -482,7 +481,7 @@ class Glean {
   }
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Resets the Glean to an uninitialized state.
    *
@@ -504,7 +503,7 @@ class Glean {
   }
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Resets the Glean singleton to its initial state and re-initializes it.
    *

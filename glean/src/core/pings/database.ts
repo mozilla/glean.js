@@ -17,7 +17,6 @@ export interface PingInternalRepresentation extends JSONObject {
  * Checks whether or not `v` is in the correct ping internal representation
  *
  * @param v The value to verify.
- *
  * @returns A special Typescript value (which compiles down to a boolean)
  *          stating whether `v` is in the correct ping internal representation.
  */
