@@ -4,8 +4,8 @@
 
 import type { MetricType } from "../metrics";
 import type { ErrorType } from "./error_type.js";
-import CounterMetricType from "../metrics/types/counter";
-import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled";
+import CounterMetricType from "../metrics/types/counter.js";
+import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled.js";
 
 /**
  * For a given metric, get the metric in which to record errors.

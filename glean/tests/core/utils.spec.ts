@@ -50,7 +50,6 @@ describe("utils", function() {
     assert.strictEqual(utils.isString(""), true);
     assert.strictEqual(utils.isString("something else"), true);
     assert.strictEqual(utils.isString(obj["test"]), true);
-    assert.strictEqual(utils.isString(new String("check")), true);
   });
 
   it("isBoolean validates correctly", function() {
@@ -62,7 +61,6 @@ describe("utils", function() {
     // Valid values
     assert.strictEqual(utils.isBoolean(true), true);
     assert.strictEqual(utils.isBoolean(false), true);
-    assert.strictEqual(utils.isBoolean(new Boolean(true)), true);
     assert.strictEqual(utils.isBoolean(!!"something else"), true);
   });
 
@@ -76,7 +74,31 @@ describe("utils", function() {
     // Valid values
     assert.strictEqual(utils.isNumber(10), true);
     assert.strictEqual(utils.isNumber(-10), true);
-    assert.strictEqual(utils.isNumber(new Number(10)), true);
+  });
+
+  it("isInteger validates correctly", function() {
+    // Invalid values
+    assert.strictEqual(utils.isInteger(undefined), false);
+    assert.strictEqual(utils.isInteger("10"), false);
+    assert.strictEqual(utils.isInteger({}), false);
+    assert.strictEqual(utils.isInteger(NaN), false);
+    assert.strictEqual(utils.isInteger(0.1), false);
+    assert.strictEqual(utils.isInteger(Math.PI), false);
+    assert.strictEqual(utils.isInteger(Infinity), false);
+    assert.strictEqual(utils.isInteger(-Infinity), false);
+    assert.strictEqual(utils.isInteger(true), false);
+    assert.strictEqual(utils.isInteger(false), false);
+    assert.strictEqual(utils.isInteger([1]), false);
+    assert.strictEqual(utils.isInteger(5.000000000000001), false);
+
+    // Valid values
+    assert.strictEqual(utils.isInteger(10), true);
+    assert.strictEqual(utils.isInteger(-10), true);
+    assert.strictEqual(utils.isInteger(0), true);
+    assert.strictEqual(utils.isInteger(-100000), true);
+    assert.strictEqual(utils.isInteger(99999999999999999999999), true);
+    assert.strictEqual(utils.isInteger(5.0), true);
+    assert.strictEqual(utils.isInteger(5.0000000000000001), true);
   });
 
   it("sanitizeApplicationId works correctly", function() {

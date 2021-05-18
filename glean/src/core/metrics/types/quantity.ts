@@ -4,7 +4,7 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { isNumber } from "../../utils.js";
+import { isInteger } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -15,7 +15,7 @@ export class QuantityMetric extends Metric<number, number> {
   }
 
   validate(v: unknown): v is number {
-    if (!isNumber(v)) {
+    if (!isInteger(v)) {
       return false;
     }
 
