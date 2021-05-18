@@ -16,7 +16,6 @@ import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled.
  *
  * @param metric The metric to record an error for.
  * @param error The error type to record.
- *
  * @returns The metric to record to.
  */
 function getErrorMetricForMetric(metric: MetricType, error: ErrorType): CounterMetricType {
@@ -70,7 +69,6 @@ export default class ErrorManager {
    * @param error The error type to get count of.
    * @param ping The ping from which we want to retrieve the number of recorded errors.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The number of errors reported.
    */
   async testGetNumRecordedErrors (

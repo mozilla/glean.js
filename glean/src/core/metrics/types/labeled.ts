@@ -67,7 +67,6 @@ const LABEL_REGEX = /^[a-z_][a-z0-9_-]{0,29}(\.[a-z_][a-z0-9_-]{0,29})*$/;
  *
  * @param metricName the metric base identifier
  * @param label the label
- *
  * @returns a string representing the complete metric id including the label.
  */
 export function combineIdentifierAndLabel(
@@ -83,7 +82,6 @@ export function combineIdentifierAndLabel(
  * This is a no-op in case the identifier does not contain a label.
  *
  * @param identifier The identifier to strip a label from.
- *
  * @returns The identifier without the label.
  */
 export function stripLabel(identifier: string): string {
@@ -97,7 +95,6 @@ export function stripLabel(identifier: string): string {
  *
  * @param metricsDatabase the metrics database.
  * @param metric the metric to record to.
- *
  * @returns a valid label that can be used to store data.
  */
 export async function getValidDynamicLabel(metricsDatabase: MetricsDatabase, metric: MetricType): Promise<string> {
@@ -181,7 +178,6 @@ class LabeledMetricType<T extends SupportedLabeledTypes> {
    * @param submetricClass the class type for the submetric.
    * @param allowedLabels the array of allowed labels.
    * @param label the desired label to record to.
-   *
    * @returns an instance of the submetric class type that allows to record data.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -207,7 +203,6 @@ class LabeledMetricType<T extends SupportedLabeledTypes> {
    * @param meta the `CommonMetricData` information for the metric.
    * @param submetricClass the class type for the submetric.
    * @param label the desired label to record to.
-   *
    * @returns an instance of the submetric class type that allows to record data.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

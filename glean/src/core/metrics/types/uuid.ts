@@ -83,7 +83,6 @@ class UUIDMetricType extends MetricType {
    * Sets to the specified value.
    *
    * @param value the value to set.
-   *
    * @throws In case `value` is not a valid UUID.
    */
   set(value: string): void {
@@ -107,7 +106,7 @@ class UUIDMetricType extends MetricType {
   }
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Gets the currently stored value as a string.
    *
@@ -117,7 +116,6 @@ class UUIDMetricType extends MetricType {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {

@@ -44,7 +44,6 @@ export abstract class Metric<
    * Sets this metrics value.
    *
    * @param v The value to set, must be in the exact internal representation of this metric.
-   *
    * @throws In case the metric is not in the expected format.
    */
   set(v: unknown): void {
@@ -60,7 +59,6 @@ export abstract class Metric<
    * Validates that a given value is in the correct format for this metrics internal representation.
    *
    * @param v The value to verify.
-   *
    * @returns A special Typescript value (which compiles down to a boolean)
    *          stating whether `v` is of the correct type.
    */

@@ -81,7 +81,6 @@ function getSystemPythonBinName(): string {
  * Note that this directory changes depending on the host OS.
  *
  * @param venvRoot the root path of the virtual environment.
- *
  * @returns the full path to the directory containing the python
  *          binaries in the virtual environment.
  */
@@ -97,7 +96,6 @@ function getPythonVenvBinariesPath(venvRoot: string): string {
  * Checks if a Python virtual environment is available.
  *
  * @param venvPath the Python virtual environment directory.
- *
  * @returns `true` if the Python virtual environment exists and
  *          is accessible, `false` otherwise.
  */
@@ -123,7 +121,6 @@ async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
  * Uses the system's Python interpreter to create a Python3 virtual environment.
  *
  * @param venvPath the directory in which to create the virtual environment.
- *
  * @returns `true` if the environment was correctly created, `false` otherwise.
  */
 async function createPythonVenv(venvPath: string): Promise<boolean> {

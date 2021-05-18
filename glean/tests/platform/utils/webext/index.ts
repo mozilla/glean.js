@@ -19,7 +19,6 @@ const __dirname = dirname(__filename);
  * @param headless whether or not to run Firefox on headless mode.
  *        Headless mode should be preferred as it is faster and doesn't open extra windows.
  *        Nevertheless, running the UI may be useful for local testing.
- *
  * @returns The firefox instance thsa was just setup.
  */
 export async function setupFirefox(headless: boolean): Promise<WebDriver> {
@@ -88,7 +87,6 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
  * @param browser A Webdriver where we will run this proxied script
  * @param method The method which we want to execute.
  *        This array will work exactly like the StorageIndex.
- *
  * @returns A proxy function for the given browser method.
  */
 export function webExtensionAPIProxyBuilder(browser: WebDriver, method: string[]) {
