@@ -4,9 +4,10 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { isNumber } from "../../utils.js";
+import { isInteger } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
+import { ErrorType } from "../../error/error_type.js";
 
 export class QuantityMetric extends Metric<number, number> {
   constructor(v: unknown) {
@@ -14,7 +15,7 @@ export class QuantityMetric extends Metric<number, number> {
   }
 
   validate(v: unknown): v is number {
-    if (!isNumber(v)) {
+    if (!isInteger(v)) {
       return false;
     }
 
@@ -59,12 +60,15 @@ class QuantityMetricType extends MetricType {
     }
 
     if (value < 0) {
-      console.warn(`Attempted to set an invalid value ${value}. Ignoring.`);
+      await Context.errorManager.record(
+        instance,
+        ErrorType.InvalidValue,
+        `Set negative value ${value}`
+      );
       return;
     }
 
     if (value > Number.MAX_SAFE_INTEGER) {
-      console.warn(`Attempted to set a big value ${value}. Capped at ${Number.MAX_SAFE_INTEGER}.`);
       value = Number.MAX_SAFE_INTEGER;
     }
 
@@ -83,7 +87,7 @@ class QuantityMetricType extends MetricType {
   }
 
   /**
-   * **Test-only API.**
+   * Test-only API.**
    *
    * Gets the currently stored value as a number.
    *
@@ -93,7 +97,6 @@ class QuantityMetricType extends MetricType {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {

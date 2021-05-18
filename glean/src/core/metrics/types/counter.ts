@@ -5,9 +5,10 @@
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import { MetricType } from "../index.js";
-import { isUndefined, isNumber } from "../../utils.js";
+import { isUndefined, isInteger } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
+import { ErrorType } from "../../error/error_type.js";
 
 export class CounterMetric extends Metric<number, number> {
   constructor(v: unknown) {
@@ -15,7 +16,7 @@ export class CounterMetric extends Metric<number, number> {
   }
 
   validate(v: unknown): v is number {
-    if (!isNumber(v)) {
+    if (!isInteger(v)) {
       return false;
     }
 
@@ -64,8 +65,11 @@ class CounterMetricType extends MetricType {
     }
 
     if (amount <= 0) {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`Attempted to add an invalid amount ${amount}. Ignoring.`);
+      await Context.errorManager.record(
+        instance,
+        ErrorType.InvalidValue,
+        `Added negative and zero value ${amount}`
+      );
       return;
     }
 
@@ -110,7 +114,7 @@ class CounterMetricType extends MetricType {
   }
 
   /**
-   * **Test-only API.**
+   * Test-only API.**
    *
    * Gets the currently stored value as a number.
    *
@@ -120,7 +124,6 @@ class CounterMetricType extends MetricType {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {

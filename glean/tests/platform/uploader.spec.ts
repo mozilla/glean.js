@@ -49,7 +49,6 @@ global.AbortController = MockAbortController;
  * Creates a Response object with the given status.
  *
  * @param status The status of the created response.
- *
  * @returns The created Response object.
  */
 function createResponse(status: number): Response {

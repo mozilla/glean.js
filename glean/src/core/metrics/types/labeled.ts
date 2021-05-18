@@ -9,6 +9,8 @@ import type StringMetricType from "./string.js";
 import type MetricsDatabase from "../database";
 import type { JSONValue } from "../../utils.js";
 import { Metric } from "../metric.js";
+import { Context } from "../../context.js";
+import { ErrorType } from "../../error/error_type.js";
 
 /**
  * This is an internal metric representation for labeled metrics.
@@ -65,7 +67,6 @@ const LABEL_REGEX = /^[a-z_][a-z0-9_-]{0,29}(\.[a-z_][a-z0-9_-]{0,29})*$/;
  *
  * @param metricName the metric base identifier
  * @param label the label
- *
  * @returns a string representing the complete metric id including the label.
  */
 export function combineIdentifierAndLabel(
@@ -76,13 +77,24 @@ export function combineIdentifierAndLabel(
 }
 
 /**
+ * Strips the label from a metric identifier.
+ *
+ * This is a no-op in case the identifier does not contain a label.
+ *
+ * @param identifier The identifier to strip a label from.
+ * @returns The identifier without the label.
+ */
+export function stripLabel(identifier: string): string {
+  return identifier.split("/")[0];
+}
+
+/**
  * Checks if the dynamic label stored in the metric data is
  * valid. If not, record an error and store data in the "__other__"
  * label.
  *
  * @param metricsDatabase the metrics database.
- * @param metric the metric metadata.
- *
+ * @param metric the metric to record to.
  * @returns a valid label that can be used to store data.
  */
 export async function getValidDynamicLabel(metricsDatabase: MetricsDatabase, metric: MetricType): Promise<string> {
@@ -114,13 +126,19 @@ export async function getValidDynamicLabel(metricsDatabase: MetricsDatabase, met
   if (numUsedKeys >= MAX_LABELS) {
     hitError = true;
   } else if (metric.dynamicLabel.length > MAX_LABEL_LENGTH) {
-    console.error(`label length ${metric.dynamicLabel.length} exceeds maximum of ${MAX_LABEL_LENGTH}`);
     hitError = true;
-    // TODO: record error in bug 1682574
+    await Context.errorManager.record(
+      metric,
+      ErrorType.InvalidLabel,
+      `Label length ${metric.dynamicLabel.length} exceeds maximum of ${MAX_LABEL_LENGTH}.`
+    );
   } else if (!LABEL_REGEX.test(metric.dynamicLabel)) {
-    console.error(`label must be snake_case, got '${metric.dynamicLabel}'`);
     hitError = true;
-    // TODO: record error in bug 1682574
+    await Context.errorManager.record(
+      metric,
+      ErrorType.InvalidLabel,
+      `Label must be snake_case, got '${metric.dynamicLabel}'.`
+    );
   }
 
   return (hitError)
@@ -160,7 +178,6 @@ class LabeledMetricType<T extends SupportedLabeledTypes> {
    * @param submetricClass the class type for the submetric.
    * @param allowedLabels the array of allowed labels.
    * @param label the desired label to record to.
-   *
    * @returns an instance of the submetric class type that allows to record data.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -186,7 +203,6 @@ class LabeledMetricType<T extends SupportedLabeledTypes> {
    * @param meta the `CommonMetricData` information for the metric.
    * @param submetricClass the class type for the submetric.
    * @param label the desired label to record to.
-   *
    * @returns an instance of the submetric class type that allows to record data.
    */
   // eslint-disable-next-line @typescript-eslint/no-explicit-any

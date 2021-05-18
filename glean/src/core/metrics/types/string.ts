@@ -6,7 +6,7 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
-import { isString } from "../../utils.js";
+import { isString, truncateStringAtBoundaryWithError } from "../../utils.js";
 
 export const MAX_LENGTH_VALUE = 100;
 
@@ -60,12 +60,8 @@ class StringMetricType extends MetricType {
       return;
     }
 
-    if (value.length > MAX_LENGTH_VALUE) {
-      // TODO: record error once Bug 1682574 is resolved.
-      console.warn(`String ${value} is longer than ${MAX_LENGTH_VALUE} chars. Truncating.`);
-    }
-
-    const metric = new StringMetric(value.substr(0, MAX_LENGTH_VALUE));
+    const truncatedValue = await truncateStringAtBoundaryWithError(instance, value, MAX_LENGTH_VALUE);
+    const metric = new StringMetric(truncatedValue);
     await Context.metricsDatabase.record(instance, metric);
   }
 
@@ -84,7 +80,7 @@ class StringMetricType extends MetricType {
   }
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Gets the currently stored value as a string.
    *
@@ -94,7 +90,6 @@ class StringMetricType extends MetricType {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {

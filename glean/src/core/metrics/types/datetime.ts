@@ -16,7 +16,6 @@ import { isNumber, isObject, isString } from "../../utils.js";
  *
  * @param timezone A number representing the timezone offset to format,
  *                 this is expected to be in minutes.
- *
  * @returns The formatted timezone offset string.
  */
 export function formatTimezoneOffset(timezone: number): string {
@@ -229,7 +228,7 @@ class DatetimeMetricType extends MetricType {
   }
 
   /**
-   * **Test-only and private API**
+   * Test-only and private API**
    *
    * Gets the currently stored value as a DatetimeMetric.
    *
@@ -238,7 +237,6 @@ class DatetimeMetricType extends MetricType {
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
-   *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
@@ -252,7 +250,7 @@ class DatetimeMetricType extends MetricType {
   }
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Gets the currently stored value as an ISO date string.
    *
@@ -262,7 +260,6 @@ class DatetimeMetricType extends MetricType {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValueAsString(ping: string = this.sendInPings[0]): Promise<string | undefined> {
@@ -271,7 +268,7 @@ class DatetimeMetricType extends MetricType {
   }
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Gets the currently stored value as a boolean.
    *
@@ -288,7 +285,6 @@ class DatetimeMetricType extends MetricType {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<Date | undefined> {

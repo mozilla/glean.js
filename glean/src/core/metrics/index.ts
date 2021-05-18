@@ -5,8 +5,10 @@
 import type { JSONValue } from "../utils.js";
 import type { Lifetime } from "./lifetime.js";
 import type MetricsDatabase from "./database.js";
+import type { ErrorType } from "../error/error_type.js";
 import { isUndefined } from "../utils.js";
 import { getValidDynamicLabel } from "./types/labeled.js";
+import { Context } from "../context.js";
 
 export interface Metrics {
   [aMetricType: string]: {
@@ -81,7 +83,6 @@ export abstract class MetricType implements CommonMetricData {
    * The metric's unique identifier, including the category, name and label.
    *
    * @param metricsDatabase The metrics database.
-   *
    * @returns The generated identifier. If `category` is empty, it's ommitted. Otherwise,
    *          it's the combination of the metric's `category`, `name` and `label`.
    */
@@ -102,10 +103,21 @@ export abstract class MetricType implements CommonMetricData {
    *
    * @param uploadEnabled Whether or not global upload is enabled or
    *        disabled.
-   *
    * @returns Whether or not this metric instance should be recorded.
    */
   shouldRecord(uploadEnabled: boolean): boolean {
     return (uploadEnabled && !this.disabled);
+  }
+
+  /**
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
+    return Context.errorManager.testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }
 }
