@@ -2720,6 +2720,9 @@ img {
 					<a href="core_context.context.html#_dispatcher" class="tsd-kind-icon">_dispatcher</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
+					<a href="core_context.context.html#_errormanager" class="tsd-kind-icon">_error<wbr>Manager</a>
+				</li>
+				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a href="core_context.context.html#_eventsdatabase" class="tsd-kind-icon">_events<wbr>Database</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
@@ -2745,6 +2748,9 @@ img {
 				</li>
 				<li class=" tsd-kind-accessor tsd-parent-kind-class tsd-is-static">
 					<a href="core_context.context.html#dispatcher" class="tsd-kind-icon">dispatcher</a>
+				</li>
+				<li class=" tsd-kind-accessor tsd-parent-kind-class tsd-is-static">
+					<a href="core_context.context.html#errormanager" class="tsd-kind-icon">error<wbr>Manager</a>
 				</li>
 				<li class=" tsd-kind-accessor tsd-parent-kind-class tsd-is-static">
 					<a href="core_context.context.html#eventsdatabase" class="tsd-kind-icon">events<wbr>Database</a>
@@ -2811,6 +2817,7 @@ img {
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_context.context.html#_applicationid" class="tsd-kind-icon">_application<wbr>Id</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_context.context.html#_debugoptions" class="tsd-kind-icon">_debug<wbr>Options</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_context.context.html#_dispatcher" class="tsd-kind-icon">_dispatcher</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_context.context.html#_errormanager" class="tsd-kind-icon">_error<wbr>Manager</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_context.context.html#_eventsdatabase" class="tsd-kind-icon">_events<wbr>Database</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_context.context.html#_initialized" class="tsd-kind-icon">_initialized</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_context.context.html#_metricsdatabase" class="tsd-kind-icon">_metrics<wbr>Database</a></li>
@@ -2825,6 +2832,7 @@ img {
 							<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-static"><a href="core_context.context.html#applicationid" class="tsd-kind-icon">application<wbr>Id</a></li>
 							<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-static"><a href="core_context.context.html#debugoptions" class="tsd-kind-icon">debug<wbr>Options</a></li>
 							<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-static"><a href="core_context.context.html#dispatcher" class="tsd-kind-icon">dispatcher</a></li>
+							<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-static"><a href="core_context.context.html#errormanager" class="tsd-kind-icon">error<wbr>Manager</a></li>
 							<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-static"><a href="core_context.context.html#eventsdatabase" class="tsd-kind-icon">events<wbr>Database</a></li>
 							<li class="tsd-kind-accessor tsd-parent-kind-class tsd-is-static"><a href="core_context.context.html#initialized" class="tsd-kind-icon">initialized</a></li>
 							<li class="tsd-kind-get-signature tsd-parent-kind-class tsd-is-static"><a href="core_context.context.html#instance" class="tsd-kind-icon">instance</a></li>
@@ -2854,7 +2862,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L36">core/context.ts:36</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L41">core/context.ts:41</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <a href="core_context.context.html" class="tsd-signature-type" data-tsd-kind="Class">Context</a></h4>
@@ -2870,7 +2878,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_application<wbr>Id<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L33">core/context.ts:33</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L38">core/context.ts:38</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2880,7 +2888,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_debug<wbr>Options<span class="tsd-signature-symbol">:</span> <a href="../interfaces/core_debug_options.debugoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">DebugOptions</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L36">core/context.ts:36</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L41">core/context.ts:41</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2890,7 +2898,17 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_dispatcher<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">null</span><span class="tsd-signature-symbol"> | </span><a href="core_dispatcher.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L26">core/context.ts:26</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L27">core/context.ts:27</a></li>
+					</ul>
+				</aside>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
+				<a name="_errormanager" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagPrivate">Private</span> _error<wbr>Manager</h3>
+				<div class="tsd-signature tsd-kind-icon">_error<wbr>Manager<span class="tsd-signature-symbol">:</span> <a href="core_error.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L36">core/context.ts:36</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2900,7 +2918,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_events<wbr>Database<span class="tsd-signature-symbol">:</span> <a href="core_metrics_events_database.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L30">core/context.ts:30</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L31">core/context.ts:31</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2910,7 +2928,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_initialized<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L34">core/context.ts:34</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L39">core/context.ts:39</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2920,7 +2938,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_metrics<wbr>Database<span class="tsd-signature-symbol">:</span> <a href="core_metrics_database.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L29">core/context.ts:29</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L30">core/context.ts:30</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2930,7 +2948,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_pings<wbr>Database<span class="tsd-signature-symbol">:</span> <a href="core_pings_database.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L31">core/context.ts:31</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L32">core/context.ts:32</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2940,7 +2958,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_upload<wbr>Enabled<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L28">core/context.ts:28</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L29">core/context.ts:29</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2950,7 +2968,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">_instance<span class="tsd-signature-symbol">:</span> <a href="core_context.context.html" class="tsd-signature-type" data-tsd-kind="Class">Context</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L24">core/context.ts:24</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L25">core/context.ts:25</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2968,7 +2986,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L116">core/context.ts:116</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L129">core/context.ts:129</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
@@ -2976,7 +2994,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L120">core/context.ts:120</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L133">core/context.ts:133</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -3000,7 +3018,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L132">core/context.ts:132</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L145">core/context.ts:145</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <a href="../interfaces/core_debug_options.debugoptions.html" class="tsd-signature-type" data-tsd-kind="Interface">DebugOptions</a></h4>
@@ -3008,7 +3026,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L136">core/context.ts:136</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L149">core/context.ts:149</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -3032,7 +3050,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L68">core/context.ts:68</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L73">core/context.ts:73</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <a href="core_dispatcher.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h4>
@@ -3040,13 +3058,45 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L80">core/context.ts:80</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L85">core/context.ts:85</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
 							<li>
 								<h5>dispatcher: <a href="core_dispatcher.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h5>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-accessor tsd-parent-kind-class tsd-is-static">
+				<a name="errormanager" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagStatic">Static</span> error<wbr>Manager</h3>
+				<ul class="tsd-signatures tsd-kind-accessor tsd-parent-kind-class tsd-is-static">
+					<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> errorManager<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="core_error.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></li>
+					<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">set</span> errorManager<span class="tsd-signature-symbol">(</span>db<span class="tsd-signature-symbol">: </span><a href="core_error.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L121">core/context.ts:121</a></li>
+							</ul>
+						</aside>
+						<h4 class="tsd-returns-title">Returns <a href="core_error.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h4>
+					</li>
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L125">core/context.ts:125</a></li>
+							</ul>
+						</aside>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>db: <a href="core_error.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h5>
 							</li>
 						</ul>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
@@ -3064,7 +3114,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L100">core/context.ts:100</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L105">core/context.ts:105</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <a href="core_metrics_events_database.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h4>
@@ -3072,7 +3122,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L104">core/context.ts:104</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L109">core/context.ts:109</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -3096,7 +3146,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L124">core/context.ts:124</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L137">core/context.ts:137</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -3104,7 +3154,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L128">core/context.ts:128</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L141">core/context.ts:141</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -3127,7 +3177,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L42">core/context.ts:42</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L47">core/context.ts:47</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <a href="core_context.context.html" class="tsd-signature-type" data-tsd-kind="Class">Context</a></h4>
@@ -3145,7 +3195,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L92">core/context.ts:92</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L97">core/context.ts:97</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <a href="core_metrics_database.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h4>
@@ -3153,7 +3203,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L96">core/context.ts:96</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L101">core/context.ts:101</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -3177,7 +3227,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L108">core/context.ts:108</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L113">core/context.ts:113</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <a href="core_pings_database.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h4>
@@ -3185,7 +3235,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L112">core/context.ts:112</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L117">core/context.ts:117</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -3209,7 +3259,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L84">core/context.ts:84</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L89">core/context.ts:89</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
@@ -3217,7 +3267,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L88">core/context.ts:88</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L93">core/context.ts:93</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -3243,12 +3293,12 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/context.ts#L55">core/context.ts:55</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/context.ts#L60">core/context.ts:60</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p><strong>Test-only API</strong></p>
+								<p>Test-only API**</p>
 							</div>
 							<p>Resets the Context to an uninitialized state.</p>
 						</div>

@@ -2719,6 +2719,9 @@ img {
 		<li class=" tsd-kind-function tsd-parent-kind-module">
 			<a href="core_metrics_types_labeled.html#getvaliddynamiclabel" class="tsd-kind-icon">get<wbr>Valid<wbr>Dynamic<wbr>Label</a>
 		</li>
+		<li class=" tsd-kind-function tsd-parent-kind-module">
+			<a href="core_metrics_types_labeled.html#striplabel" class="tsd-kind-icon">strip<wbr>Label</a>
+		</li>
 	</ul>
 </nav>
 <div class="container container-main">
@@ -2745,6 +2748,7 @@ img {
 						<ul class="tsd-index-list">
 							<li class="tsd-kind-function tsd-parent-kind-module"><a href="core_metrics_types_labeled.html#combineidentifierandlabel" class="tsd-kind-icon">combine<wbr>Identifier<wbr>And<wbr>Label</a></li>
 							<li class="tsd-kind-function tsd-parent-kind-module"><a href="core_metrics_types_labeled.html#getvaliddynamiclabel" class="tsd-kind-icon">get<wbr>Valid<wbr>Dynamic<wbr>Label</a></li>
+							<li class="tsd-kind-function tsd-parent-kind-module"><a href="core_metrics_types_labeled.html#striplabel" class="tsd-kind-icon">strip<wbr>Label</a></li>
 						</ul>
 					</section>
 				</div>
@@ -2758,7 +2762,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">OTHER_<wbr>LABEL<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">&quot;__other__&quot;</span><span class="tsd-signature-symbol"> = &quot;__other__&quot;</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/metrics/types/labeled.ts#L36">core/metrics/types/labeled.ts:36</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/metrics/types/labeled.ts#L38">core/metrics/types/labeled.ts:38</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2775,7 +2779,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/metrics/types/labeled.ts#L71">core/metrics/types/labeled.ts:71</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/metrics/types/labeled.ts#L72">core/metrics/types/labeled.ts:72</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2813,7 +2817,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f56b6fb/glean/src/core/metrics/types/labeled.ts#L88">core/metrics/types/labeled.ts:88</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/metrics/types/labeled.ts#L100">core/metrics/types/labeled.ts:100</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2834,12 +2838,45 @@ img {
 							<li>
 								<h5>metric: <a href="../classes/core_metrics.metrictype.html" class="tsd-signature-type" data-tsd-kind="Class">MetricType</a></h5>
 								<div class="tsd-comment tsd-typography">
-									<p>the metric metadata.</p>
+									<p>the metric to record to.</p>
 								</div>
 							</li>
 						</ul>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h4>
 						<p>a valid label that can be used to store data.</p>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+				<a name="striplabel" class="tsd-anchor"></a>
+				<h3>strip<wbr>Label</h3>
+				<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+					<li class="tsd-signature tsd-kind-icon">strip<wbr>Label<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/8efbe64/glean/src/core/metrics/types/labeled.ts#L87">core/metrics/types/labeled.ts:87</a></li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Strips the label from a metric identifier.</p>
+							</div>
+							<p>This is a no-op in case the identifier does not contain a label.</p>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>identifier: <span class="tsd-signature-type">string</span></h5>
+								<div class="tsd-comment tsd-typography">
+									<p>The identifier to strip a label from.</p>
+								</div>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">string</span></h4>
+						<p>The identifier without the label.</p>
 					</li>
 				</ul>
 			</section>
