@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.12.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.13.0...main)
+
+# v0.13.0 (2021-05-18)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.12.0...v0.13.0)
 
 * [#313](https://github.com/mozilla/glean.js/pull/313): Implement error recording mechanism and error checking testing API.
 * [#319](https://github.com/mozilla/glean.js/pull/319): BUGFIX: Do not allow recording floats with the quantity and counter metric types.
