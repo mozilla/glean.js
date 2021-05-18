@@ -100,7 +100,6 @@ export function isNumber(v: unknown): v is number {
  * Checks whether or not `v` is an integer.
  *
  * @param v The value to verify.
- *
  * @returns A special Typescript value (which compiles down to a boolean)
  *          stating whether `v` is a number.
  */
