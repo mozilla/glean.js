@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { MetricType } from "../metrics";
+import type { MetricType } from "../metrics/index.js";
 import type { ErrorType } from "./error_type.js";
 import CounterMetricType from "../metrics/types/counter.js";
 import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled.js";

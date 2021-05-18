@@ -8,10 +8,10 @@ import type CommonPingData from "./common_ping_data.js";
 import type MetricsDatabase from "../metrics/database.js";
 import type EventsDatabase from "../metrics/events_database.js";
 import type { DebugOptions } from "../debug_options.js";
-import CounterMetricType from "../metrics/types/counter.js";
-import { CounterMetric } from "../metrics/types/counter.js";
-import DatetimeMetricType from "../metrics/types/datetime.js";
-import { DatetimeMetric } from "../metrics/types/datetime.js";
+import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
+
+import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
+
 import TimeUnit from "../metrics/time_unit.js";
 import CoreEvents from "../events/index.js";
 import { Lifetime } from "../metrics/lifetime.js";

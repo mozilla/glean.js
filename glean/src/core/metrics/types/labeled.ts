@@ -6,7 +6,7 @@ import type { CommonMetricData, MetricType } from "../index.js";
 import type CounterMetricType from "./counter.js";
 import type BooleanMetricType from "./boolean.js";
 import type StringMetricType from "./string.js";
-import type MetricsDatabase from "../database";
+import type MetricsDatabase from "../database.js";
 import type { JSONValue } from "../../utils.js";
 import { Metric } from "../metric.js";
 import { Context } from "../../context.js";
