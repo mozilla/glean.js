@@ -214,10 +214,10 @@ describe("PingUploader", function() {
     assert.strictEqual(appId, Context.applicationId);
 
     assert.ok("Date" in headers);
-    assert.ok("User-Agent" in headers);
+    assert.ok("Content-Length" in headers);
     assert.ok("Content-Type" in headers);
     assert.ok("X-Client-Type" in headers);
     assert.ok("X-Client-Version" in headers);
-    assert.ok("Content-Length" in headers);
+    assert.ok("X-Telemetry-Agent" in headers);
   });
 });
