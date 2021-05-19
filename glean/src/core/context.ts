@@ -2,12 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { DebugOptions } from "./debug_options";
+import type { DebugOptions } from "./debug_options.js";
+import type MetricsDatabase from "./metrics/database.js";
+import type EventsDatabase from "./metrics/events_database.js";
+import type PingsDatabase from "./pings/database.js";
+import type ErrorManager from "./error/index.js";
 import Dispatcher from "./dispatcher.js";
-import type MetricsDatabase from "./metrics/database";
-import type EventsDatabase from "./metrics/events_database";
-import type PingsDatabase from "./pings/database";
-import type ErrorManager from "./error";
 
 /**
  * This class holds all of the Glean singleton's state and internal dependencies.

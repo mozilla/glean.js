@@ -5,8 +5,8 @@
 import assert from "assert";
 
 import Database, { isValidInternalMetricsRepresentation } from "../../../src/core/metrics/database";
-import StringMetricType from "../../../src/core/metrics/types/string";
-import { StringMetric } from "../../../src/core/metrics/types/string";
+import StringMetricType, { StringMetric } from "../../../src/core/metrics/types/string";
+
 import type { JSONValue } from "../../../src/core/utils";
 import Glean from "../../../src/core/glean";
 import { Lifetime } from "../../../src/core/metrics/lifetime";

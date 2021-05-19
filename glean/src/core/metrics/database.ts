@@ -3,10 +3,10 @@
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type Store from "../storage/index.js";
-import type { MetricType } from "./index.js";
+import type { MetricType , Metrics } from "./index.js";
 import type { Metric } from "./metric.js";
 import type { StorageBuilder } from "../../platform/index.js";
-import type { Metrics } from "./index.js";
+
 import type { JSONObject, JSONValue } from "../utils.js";
 import { createMetric, validateMetricInternalRepresentation } from "./utils.js";
 import { isObject, isUndefined } from "../utils.js";

@@ -133,7 +133,7 @@ class PingUploader implements PingsDatabaseObserver {
       "Date": (new Date()).toISOString(),
       "X-Client-Type": "Glean.js",
       "X-Client-Version": GLEAN_VERSION,
-      "User-Agent": `Glean/${GLEAN_VERSION} (JS on ${await this.platformInfo.os()})`
+      "X-Telemetry-Agent": `Glean/${GLEAN_VERSION} (JS on ${await this.platformInfo.os()})`
     };
 
     return {

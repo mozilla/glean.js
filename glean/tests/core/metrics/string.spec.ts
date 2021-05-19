@@ -5,9 +5,9 @@
 import assert from "assert";
 
 import Glean from "../../../src/core/glean";
-import StringMetricType from "../../../src/core/metrics/types/string";
+import StringMetricType, { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
-import { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string";
+
 import { Context } from "../../../src/core/context";
 import { ErrorType } from "../../../src/core/error/error_type";
 

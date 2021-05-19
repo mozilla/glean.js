@@ -10,7 +10,7 @@ import { Configuration } from "../../../src/core/config";
 import { Context } from "../../../src/core/context";
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings/ping_type";
-import collectAndStorePing from "../../../src/core/pings/maker";
+import { collectAndStorePing } from "../../../src/core/pings/maker";
 import PingUploader from "../../../src/core/upload";
 import { UploadResultStatus } from "../../../src/core/upload/uploader";
 
@@ -214,10 +214,10 @@ describe("PingUploader", function() {
     assert.strictEqual(appId, Context.applicationId);
 
     assert.ok("Date" in headers);
-    assert.ok("User-Agent" in headers);
+    assert.ok("Content-Length" in headers);
     assert.ok("Content-Type" in headers);
     assert.ok("X-Client-Type" in headers);
     assert.ok("X-Client-Version" in headers);
-    assert.ok("Content-Length" in headers);
+    assert.ok("X-Telemetry-Agent" in headers);
   });
 });

@@ -4,10 +4,9 @@
 
 // Qt does not have its implementations yet, we use pieces of
 // the `TestPlatform` so that the sample will still work.
-import TestPlatform from "../test";
-
-import info from "./platform_info.js";
 import type Platform from "../index.js";
+import TestPlatform from "../test/index.js";
+import info from "./platform_info.js";
 
 const QtPlatform: Platform = {
   Storage: TestPlatform.Storage,
