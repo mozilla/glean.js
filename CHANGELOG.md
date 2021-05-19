@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.13.0...main)
 
+* [#313](https://github.com/mozilla/glean.js/pull/313): Send Glean.js version and platform information on X-Telemetry-Agent header instead of User-Agent header.
 # v0.13.0 (2021-05-18)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.12.0...v0.13.0)
