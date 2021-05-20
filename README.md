@@ -4,6 +4,26 @@
 
 `Glean.js` is a modern approach for a Telemetry library aimed at Javascript environments. It is part of the [Glean project](https://docs.telemetry.mozilla.org/concepts/glean/glean.html).
 
+## Documentation
+
+All documentation is available online:
+
+### [The Glean Book](https://mozilla.github.io/glean/)
+
+If you are using Glean.js in your project, this is the pace to go. 
+It contains user guides on getting started and other topics, as well as reference to Glean APIs.
+
+### [Glean.js developer documentation](https://github.com/mozilla/glean.js/tree/main/docs)
+
+If you want to contribute to the Glean.js code base this is the place to go.
+
+### [Glean.js internal reference](https://mozilla.github.io/glean.js/)
+
+If you are looking for detailed documentation on the Glean APIs (internal or external) this is the place to go.
+
+_This documentation is autogenererated from the doc comments throughout the Glean.js codebase and
+the Glean book should always be preferred over this documentation whenever possible._
+
 ## Contact
 
 To contact us you can:
