@@ -22,7 +22,7 @@ If you want to contribute to the Glean.js code base this is the place to go.
 If you are looking for detailed documentation on the Glean APIs (internal or external) this is the place to go.
 
 _This documentation is autogenererated from the doc comments throughout the Glean.js codebase and
-the Glean book should always be preferred over this documentation whenever possible._
+the Glean book should be preferred over this documentation whenever possible._
 
 ## Contact
 
