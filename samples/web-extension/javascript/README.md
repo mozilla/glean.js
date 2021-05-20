@@ -17,14 +17,14 @@ Running the example requires Python 3.
 npm link
 ```
 
-2. Link the `@mozilla/glean` package to this sample web extension. On this `web-extension` folder run:
+2. Link the `@mozilla/glean` package to this sample web extension. On this `web-extension/javascript` folder run:
 
 ```bash
 npm install
 npm link @mozilla/glean
 ```
 
-3. Build this sample. On this `web-extension` folder run:
+3. Build this sample. On this `web-extension/javascript` folder run:
 
 ```bash
 npm run build
@@ -44,6 +44,6 @@ npm run build
   - **Chromium-based browsers**
     1. Go to [chrome://extensions](chrome://extensions);
     2. Click on `Load unpacked`;
-    3. Choose this `web-extension` folder;
+    3. Choose this `web-extension/javascript` folder;
     4. Click on `background page`;
     5. Try clicking on the little Glean logo that should have been added to your browsers toolbar.
