@@ -10,7 +10,7 @@ All documentation is available online:
 
 ### [The Glean Book](https://mozilla.github.io/glean/)
 
-If you are using Glean.js in your project, this is the pace to go. 
+If you are using Glean.js in your project, this is the place to go. 
 It contains user guides on getting started and other topics, as well as reference to Glean APIs.
 
 ### [Glean.js developer documentation](https://github.com/mozilla/glean.js/tree/main/docs)
