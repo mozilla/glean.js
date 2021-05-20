@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import { Configuration } from "../../src/core/config";
+import { Configuration } from "../../../src/core/config";
 
 const sandbox = sinon.createSandbox();
 

@@ -6,12 +6,12 @@ import assert from "assert";
 import sinon from "sinon";
 import type { SinonStub } from "sinon";
 
-import { Context } from "../../../src/core/context";
-import Glean from "../../../src/core/glean";
-import { Lifetime } from "../../../src/core/metrics/lifetime";
-import TimeUnit from "../../../src/core/metrics/time_unit";
-import TimespanMetricType, { TimespanMetric } from "../../../src/core/metrics/types/timespan";
-import { ErrorType } from "../../../src/core/error/error_type";
+import { Context } from "../../../../src/core/context";
+import Glean from "../../../../src/core/glean";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
+import TimeUnit from "../../../../src/core/metrics/time_unit";
+import TimespanMetricType, { TimespanMetric } from "../../../../src/core/metrics/types/timespan";
+import { ErrorType } from "../../../../src/core/error/error_type";
 
 const sandbox = sinon.createSandbox();
 

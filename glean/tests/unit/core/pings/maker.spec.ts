@@ -5,13 +5,13 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import PingType from "../../../src/core/pings/ping_type";
-import * as PingMaker from "../../../src/core/pings/maker";
-import Glean from "../../../src/core/glean";
-import CoreEvents from "../../../src/core/events";
-import Plugin from "../../../src/plugins";
-import type { JSONObject } from "../../../src/core/utils";
-import { Context } from "../../../src/core/context";
+import PingType from "../../../../src/core/pings/ping_type";
+import * as PingMaker from "../../../../src/core/pings/maker";
+import Glean from "../../../../src/core/glean";
+import CoreEvents from "../../../../src/core/events";
+import Plugin from "../../../../src/plugins";
+import type { JSONObject } from "../../../../src/core/utils";
+import { Context } from "../../../../src/core/context";
 
 const sandbox = sinon.createSandbox();
 

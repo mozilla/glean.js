@@ -4,7 +4,7 @@
 
 import assert from "assert";
 
-import * as utils from "../../src/core/utils";
+import * as utils from "../../../src/core/utils";
 
 describe("utils", function() {
   it("isObject validates correctly", function() {

@@ -4,13 +4,13 @@
 
 import assert from "assert";
 
-import Database, { isValidInternalMetricsRepresentation } from "../../../src/core/metrics/database";
-import StringMetricType, { StringMetric } from "../../../src/core/metrics/types/string";
+import Database, { isValidInternalMetricsRepresentation } from "../../../../src/core/metrics/database";
+import StringMetricType, { StringMetric } from "../../../../src/core/metrics/types/string";
 
-import type { JSONValue } from "../../../src/core/utils";
-import Glean from "../../../src/core/glean";
-import { Lifetime } from "../../../src/core/metrics/lifetime";
-import { Context } from "../../../src/core/context";
+import type { JSONValue } from "../../../../src/core/utils";
+import Glean from "../../../../src/core/glean";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
+import { Context } from "../../../../src/core/context";
 
 describe("MetricsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;

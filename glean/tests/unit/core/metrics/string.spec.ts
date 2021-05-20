@@ -4,12 +4,12 @@
 
 import assert from "assert";
 
-import Glean from "../../../src/core/glean";
-import StringMetricType, { MAX_LENGTH_VALUE } from "../../../src/core/metrics/types/string";
-import { Lifetime } from "../../../src/core/metrics/lifetime";
+import Glean from "../../../../src/core/glean";
+import StringMetricType, { MAX_LENGTH_VALUE } from "../../../../src/core/metrics/types/string";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
 
-import { Context } from "../../../src/core/context";
-import { ErrorType } from "../../../src/core/error/error_type";
+import { Context } from "../../../../src/core/context";
+import { ErrorType } from "../../../../src/core/error/error_type";
 
 describe("StringMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;

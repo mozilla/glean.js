@@ -28,27 +28,27 @@ npm run test
 ```
 in the `glean` folder.
 
-This runs all the tests in the `glean` folder. 
+This runs all the tests in the `glean` folder.
 Alternatively, you may want to run component-specific tests. 
 To do so, substitute `test` in the command above with one of the followings:
-* `test:core` - executes tests inside `tests/core` folder.
-* `test:plugins` - executes tests inside `tests/plugins` folder.
-* `test:platform` - executes tests inside `tests/platform` folder.
+* `test:unit:core` - executes tests inside `tests/core` folder.
+* `test:unit:plugins` - executes tests inside `tests/plugins` folder.
+* `test:unit:platform` - executes tests inside `tests/platform` folder.
 
 You might want to run one specific test within a certain folder.
 To run the test with the title `DatetimeMetric` in the `core` folder: 
 ```bash
-npm run test:core -- --grep "DateTimeMetric"
+npm run test:unit:core -- --grep "DateTimeMetric"
 ```
 You should see the output similar to the following:
 ```shell
 
-> @mozilla/glean@0.10.2 test:core
-> npm run test:base -- "tests/core/**/*.spec.ts" --recursive "--grep" "DatetimeMetric"
+> @mozilla/glean@0.10.2 test:unit:core
+> npm run test:base -- "tests/unit/core/**/*.spec.ts" --recursive "--grep" "DatetimeMetric"
 
 
 > @mozilla/glean@0.10.2 test:base
-> node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js "tests/core/**/*.spec.ts" "--recursive" "--grep" "DatetimeMetric"
+> node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js "tests/unit/core/**/*.spec.ts" "--recursive" "--grep" "DatetimeMetric"
 
 (node:52217) ExperimentalWarning: --experimental-loader is an experimental feature. This feature could change at any time
 (Use `node --trace-warnings ...` to show where the warning was created)

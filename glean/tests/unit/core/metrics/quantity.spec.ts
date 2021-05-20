@@ -3,12 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import { Context } from "../../../src/core/context";
-import { ErrorType } from "../../../src/core/error/error_type";
+import { Context } from "../../../../src/core/context";
+import { ErrorType } from "../../../../src/core/error/error_type";
 
-import Glean from "../../../src/core/glean";
-import { Lifetime } from "../../../src/core/metrics/lifetime";
-import QuantityMetricType from "../../../src/core/metrics/types/quantity";
+import Glean from "../../../../src/core/glean";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
+import QuantityMetricType from "../../../../src/core/metrics/types/quantity";
 
 describe("QuantityMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;

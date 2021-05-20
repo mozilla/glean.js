@@ -4,10 +4,10 @@
 
 import assert from "assert";
 
-import CoreEvents, { CoreEvent } from "../../src/core/events";
-import { registerPluginToEvent } from "../../src/core/events/utils";
-import type { JSONObject } from "../../src/core/utils";
-import Plugin from "../../src/plugins";
+import CoreEvents, { CoreEvent } from "../../../src/core/events";
+import { registerPluginToEvent } from "../../../src/core/events/utils";
+import type { JSONObject } from "../../../src/core/utils";
+import Plugin from "../../../src/plugins";
 
 const mockEvent = new CoreEvent<number[], number>("mockEvent");
 class MockPlugin extends Plugin<typeof mockEvent> {

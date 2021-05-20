@@ -4,13 +4,13 @@
 
 import assert from "assert";
 
-import { Context } from "../../src/core/context";
-import Dispatcher from "../../src/core/dispatcher";
-import Glean from "../../src/core/glean";
-import MetricsDatabase from "../../src/core/metrics/database";
-import EventsDatabase from "../../src/core/metrics/events_database";
-import PingsDatabase from "../../src/core/pings/database";
-import { sanitizeApplicationId } from "../../src/core/utils";
+import { Context } from "../../../src/core/context";
+import Dispatcher from "../../../src/core/dispatcher";
+import Glean from "../../../src/core/glean";
+import MetricsDatabase from "../../../src/core/metrics/database";
+import EventsDatabase from "../../../src/core/metrics/events_database";
+import PingsDatabase from "../../../src/core/pings/database";
+import { sanitizeApplicationId } from "../../../src/core/utils";
 
 describe("Context", function() {
   const testAppId = `gleanjs.test.${this.title}`;

@@ -3,11 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import { Context } from "../../../src/core/context";
+import { Context } from "../../../../src/core/context";
 
-import Glean from "../../../src/core/glean";
-import { Lifetime } from "../../../src/core/metrics/lifetime";
-import BooleanMetricType from "../../../src/core/metrics/types/boolean";
+import Glean from "../../../../src/core/glean";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
+import BooleanMetricType from "../../../../src/core/metrics/types/boolean";
 
 describe("BooleanMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;

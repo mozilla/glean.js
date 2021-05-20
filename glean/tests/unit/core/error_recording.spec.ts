@@ -4,12 +4,12 @@
 
 import assert from "assert";
 
-import { ErrorType } from "../../src/core/error/error_type";
-import { Context } from "../../src/core/context";
-import Glean from "../../src/core/glean";
-import { Lifetime } from "../../src/core/metrics/lifetime";
-import LabeledMetricType from "../../src/core/metrics/types/labeled";
-import StringMetricType from "../../src/core/metrics/types/string";
+import { ErrorType } from "../../../src/core/error/error_type";
+import { Context } from "../../../src/core/context";
+import Glean from "../../../src/core/glean";
+import { Lifetime } from "../../../src/core/metrics/lifetime";
+import LabeledMetricType from "../../../src/core/metrics/types/labeled";
+import StringMetricType from "../../../src/core/metrics/types/string";
 
 describe("error_recording", function() {
   const testAppId = `gleanjs.test.${this.title}`;

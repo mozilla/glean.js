@@ -5,16 +5,16 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import { Context } from "../../../src/core/context";
-import { ErrorType } from "../../../src/core/error/error_type";
-import Glean from "../../../src/core/glean";
-import { Lifetime } from "../../../src/core/metrics/lifetime";
-import BooleanMetricType from "../../../src/core/metrics/types/boolean";
-import CounterMetricType from "../../../src/core/metrics/types/counter";
-import LabeledMetricType from "../../../src/core/metrics/types/labeled";
-import StringMetricType from "../../../src/core/metrics/types/string";
-import PingType from "../../../src/core/pings/ping_type";
-import type { JSONObject } from "../../../src/core/utils";
+import { Context } from "../../../../src/core/context";
+import { ErrorType } from "../../../../src/core/error/error_type";
+import Glean from "../../../../src/core/glean";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
+import BooleanMetricType from "../../../../src/core/metrics/types/boolean";
+import CounterMetricType from "../../../../src/core/metrics/types/counter";
+import LabeledMetricType from "../../../../src/core/metrics/types/labeled";
+import StringMetricType from "../../../../src/core/metrics/types/string";
+import PingType from "../../../../src/core/pings/ping_type";
+import type { JSONObject } from "../../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 

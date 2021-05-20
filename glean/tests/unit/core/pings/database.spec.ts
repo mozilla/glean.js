@@ -4,9 +4,9 @@
 
 import assert from "assert";
 
-import type { Observer} from "../../../src/core/pings/database";
-import Database, { isValidPingInternalRepresentation } from "../../../src/core/pings/database";
-import Glean from "../../../src/core/glean";
+import type { Observer} from "../../../../src/core/pings/database";
+import Database, { isValidPingInternalRepresentation } from "../../../../src/core/pings/database";
+import Glean from "../../../../src/core/glean";
 
 describe("PingsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;

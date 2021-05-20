@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import Dispatcher, { DispatcherState } from "../../src/core/dispatcher";
+import Dispatcher, { DispatcherState } from "../../../src/core/dispatcher";
 
 const sandbox = sinon.createSandbox();
 

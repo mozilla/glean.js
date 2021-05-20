@@ -4,10 +4,10 @@
 
 import assert from "assert";
 
-import Glean from "../../../src/core/glean";
-import EventMetricType from "../../../src/core/metrics/types/event";
-import { Lifetime } from "../../../src/core/metrics/lifetime";
-import { ErrorType } from "../../../src/core/error/error_type";
+import Glean from "../../../../src/core/glean";
+import EventMetricType from "../../../../src/core/metrics/types/event";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
+import { ErrorType } from "../../../../src/core/error/error_type";
 
 describe("EventMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
