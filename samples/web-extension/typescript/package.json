@@ -28,10 +28,14 @@
 >>>>>>> 22e63d7 (Pushing to forked repo for help with building the glean task.)
     "web-ext-types": "^3.2.1",
 <<<<<<< HEAD
+<<<<<<< HEAD
     "webpack": "^5.37.1",
 =======
     "webpack": "^5.37.0",
 >>>>>>> 6863d40 (Fixed merging conflicts in package.json.)
+=======
+    "webpack": "^5.37.1",
+>>>>>>> a32f2e4 (added the ts and js sample tests into one CI job.)
     "webpack-cli": "^4.7.0"
   }
 }
