@@ -70,22 +70,33 @@ jobs:
               npm --prefix ./glean run build:webext
               npm --prefix ./glean run build:cli
               npm --prefix ./glean link
+      # JS sample related jobs
       - run:
-          name: Install Javascript and Typescript dependencies for the JS and TS samples
+          name: Install Javascript dependencies for the JS sample
           command: |
               npm --prefix ./samples/web-extension/javascript install
               npm --prefix ./samples/web-extension/javascript link @mozilla/glean
+      - run:
+          name: Build the JS sample
+          command: |
+            npm --prefix ./samples/web-extension/javascript run build
+      - run:
+          name: Run JS sample test
+          command: |
+            export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
+      # TS sample related jobs
+      - run:
+          name: Install Typescript dependencies for the TS sample
+          command: |
               npm --prefix ./samples/web-extension/typescript install
               npm --prefix ./samples/web-extension/typescript link @mozilla/glean
       - run:
-          name: Build the JS and TS samples
+          name: Build the TS sample
           command: |
-            npm --prefix ./samples/web-extension/javascript run build
             npm --prefix ./samples/web-extension/typescript run build
       - run:
-          name: Run samples tests
+          name: Run TS sample test
           command: |
-            export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
             export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
 
   check-size:
