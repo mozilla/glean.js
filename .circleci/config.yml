@@ -53,8 +53,8 @@ jobs:
           name: Run unit tests
           command: export PATH=.:$PATH && npm --prefix ./glean run test:unit
       - run:
-          name: Run unit tests
-          command: export PATH=.:$PATH && cd glean && npm run test:integration
+          name: Run integration tests
+          command: export PATH=.:$PATH && npm --prefix ./glean run test:integration
 
   samples-tests:
     docker:

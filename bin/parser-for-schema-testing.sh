@@ -4,7 +4,18 @@
 # License, v. 2.0. If a copy of the MPL was not distributed with this
 # file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-# We are assuming this script is run inside the glean/ folder.
+set -eo pipefail
+
+run() {
+    [ "${VERB:-0}" != 0 ] && echo "+ $*"
+    "$@"
+}
+
+# All sed commands below work with either
+# GNU sed (standard on Linux distrubtions) or BSD sed (standard on macOS)
+SED="sed"
+
+WORKSPACE_ROOT="$( cd "$(dirname "$0")/.." ; pwd -P )"
 
 # Generate files using the Glean.js CLI tool (which just runs glean_parser)
 npm run glean-internal -- \
@@ -13,7 +24,16 @@ npm run glean-internal -- \
   -o tests/integration/schema/generated
 
 # Update metrics import path
-sed -rli '' 's#@mozilla/glean/webext/private/metrics#../../../../src/core/metrics/types#g' tests/integration/schema/generated/forTesting.ts
+FILE=glean/tests/integration/schema/generated/forTesting.ts
+run $SED -i.bak -E \
+  -e 's#@mozilla/glean/webext/private/metrics#../../../../src/core/metrics/types#g' \
+  "${WORKSPACE_ROOT}/${FILE}"
+run rm "${WORKSPACE_ROOT}/${FILE}.bak"
+
 # Update ping import path
-sed -rli '' 's#@mozilla/glean/webext/private/ping#../../../../src/core/pings/ping_type.js#g' tests/integration/schema/generated/pings.ts
+FILE=glean/tests/integration/schema/generated/pings.ts
+run $SED -i.bak -E \
+ -e 's#@mozilla/glean/webext/private/ping#../../../../src/core/pings/ping_type.js#g' \
+ "${WORKSPACE_ROOT}/${FILE}"
+run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
