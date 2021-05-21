@@ -165,6 +165,7 @@ async function setup(projectRoot: string) {
     console.log(`Using Glean virtual environment at ${venvRoot}`);
   } else if (!await createPythonVenv(venvRoot)){
     console.error(`Failed to create a Glean virtual environment at ${venvRoot}`);
+    process.exit(1);
   }
 }
 
@@ -189,32 +190,9 @@ async function runGlean(projectRoot: string, parserArgs: string[]) {
 
   if (err) {
     console.error(`${stderr}`);
+    process.exit(1);
   }
 }
-
-/**
- * Runs the command.
- *
- * @param args the arguments passed to this process.
- */
-async function run(args: string[]) {
-  if (args.length < 3) {
-    throw new Error("Not enough arguments. Please refer to https://mozilla.github.io/glean_parser/readme.html");
-  }
-
-  const projectRoot = process.cwd();
-  try {
-    await setup(projectRoot);
-  } catch (err) {
-    console.error("Failed to setup the Glean build environment", err);
-  }
-
-  await runGlean(projectRoot, args.slice(2));
-}
-
-run(argv).catch(e => {
-  console.error("There was an error running Glean", e);
-});
 
 /**
  * Returns a spinner
@@ -239,3 +217,30 @@ function stopSpinner(spinner: NodeJS.Timeout) {
   process.stdout.write("  \r");
   clearInterval(spinner);
 }
+
+/**
+ * Runs the command.
+ *
+ * @param args the arguments passed to this process.
+ */
+async function run(args: string[]) {
+  if (args.length < 3) {
+    throw new Error("Not enough arguments. Please refer to https://mozilla.github.io/glean_parser/readme.html");
+  }
+
+  const projectRoot = process.cwd();
+  try {
+    await setup(projectRoot);
+  } catch (err) {
+    console.error("Failed to setup the Glean build environment", err);
+    process.exit(1);
+  }
+
+  await runGlean(projectRoot, args.slice(2));
+}
+
+// For discoverability, try to leave this function as the last one on this file.
+run(argv).catch(e => {
+  console.error("There was an error running Glean", e);
+  process.exit(1);
+});

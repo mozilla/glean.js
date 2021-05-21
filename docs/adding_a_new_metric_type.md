@@ -171,7 +171,7 @@ async function testGetValue(ping: string = this.sendInPings[0]): Promise<string 
 
 ## Testing
 
-Tests for metric type implementations live under the `glean/tests/core/metrics/types` folder. Create a new
+Tests for metric type implementations live under the `glean/tests/unit/core/metrics/types` folder. Create a new
 file with the same name as the one you created in `glean/src/core/metrics/types` to accomodate your
 metric type tests.
 
@@ -180,6 +180,17 @@ Make sure your tests cover at least your metric types basic functionality:
 - The metric returns the correct value when it has no value;
 - The metric correctly reports errors;
 - The metric returns the correct value when it has value.
+
+### Glean schema
+
+It is very important to also check if the new metric payload is valid against the Glean schema.
+Declare a new instance of the metrics you just implemented in `glean/test/integration/schema/metrics.yaml`
+and then make sure you record to that metrics on the `validate generated ping is valid against glean schema`
+test on the `glean/test/integration/schema/schema.spec.ts` test.
+
+This test will fail unless schema changes to accomodate the new metric type have already landed.
+Please see the [mozilla-pipeline-schemas](#mozilla-pipeline-schemas) section on how to add new metric
+types to the Glean schema.
 
 ## Documentation
 

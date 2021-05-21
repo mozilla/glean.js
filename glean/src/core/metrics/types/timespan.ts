@@ -17,26 +17,21 @@ export type TimespanInternalRepresentation = {
   // The timespan in milliseconds.
   timespan: number,
 };
-export class TimespanMetric extends Metric<TimespanInternalRepresentation, number> {
+
+export type TimespanPayloadRepresentation = {
+  // The time unit of the metric type at the time of recording.
+  time_unit: TimeUnit,
+  // The timespan in the expected time_unit.
+  value: number,
+};
+
+export class TimespanMetric extends Metric<TimespanInternalRepresentation, TimespanPayloadRepresentation> {
   constructor(v: unknown) {
     super(v);
   }
 
-  validate(v: unknown): v is TimespanInternalRepresentation {
-    if (!isObject(v) || Object.keys(v).length !== 2) {
-      return false;
-    }
-
-    const timeUnitVerification = "timeUnit" in v && isString(v.timeUnit) && Object.values(TimeUnit).includes(v.timeUnit as TimeUnit);
-    const timespanVerification = "timespan" in v && isNumber(v.timespan) && v.timespan >= 0;
-    if (!timeUnitVerification || !timespanVerification) {
-      return false;
-    }
-
-    return true;
-  }
-
-  payload(): number {
+  // The recorded timespan truncated to the given time unit.
+  get timespan(): number {
     switch(this._inner.timeUnit) {
     case TimeUnit.Nanosecond:
       return this._inner.timespan * 10**6;
@@ -53,6 +48,27 @@ export class TimespanMetric extends Metric<TimespanInternalRepresentation, numbe
     case TimeUnit.Day:
       return Math.round(this._inner.timespan / 1000 / 60 / 60 / 24);
     }
+  }
+
+  validate(v: unknown): v is TimespanInternalRepresentation {
+    if (!isObject(v) || Object.keys(v).length !== 2) {
+      return false;
+    }
+
+    const timeUnitVerification = "timeUnit" in v && isString(v.timeUnit) && Object.values(TimeUnit).includes(v.timeUnit as TimeUnit);
+    const timespanVerification = "timespan" in v && isNumber(v.timespan) && v.timespan >= 0;
+    if (!timeUnitVerification || !timespanVerification) {
+      return false;
+    }
+
+    return true;
+  }
+
+  payload(): TimespanPayloadRepresentation {
+    return {
+      time_unit: this._inner.timeUnit,
+      value: this.timespan
+    };
   }
 }
 
@@ -255,8 +271,7 @@ class TimespanMetricType extends MetricType {
     });
 
     if (value) {
-      // `payload` will truncate to the defined time_unit at the time of recording.
-      return (new TimespanMetric(value)).payload();
+      return (new TimespanMetric(value)).timespan;
     }
   }
 }
