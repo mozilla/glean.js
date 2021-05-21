@@ -23,11 +23,15 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "^15.0.1",
     "mocha": "^8.3.2",
-    "ts-loader": "^9.1.1",
+    "ts-loader": "^9.2.1",
     "typescript": "^4.2.4",
 >>>>>>> 22e63d7 (Pushing to forked repo for help with building the glean task.)
     "web-ext-types": "^3.2.1",
+<<<<<<< HEAD
     "webpack": "^5.37.1",
+=======
+    "webpack": "^5.37.0",
+>>>>>>> 6863d40 (Fixed merging conflicts in package.json.)
     "webpack-cli": "^4.7.0"
   }
 }
