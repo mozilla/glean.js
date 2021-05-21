@@ -31,9 +31,11 @@ in the `glean` folder.
 This runs all the tests in the `glean` folder.
 Alternatively, you may want to run component-specific tests. 
 To do so, substitute `test` in the command above with one of the followings:
-* `test:unit:core` - executes tests inside `tests/core` folder.
-* `test:unit:plugins` - executes tests inside `tests/plugins` folder.
-* `test:unit:platform` - executes tests inside `tests/platform` folder.
+
+* `test:unit:core` - executes tests inside `tests/unit/core` folder.
+* `test:unit:plugins` - executes tests inside `tests/unit/plugins` folder.
+* `test:unit:platform` - executes tests inside `tests/unit/platform` folder.
+* `test:integration` - executes tests inside `tests/integration` folder.
 
 You might want to run one specific test within a certain folder.
 To run the test with the title `DatetimeMetric` in the `core` folder: 
