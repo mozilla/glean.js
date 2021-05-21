@@ -165,6 +165,7 @@ async function setup(projectRoot: string) {
     console.log(`Using Glean virtual environment at ${venvRoot}`);
   } else if (!await createPythonVenv(venvRoot)){
     console.error(`Failed to create a Glean virtual environment at ${venvRoot}`);
+    process.exit(1);
   }
 }
 
@@ -189,6 +190,7 @@ async function runGlean(projectRoot: string, parserArgs: string[]) {
 
   if (err) {
     console.error(`${stderr}`);
+    process.exit(1);
   }
 }
 
@@ -231,6 +233,7 @@ async function run(args: string[]) {
     await setup(projectRoot);
   } catch (err) {
     console.error("Failed to setup the Glean build environment", err);
+    process.exit(1);
   }
 
   await runGlean(projectRoot, args.slice(2));
@@ -239,4 +242,5 @@ async function run(args: string[]) {
 // For discoverability, try to leave this function as the last one on this file.
 run(argv).catch(e => {
   console.error("There was an error running Glean", e);
+  process.exit(1);
 });
