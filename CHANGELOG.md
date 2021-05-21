@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.0...main)
 
+* [#342](https://github.com/mozilla/glean.js/pull/342): BUGFIX: Fix timespan payload representatin to match exactly the payload expected according to the Glean schema.
+
 # v0.14.0 (2021-05-19)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.13.0...v0.14.0)
