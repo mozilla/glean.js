@@ -84,6 +84,7 @@ jobs:
       - run:
           name: Run samples tests
           command: export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
+          command: export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
 
   check-size:
     docker:
