@@ -88,6 +88,11 @@ describe("schema", function() {
     await Glean.testResetGlean(`gleanjs.test.${testAppId}`, true, { httpClient });
 
     // Record something for each metric type.
+    //
+    // Disable eslint rules for the recording calls,
+    // so that we don't have to build the generated files just for the "lint" CI job.
+
+    /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
     metrics.boolean.set(false);
     metrics.counter.add(10);
     metrics.datetime.set();
@@ -99,10 +104,12 @@ describe("schema", function() {
     metrics.string.set("let's go");
     metrics.timespan.setRawNanos(10 * 10**6);
     metrics.uuid.generateAndSet();
+    /* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 
     // Set up the http client to catch the ping we will submit.
     const pingBody = httpClient.waitForPingSubmission("testing");
     // Submit the test ping.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     pings.testing.submit();
 
     // Validate ping body against the schema.
