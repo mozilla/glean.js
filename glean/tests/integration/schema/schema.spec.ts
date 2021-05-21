@@ -5,9 +5,11 @@
 import https from "https";
 import { validate } from "jsonschema";
 
+import type { UploadResult } from "../../../src/core/upload/uploader";
+import type Uploader from "../../../src/core/upload/uploader";
+import type { JSONObject } from "../../../src/core/utils";
 import Glean from "../../../src/core/glean";
-import Uploader, { UploadResult, UploadResultStatus } from "../../../src/core/upload/uploader";
-import { JSONObject } from "../../../src/core/utils";
+import { UploadResultStatus } from "../../../src/core/upload/uploader";
 
 // Generated files.
 import * as metrics from "./generated/forTesting";
@@ -33,7 +35,7 @@ function fetchSchema(): Promise<JSONObject> {
         resolve(JSON.parse(data));
       });
     }).on("error", (err) => {
-      reject(err)
+      reject(err);
     });
   });
 }
@@ -49,15 +51,14 @@ class WaitableHttpClient implements Uploader {
    * Returns a promise that resolves once a ping is submitted or times out after a 2s wait.
    *
    * @param name The name of the ping to wait for.
-   *
    * @returns A promise that resolves once a ping is submitted or times out after a 2s wait.
    */
   waitForPingSubmission(name: string): Promise<JSONObject> {
     this.waitingFor = name;
     return new Promise<JSONObject>((resolve, reject) => {
-      this.waitResolver = (pingBody: string)  => {
+      this.waitResolver = (pingBody: string) => {
         this.waitingFor = undefined;
-        const parsedBody = JSON.parse(pingBody);
+        const parsedBody = JSON.parse(pingBody) as JSONObject;
         // Uncomment for debugging the ping payload.
         // console.log(JSON.stringify(parsedBody, null, 2));
         resolve(parsedBody);
@@ -69,7 +70,7 @@ class WaitableHttpClient implements Uploader {
 
   post(url: string, body: string): Promise<UploadResult> {
     if (this.waitingFor && url.includes(this.waitingFor)) {
-      this.waitResolver!(body);
+      this.waitResolver?.(body);
     }
 
     return Promise.resolve({
@@ -80,15 +81,17 @@ class WaitableHttpClient implements Uploader {
 }
 
 describe("schema", function() {
+  const testAppId = `gleanjs.test.${this.title}`;
+
   it("validate generated ping is valid against glean schema", async function () {
     const httpClient = new WaitableHttpClient();
-    Glean.testResetGlean(`gleanjs.test.${this.title}`, true, { httpClient });
+    await Glean.testResetGlean(`gleanjs.test.${testAppId}`, true, { httpClient });
 
     // Record something for each metric type.
     metrics.boolean.set(false);
     metrics.counter.add(10);
     metrics.datetime.set();
-    metrics.event.record({ sample: "hey" })
+    metrics.event.record({ sample: "hey" });
     metrics.labeledBoolean["a_label"].set(true);
     metrics.labeledCounter["a_label"].add();
     metrics.labeledString["a_label"].set("ho");

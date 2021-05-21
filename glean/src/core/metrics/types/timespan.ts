@@ -33,21 +33,21 @@ export class TimespanMetric extends Metric<TimespanInternalRepresentation, Times
   // The recorded timespan truncated to the given time unit.
   get timespan(): number {
     switch(this._inner.timeUnit) {
-      case TimeUnit.Nanosecond:
-        return this._inner.timespan * 10**6;
-      case TimeUnit.Microsecond:
-        return this._inner.timespan * 10**3;
-      case TimeUnit.Millisecond:
-        return this._inner.timespan;
-      case TimeUnit.Second:
-        return Math.round(this._inner.timespan / 1000);
-      case TimeUnit.Minute:
-        return Math.round(this._inner.timespan / 1000 / 60);
-      case TimeUnit.Hour:
-        return Math.round(this._inner.timespan / 1000 / 60 / 60);
-      case TimeUnit.Day:
-        return Math.round(this._inner.timespan / 1000 / 60 / 60 / 24);
-      }
+    case TimeUnit.Nanosecond:
+      return this._inner.timespan * 10**6;
+    case TimeUnit.Microsecond:
+      return this._inner.timespan * 10**3;
+    case TimeUnit.Millisecond:
+      return this._inner.timespan;
+    case TimeUnit.Second:
+      return Math.round(this._inner.timespan / 1000);
+    case TimeUnit.Minute:
+      return Math.round(this._inner.timespan / 1000 / 60);
+    case TimeUnit.Hour:
+      return Math.round(this._inner.timespan / 1000 / 60 / 60);
+    case TimeUnit.Day:
+      return Math.round(this._inner.timespan / 1000 / 60 / 60 / 24);
+    }
   }
 
   validate(v: unknown): v is TimespanInternalRepresentation {
@@ -68,7 +68,7 @@ export class TimespanMetric extends Metric<TimespanInternalRepresentation, Times
     return {
       time_unit: this._inner.timeUnit,
       value: this.timespan
-    }
+    };
   }
 }
 
