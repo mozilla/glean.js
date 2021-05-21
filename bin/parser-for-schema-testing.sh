@@ -18,7 +18,7 @@ SED="sed"
 WORKSPACE_ROOT="$( cd "$(dirname "$0")/.." ; pwd -P )"
 
 # Generate files using the Glean.js CLI tool (which just runs glean_parser)
-npm run glean-internal -- \
+npm run cli -- \
   translate tests/integration/schema/metrics.yaml tests/integration/schema/pings.yaml \
   -f typescript \
   -o tests/integration/schema/generated

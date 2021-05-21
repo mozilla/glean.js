@@ -56,7 +56,7 @@
     "publish:docs": "NODE_DEBUG=gh-pages gh-pages --dotfiles --message \"[skip ci] Updates\" --dist dist/docs",
     "prepublishOnly": "cp ../README.md ./README.md && run-s build:cli build:webext",
     "postpublish": "rm ./README.md",
-    "glean-internal": "node --loader=ts-node/esm src/cli.ts"
+    "cli": "node --loader=ts-node/esm src/cli.ts"
   },
   "repository": {
     "type": "git",
