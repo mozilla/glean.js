@@ -82,6 +82,33 @@ jobs:
           name: Run samples tests
           command: export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
 
+samples-tests:
+    docker:
+      - image: cimg/python:3.8.8-node
+    steps:
+      - checkout
+      - run:
+          name: Install Typescript dependencies for Glean
+          command: npm --prefix ./glean install
+      - run:
+          name: Build & link Glean.js to use it in the samples
+          command: |
+              npm --prefix ./glean run build:webext
+              npm --prefix ./glean run build:cli
+              npm --prefix ./glean link
+      - run:
+          name: Install Typescript dependencies for the TS sample
+          command: |
+              npm --prefix ./samples/web-extension/typescript install
+              npm --prefix ./samples/web-extension/typescript link @mozilla/glean
+      - run:
+          name: Build the JS sample
+          command: npm --prefix ./samples/web-extension/typescript run build
+      - run:
+          name: Run samples tests
+          command: export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
+
+
   check-size:
     docker:
       - image: cimg/node:16.1.0
