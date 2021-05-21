@@ -98,7 +98,10 @@ describe("TimespanMetric", function() {
     const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "timespan": {
-        "aCategory.aTimespan": 100
+        "aCategory.aTimespan": {
+          "time_unit": "millisecond",
+          "value": 100
+        }
       }
     });
   });
@@ -171,7 +174,7 @@ describe("TimespanMetric", function() {
       assert.strictEqual(await metric.testGetValue("aPing"), testCases[i].expected);
 
       sandbox.restore();
-      fakeNow = performance ? sandbox.stub(performance, "now") : sandbox.stub(Date, "now");
+      fakeNow = typeof performance === "undefined" ? sandbox.stub(Date, "now") : sandbox.stub(performance, "now");
     }
   });
 

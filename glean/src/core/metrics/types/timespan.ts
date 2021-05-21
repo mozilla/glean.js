@@ -17,9 +17,37 @@ export type TimespanInternalRepresentation = {
   // The timespan in milliseconds.
   timespan: number,
 };
-export class TimespanMetric extends Metric<TimespanInternalRepresentation, number> {
+
+export type TimespanPayloadRepresentation = {
+  // The time unit of the metric type at the time of recording.
+  time_unit: TimeUnit,
+  // The timespan in the expected time_unit.
+  value: number,
+};
+
+export class TimespanMetric extends Metric<TimespanInternalRepresentation, TimespanPayloadRepresentation> {
   constructor(v: unknown) {
     super(v);
+  }
+
+  // The recorded timespan truncated to the given time unit.
+  get timespan(): number {
+    switch(this._inner.timeUnit) {
+      case TimeUnit.Nanosecond:
+        return this._inner.timespan * 10**6;
+      case TimeUnit.Microsecond:
+        return this._inner.timespan * 10**3;
+      case TimeUnit.Millisecond:
+        return this._inner.timespan;
+      case TimeUnit.Second:
+        return Math.round(this._inner.timespan / 1000);
+      case TimeUnit.Minute:
+        return Math.round(this._inner.timespan / 1000 / 60);
+      case TimeUnit.Hour:
+        return Math.round(this._inner.timespan / 1000 / 60 / 60);
+      case TimeUnit.Day:
+        return Math.round(this._inner.timespan / 1000 / 60 / 60 / 24);
+      }
   }
 
   validate(v: unknown): v is TimespanInternalRepresentation {
@@ -36,22 +64,10 @@ export class TimespanMetric extends Metric<TimespanInternalRepresentation, numbe
     return true;
   }
 
-  payload(): number {
-    switch(this._inner.timeUnit) {
-    case TimeUnit.Nanosecond:
-      return this._inner.timespan * 10**6;
-    case TimeUnit.Microsecond:
-      return this._inner.timespan * 10**3;
-    case TimeUnit.Millisecond:
-      return this._inner.timespan;
-    case TimeUnit.Second:
-      return Math.round(this._inner.timespan / 1000);
-    case TimeUnit.Minute:
-      return Math.round(this._inner.timespan / 1000 / 60);
-    case TimeUnit.Hour:
-      return Math.round(this._inner.timespan / 1000 / 60 / 60);
-    case TimeUnit.Day:
-      return Math.round(this._inner.timespan / 1000 / 60 / 60 / 24);
+  payload(): TimespanPayloadRepresentation {
+    return {
+      time_unit: this._inner.timeUnit,
+      value: this.timespan
     }
   }
 }
@@ -255,8 +271,7 @@ class TimespanMetricType extends MetricType {
     });
 
     if (value) {
-      // `payload` will truncate to the defined time_unit at the time of recording.
-      return (new TimespanMetric(value)).payload();
+      return (new TimespanMetric(value)).timespan;
     }
   }
 }
