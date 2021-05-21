@@ -5,11 +5,9 @@
 ---
 $schema: moz://mozilla.org/schemas/glean/pings/2-0-0
 
-custom:
+testing:
   description: |
-    A custom ping to help showcase Glean.js
-    It is sent everytime the user clicks the "Submit ping" button
-    on this sample extension popup.
+    A sample custom ping for testing purposes.
   include_client_id: true
   send_if_empty: false
   bugs:

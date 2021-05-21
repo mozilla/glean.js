@@ -1,0 +1,158 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+---
+$schema: moz://mozilla.org/schemas/glean/metrics/2-0-0
+
+for_testing:
+  boolean:
+    type: boolean
+    description: |
+      Sample boolean metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+  labeled_boolean:
+    type: labeled_boolean
+    description: |
+      Sample labeled boolean metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+  counter:
+    type: counter
+    description: |
+      Sample counter metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+  labeled_counter:
+    type: labeled_counter
+    description: |
+      Sample labeled counter metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+  string:
+    type: string
+    description: |
+      Sample string metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+  labeled_string:
+    type: labeled_string
+    description: |
+      Sample labeled string metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+  timespan:
+    type: timespan
+    description: |
+      Sample timespan metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+    time_unit: millisecond
+  uuid:
+    type: uuid
+    description: |
+      Sample UUID metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+  datetime:
+    type: datetime
+    description: |
+      Sample datetime metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+    time_unit: millisecond
+  event:
+    type: event
+    description: |
+      Sample event metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+    extra_keys:
+      sample:
+        description: |
+          Sample extra key.
+  quantity:
+    type: quantity
+    description: |
+      Sample quantity metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+    unit: sample
