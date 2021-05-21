@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.1...main)
+
+# v0.14.1 (2021-05-21)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.0...v0.14.1)
 
 * [#342](https://github.com/mozilla/glean.js/pull/342): BUGFIX: Fix timespan payload representatin to match exactly the payload expected according to the Glean schema.
 * [#343](https://github.com/mozilla/glean.js/pull/343): BUGFIX: Report the correct failure exit code when the Glean command line tool fails.
