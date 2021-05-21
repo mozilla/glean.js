@@ -35,9 +35,9 @@ jobs:
           name: Run circular dependencies checker
           command: npm --prefix ./glean run lint:circular-deps
 
-  unit-tests:
+  test:
     docker:
-      - image: cimg/node:16.1.0
+      - image: cimg/python:3.9.4-node
     steps:
       - checkout
       - run:
@@ -51,7 +51,10 @@ jobs:
           command: npm --prefix ./glean install
       - run:
           name: Run unit tests
-          command: export PATH=.:$PATH && npm --prefix ./glean run test
+          command: export PATH=.:$PATH && npm --prefix ./glean run test:unit
+      - run:
+          name: Run unit tests
+          command: export PATH=.:$PATH && cd glean && npm run test:integration
 
   samples-tests:
     docker:
@@ -196,7 +199,7 @@ workflows:
   ci:
     jobs:
       - lint
-      - unit-tests
+      - test
       - check-qt-js
       - samples-tests
       - docs-deploy:
