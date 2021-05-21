@@ -79,12 +79,14 @@ jobs:
               npm --prefix ./samples/web-extension/typescript link @mozilla/glean
       - run:
           name: Build the JS and TS samples
-          command: npm --prefix ./samples/web-extension/javascript run build
-          command: npm --prefix ./samples/web-extension/typescript run build
+          command: |
+            npm --prefix ./samples/web-extension/javascript run build
+            npm --prefix ./samples/web-extension/typescript run build
       - run:
           name: Run samples tests
-          command: export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
-          command: export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
+          command: |
+            export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
+            export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
 
   check-size:
     docker:
