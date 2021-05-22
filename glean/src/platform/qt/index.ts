@@ -5,13 +5,14 @@
 // Qt does not have its implementations yet, we use pieces of
 // the `TestPlatform` so that the sample will still work.
 import TestPlatform from "../test";
+import uploader from "./uploader.js";
 
 import info from "./platform_info.js";
 import type Platform from "../index.js";
 
 const QtPlatform: Platform = {
   Storage: TestPlatform.Storage,
-  uploader: TestPlatform.uploader,
+  uploader: uploader,
   info,
   name: "Qt"
 };
