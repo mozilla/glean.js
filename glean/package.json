@@ -98,7 +98,7 @@
     "selenium-webdriver": "^4.0.0-alpha.8",
     "sinon": "^10.0.0",
     "ts-loader": "^9.0.1",
-    "ts-node": "^9.1.1",
+    "ts-node": "^10.0.0",
     "typedoc": "^0.20.36",
     "typescript": "^4.2.4",
     "web-ext-types": "^3.2.1",
