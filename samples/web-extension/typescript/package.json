@@ -5,7 +5,7 @@
   "main": "dist/bundle.js",
   "scripts": {
     "glean": "glean translate src/metrics.yaml src/pings.yaml -f typescript -o src/generated",
-    "build": "npm run glean && webpack --watch --config webpack.config.js --mode production",
+    "build": "npm run glean && webpack --config webpack.config.js --mode production",
     "dev": "npm run glean && webpack --watch --config webpack.config.js --mode development",
     "test:base": "node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js"
   },
