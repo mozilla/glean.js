@@ -113,6 +113,29 @@ run $SED -i.bak -E \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
+### Qt sample app ###
+
+# This gets the version without the path version.
+GLEAN_VERSION_FOR_QML=$(node -p -e "require('${WORKSPACE_ROOT}/glean/package.json').version.split('.').reverse().slice(1).reverse().join('.')")
+
+FILE=samples/qt-qml-app/main.qml
+run $SED -i.bak -E \
+    -e "s/import org.mozilla.Glean [0-9a-z.-]+/import org.mozilla.Glean \"${GLEAN_VERSION_FOR_QML}\";/" \
+    "${WORKSPACE_ROOT}/${FILE}"
+run rm "${WORKSPACE_ROOT}/${FILE}.bak"
+
+FILE=samples/qt-qml-app/README.md
+run $SED -i.bak -E \
+    -e "s/--option platform=qt --option version=[0-9a-z.-]+/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\";/" \
+    "${WORKSPACE_ROOT}/${FILE}"
+run rm "${WORKSPACE_ROOT}/${FILE}.bak"
+
+FILE=.circleci/config.yml
+run $SED -i.bak -E \
+    -e "s/--option platform=qt --option version=[0-9a-z.-]+/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\";/" \
+    "${WORKSPACE_ROOT}/${FILE}"
+run rm "${WORKSPACE_ROOT}/${FILE}.bak"
+
 echo "Everything prepared for v${NEW_VERSION}"
 echo
 echo "Changed files:"

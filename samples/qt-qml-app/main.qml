@@ -6,10 +6,8 @@ import QtQuick 2.0
 import QtQuick.Controls 2.0
 import QtGraphicalEffects 1.15
 
-import "../../glean/dist/glean.js" as Glean;
-// These must be imported after Glean because they rely on Glean being in the environment.
-import "./generated/pings.js" as Pings;
-import "./generated/sample.js" as Metrics;
+import org.mozilla.Glean 0.14
+import "./generated"
 
 Rectangle {
   id: screen
@@ -29,7 +27,7 @@ Rectangle {
     font.bold: true
     onClicked: () => {
       console.log("Adding to the `button_clicked` metric.");
-      Metrics.buttonClicked.add();
+      Sample.buttonClicked.add();
     }
   }
 
@@ -66,8 +64,8 @@ Rectangle {
 
   Component.onCompleted: {
     // Initialize Glean.
-    Glean.Glean.default.initialize("qt-qml-app", true, { debug: { logPings: true }});
-    Metrics.appStarted.set();
+    Glean.initialize("qt-qml-app", true, { debug: { logPings: true }});
+    Sample.appStarted.set();
     // !IMPORTANT!
     // If this message is changed the check in bin/qt-js-check **must** be updated.
     console.log("Initialized Glean succesfully.");

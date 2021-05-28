@@ -14,6 +14,8 @@ app = QApplication([])
 view = QQuickView()
 url = QUrl("main.qml")
 
+view.engine().addImportPath("../../glean/dist/qt")
+view.engine().addImportPath(".")
 view.setSource(url)
 view.show()
 app.exec_()
