@@ -373,18 +373,6 @@ class Glean {
   }
 
   /**
-   * Unsets the `debugViewTag` debug option.
-   *
-   * This is a no-op is case there is no `debugViewTag` set at the moment.
-   */
-  static unsetDebugViewTag(): void {
-    Context.dispatcher.launch(() => {
-      delete Glean.instance._config.debug.debugViewTag;
-      return Promise.resolve();
-    });
-  }
-
-  /**
    * Sets the `sourceTags` debug option.
    *
    * Ping tags will show in the destination datasets, after ingestion.
