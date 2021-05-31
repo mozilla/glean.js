@@ -83,7 +83,6 @@ export abstract class MetricType implements CommonMetricData {
    * The metric's unique identifier, including the category, name and label.
    *
    * @param metricsDatabase The metrics database.
-   *
    * @returns The generated identifier. If `category` is empty, it's ommitted. Otherwise,
    *          it's the combination of the metric's `category`, `name` and `label`.
    */
@@ -104,7 +103,6 @@ export abstract class MetricType implements CommonMetricData {
    *
    * @param uploadEnabled Whether or not global upload is enabled or
    *        disabled.
-   *
    * @returns Whether or not this metric instance should be recorded.
    */
   shouldRecord(uploadEnabled: boolean): boolean {
@@ -117,7 +115,6 @@ export abstract class MetricType implements CommonMetricData {
    * @param errorType The type of the error recorded.
    * @param ping represents the name of the ping to retrieve the metric for.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns the number of errors recorded for the metric.
    */
   async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {

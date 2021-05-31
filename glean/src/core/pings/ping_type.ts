@@ -109,7 +109,7 @@ class PingType implements CommonPingData {
   }
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Runs a validation function before the ping is collected.
    *
@@ -117,7 +117,6 @@ class PingType implements CommonPingData {
    *
    * @param callbackFn The asynchronous validation function to run in order to validate
    *        the ping content.
-   *
    * @returns A `Promise` resolved when the ping is collected and the validation function
    *          is executed.
    */

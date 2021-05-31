@@ -1,8 +1,26 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.12.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.1...main)
+
+# v0.14.1 (2021-05-21)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.0...v0.14.1)
+
+* [#342](https://github.com/mozilla/glean.js/pull/342): BUGFIX: Fix timespan payload representatin to match exactly the payload expected according to the Glean schema.
+* [#343](https://github.com/mozilla/glean.js/pull/343): BUGFIX: Report the correct failure exit code when the Glean command line tool fails.
+
+# v0.14.0 (2021-05-19)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.13.0...v0.14.0)
+
+* [#313](https://github.com/mozilla/glean.js/pull/313): Send Glean.js version and platform information on X-Telemetry-Agent header instead of User-Agent header.
+
+# v0.13.0 (2021-05-18)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.12.0...v0.13.0)
 
 * [#313](https://github.com/mozilla/glean.js/pull/313): Implement error recording mechanism and error checking testing API.
+* [#319](https://github.com/mozilla/glean.js/pull/319): BUGFIX: Do not allow recording floats with the quantity and counter metric types.
 
 # v0.12.0 (2021-05-11)
 

@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { MetricType } from "../metrics";
+import type { MetricType } from "../metrics/index.js";
 import type { ErrorType } from "./error_type.js";
-import CounterMetricType from "../metrics/types/counter";
-import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled";
+import CounterMetricType from "../metrics/types/counter.js";
+import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled.js";
 
 /**
  * For a given metric, get the metric in which to record errors.
@@ -16,7 +16,6 @@ import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled"
  *
  * @param metric The metric to record an error for.
  * @param error The error type to record.
- *
  * @returns The metric to record to.
  */
 function getErrorMetricForMetric(metric: MetricType, error: ErrorType): CounterMetricType {
@@ -70,7 +69,6 @@ export default class ErrorManager {
    * @param error The error type to get count of.
    * @param ping The ping from which we want to retrieve the number of recorded errors.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The number of errors reported.
    */
   async testGetNumRecordedErrors (

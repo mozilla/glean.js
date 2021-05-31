@@ -27,7 +27,7 @@ export type StorageIndex = string[];
 
 interface Store {
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Gets the whole store.
    *
@@ -39,10 +39,8 @@ interface Store {
    * Gets the value recorded to the given index on the store.
    *
    * @param index The index  of the entry to get.
-   *
    * @returns The value found for the given index on the storage.
    *          In case nothing has been recorded on the given index, returns `undefined`.
-   *
    * @throws - In case the index is an empty array.
    *         - In case a value that is not `string` or `object` is found.
    */

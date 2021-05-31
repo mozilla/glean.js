@@ -5,7 +5,7 @@
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import { MetricType } from "../index.js";
-import { isUndefined, isNumber } from "../../utils.js";
+import { isUndefined, isInteger } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -16,7 +16,7 @@ export class CounterMetric extends Metric<number, number> {
   }
 
   validate(v: unknown): v is number {
-    if (!isNumber(v)) {
+    if (!isInteger(v)) {
       return false;
     }
 
@@ -114,7 +114,7 @@ class CounterMetricType extends MetricType {
   }
 
   /**
-   * **Test-only API.**
+   * Test-only API.**
    *
    * Gets the currently stored value as a number.
    *
@@ -124,7 +124,6 @@ class CounterMetricType extends MetricType {
    *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
-   *
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {

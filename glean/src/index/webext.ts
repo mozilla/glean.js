@@ -94,7 +94,7 @@ export default {
    *
    * Ping tags will show in the destination datasets, after ingestion.
    *
-   * **Note** Setting `sourceTags` will override all previously set tags.
+   * Note** Setting `sourceTags` will override all previously set tags.
    *
    * To unset the `sourceTags` call `Glean.unsetSourceTags();
    *
@@ -115,7 +115,7 @@ export default {
   },
 
   /**
-   * **Test-only API**
+   * Test-only API**
    *
    * Resets the Glean singleton to its initial state and re-initializes it.
    *

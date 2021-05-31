@@ -35,9 +35,9 @@ jobs:
           name: Run circular dependencies checker
           command: npm --prefix ./glean run lint:circular-deps
 
-  unit-tests:
+  test:
     docker:
-      - image: cimg/node:16.1.0
+      - image: cimg/python:3.9.4-node
     steps:
       - checkout
       - run:
@@ -51,7 +51,10 @@ jobs:
           command: npm --prefix ./glean install
       - run:
           name: Run unit tests
-          command: export PATH=.:$PATH && npm --prefix ./glean run test
+          command: export PATH=.:$PATH && npm --prefix ./glean run test:unit
+      - run:
+          name: Run integration tests
+          command: export PATH=.:$PATH && npm --prefix ./glean run test:integration
 
   samples-tests:
     docker:
@@ -67,6 +70,7 @@ jobs:
               npm --prefix ./glean run build:webext
               npm --prefix ./glean run build:cli
               npm --prefix ./glean link
+      # JS sample related jobs
       - run:
           name: Install Javascript dependencies for the JS sample
           command: |
@@ -74,10 +78,26 @@ jobs:
               npm --prefix ./samples/web-extension/javascript link @mozilla/glean
       - run:
           name: Build the JS sample
-          command: npm --prefix ./samples/web-extension/javascript run build
+          command: |
+            npm --prefix ./samples/web-extension/javascript run build
       - run:
-          name: Run samples tests
-          command: export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
+          name: Run JS sample test
+          command: |
+            export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
+      # TS sample related jobs
+      - run:
+          name: Install Typescript dependencies for the TS sample
+          command: |
+              npm --prefix ./samples/web-extension/typescript install
+              npm --prefix ./samples/web-extension/typescript link @mozilla/glean
+      - run:
+          name: Build the TS sample
+          command: |
+            npm --prefix ./samples/web-extension/typescript run build
+      - run:
+          name: Run TS sample test
+          command: |
+            export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
 
   check-size:
     docker:
@@ -196,7 +216,7 @@ workflows:
   ci:
     jobs:
       - lint
-      - unit-tests
+      - test
       - check-qt-js
       - samples-tests
       - docs-deploy:

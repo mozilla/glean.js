@@ -1,0 +1,18 @@
+{
+  "name": "web-extension",
+  "version": "1.0.0",
+  "description": "A sample web extension for testing Glean.js",
+  "main": "index.js",
+  "scripts": {
+    "build": "webpack --config webpack.config.js --mode development",
+    "dev": "webpack --watch --config webpack.config.js --mode development",
+    "build:xpi": "npm run build && web-ext build --overwrite-dest"
+  },
+  "author": "The Glean Team <glean-team@mozilla.com>",
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "web-ext": "^6.1.0",
+    "webpack": "^5.37.1",
+    "webpack-cli": "^4.7.0"
+  }
+}

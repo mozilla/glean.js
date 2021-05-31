@@ -17,7 +17,6 @@ export type JSONArray = JSONValue[];
  * Verifies if a given value is a valid JSONValue.
  *
  * @param v The value to verify
- *
  * @returns A special Typescript value (which compiles down to a boolean)
  *          stating whether `v` is a valid JSONValue.
  */
@@ -46,7 +45,6 @@ export function isJSONValue(v: unknown): v is JSONValue {
  * Checks whether or not `v` is a simple data object.
  *
  * @param v The value to verify.
- *
  * @returns A special Typescript value (which compiles down to a boolean)
  *          stating whether `v` is a valid data object.
  */
@@ -58,7 +56,6 @@ export function isObject(v: unknown): v is Record<string | number | symbol, unkn
  * Checks whether or not `v` is undefined.
  *
  * @param v The value to verify.
- *
  * @returns A special Typescript value (which compiles down to a boolean)
  *          stating whether `v` is undefined.
  */
@@ -70,36 +67,44 @@ export function isUndefined(v: unknown): v is undefined {
  * Checks whether or not `v` is a string.
  *
  * @param v The value to verify.
- *
  * @returns A special Typescript value (which compiles down to a boolean)
  *          stating whether `v` is a string.
  */
 export function isString(v: unknown): v is string {
-  return (typeof v === "string" || (typeof v === "object" && v !== null && v.constructor === String));
+  return typeof v === "string";
 }
 
 /**
  * Checks whether or not `v` is a boolean.
  *
  * @param v The value to verify.
- *
  * @returns A special Typescript value (which compiles down to a boolean)
  *          stating whether `v` is a boolean.
  */
 export function isBoolean(v: unknown): v is boolean {
-  return (typeof v === "boolean" || (typeof v === "object" && v !== null && v.constructor === Boolean));
+  return typeof v === "boolean";
 }
 
 /**
  * Checks whether or not `v` is a number.
  *
  * @param v The value to verify.
- *
  * @returns A special Typescript value (which compiles down to a boolean)
  *          stating whether `v` is a number.
  */
 export function isNumber(v: unknown): v is number {
-  return ((typeof v === "number" || (typeof v === "object" && v !== null && v.constructor === Number)) && !isNaN(v));
+  return typeof v === "number" && !isNaN(v);
+}
+
+/**
+ * Checks whether or not `v` is an integer.
+ *
+ * @param v The value to verify.
+ * @returns A special Typescript value (which compiles down to a boolean)
+ *          stating whether `v` is a number.
+ */
+export function isInteger(v: unknown): v is number {
+  return isNumber(v) && Number.isInteger(v);
 }
 
 /**
@@ -107,7 +112,6 @@ export function isNumber(v: unknown): v is number {
  * that replaces non alphanumeric characters with dashes.
  *
  * @param applicationId The application if to sanitize.
- *
  * @returns The sanitized applicaiton id.
  */
 export function sanitizeApplicationId(applicationId: string): string {
@@ -118,7 +122,6 @@ export function sanitizeApplicationId(applicationId: string): string {
  * Check that a given string is a valid URL.
  *
  * @param v The string to validate.
- *
  * @returns Whether or not the given string is a valid url.
  */
 export function validateURL(v: string): boolean {
@@ -130,7 +133,6 @@ export function validateURL(v: string): boolean {
  * Validates whether or not a given value is an acceptable HTTP header for outgoing pings.
  *
  * @param v The value to validate.
- *
  * @returns Whether or not the given value is a valid HTTP header value.
  */
 export function validateHeader(v: string): boolean {
@@ -186,7 +188,6 @@ export function getMonotonicNow(): number {
  * @param metric The metric to record an error to, if necessary,
  * @param value The string to truncate.
  * @param length The lenght to truncate to.
- *
  * @returns A string with at most `length` bytes.
  */
 export async function truncateStringAtBoundaryWithError(metric: MetricType, value: string, length: number): Promise<string> {

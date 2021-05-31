@@ -8,10 +8,10 @@ import type CommonPingData from "./common_ping_data.js";
 import type MetricsDatabase from "../metrics/database.js";
 import type EventsDatabase from "../metrics/events_database.js";
 import type { DebugOptions } from "../debug_options.js";
-import CounterMetricType from "../metrics/types/counter.js";
-import { CounterMetric } from "../metrics/types/counter.js";
-import DatetimeMetricType from "../metrics/types/datetime.js";
-import { DatetimeMetric } from "../metrics/types/datetime.js";
+import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
+
+import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
+
 import TimeUnit from "../metrics/time_unit.js";
 import CoreEvents from "../events/index.js";
 import { Lifetime } from "../metrics/lifetime.js";
@@ -25,7 +25,6 @@ const GLEAN_START_TIME = new Date();
  *
  * @param metricsDatabase The metrics database.
  * @param ping The ping for which we want to get the sequence number.
- *
  * @returns The current number (before incrementing).
  */
 export async function getSequenceNumber(metricsDatabase: MetricsDatabase, ping: CommonPingData): Promise<number> {
@@ -61,7 +60,6 @@ export async function getSequenceNumber(metricsDatabase: MetricsDatabase, ping: 
  *
  * @param metricsDatabase The metrics database.
  * @param ping The ping for which we want to get the times.
- *
  * @returns An object containing start and times in their payload format.
  */
 export async function getStartEndTimes(metricsDatabase: MetricsDatabase, ping: CommonPingData): Promise<{ startTime: string, endTime: string }> {
@@ -100,7 +98,6 @@ export async function getStartEndTimes(metricsDatabase: MetricsDatabase, ping: C
  * @param metricsDatabase The metrics database.
  * @param ping The ping to build the `ping_info` section for.
  * @param reason The reason for submitting this ping.
- *
  * @returns The final `ping_info` section in its payload format.
  */
 export async function buildPingInfoSection(metricsDatabase: MetricsDatabase, ping: CommonPingData, reason?: string): Promise<PingInfo> {
@@ -125,7 +122,6 @@ export async function buildPingInfoSection(metricsDatabase: MetricsDatabase, pin
  *
  * @param metricsDatabase The metrics database.
  * @param ping The ping to build the `client_info` section for.
- *
  * @returns The final `client_info` section in its payload format.
  */
 export async function buildClientInfoSection(metricsDatabase: MetricsDatabase, ping: CommonPingData): Promise<ClientInfo> {
@@ -161,7 +157,6 @@ export async function buildClientInfoSection(metricsDatabase: MetricsDatabase, p
  * - [X-Source-Tags]
  *
  * @param debugOptions The debug options.
- *
  * @returns An object containing all the headers and their values
  *          or `undefined` in case no custom headers were set.
  */
@@ -188,7 +183,6 @@ export function getPingHeaders(debugOptions?: DebugOptions): Record<string, stri
  * @param eventsDatabase The events database.
  * @param ping The ping to collect for.
  * @param reason An optional reason code to include in the ping.
- *
  * @returns A fully assembled JSON representation of the ping payload.
  *          If there is no data stored for the ping, `undefined` is returned.
  */
@@ -221,7 +215,6 @@ export async function collectPing(metricsDatabase: MetricsDatabase, eventsDataba
  * @param applicationId The application id.
  * @param identifier The pings UUID identifier.
  * @param ping  The ping to build a path for.
- *
  * @returns The final submission path.
  */
 export function makePath(applicationId: string, identifier: string, ping: CommonPingData): string {
@@ -241,7 +234,6 @@ export function makePath(applicationId: string, identifier: string, ping: Common
  * @param identifier The pings UUID identifier.
  * @param ping The ping to submit.
  * @param reason An optional reason code to include in the ping.
- *
  * @returns A promise that is resolved once collection and storing is done.
  */
 export async function collectAndStorePing(identifier: string, ping: CommonPingData, reason?: string): Promise<void> {

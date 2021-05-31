@@ -117,7 +117,6 @@ class PingUploader implements PingsDatabaseObserver {
    * 2. Stringifies the body.
    *
    * @param ping The ping to include the headers in.
-   *
    * @returns The updated ping.
    */
   private async preparePingForUpload(ping: QueuedPing): Promise<{
@@ -134,7 +133,7 @@ class PingUploader implements PingsDatabaseObserver {
       "Date": (new Date()).toISOString(),
       "X-Client-Type": "Glean.js",
       "X-Client-Version": GLEAN_VERSION,
-      "User-Agent": `Glean/${GLEAN_VERSION} (JS on ${await this.platformInfo.os()})`
+      "X-Telemetry-Agent": `Glean/${GLEAN_VERSION} (JS on ${await this.platformInfo.os()})`
     };
 
     return {
@@ -147,7 +146,6 @@ class PingUploader implements PingsDatabaseObserver {
    * Attempts to upload a ping.
    *
    * @param ping The ping object containing headers and payload.
-   *
    * @returns The status number of the response or `undefined` if unable to attempt upload.
    */
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
@@ -175,35 +173,34 @@ class PingUploader implements PingsDatabaseObserver {
    * Based on the HTTP status of said response,
    * the possible outcomes are:
    *
-   * * **200 - 299 Success**
+   * 200 - 299 Success**
    *   Any status on the 2XX range is considered a succesful upload,
    *   which means the corresponding ping file can be deleted.
    *
    *   _Known 2XX status:_
-   *   * 200 - OK. Request accepted into the pipeline.
+   *   200 - OK. Request accepted into the pipeline.
    *
-   * * **400 - 499 Unrecoverable error**
+   * 400 - 499 Unrecoverable error**
    *   Any status on the 4XX range means something our client did is not correct.
    *   It is unlikely that the client is going to recover from this by retrying,
    *   so in this case the corresponding ping file can also be deleted.
    *
    *   _Known 4XX status:_
-   *   * 404 - not found - POST/PUT to an unknown namespace
-   *   * 405 - wrong request type (anything other than POST/PUT)
-   *   * 411 - missing content-length header
-   *   * 413 - request body too large Note that if we have badly-behaved clients that
+   *   404 - not found - POST/PUT to an unknown namespace
+   *   405 - wrong request type (anything other than POST/PUT)
+   *   411 - missing content-length header
+   *   413 - request body too large Note that if we have badly-behaved clients that
    *           retry on 4XX, we should send back 202 on body/path too long).
-   *   * 414 - request path too long (See above)
+   *   414 - request path too long (See above)
    *
-   * * **Any other error**
+   * Any other error**
    *   For any other error, a warning is logged and the ping is re-enqueued.
    *
    *   _Known other errors:_
-   *   * 500 - internal error
+   *   500 - internal error
    *
    * @param identifier The identifier of the ping uploaded.
    * @param response The response of a ping upload attempt.
-   *
    * @returns Whether or not to retry the upload attempt.
    */
   private async processPingUploadResponse(identifier: string, response: UploadResult): Promise<boolean> {

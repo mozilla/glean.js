@@ -3,10 +3,10 @@
 //  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type Store from "../storage/index.js";
-import type { MetricType } from "./index.js";
+import type { MetricType , Metrics } from "./index.js";
 import type { Metric } from "./metric.js";
 import type { StorageBuilder } from "../../platform/index.js";
-import type { Metrics } from "./index.js";
+
 import type { JSONObject, JSONValue } from "../utils.js";
 import { createMetric, validateMetricInternalRepresentation } from "./utils.js";
 import { isObject, isUndefined } from "../utils.js";
@@ -16,7 +16,6 @@ import { Lifetime } from "./lifetime.js";
  * Verifies if a given value is a valid Metrics object.
  *
  * @param v The value to verify
- *
  * @returns Whether or not `v` is a valid Metrics object.
  */
 export function isValidInternalMetricsRepresentation(v: unknown): v is Metrics {
@@ -44,7 +43,6 @@ export function isValidInternalMetricsRepresentation(v: unknown): v is Metrics {
  * Creates the metrics payload from a metrics object with metrics in their internal representation.
  *
  * @param v The Metrics object to transform.
- *
  * @returns A metrics object with metrics in their payload format.
  */
 function createMetricsPayload(v: Metrics): Metrics {
@@ -91,9 +89,7 @@ class MetricsDatabase {
    * Returns the store instance for a given lifetime.
    *
    * @param lifetime The lifetime related to the store we want to retrieve.
-   *
    * @returns The store related to the given lifetime.
-   *
    * @throws If the provided lifetime does not have a related store.
    */
   private _chooseStore(lifetime: Lifetime): Store {
@@ -145,7 +141,6 @@ class MetricsDatabase {
    * @param ping the ping storage to search in.
    * @param metricType the type of the metric.
    * @param metricIdentifier the metric identifier.
-   *
    * @returns `true` if the metric was found (regardless of the validity of the
    *          stored data), `false` otherwise.
    */
@@ -162,7 +157,6 @@ class MetricsDatabase {
    * @param ping the ping storage to search in.
    * @param metricType the type of the metric.
    * @param metricIdentifier the metric identifier.
-   *
    * @returns the number of stored metrics with their id starting with the given identifier.
    */
   async countByBaseIdentifier(lifetime: Lifetime, ping: string, metricType: string, metricIdentifier: string): Promise<number> {
@@ -194,7 +188,6 @@ class MetricsDatabase {
    *
    * @param ping The ping from which we want to retrieve the given metric.
    * @param metric An object containing the information about the metric to retrieve.
-   *
    * @returns The payload persisted for the given metric,
    *          `undefined` in case the metric has not been recorded yet or the found valus in invalid.
    */
@@ -225,7 +218,6 @@ class MetricsDatabase {
    *
    * @param ping The ping we want to get the data from
    * @param lifetime The lifetime of the data we want to retrieve
-   *
    * @returns The ping payload found for the given parameters or an empty object
    *          in case no data was found or the data that was found, was invalid.
    */
@@ -274,7 +266,6 @@ class MetricsDatabase {
    *
    * @param ping The name of the ping to retrieve.
    * @param clearPingLifetimeData Whether or not to clear the ping lifetime metrics retrieved.
-   *
    * @returns An object containing all the metrics recorded to the given ping,
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
