@@ -2,10 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-
-
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
+
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -33,7 +32,6 @@ class TsResolvePlugin {
 
 export default {
   entry: "./src/index/qt.ts",
-  devtool : "cheap-source-map",
   module: {
     rules: [
       {
@@ -57,8 +55,8 @@ export default {
     ]
   },
   output: {
-    path: path.resolve(__dirname, "dist"),
-    filename: "glean.js",
+    path: path.resolve(__dirname, "dist/qt/org/mozilla/Glean"),
+    filename: "glean.lib.js",
     libraryTarget: "var",
     library: "Glean",
   }
