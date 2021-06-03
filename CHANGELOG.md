@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.1...main)
 
+* [#389](https://github.com/mozilla/glean.js/pull/389): BUGFIX: Make sure to submit a `deletion-request` ping before clearing data when toggling upload.
+
 # v0.14.1 (2021-05-21)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.0...v0.14.1)
