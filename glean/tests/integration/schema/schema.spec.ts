@@ -82,10 +82,16 @@ class WaitableHttpClient implements Uploader {
 
 describe("schema", function() {
   const testAppId = `gleanjs.test.${this.title}`;
+  let pingSchema: JSONObject | null;
+
+  before(async function () {
+    // Only fetch the schema once for all the tests.
+    pingSchema = await fetchSchema();
+  });
 
   it("validate generated ping is valid against glean schema", async function () {
     const httpClient = new WaitableHttpClient();
-    await Glean.testResetGlean(`gleanjs.test.${testAppId}`, true, { httpClient });
+    await Glean.testResetGlean(testAppId, true, { httpClient });
 
     // Record something for each metric type.
     //
@@ -112,10 +118,18 @@ describe("schema", function() {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access
     pings.testing.submit();
 
-    // Validate ping body against the schema.
-    const schema = await fetchSchema();
     // Validate the ping against the schema,
     // throws in case errors are found.
-    validate(await pingBody, schema, { throwError: true });
+    validate(await pingBody, pingSchema, { throwError: true });
+  });
+
+  it("validate that the deletion-request is valid against glean schema", async function () {
+    const httpClient = new WaitableHttpClient();
+    await Glean.testResetGlean(testAppId, true, { httpClient });
+
+    const deletionPingBody = httpClient.waitForPingSubmission("deletion-request");
+    Glean.setUploadEnabled(false);
+
+    validate(await deletionPingBody, pingSchema, { throwError: true });
   });
 });
