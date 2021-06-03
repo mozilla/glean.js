@@ -398,18 +398,6 @@ class Glean {
   }
 
   /**
-   * Unsets the `sourceTags` debug option.
-   *
-   * This is a no-op is case there are no `sourceTags` set at the moment.
-   */
-  static unsetSourceTags(): void {
-    Context.dispatcher.launch(() => {
-      delete Glean.instance._config.debug.sourceTags;
-      return Promise.resolve();
-    });
-  }
-
-  /**
    * Sets the current environment.
    *
    * This function **must** be called before Glean.initialize.

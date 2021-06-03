@@ -392,18 +392,6 @@ describe("Glean", function() {
     assert.ok(dispatchSpy.notCalled);
   });
 
-  it("unsetting source tags works", async function () {
-    // Unsetting when nothing is set is a no-op
-    Glean.unsetSourceTags();
-    assert.strictEqual(Glean.sourceTags, undefined);
-
-    Glean.setSourceTags(["test"]);
-    Glean.unsetSourceTags();
-
-    await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(Glean.sourceTags, undefined);
-  });
-
   it("testResetGlean correctly resets", async function () {
     const metric = new StringMetricType({
       category: "aCategory",

@@ -107,15 +107,6 @@ export default {
     Glean.setSourceTags(value);
   },
 
-  /**
-   * Unsets the `sourceTags` debug option.
-   *
-   * This is a no-op is case there are no `sourceTags` set at the moment.
-   */
-  unsetSourceTags(): void {
-    Glean.unsetSourceTags();
-  },
-
   _private: {
     PingType,
     BooleanMetricType,

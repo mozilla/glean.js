@@ -97,15 +97,6 @@ export default {
   },
 
   /**
-   * Unsets the `sourceTags` debug option.
-   *
-   * This is a no-op is case there are no `sourceTags` set at the moment.
-   */
-  unsetSourceTags(): void {
-    Glean.unsetSourceTags();
-  },
-
-  /**
    * Test-only API**
    *
    * Resets the Glean singleton to its initial state and re-initializes it.
