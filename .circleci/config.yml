@@ -209,8 +209,8 @@ jobs:
             # Attach Qt build to release
             npm --prefix ./glean install
             npm --prefix ./glean run build:qt
-            cp glean/dist/glean.js glean/dist/glean_js-${CIRCLE_TAG}-qt.js
-            ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.js
+            tar -zcvf "glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz" glean/dist/qt
+            ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz
 
 workflows:
   version: 2
