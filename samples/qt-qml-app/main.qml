@@ -7,7 +7,7 @@ import QtQuick.Controls 2.0
 import QtGraphicalEffects 1.15
 
 import org.mozilla.Glean 0.14
-import "./generated"
+import generated 0.14
 
 Rectangle {
   id: screen

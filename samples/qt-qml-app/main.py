@@ -14,7 +14,9 @@ app = QApplication([])
 view = QQuickView()
 url = QUrl("main.qml")
 
+# Path to the Glean.js module
 view.engine().addImportPath("../../glean/dist/qt")
+# Path to the generated files module
 view.engine().addImportPath(".")
 view.setSource(url)
 view.show()
