@@ -15,7 +15,7 @@ import { promisify } from "util";
 const VIRTUAL_ENVIRONMENT_DIR = ".venv";
 
 // The version of glean_parser to install from PyPI.
-const GLEAN_PARSER_VERSION = "3.2.0";
+const GLEAN_PARSER_VERSION = "3.5.0";
 
 // This script runs a given Python module as a "main" module, like
 // `python -m module`. However, it first checks that the installed
