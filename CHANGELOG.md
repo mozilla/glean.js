@@ -1,6 +1,13 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.15.0...main)
+
+# v0.15.0 (2021-06-03)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.1...v0.15.0)
+
+* [#389](https://github.com/mozilla/glean.js/pull/389): BUGFIX: Make sure to submit a `deletion-request` ping before clearing data when toggling upload.
+* [#375](https://github.com/mozilla/glean.js/pull/375): Release Glean.js for Qt as a QML module.
 
 # v0.14.1 (2021-05-21)
 

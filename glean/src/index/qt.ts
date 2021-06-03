@@ -23,18 +23,10 @@ export default {
   /**
    * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
    *
-   * # Note
-   *
-   * Before this method is called Glean will not be able to upload pings or record metrics,
-   * all such operations will be no-op.
-   *
-   * This is _not_ the way glean-core deals with this. It will record tasks performed before init
-   * and flush them on init. We have a bug to figure out how to do that for Glean.js, Bug 1687491.
-   *
    * @param applicationId The application ID (will be sanitized during initialization).
    * @param uploadEnabled Determines whether telemetry is enabled.
-   *                      If disabled, all persisted metrics, events and queued pings (except
-   *                      first_run_date) are cleared.
+   *        If disabled, all persisted metrics, events and queued pings (except
+   *        first_run_date) are cleared.
    * @param config Glean configuration options.
    */
   initialize(

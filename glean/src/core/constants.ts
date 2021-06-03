@@ -8,7 +8,7 @@ export const GLEAN_SCHEMA_VERSION = 1;
 //
 // PACKAGE_VERSION is defined as a global by webpack,
 // we need a default here for testing when the app is not build with webpack.
-export const GLEAN_VERSION = "0.14.1";
+export const GLEAN_VERSION = "0.15.0";
 
 // The name of a "ping" that will include Glean ping_info metrics,
 // such as ping sequence numbers.

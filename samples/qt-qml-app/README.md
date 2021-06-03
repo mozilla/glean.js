@@ -28,7 +28,8 @@ python3 -m venv .venv
 3. Generate metrics and pings files.
 
 ```bash
-.venv/bin/python3 -m glean_parser translate metrics.yaml pings.yaml -f javascript -o generated --option platform=qt
+.venv/bin/python3 -m glean_parser translate metrics.yaml pings.yaml -f javascript -o generated \
+--option platform=qt --option version="0.15";
 ```
 
 4. Run the application.

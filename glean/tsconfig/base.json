@@ -14,7 +14,8 @@
     "preserveConstEnums": true,
     "typeRoots": [
       "../node_modules/@types",
-      "../node_modules/web-ext-types"
+      "../node_modules/web-ext-types",
+      "../types"
     ]
   },
   "$schema": "https://json.schemastore.org/tsconfig"
