@@ -21,4 +21,4 @@ touch "${WORKSPACE_ROOT}/${FILE}"
 } >> "${WORKSPACE_ROOT}/${FILE}"
 
 # Add the glean.js file to the final module
-cp "${WORKSPACE_ROOT}/glean/qt.entry.js" "${WORKSPACE_ROOT}/glean/dist/qt/org/mozilla/Glean/glean.js"
+cp "${WORKSPACE_ROOT}/glean/src/index/qt.js" "${WORKSPACE_ROOT}/glean/dist/qt/org/mozilla/Glean/glean.js"

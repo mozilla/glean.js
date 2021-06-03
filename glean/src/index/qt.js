@@ -2,7 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-// This file in the entry point file for Glean.js in QML.
+// This file is the actual entry point file for Glean.js in QML, that users will interact with.
+//
+// I was not able to figure out a way to simply use the Webpack generated file to
+// be the entry point in Qt, because of the unusual syntax allowed in Qt Javascript.
+// Thus, we compile the Glean.js library normaly into the `glean.lib.js` file and then
+// we have this file which interacts opaquely with the Webpack generated one.
+//
+// **All functions and variables defined here are public.**
 
 .pragma library
 
