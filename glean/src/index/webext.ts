@@ -73,15 +73,6 @@ export default {
   },
 
   /**
-   * Unsets the `debugViewTag` debug option.
-   *
-   * This is a no-op is case there is no `debugViewTag` set at the moment.
-   */
-  unsetDebugViewTag(): void {
-    Glean.unsetDebugViewTag();
-  },
-
-  /**
    * Sets the `sourceTags` debug option.
    *
    * Ping tags will show in the destination datasets, after ingestion.
@@ -95,15 +86,6 @@ export default {
    */
   setSourceTags(value: string[]): void {
     Glean.setSourceTags(value);
-  },
-
-  /**
-   * Unsets the `sourceTags` debug option.
-   *
-   * This is a no-op is case there are no `sourceTags` set at the moment.
-   */
-  unsetSourceTags(): void {
-    Glean.unsetSourceTags();
   },
 
   /**
