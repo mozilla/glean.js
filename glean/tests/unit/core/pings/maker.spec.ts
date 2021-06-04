@@ -134,7 +134,7 @@ describe("PingMaker", function() {
       "X-Source-Tags": "tag1,tag2,tag3"
     }, PingMaker.getPingHeaders(Context.debugOptions));
 
-    await Context.dispatcher.testBlockOnQueue();
+    await Glean.testResetGlean(testAppId);
     assert.strictEqual(PingMaker.getPingHeaders(Context.debugOptions), undefined);
   });
 
