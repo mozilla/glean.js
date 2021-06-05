@@ -76,35 +76,54 @@ class PingType implements CommonPingData {
     }
   }
 
+  /**
+   * An internal implemention of `submit` that does not dispatch the submission task.
+   *
+   * # Important
+   *
+   * This is absolutely not meant to be used outside of Glean itself.
+   * It may cause multiple issues because it cannot guarantee
+   * that the submission of the ping will happen in order with other Glean API calls.
+   *
+   * @param instance The ping instance to submit.
+   * @param reason The reason the ping was triggered. Included in the
+   *               `ping_info.reason` part of the payload.
+   * @param testResolver The asynchronous validation function to run in order to validate
+   *        the ping content.
+   */
+  static async _private_submitUndispatched(instance: PingType, reason?: string, testResolver?: PromiseCallback): Promise<void> {
+    if (!Context.initialized) {
+      console.info("Glean must be initialized before submitting pings.");
+      return;
+    }
+
+    if (!Context.uploadEnabled && !instance.isDeletionRequest()) {
+      console.info("Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.");
+      return;
+    }
+
+    let correctedReason = reason;
+    if (reason && !instance.reasonCodes.includes(reason)) {
+      console.error(`Invalid reason code ${reason} from ${this.name}. Ignoring.`);
+      correctedReason = undefined;
+    }
+
+    const identifier = generateUUIDv4();
+    await collectAndStorePing(identifier, instance, correctedReason);
+
+    if (testResolver) {
+      testResolver();
+
+      // Finally clean up!
+      instance.resolveTestPromiseFunction = undefined;
+      instance.rejectTestPromiseFunction = undefined;
+      instance.testCallback = undefined;
+    }
+  }
+
   private static _private_internalSubmit(instance: PingType, reason?: string, testResolver?: PromiseCallback): void {
     Context.dispatcher.launch(async () => {
-      if (!Context.initialized) {
-        console.info("Glean must be initialized before submitting pings.");
-        return;
-      }
-
-      if (!Context.uploadEnabled && !instance.isDeletionRequest()) {
-        console.info("Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.");
-        return;
-      }
-
-      let correctedReason = reason;
-      if (reason && !instance.reasonCodes.includes(reason)) {
-        console.error(`Invalid reason code ${reason} from ${this.name}. Ignoring.`);
-        correctedReason = undefined;
-      }
-
-      const identifier = generateUUIDv4();
-      await collectAndStorePing(identifier, instance, correctedReason);
-
-      if (testResolver) {
-        testResolver();
-
-        // Finally clean up!
-        instance.resolveTestPromiseFunction = undefined;
-        instance.rejectTestPromiseFunction = undefined;
-        instance.testCallback = undefined;
-      }
+      await PingType._private_submitUndispatched(instance, reason, testResolver);
     });
   }
 

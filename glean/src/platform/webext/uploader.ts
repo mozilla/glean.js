@@ -35,7 +35,7 @@ class BrowserUploader implements Uploader {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#checking_that_the_fetch_was_successful
         //
         // We will treat this as we treat server / network errors in this case.
-        console.error("Network while attempting to upload ping.", e);
+        console.error("Network error while attempting to upload ping.", e);
       } else {
         console.error("Unknown error while attempting to upload ping.", e);
       }

@@ -11,14 +11,6 @@ export default {
   /**
    * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
    *
-   * # Note
-   *
-   * Before this method is called Glean will not be able to upload pings or record metrics,
-   * all such operations will be no-op.
-   *
-   * This is _not_ the way glean-core deals with this. It will record tasks performed before init
-   * and flush them on init. We have a bug to figure out how to do that for Glean.js, Bug 1687491.
-   *
    * @param applicationId The application ID (will be sanitized during initialization).
    * @param uploadEnabled Determines whether telemetry is enabled.
    *                      If disabled, all persisted metrics, events and queued pings (except
@@ -81,15 +73,6 @@ export default {
   },
 
   /**
-   * Unsets the `debugViewTag` debug option.
-   *
-   * This is a no-op is case there is no `debugViewTag` set at the moment.
-   */
-  unsetDebugViewTag(): void {
-    Glean.unsetDebugViewTag();
-  },
-
-  /**
    * Sets the `sourceTags` debug option.
    *
    * Ping tags will show in the destination datasets, after ingestion.
@@ -103,15 +86,6 @@ export default {
    */
   setSourceTags(value: string[]): void {
     Glean.setSourceTags(value);
-  },
-
-  /**
-   * Unsets the `sourceTags` debug option.
-   *
-   * This is a no-op is case there are no `sourceTags` set at the moment.
-   */
-  unsetSourceTags(): void {
-    Glean.unsetSourceTags();
   },
 
   /**

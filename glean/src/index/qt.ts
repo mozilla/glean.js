@@ -23,18 +23,10 @@ export default {
   /**
    * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
    *
-   * # Note
-   *
-   * Before this method is called Glean will not be able to upload pings or record metrics,
-   * all such operations will be no-op.
-   *
-   * This is _not_ the way glean-core deals with this. It will record tasks performed before init
-   * and flush them on init. We have a bug to figure out how to do that for Glean.js, Bug 1687491.
-   *
    * @param applicationId The application ID (will be sanitized during initialization).
    * @param uploadEnabled Determines whether telemetry is enabled.
-   *                      If disabled, all persisted metrics, events and queued pings (except
-   *                      first_run_date) are cleared.
+   *        If disabled, all persisted metrics, events and queued pings (except
+   *        first_run_date) are cleared.
    * @param config Glean configuration options.
    */
   initialize(
@@ -83,22 +75,12 @@ export default {
    * When this property is set, all subsequent outgoing pings will include the `X-Debug-ID` header
    * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
-   * To unset the `debugViewTag` call `Glean.unsetDebugViewTag();
    *
    * @param value The value of the header.
    *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
    */
   setDebugViewTag(value: string): void {
     Glean.setDebugViewTag(value);
-  },
-
-  /**
-   * Unsets the `debugViewTag` debug option.
-   *
-   * This is a no-op is case there is no `debugViewTag` set at the moment.
-   */
-  unsetDebugViewTag(): void {
-    Glean.unsetDebugViewTag();
   },
 
   /**
@@ -115,15 +97,6 @@ export default {
    */
   setSourceTags(value: string[]): void {
     Glean.setSourceTags(value);
-  },
-
-  /**
-   * Unsets the `sourceTags` debug option.
-   *
-   * This is a no-op is case there are no `sourceTags` set at the moment.
-   */
-  unsetSourceTags(): void {
-    Glean.unsetSourceTags();
   },
 
   _private: {

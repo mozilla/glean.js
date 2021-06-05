@@ -376,18 +376,6 @@ describe("Glean", function() {
     assert.ok(dispatchSpy.notCalled);
   });
 
-  it("unsetting a debug view tag works", async function () {
-    // Unsetting when nothing is set is a no-op
-    Glean.unsetDebugViewTag();
-    assert.strictEqual(Glean.debugViewTag, undefined);
-
-    Glean.setDebugViewTag("test");
-    Glean.unsetDebugViewTag();
-
-    await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(Glean.debugViewTag, undefined);
-  });
-
   it("setting source tags on initialize works", async function () {
     await Glean.testUninitialize();
     await Glean.testInitialize(testAppId, true, { debug: { sourceTags: ["1", "2", "3", "4", "5"] } });
@@ -402,18 +390,6 @@ describe("Glean", function() {
     Glean.setSourceTags(invaligTags);
     assert.strictEqual(Glean.sourceTags, undefined);
     assert.ok(dispatchSpy.notCalled);
-  });
-
-  it("unsetting source tags works", async function () {
-    // Unsetting when nothing is set is a no-op
-    Glean.unsetSourceTags();
-    assert.strictEqual(Glean.sourceTags, undefined);
-
-    Glean.setSourceTags(["test"]);
-    Glean.unsetSourceTags();
-
-    await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(Glean.sourceTags, undefined);
   });
 
   it("testResetGlean correctly resets", async function () {

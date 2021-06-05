@@ -20,6 +20,7 @@ import type Platform from "../platform/index.js";
 import TestPlatform from "../platform/test/index.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import { Context } from "./context.js";
+import PingType from "./pings/ping_type.js";
 
 class Glean {
   // The Glean singleton.
@@ -95,11 +96,13 @@ class Glean {
    * Afterward, the upload_enabled flag is set to false.
    */
   private static async onUploadDisabled(): Promise<void> {
+    // We need to use an undispatched submission to guarantee that the
+    // ping is collected before metric are cleared, otherwise we end up
+    // with malformed pings.
+    await PingType._private_submitUndispatched(Glean.corePings.deletionRequest);
+
     Context.uploadEnabled = false;
     await Glean.clearMetrics();
-    // Note that `submit` is a dispatched function.
-    // The actual submission will only happen after we leave `onUploadDisabled`.
-    Glean.corePings.deletionRequest.submit();
   }
 
   /**
@@ -353,7 +356,6 @@ class Glean {
    * When this property is set, all subsequent outgoing pings will include the `X-Debug-ID` header
    * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
-   * To unset the `debugViewTag` call `Glean.unsetDebugViewTag();
    *
    * @param value The value of the header.
    *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
@@ -368,18 +370,6 @@ class Glean {
       Glean.instance._config.debug.debugViewTag = value;
 
       // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
-  }
-
-  /**
-   * Unsets the `debugViewTag` debug option.
-   *
-   * This is a no-op is case there is no `debugViewTag` set at the moment.
-   */
-  static unsetDebugViewTag(): void {
-    Context.dispatcher.launch(() => {
-      delete Glean.instance._config.debug.debugViewTag;
       return Promise.resolve();
     });
   }
@@ -406,18 +396,6 @@ class Glean {
       Glean.instance._config.debug.sourceTags = value;
 
       // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
-  }
-
-  /**
-   * Unsets the `sourceTags` debug option.
-   *
-   * This is a no-op is case there are no `sourceTags` set at the moment.
-   */
-  static unsetSourceTags(): void {
-    Context.dispatcher.launch(() => {
-      delete Glean.instance._config.debug.sourceTags;
       return Promise.resolve();
     });
   }
