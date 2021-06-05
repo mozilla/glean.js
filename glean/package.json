@@ -41,7 +41,7 @@
     "test:unit": "run-s test:unit:core test:unit:platform test:unit:plugins",
     "test:unit:core": "npm run test:base -- \"tests/unit/core/**/*.spec.ts\" --recursive",
     "test:unit:plugins": "npm run test:base -- \"tests/unit/plugins/**/*.spec.ts\" --recursive",
-    "test:unit:platform": "npm run test:base -- \"tests/unit/platform/**/*.spec.ts\" --recursive --timeout 0",
+    "test:unit:platform": "npm run test:base -- \"tests/unit/platform/**/*.spec.ts\" --recursive --timeout 20000",
     "pretest:unit:platform": "cd tests/unit/platform/utils/webext/sample/ && npm install && npm run build:xpi",
     "test:base": "node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js",
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
@@ -95,6 +95,7 @@
     "madge": "^4.0.2",
     "mocha": "^8.3.0",
     "npm-run-all": "^4.1.5",
+    "request-promise-native": "^1.0.9",
     "selenium-webdriver": "^4.0.0-alpha.8",
     "sinon": "^11.0.0",
     "ts-loader": "^9.0.1",
@@ -107,6 +108,7 @@
   },
   "dependencies": {
     "jose": "^3.7.0",
+    "request": "^2.88.2",
     "uuid": "^8.3.2"
   },
   "engines": {
