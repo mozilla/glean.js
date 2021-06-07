@@ -274,7 +274,7 @@ class MetricsDatabase {
     const pingData = await this.getAndValidatePingData(ping, Lifetime.Ping);
     const appData = await this.getAndValidatePingData(ping, Lifetime.Application);
 
-    if (clearPingLifetimeData) {
+    if (clearPingLifetimeData && Object.keys(pingData).length > 0) {
       await this.clear(Lifetime.Ping, ping);
     }
 

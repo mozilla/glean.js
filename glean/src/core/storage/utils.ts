@@ -109,7 +109,7 @@ export function deleteKeyFromNestedObject(obj: JSONObject, index: StorageIndex):
   for (const key of index.slice(0, index.length - 1)) {
     const value = target[key];
     if (!isObject(value)) {
-      throw Error("Attempted to delete an entry from an invalid index.");
+      throw Error(`Attempted to delete an entry from an inexistent index: ${index}.`);
     } else {
       target = value;
     }
