@@ -167,7 +167,7 @@ class EventsDatabase {
   async getPingEvents(ping: string, clearPingLifetimeData: boolean): Promise<JSONArray | undefined> {
     const pingData = await this.getAndValidatePingData(ping);
 
-    if (clearPingLifetimeData) {
+    if (clearPingLifetimeData && Object.keys(pingData).length > 0) {
       await this.eventsStore.delete([ping]);
     }
 
