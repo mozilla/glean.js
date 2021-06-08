@@ -7,6 +7,9 @@ import { generateUUIDv4 } from "../utils.js";
 import collectAndStorePing from "../pings/maker.js";
 import type CommonPingData from "./common_ping_data.js";
 import { Context } from "../context.js";
+import log, { LoggingLevel } from "../log.js";
+
+const LOG_TAG = "core.Pings.PingType";
 
 type ValidatorFunction = (reason?: string) => Promise<void>;
 type PromiseCallback = (value: void | PromiseLike<void>) => void;
@@ -68,7 +71,11 @@ class PingType implements CommonPingData {
           PingType._private_internalSubmit(this, reason, this.resolveTestPromiseFunction);
         })
         .catch(e => {
-          console.error(`There was an error validating "${this.name}" (${reason ?? "no reason"}):`, e);
+          log(
+            LOG_TAG,
+            [`There was an error validating "${this.name}" (${reason ?? "no reason"}):`, e],
+            LoggingLevel.Error
+          );
           PingType._private_internalSubmit(this, reason, this.rejectTestPromiseFunction);
         });
     } else {
@@ -93,18 +100,22 @@ class PingType implements CommonPingData {
    */
   static async _private_submitUndispatched(instance: PingType, reason?: string, testResolver?: PromiseCallback): Promise<void> {
     if (!Context.initialized) {
-      console.info("Glean must be initialized before submitting pings.");
+      log(LOG_TAG, "Glean must be initialized before submitting pings.", LoggingLevel.Info);
       return;
     }
 
     if (!Context.uploadEnabled && !instance.isDeletionRequest()) {
-      console.info("Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.");
+      log(
+        LOG_TAG,
+        "Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.",
+        LoggingLevel.Info
+      );
       return;
     }
 
     let correctedReason = reason;
     if (reason && !instance.reasonCodes.includes(reason)) {
-      console.error(`Invalid reason code ${reason} from ${this.name}. Ignoring.`);
+      log(LOG_TAG, `Invalid reason code ${reason} from ${this.name}. Ignoring.`, LoggingLevel.Warn);
       correctedReason = undefined;
     }
 
@@ -141,7 +152,11 @@ class PingType implements CommonPingData {
    */
   async testBeforeNextSubmit(callbackFn: ValidatorFunction): Promise<void> {
     if (this.testCallback) {
-      console.error(`There is an existing test call for ping "${this.name}". Ignoring.`);
+      log(
+        LOG_TAG,
+        `There is an existing test call for ping "${this.name}". Ignoring.`,
+        LoggingLevel.Error
+      );
       return;
     }
 

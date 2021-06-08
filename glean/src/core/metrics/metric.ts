@@ -2,7 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import log, { LoggingLevel } from "../log.js";
 import type { JSONValue } from "../utils.js";
+
+const LOG_TAG = "core.Metrics.Metric";
 
 /**
  * The Metric class describes the shared behaviour amongst concrete metrics.
@@ -48,7 +51,11 @@ export abstract class Metric<
    */
   set(v: unknown): void {
     if (!this.validate(v)) {
-      console.error(`Unable to set metric to ${JSON.stringify(v)}. Value is in unexpected format. Ignoring.`);
+      log(
+        LOG_TAG,
+        `Unable to set metric to ${JSON.stringify(v)}. Value is in unexpected format. Ignoring.`,
+        LoggingLevel.Error
+      );
       return;
     }
 

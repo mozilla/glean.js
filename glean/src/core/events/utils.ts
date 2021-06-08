@@ -5,6 +5,9 @@
 import type { CoreEvent } from "./index.js";
 import CoreEvents from "./index.js";
 import type Plugin from "../../plugins/index.js";
+import log, { LoggingLevel } from "../log.js";
+
+const LOG_TAG = "core.Events.Utils";
 
 /**
  * Registers a plugin to the desired Glean event.
@@ -21,9 +24,13 @@ export function registerPluginToEvent<E extends CoreEvent>(plugin: Plugin<E>): v
     return;
   }
 
-  console.error(
-    `Attempted to register plugin '${plugin.name}', which listens to the event '${plugin.event}'.`,
-    "That is not a valid Glean event. Ignoring"
+  log(
+    LOG_TAG,
+    [
+      `Attempted to register plugin '${plugin.name}', which listens to the event '${plugin.event}'.`,
+      "That is not a valid Glean event. Ignoring"
+    ],
+    LoggingLevel.Error
   );
 }
 

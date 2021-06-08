@@ -10,6 +10,10 @@ import * as path from "path";
 import { argv, platform } from "process";
 import { promisify } from "util";
 
+import log, { LoggingLevel } from "./core/log.js";
+
+const LOG_TAG = "CLI";
+
 // The name of the directory which will contain the Python virtual environment
 // used to run the glean-parser.
 const VIRTUAL_ENVIRONMENT_DIR = ".venv";
@@ -100,7 +104,7 @@ function getPythonVenvBinariesPath(venvRoot: string): string {
  *          is accessible, `false` otherwise.
  */
 async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
-  console.log(`Checking for a Glean virtual environment at ${venvPath}`);
+  log(LOG_TAG, `Checking for a Glean virtual environment at ${venvPath}`);
 
   const venvPython =
     path.join(getPythonVenvBinariesPath(venvPath), getSystemPythonBinName());
@@ -124,7 +128,7 @@ async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
  * @returns `true` if the environment was correctly created, `false` otherwise.
  */
 async function createPythonVenv(venvPath: string): Promise<boolean> {
-  console.log(`Creating a Glean virtual environment at ${venvPath}`);
+  log(LOG_TAG, `Creating a Glean virtual environment at ${venvPath}`);
 
   const pipFilename = (platform === "win32") ? "pip3.exe" : "pip3";
   const venvPip =
@@ -140,10 +144,10 @@ async function createPythonVenv(venvPath: string): Promise<boolean> {
     });
 
     stopSpinner(spinner);
-    console.log(`${stdout}`);
+    log(LOG_TAG, `${stdout}`);
 
     if (err) {
-      console.error(`${stderr}`);
+      log(LOG_TAG, `${stderr}`);
       return false;
     }
   }
@@ -162,9 +166,9 @@ async function setup(projectRoot: string) {
 
   const venvExists = await checkPythonVenvExists(venvRoot);
   if (venvExists) {
-    console.log(`Using Glean virtual environment at ${venvRoot}`);
+    log(LOG_TAG, `Using Glean virtual environment at ${venvRoot}`);
   } else if (!await createPythonVenv(venvRoot)){
-    console.error(`Failed to create a Glean virtual environment at ${venvRoot}`);
+    log(LOG_TAG, `Failed to create a Glean virtual environment at ${venvRoot}`);
     process.exit(1);
   }
 }
@@ -186,10 +190,10 @@ async function runGlean(projectRoot: string, parserArgs: string[]) {
   });
 
   stopSpinner(spinner);
-  console.log(`${stdout}`);
+  log(LOG_TAG, `${stdout}`);
 
   if (err) {
-    console.error(`${stderr}`);
+    log(LOG_TAG, `${stderr}`);
     process.exit(1);
   }
 }
@@ -232,7 +236,7 @@ async function run(args: string[]) {
   try {
     await setup(projectRoot);
   } catch (err) {
-    console.error("Failed to setup the Glean build environment", err);
+    log(LOG_TAG, ["Failed to setup the Glean build environment.\n", err], LoggingLevel.Error);
     process.exit(1);
   }
 
@@ -241,6 +245,6 @@ async function run(args: string[]) {
 
 // For discoverability, try to leave this function as the last one on this file.
 run(argv).catch(e => {
-  console.error("There was an error running Glean", e);
+  log(LOG_TAG, ["There was an error running Glean.\n", e], LoggingLevel.Error);
   process.exit(1);
 });

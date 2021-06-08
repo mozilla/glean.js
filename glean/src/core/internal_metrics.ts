@@ -13,6 +13,9 @@ import type { ConfigurationInterface } from "./config.js";
 import type Platform from "../platform/index.js";
 import type MetricsDatabase from "./metrics/database.js";
 import { Lifetime } from "./metrics/lifetime.js";
+import log, { LoggingLevel } from "./log.js";
+
+const LOG_TAG = "core.InternalMetrics";
 
 /**
  * Glean internal metrics.
@@ -124,7 +127,7 @@ export class CoreMetrics {
           needNewClientId = true;
         }
       } catch {
-        console.warn("Unexpected value found for Glean clientId. Ignoring.");
+        log(LOG_TAG, "Unexpected value found for Glean clientId. Ignoring.", LoggingLevel.Warn);
         needNewClientId = true;
       }
     } else {

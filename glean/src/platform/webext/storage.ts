@@ -2,11 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import log, { LoggingLevel } from "../../core/log.js";
 import type { StorageIndex } from "../../core/storage/index.js";
 import type Store from "../../core/storage/index.js";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "../../core/storage/utils.js";
 import type { JSONArray, JSONObject, JSONPrimitive, JSONValue } from "../../core/utils.js";
 import { isJSONValue, isObject } from "../../core/utils.js";
+
+const LOG_TAG = "platform.webext.Storage";
 
 type WebExtStoreQuery = { [x: string]: WebExtStoreQuery | JSONPrimitive | JSONArray | null; };
 
@@ -112,9 +115,13 @@ class WebExtStore implements Store {
       }
     }
 
-    console.warn(
-      `Unexpected value found in storage for index ${JSON.stringify(index)}. Ignoring.
-      ${JSON.stringify(response, null, 2)}`
+    log(
+      LOG_TAG,
+      [
+        `Unexpected value found in storage for index ${JSON.stringify(index)}. Ignoring.
+        ${JSON.stringify(response, null, 2)}`
+      ],
+      LoggingLevel.Warn
     );
   }
 
@@ -146,7 +153,7 @@ class WebExtStore implements Store {
       );
       return this.store.set(query);
     } catch(e) {
-      console.warn("Ignoring key", e);
+      log(LOG_TAG, ["Ignoring key", e], LoggingLevel.Warn);
     }
   }
 }

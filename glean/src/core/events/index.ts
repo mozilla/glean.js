@@ -3,9 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type Plugin from "../../plugins/index.js";
+import log, { LoggingLevel } from "../log.js";
 
 import type { PingPayload } from "../pings/ping_payload.js";
 import type { JSONObject } from "../utils.js";
+
+const LOG_TAG = "core.Events";
 
 export class CoreEvent<
    // An array of arguments that the event will provide as context to the plugin action.
@@ -29,10 +32,14 @@ export class CoreEvent<
    */
   registerPlugin(plugin: Plugin<CoreEvent<Context, Result>>): void {
     if (this.plugin) {
-      console.error(
-        `Attempted to register plugin '${plugin.name}', which listens to the event '${plugin.event}'.`,
-        `That event is already watched by plugin '${this.plugin.name}'`,
-        `Plugin '${plugin.name}' will be ignored.`
+      log(
+        LOG_TAG,
+        [
+          `Attempted to register plugin '${plugin.name}', which listens to the event '${plugin.event}'.`,
+          `That event is already watched by plugin '${this.plugin.name}'`,
+          `Plugin '${plugin.name}' will be ignored.`
+        ],
+        LoggingLevel.Error
       );
       return;
     }

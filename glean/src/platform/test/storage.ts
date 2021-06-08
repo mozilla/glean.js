@@ -2,10 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import log, { LoggingLevel } from "../../core/log.js";
 import type { StorageIndex } from "../../core/storage/index.js";
 import type Store from "../../core/storage/index.js";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "../../core/storage/utils.js";
 import type { JSONObject, JSONValue } from "../../core/utils.js";
+
+const LOG_TAG = "plaftom.test.Storage";
 
 // Enable storing the data outside of `MockStore` instances to simulate the
 // behaviour of the other persistent storages.
@@ -54,7 +57,7 @@ class MockStore implements Store {
     try {
       globalStore = deleteKeyFromNestedObject(globalStore, [ this.rootKey, ...index ]);
     } catch (e) {
-      console.warn((e as Error).message, "Ignoring.");
+      log(LOG_TAG, [(e as Error).message, "Ignoring."], LoggingLevel.Warn);
     }
     return Promise.resolve();
   }

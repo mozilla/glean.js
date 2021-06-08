@@ -21,6 +21,9 @@ import TestPlatform from "../platform/test/index.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import { Context } from "./context.js";
 import PingType from "./pings/ping_type.js";
+import log, { LoggingLevel } from "./log.js";
+
+const LOG_TAG = "core.Glean";
 
 class Glean {
   // The Glean singleton.
@@ -179,17 +182,29 @@ class Glean {
     config?: ConfigurationInterface
   ): void {
     if (Context.initialized) {
-      console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
+      log(
+        LOG_TAG,
+        "Attempted to initialize Glean, but it has already been initialized. Ignoring.",
+        LoggingLevel.Warn
+      );
       return;
     }
 
     if (applicationId.length === 0) {
-      console.error("Unable to initialize Glean, applicationId cannot be an empty string.");
+      log(
+        LOG_TAG,
+        "Unable to initialize Glean, applicationId cannot be an empty string.",
+        LoggingLevel.Error
+      );
       return;
     }
 
     if (!Glean.instance._platform) {
-      console.error("Unable to initialize Glean, environment has not been set.");
+      log(
+        LOG_TAG,
+        "Unable to initialize Glean, environment has not been set.",
+        LoggingLevel.Error
+      );
       return;
     }
 
@@ -316,10 +331,14 @@ class Glean {
   static setUploadEnabled(flag: boolean): void {
     Context.dispatcher.launch(async () => {
       if (!Context.initialized) {
-        console.error(
-          "Changing upload enabled before Glean is initialized is not supported.\n",
-          "Pass the correct state into `Glean.initialize\n`.",
-          "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
+        log(
+          LOG_TAG,
+          [
+            "Changing upload enabled before Glean is initialized is not supported.\n",
+            "Pass the correct state into `Glean.initialize\n`.",
+            "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
+          ],
+          LoggingLevel.Error
         );
         return;
       }
@@ -362,7 +381,7 @@ class Glean {
    */
   static setDebugViewTag(value: string): void {
     if (!Configuration.validateDebugViewTag(value)) {
-      console.error(`Invalid \`debugViewTag\` ${value}. Ignoring.`);
+      log(LOG_TAG, `Invalid \`debugViewTag\` ${value}. Ignoring.`, LoggingLevel.Error);
       return;
     }
 
@@ -388,7 +407,7 @@ class Glean {
    */
   static setSourceTags(value: string[]): void {
     if (!Configuration.validateSourceTags(value)) {
-      console.error(`Invalid \`sourceTags\` ${value.toString()}. Ignoring.`);
+      log(LOG_TAG, `Invalid \`sourceTags\` ${value.toString()}. Ignoring.`, LoggingLevel.Error);
       return;
     }
 
@@ -426,7 +445,8 @@ class Glean {
     // we log a debug message about the change.
     if (Glean.instance._platform && Glean.instance._platform.name !== platform.name) {
       // TODO: Only show this message outside of test mode, and rephrase it as an error (depends on Bug 1682771).
-      console.debug(
+      log(
+        LOG_TAG,
         `Changing Glean platform from "${Glean.platform.name}" to "${platform.name}".`,
       );
     }
