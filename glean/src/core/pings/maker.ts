@@ -16,6 +16,9 @@ import TimeUnit from "../metrics/time_unit.js";
 import CoreEvents from "../events/index.js";
 import { Lifetime } from "../metrics/lifetime.js";
 import { Context } from "../context.js";
+import log, { LoggingLevel } from "../log.js";
+
+const LOG_TAG = "core.Pings.Maker";
 
 // The moment the current Glean.js session started.
 const GLEAN_START_TIME = new Date();
@@ -47,7 +50,11 @@ export async function getSequenceNumber(metricsDatabase: MetricsDatabase, ping: 
       const metric = new CounterMetric(currentSeqData);
       return metric.payload();
     } catch(e) {
-      console.warn(`Unexpected value found for sequence number in ping ${ping.name}. Ignoring.`);
+      log(
+        LOG_TAG,
+        `Unexpected value found for sequence number in ping ${ping.name}. Ignoring.`,
+        LoggingLevel.Warn
+      );
     }
   }
 
@@ -128,7 +135,7 @@ export async function buildClientInfoSection(metricsDatabase: MetricsDatabase, p
   let clientInfo = await metricsDatabase.getPingMetrics(CLIENT_INFO_STORAGE, true);
   if (!clientInfo) {
     // TODO: Watch Bug 1685705 and change behaviour in here accordingly.
-    console.warn("Empty client info data. Will submit anyways.");
+    log(LOG_TAG, "Empty client info data. Will submit anyways.", LoggingLevel.Warn);
     clientInfo = {};
   }
 
@@ -191,10 +198,10 @@ export async function collectPing(metricsDatabase: MetricsDatabase, eventsDataba
   const eventsData = await eventsDatabase.getPingEvents(ping.name, true);
   if (!metricsData && !eventsData) {
     if (!ping.sendIfEmpty) {
-      console.info(`Storage for ${ping.name} empty. Bailing out.`);
+      log(LOG_TAG, `Storage for ${ping.name} empty. Bailing out.`, LoggingLevel.Info);
       return;
     }
-    console.info(`Storage for ${ping.name} empty. Ping will still be sent.`);
+    log(LOG_TAG, `Storage for ${ping.name} empty. Ping will still be sent.`, LoggingLevel.Info);
   }
 
   const metrics = metricsData ? { metrics: metricsData } : {};
@@ -246,18 +253,22 @@ export async function collectAndStorePing(identifier: string, ping: CommonPingDa
   try {
     modifiedPayload = await CoreEvents.afterPingCollection.trigger(collectedPayload);
   } catch(e) {
-    console.error(
-      `Error while attempting to modify ping payload for the "${ping.name}" ping using`,
-      `the ${JSON.stringify(CoreEvents.afterPingCollection.registeredPluginIdentifier)} plugin.`,
-      "Ping will not be submitted. See more logs below.\n\n",
-      e
+    log(
+      LOG_TAG,
+      [
+        `Error while attempting to modify ping payload for the "${ping.name}" ping using`,
+        `the ${JSON.stringify(CoreEvents.afterPingCollection.registeredPluginIdentifier)} plugin.`,
+        "Ping will not be submitted. See more logs below.\n\n",
+        e
+      ],
+      LoggingLevel.Error
     );
 
     return;
   }
 
   if (Context.debugOptions.logPings) {
-    console.info(JSON.stringify(collectedPayload, null, 2));
+    log(LOG_TAG, JSON.stringify(collectedPayload, null, 2), LoggingLevel.Info);
   }
   const finalPayload = modifiedPayload ? modifiedPayload : collectedPayload;
   const headers = getPingHeaders(Context.debugOptions);

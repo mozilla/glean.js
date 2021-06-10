@@ -180,7 +180,7 @@ export function getMonotonicNow(): number {
 }
 
 /**
- * Truncates a string to agiven max length.
+ * Truncates a string to a given max length.
  *
  * If the string required truncation, records an error through the error
  * reporting mechanism.

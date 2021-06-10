@@ -2,6 +2,10 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.15.0...main)
 
+* [#411](https://github.com/mozilla/glean.js/pull/411): Tag all messages logged by Glean with the component they are coming from.
+* [#399](https://github.com/mozilla/glean.js/pull/399): Check if there are ping data before attempting to delete it.
+  * This change lowers the amount of log messages related to attempting to delete inexistent data.
+
 # v0.15.0 (2021-06-03)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.1...v0.15.0)
