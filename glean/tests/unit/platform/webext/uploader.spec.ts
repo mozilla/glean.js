@@ -6,10 +6,9 @@ import "jsdom-global/register";
 import assert from "assert";
 import sinon from "sinon";
 
-import BrowserUploader from "../../../src/platform/webext/uploader";
-import QtUploader from "../../../src/platform/qt/uploader"
-import type { JSONObject } from "../../../src/core/utils";
-import {DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus} from "../../../src/core/upload/uploader";
+import BrowserUploader from "../../../../src/platform/webext/uploader";
+import type { JSONObject } from "../../../../src/core/utils";
+import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 
 const sandbox = sinon.createSandbox();
 
@@ -77,39 +76,5 @@ describe("Uploader/browser", function () {
       await BrowserUploader.post("https://localhost:8080", ""),
       { result: UploadResultStatus.RecoverableFailure }
     );
-  });
-});
-
-describe("Uploader/Qt", function () {
-  let server: sinon.SinonFakeServer;
-
-  beforeEach(function () {
-    server = sinon.fakeServer.create();
-  });
-
-  afterEach(function () {
-    server.restore();
-  });
-
-  it("returns the status for successful requests", async function () {
-    for (const [index, status] of [200, 400, 500].entries()) {
-      const response = QtUploader.post("/hello", "");
-      server.respondWith("POST", "/hello", [status, {}, ""]);
-      server.respond();
-      assert.deepStrictEqual(
-          await response,
-          { status: status, result: UploadResultStatus.Success });
-    }
-  });
-
-  it("timeout", async function () {
-    const clock = sinon.useFakeTimers();
-    const response = QtUploader.post("/hello", "");
-    clock.tick(DEFAULT_UPLOAD_TIMEOUT_MS + 1);
-    server.respondWith("POST", "/hello", [200, {}, ""]);
-    server.respond();
-    assert.deepStrictEqual(
-        await response,
-        { result: UploadResultStatus.RecoverableFailure });
   });
 });
