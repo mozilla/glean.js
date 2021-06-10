@@ -91,23 +91,25 @@ describe("Uploader/Qt", function () {
     server.restore();
   });
 
-  it("returns the status for succesful requests", async function () {
+  it("returns the status for successful requests", async function () {
     for (const [index, status] of [200, 400, 500].entries()) {
+      const response = QtUploader.post("/hello", "");
       server.respondWith("POST", "/hello", [status, {}, ""]);
-      assert.deepStrictEqual(
-          await QtUploader.post("/hello", ""),
-          { status: status, result: UploadResultStatus.Success });
       server.respond();
+      assert.deepStrictEqual(
+          await response,
+          { status: status, result: UploadResultStatus.Success });
     }
   });
 
   it("timeout", async function () {
     const clock = sinon.useFakeTimers();
+    const response = QtUploader.post("/hello", "");
     clock.tick(DEFAULT_UPLOAD_TIMEOUT_MS + 1);
     server.respondWith("POST", "/hello", [200, {}, ""]);
-    assert.deepStrictEqual(
-        await QtUploader.post("/hello", ""),
-        { result: UploadResultStatus.RecoverableFailure });
     server.respond();
+    assert.deepStrictEqual(
+        await response,
+        { result: UploadResultStatus.RecoverableFailure });
   });
 });
