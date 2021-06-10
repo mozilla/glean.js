@@ -6,6 +6,9 @@ import type Store from "../storage/index.js";
 import type { JSONObject} from "../utils.js";
 import { isObject, isJSONValue, isString } from "../utils.js";
 import type { StorageBuilder } from "../../platform/index.js";
+import log, { LoggingLevel } from "../log.js";
+
+const LOG_TAG = "core.Pings.Database";
 
 export interface PingInternalRepresentation extends JSONObject {
   path: string,
@@ -128,7 +131,7 @@ class PingsDatabase {
       if (isValidPingInternalRepresentation(ping)) {
         finalPings[identifier] = ping;
       } else {
-        console.warn("Unexpected data found in pings database. Deleting.");
+        log(LOG_TAG, "Unexpected data found in pings database. Deleting.", LoggingLevel.Warn);
         await this.store.delete([identifier]);
       }
     }

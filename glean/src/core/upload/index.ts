@@ -5,12 +5,15 @@
 import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
 import { GLEAN_VERSION } from "../constants.js";
+import log, { LoggingLevel } from "../log.js";
 import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
 import type PingsDatabase from "../pings/database.js";
 import type PlatformInfo from "../platform_info.js";
 import type { UploadResult} from "./uploader.js";
 import type Uploader from "./uploader.js";
 import { UploadResultStatus } from "./uploader.js";
+
+const LOG_TAG = "core.Upload";
 
 interface QueuedPing extends PingInternalRepresentation {
   identifier: string
@@ -150,7 +153,11 @@ class PingUploader implements PingsDatabaseObserver {
    */
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
     if (!this.initialized) {
-      console.warn("Attempted to upload a ping, but Glean is not initialized yet. Ignoring.");
+      log(
+        LOG_TAG,
+        "Attempted to upload a ping, but Glean is not initialized yet. Ignoring.",
+        LoggingLevel.Warn
+      );
       return { result: UploadResultStatus.RecoverableFailure };
     }
 
@@ -206,20 +213,29 @@ class PingUploader implements PingsDatabaseObserver {
   private async processPingUploadResponse(identifier: string, response: UploadResult): Promise<boolean> {
     const { status, result } = response;
     if (status && status >= 200 && status < 300) {
-      console.info(`Ping ${identifier} succesfully sent ${status}.`);
+      log(LOG_TAG, `Ping ${identifier} succesfully sent ${status}.`, LoggingLevel.Info);
       await this.pingsDatabase.deletePing(identifier);
       return false;
     }
 
     if (result === UploadResultStatus.UnrecoverableFailure || (status && status >= 400 && status < 500)) {
-      console.warn(
-        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was ${status ?? "no status"}.`);
+      log(
+        LOG_TAG,
+        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was ${status ?? "no status"}.`,
+        LoggingLevel.Warn
+      );
       await this.pingsDatabase.deletePing(identifier);
       return false;
     }
 
-    console.warn(
-      `Recoverable upload failure while attempting to send ping ${identifier}, will retry. Error was ${status ?? "no status"}.`);
+    log(
+      LOG_TAG,
+      [
+        `Recoverable upload failure while attempting to send ping ${identifier}, will retry.`,
+        `Error was ${status ?? "no status"}.`
+      ],
+      LoggingLevel.Warn
+    );
     return true;
   }
 
@@ -235,7 +251,11 @@ class PingUploader implements PingsDatabaseObserver {
       }
 
       if (retries >= 3) {
-        console.info("Reached maximum recoverable failures for the current uploading window. You are done.");
+        log(
+          LOG_TAG,
+          "Reached maximum recoverable failures for the current uploading window. You are done.",
+          LoggingLevel.Info
+        );
         return;
       }
 

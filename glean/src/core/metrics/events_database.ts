@@ -7,6 +7,9 @@ import type { JSONArray, JSONObject, JSONValue } from "../utils.js";
 import { isUndefined } from "../utils.js";
 import type EventMetricType from "./types/event.js";
 import type { StorageBuilder } from "../../platform/index.js";
+import log, { LoggingLevel } from "../log.js";
+
+const LOG_TAG = "core.Metric.EventsDatabase";
 
 // An helper type for the 'extra' map.
 export type ExtraMap = Record<string, string>;
@@ -148,7 +151,11 @@ class EventsDatabase {
 
     // We expect arrays!
     if (!Array.isArray(data)) {
-      console.error(`Unexpected value found for ping ${ping}: ${JSON.stringify(data)}. Clearing.`);
+      log(
+        LOG_TAG,
+        `Unexpected value found for ping ${ping}: ${JSON.stringify(data)}. Clearing.`,
+        LoggingLevel.Error
+      );
       await this.eventsStore.delete([ping]);
       return [];
     }

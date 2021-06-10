@@ -2,6 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import log, { LoggingLevel } from "./log.js";
+
+const LOG_TAG = "core.Dispatcher";
+
 // The possible states a dispatcher instance can be in.
 export const enum DispatcherState {
   // The dispatcher has not been initialized yet.
@@ -84,7 +88,7 @@ class Dispatcher {
     try {
       await task();
     } catch(e) {
-      console.error("Error executing task:", e);
+      log(LOG_TAG, ["Error executing task:", e], LoggingLevel.Error);
     }
   }
 
@@ -144,9 +148,13 @@ class Dispatcher {
           }
         })
         .catch(error => {
-          console.error(
-            "IMPOSSIBLE: Something went wrong while the dispatcher was executing the tasks queue.",
-            error
+          log(
+            LOG_TAG,
+            [
+              "IMPOSSIBLE: Something went wrong while the dispatcher was executing the tasks queue.",
+              error
+            ],
+            LoggingLevel.Error
           );
         });
     }
@@ -169,7 +177,11 @@ class Dispatcher {
   private launchInternal(command: Command, priorityTask = false): boolean {
     if (!priorityTask && this.state === DispatcherState.Uninitialized) {
       if (this.queue.length >= this.maxPreInitQueueSize) {
-        console.warn("Unable to enqueue task, pre init queue is full.");
+        log(
+          LOG_TAG,
+          "Unable to enqueue task, pre init queue is full.",
+          LoggingLevel.Warn
+        );
         return false;
       }
     }
@@ -213,7 +225,11 @@ class Dispatcher {
    */
   flushInit(task?: Task): void {
     if (this.state !== DispatcherState.Uninitialized) {
-      console.warn("Attempted to initialize the Dispatcher, but it is already initialized. Ignoring.");
+      log(
+        LOG_TAG,
+        "Attempted to initialize the Dispatcher, but it is already initialized. Ignoring.",
+        LoggingLevel.Warn
+      );
       return;
     }
 
