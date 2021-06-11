@@ -1,7 +1,7 @@
 {
   "name": "@mozilla/glean",
   "version": "0.15.0",
-  "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for Javascript environments.",
+  "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for JavaScript environments.",
   "type": "module",
   "exports": {
     "./package.json": "./package.json",

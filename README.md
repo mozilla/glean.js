@@ -2,7 +2,7 @@
 
 ![Glean logo](https://mozilla.github.io/glean/book/glean.jpeg)
 
-`Glean.js` is a modern approach for a Telemetry library aimed at Javascript environments. It is part of the [Glean project](https://docs.telemetry.mozilla.org/concepts/glean/glean.html).
+`Glean.js` is a modern approach for a Telemetry library aimed at JavaScript environments. It is part of the [Glean project](https://docs.telemetry.mozilla.org/concepts/glean/glean.html).
 
 ## Documentation
 
