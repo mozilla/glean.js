@@ -26,7 +26,7 @@ jobs:
               exit 1
             fi
       - run:
-          name: Install Javascript dependencies
+          name: Install JavaScript dependencies
           command: npm --prefix ./glean install
       - run:
           name: Run linter
@@ -47,7 +47,7 @@ jobs:
             sudo apt update
             sudo apt install firefox-trunk
       - run:
-          name: Install Javascript dependencies
+          name: Install JavaScript dependencies
           command: npm --prefix ./glean install
       - run:
           name: Run unit tests
@@ -62,7 +62,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Javascript dependencies for Glean
+          name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
       - run:
           name: Build & link Glean.js to use it in the samples
@@ -72,7 +72,7 @@ jobs:
               npm --prefix ./glean link
       # JS sample related jobs
       - run:
-          name: Install Javascript dependencies for the JS sample
+          name: Install JavaScript dependencies for the JS sample
           command: |
               npm --prefix ./samples/web-extension/javascript install
               npm --prefix ./samples/web-extension/javascript link @mozilla/glean
@@ -114,7 +114,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Javascript dependencies and build Glean.js for Qt
+          name: Install JavaScript dependencies and build Glean.js for Qt
           command: |
             npm --prefix ./glean install
             npm --prefix ./glean run build:qt
@@ -155,7 +155,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Javascript dependencies
+          name: Install JavaScript dependencies
           command: npm --prefix ./glean install
       - run:
           name: Build documentation
@@ -186,7 +186,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Javascript dependencies
+          name: Install JavaScript dependencies
           command: npm --prefix ./glean install
       - run:
           name: NPM Authentication
