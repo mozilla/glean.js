@@ -47,7 +47,7 @@ export interface Uploader {
    * @param headers Optional header to include in the request
    * @returns The status code of the response.
    */
-  post(url: string, body: string, headers?: Record<string, string>): Promise<UploadResult>;
+  post(url: string, body: string | Uint8Array, headers?: Record<string, string>): Promise<UploadResult>;
 }
 
 export default Uploader;

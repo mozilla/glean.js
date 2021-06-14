@@ -51,7 +51,7 @@
     "build:webext:lib": "tsc -p ./tsconfig/webext/index.json",
     "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
     "build:webext": "rm -rf dist/webext && run-s build:webext:lib build:webext:types",
-    "build:qt": "rm -rf dist/qt && webpack --config webpack.config.qt.js --mode production && ../bin/prepare-qml-module.sh",
+    "build:qt": "rm -rf dist/qt && webpack --config webpack.config.qt.js && ../bin/prepare-qml-module.sh",
     "build:docs": "rm -rf dist/docs && typedoc src/ --out dist/docs --tsconfig tsconfig/docs.json --theme minimal",
     "publish:docs": "NODE_DEBUG=gh-pages gh-pages --dotfiles --message \"[skip ci] Updates\" --dist dist/docs",
     "prepublishOnly": "cp ../README.md ./README.md && run-s build:cli build:webext",
@@ -106,6 +106,7 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
+    "fflate": "^0.7.0",
     "jose": "^3.7.0",
     "uuid": "^8.3.2"
   },

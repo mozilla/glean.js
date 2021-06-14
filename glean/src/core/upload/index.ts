@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import { gzipSync } from "fflate";
+
 import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
 import { GLEAN_VERSION } from "../constants.js";
@@ -124,25 +126,35 @@ class PingUploader implements PingsDatabaseObserver {
    */
   private async preparePingForUpload(ping: QueuedPing): Promise<{
     headers: Record<string, string>,
-    payload: string
+    payload: string | Uint8Array
   }> {
-    const stringifiedBody = JSON.stringify(ping.payload);
-
     let headers = ping.headers || {};
     headers = {
       ...ping.headers,
       "Content-Type": "application/json; charset=utf-8",
-      "Content-Length": stringifiedBody.length.toString(),
       "Date": (new Date()).toISOString(),
       "X-Client-Type": "Glean.js",
       "X-Client-Version": GLEAN_VERSION,
       "X-Telemetry-Agent": `Glean/${GLEAN_VERSION} (JS on ${await this.platformInfo.os()})`
     };
 
-    return {
-      headers,
-      payload: stringifiedBody
-    };
+    const stringifiedBody = JSON.stringify(ping.payload);
+    try {
+      const encoder = new TextEncoder();
+      const compressedBody = gzipSync(encoder.encode(stringifiedBody));
+      headers["Content-Encoding"] = "gzip";
+      headers["Content-Length"] = compressedBody.length.toString();
+      return {
+        headers,
+        payload: compressedBody
+      };
+    } catch {
+      headers["Content-Length"] = stringifiedBody.length.toString();
+      return {
+        headers,
+        payload: stringifiedBody
+      };
+    }
   }
 
   /**
