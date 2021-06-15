@@ -48,6 +48,7 @@
     "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "lint:circular-deps": "madge --circular src/ --extensions ts",
     "fix": "eslint . --ext .ts,.js,.json --fix",
+    "build": "run-s build:cli build:webext build:qt",
     "build:cli": "tsc -p ./tsconfig/cli.json",
     "build:webext:lib": "tsc -p ./tsconfig/webext/index.json",
     "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
