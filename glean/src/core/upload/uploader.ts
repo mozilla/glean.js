@@ -43,7 +43,9 @@ export interface Uploader {
    * Makes a POST request to a given url, with the given headers and body.
    *
    * @param url The URL to make the POST request
-   * @param body The stringified body of this post request
+   * @param body The body of this post request. The body may be a stringified JSON or, most likely,
+   *        a Uint8Array containing the gzipped version of said stringified JSON. We need to accept
+   *        both in case the compression fails.
    * @param headers Optional header to include in the request
    * @returns The status code of the response.
    */

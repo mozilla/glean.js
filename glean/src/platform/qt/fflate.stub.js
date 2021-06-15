@@ -10,5 +10,8 @@
 
 // eslint-disable-next-line jsdoc/require-jsdoc
 export function gzipSync() {
+  // We throw here because when the gzipping action throws the ping upload manager will
+  // catch and send the uncompressed ping, which is what we want on QML for the time being.
+  // We are trying to figure out how to actually add the gzipping step to QML on Bug 1716322.
   throw new Error("Attempted to use `gzipSync` from QML, but that is not supported.");
 }
