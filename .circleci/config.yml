@@ -229,7 +229,7 @@ workflows:
             - lint
             - test
             - check-qt-js
-            - sample-tests
+            - samples-tests
       - check-size:
           requires:
             - hold
