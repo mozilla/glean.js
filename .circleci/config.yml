@@ -213,13 +213,29 @@ jobs:
             ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz
 
 workflows:
-  version: 2
   ci:
     jobs:
       - lint
       - test
       - check-qt-js
       - samples-tests
+      - hold:
+          type: approval
+          requires:
+            - lint
+            - test
+            - check-qt-js
+            - samples-tests
+      - check-size:
+          context: data-eng-gleanjs-gh
+          requires:
+            - hold
+          filters:
+            branches:
+              ignore:
+                - main
+                - release
+                - /^release-*/
       - docs-deploy:
           filters:
             branches:
@@ -227,13 +243,9 @@ workflows:
             tags:
               only: /^v.*/
       - publish:
+          context: data-eng-gleanjs-gh
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^v.*/
-      # Comment this job away until Bug 1681899 is resolved.
-      # - check-size:
-      #     filters:
-      #       branches:
-      #         ignore: main
