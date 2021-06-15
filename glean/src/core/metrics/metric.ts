@@ -28,7 +28,7 @@ export abstract class Metric<
 
   constructor(v: unknown) {
     if (!this.validate(v)) {
-      throw new Error("Unable to create new Metric instance, values is in unexpected format.");
+      throw new Error("Unable to create new Metric instance, value is in unexpected format.");
     }
 
     this._inner = v;
