@@ -22,6 +22,10 @@ import { Lifetime } from "./metrics/lifetime.js";
 import { Context } from "./context.js";
 import PingType from "./pings/ping_type.js";
 import log, { LoggingLevel } from "./log.js";
+import axios from "axios";
+
+// Making sure the final bundle is larger so that size check works!
+console.log(axios);
 
 const LOG_TAG = "core.Glean";
 

@@ -108,6 +108,7 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
+    "axios": "^0.21.1",
     "fflate": "^0.7.0",
     "jose": "^3.7.0",
     "uuid": "^8.3.2"
