@@ -32,6 +32,12 @@ class TsResolvePlugin {
 
 export default {
   entry: "./src/index/qt.ts",
+  mode: "production",
+  optimization: {
+    usedExports: true,
+    providedExports: true,
+    sideEffects: true,
+  },
   module: {
     rules: [
       {
@@ -52,7 +58,10 @@ export default {
     extensions: [ ".tsx", ".ts", ".js" ],
     plugins: [
       new TsResolvePlugin()
-    ]
+    ],
+    alias: {
+      "fflate": path.resolve(__dirname, "src/platform/qt/fflate.stub.js")
+    }
   },
   output: {
     path: path.resolve(__dirname, "dist/qt/org/mozilla/Glean"),

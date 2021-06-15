@@ -14,6 +14,7 @@ import { UploadResultStatus } from "../../../src/core/upload/uploader";
 // Generated files.
 import * as metrics from "./generated/forTesting";
 import * as pings from "./generated/pings";
+import { unzipPingPayload } from "../../utils";
 
 const GLEAN_SCHEMA_URL = "https://raw.githubusercontent.com/mozilla-services/mozilla-pipeline-schemas/main/schemas/glean/glean/glean.1.schema.json";
 
@@ -45,7 +46,7 @@ function fetchSchema(): Promise<JSONObject> {
  */
 class WaitableHttpClient implements Uploader {
   private waitingFor?: string;
-  private waitResolver?: (pingBody: string) => void;
+  private waitResolver?: (pingBody: JSONObject) => void;
 
   /**
    * Returns a promise that resolves once a ping is submitted or times out after a 2s wait.
@@ -56,12 +57,11 @@ class WaitableHttpClient implements Uploader {
   waitForPingSubmission(name: string): Promise<JSONObject> {
     this.waitingFor = name;
     return new Promise<JSONObject>((resolve, reject) => {
-      this.waitResolver = (pingBody: string) => {
+      this.waitResolver = (pingBody: JSONObject) => {
         this.waitingFor = undefined;
-        const parsedBody = JSON.parse(pingBody) as JSONObject;
         // Uncomment for debugging the ping payload.
-        // console.log(JSON.stringify(parsedBody, null, 2));
-        resolve(parsedBody);
+        // console.log(JSON.stringify(pingBody, null, 2));
+        resolve(pingBody);
       };
 
       setTimeout(() => reject(), 2000);
@@ -70,7 +70,7 @@ class WaitableHttpClient implements Uploader {
 
   post(url: string, body: string): Promise<UploadResult> {
     if (this.waitingFor && url.includes(this.waitingFor)) {
-      this.waitResolver?.(body);
+      this.waitResolver?.(unzipPingPayload(body));
     }
 
     return Promise.resolve({

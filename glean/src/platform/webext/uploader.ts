@@ -10,7 +10,7 @@ import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus } from "../../core/upload
 const LOG_TAG = "platform.webext.Uploader";
 
 class BrowserUploader implements Uploader {
-  async post(url: string, body: string, headers: Record<string, string> = {}): Promise<UploadResult> {
+  async post(url: string, body: string | Uint8Array, headers: Record<string, string> = {}): Promise<UploadResult> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), DEFAULT_UPLOAD_TIMEOUT_MS);
 
