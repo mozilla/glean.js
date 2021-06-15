@@ -79,7 +79,7 @@
     "@types/selenium-webdriver": "^4.0.11",
     "@types/sinon": "^10.0.0",
     "@types/uuid": "^8.3.0",
-    "@typescript-eslint/eslint-plugin": "^4.15.0",
+    "@typescript-eslint/eslint-plugin": "^4.27.0",
     "@typescript-eslint/parser": "^4.24.0",
     "eslint": "^7.19.0",
     "eslint-plugin-import": "^2.23.2",
