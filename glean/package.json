@@ -107,7 +107,7 @@
     "webpack-cli": "^4.5.0"
   },
   "dependencies": {
-    "fflate": "^0.7.0",
+    "fflate": "^0.7.1",
     "jose": "^3.7.0",
     "uuid": "^8.3.2"
   },
