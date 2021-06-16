@@ -5,7 +5,8 @@
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 import { statSync  } from "fs";
-import https from "https";
+
+import { request } from "@octokit/request";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -88,32 +89,16 @@ ${tableRows.join("\n")}
 if (process.env.DRY_RUN) {
   console.log(report);
 } else {
-  const data = JSON.stringify({
-    body: report,
-  });
-
-  const options = {
-    hostname: "api.github.com",
-    path: `/repos/${process.env.CIRCLE_PROJECT_USERNAME}/${process.env.CIRCLE_PROJECT_REPONAME}/issues/${process.env.CIRCLE_PULL_REQUEST}/comments`,
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      "Content-Length": data.length,
-      "Accept": "application/vnd.github.v3+json",
-      "Authorization": `token ${process.env.GITHUB_TOKEN}`
-    }
+  if (!process.env.GITHUB_TOKEN) {
+    throw new Error("No Github token configured!")
   }
-
-  const req = https.request(options, res => {
-    res.on("data", d => {
-      process.stdout.write(d)
-    });
+  await request("POST /repos/{owner}/{repo}/issues/{issue_number}/comments", {
+    owner: process.env.CIRCLE_PROJECT_USERNAME,
+    repo: process.env.CIRCLE_PROJECT_REPONAME,
+    issue_number: process.env.CIRCLE_PR_NUMBER,
+    body: report,
+    headers: {
+      authorization: `token ${process.env.GITHUB_TOKEN}`,
+    },
   });
-
-  req.on("error", error => {
-    console.error(error);
-  });
-  
-  req.write(data);
-  req.end();
 }
