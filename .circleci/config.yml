@@ -215,11 +215,11 @@ jobs:
             ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz
 
 workflows:
-  version: 2
   ci:
     jobs:
       - hold:
           type: approval
       - check-size:
+          context: data-eng-gleanjs-gh
           requires:
             - hold
