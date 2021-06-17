@@ -6,11 +6,12 @@ import log, { LoggingLevel } from "../../core/log.js";
 import type Uploader from "../../core/upload/uploader.js";
 import type { UploadResult } from "../../core/upload/uploader.js";
 import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus } from "../../core/upload/uploader.js";
+import { isString } from "../../core/utils.js";
 
 const LOG_TAG = "platform.qt.Uploader";
 
 class QtUploader implements Uploader {
-  async post(url: string, body: string, headers: Record<string, string> = {}): Promise<UploadResult> {
+  async post(url: string, body: string | Uint8Array, headers: Record<string, string> = {}): Promise<UploadResult> {
     return new Promise((resolve) => {
       const xhr = new XMLHttpRequest();
       xhr.timeout = DEFAULT_UPLOAD_TIMEOUT_MS;
@@ -48,7 +49,11 @@ class QtUploader implements Uploader {
         });
       };
 
-      xhr.send(body);
+      if (!isString(body)) {
+        xhr.send(body.buffer);
+      } else {
+        xhr.send(body);
+      }
     });
   }
 }

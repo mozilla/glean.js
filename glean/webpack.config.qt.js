@@ -58,10 +58,7 @@ export default {
     extensions: [ ".tsx", ".ts", ".js" ],
     plugins: [
       new TsResolvePlugin()
-    ],
-    alias: {
-      "fflate": path.resolve(__dirname, "src/platform/qt/fflate.stub.js")
-    }
+    ]
   },
   output: {
     path: path.resolve(__dirname, "dist/qt/org/mozilla/Glean"),

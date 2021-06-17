@@ -11,6 +11,7 @@ import log, { LoggingLevel } from "../log.js";
 import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
 import type PingsDatabase from "../pings/database.js";
 import type PlatformInfo from "../platform_info.js";
+import { UTF8EncodeText } from "../utils.js";
 import type { UploadResult} from "./uploader.js";
 import type Uploader from "./uploader.js";
 import { UploadResultStatus } from "./uploader.js";
@@ -140,8 +141,8 @@ class PingUploader implements PingsDatabaseObserver {
 
     const stringifiedBody = JSON.stringify(ping.payload);
     try {
-      const encoder = new TextEncoder();
-      const compressedBody = gzipSync(encoder.encode(stringifiedBody));
+      const encodedBody = UTF8EncodeText(stringifiedBody);
+      const compressedBody = gzipSync(encodedBody, {});
       headers["Content-Encoding"] = "gzip";
       headers["Content-Length"] = compressedBody.length.toString();
       return {
