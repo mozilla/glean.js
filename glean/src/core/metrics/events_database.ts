@@ -85,15 +85,16 @@ class EventsDatabase {
   /**
    * Records a given event.
    *
-   * @param metric The metric to record to.
+   * @param isDisabled Whether or not the metric is disabled.
+   * @param sendInPings The list of pings to record the event to.
    * @param value The value we want to record to the given metric.
    */
-  async record(metric: EventMetricType, value: RecordedEvent): Promise<void> {
-    if (metric.disabled) {
+  async record(isDisabled: boolean, sendInPings: string[], value: RecordedEvent): Promise<void> {
+    if (isDisabled) {
       return;
     }
 
-    for (const ping of metric.sendInPings) {
+    for (const ping of sendInPings) {
       const transformFn = (v?: JSONValue): JSONArray => {
         const existing: JSONArray = (v as JSONArray) ?? [];
         existing.push(RecordedEvent.toJSONObject(value));

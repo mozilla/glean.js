@@ -95,7 +95,7 @@ describe("EventsDatabase", function() {
     let snapshot = await db.getPingEvents("store1", false);
     assert.strictEqual(snapshot, undefined);
 
-    await db.record(metric, new RecordedEvent(
+    await db.record(metric.disabled, metric.sendInPings, new RecordedEvent(
       "telemetry",
       "test_event_clear",
       1000,
@@ -131,19 +131,19 @@ describe("EventsDatabase", function() {
       disabled: false
     });
 
-    await db.record(metric, new RecordedEvent(
+    await db.record(metric.disabled, metric.sendInPings, new RecordedEvent(
       metric.category,
       metric.name,
       1000,
     ));
 
-    await db.record(metric, new RecordedEvent(
+    await db.record(metric.disabled, metric.sendInPings, new RecordedEvent(
       metric.category,
       metric.name,
       100,
     ));
 
-    await db.record(metric, new RecordedEvent(
+    await db.record(metric.disabled, metric.sendInPings, new RecordedEvent(
       metric.category,
       metric.name,
       10000,

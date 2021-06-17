@@ -60,7 +60,7 @@ class EventMetricType extends MetricType {
         timestamp,
         truncatedExtra,
       );
-      await Context.eventsDatabase.record(this, event);
+      await Context.eventsDatabase.record(this.disabled, this.sendInPings, event);
     });
   }
 
