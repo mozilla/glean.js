@@ -33,12 +33,12 @@ class EventMetricType extends MetricType {
    *        The maximum length for values is 100 bytes.
    */
   record(extra?: ExtraMap): void {
+    const timestamp = getMonotonicNow();
+
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
-
-      const timestamp = getMonotonicNow();
 
       // Truncate the extra keys, if needed.
       let truncatedExtra: ExtraMap | undefined = undefined;
