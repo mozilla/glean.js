@@ -217,6 +217,8 @@ jobs:
 workflows:
   ci:
     jobs:
+      - lint:
+          context: data-eng-gleanjs-gh
       - hold:
           type: approval
       - check-size:
