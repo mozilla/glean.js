@@ -212,10 +212,32 @@ jobs:
             tar -zcvf "glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz" glean/dist/qt
             ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz
 
+  test-ssh:
+    docker:
+      - image: cimg/node:16.1.0
+    steps:
+      - add_ssh_keys:
+          fingerprints:
+            - "0c:0b:f8:f0:45:60:92:79:60:34:b2:12:9c:55:1d:fa"
+      - run:
+          name: Push to test branch
+          command: |
+            ssh-keyscan -t rsa github.com >> ~/.ssh/known_hosts
+            git config --global user.name "Test"
+            git config --global user.email "test@mozilla.com"
+            git clone git@github.com:mozilla/glean.js
+            cd glean.js
+            git checkout -b test
+            touch test_file.txt
+            git add .
+            git commit -m "Auto-push [ci skip]" \
+              && git push origin test
+
 workflows:
   version: 2
   ci:
     jobs:
+      - test-ssh
       - lint
       - test
       - check-qt-js
