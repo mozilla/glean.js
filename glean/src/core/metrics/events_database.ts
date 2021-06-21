@@ -135,9 +135,38 @@ class EventsDatabase {
     }
 
     for (const ping of sendInPings) {
+      // Add an execution counter to all the recorded events.
+      const executionCounter = new CounterMetricType({
+        category: "",
+        name: `${ping}#execution_counter`,
+        sendInPings: [PING_INFO_STORAGE],
+        lifetime: Lifetime.Ping,
+        disabled: false
+      });
+
+      // Note that, at this point, we should always have a valid value stored
+      // for the execution counter. But let's err on the side of caution and
+      // use 1 if that's not the case.
+      const currentExecutionCount =
+        await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, executionCounter) ?? 1;
+
+      const rawEventObject = RecordedEvent.toJSONObject(value);
+      if (rawEventObject["extra"]) {
+        // TODO: Fixme, remove the stringification once the new events API
+        // is implemented.
+        (rawEventObject["extra"] as JSONObject)["gleanExecutionCounter"] = currentExecutionCount.toString();
+      } else {
+        rawEventObject["extra"] =
+        {
+          // TODO: Fixme, remove the stringification once the new events API
+          // is implemented.
+          "gleanExecutionCounter": currentExecutionCount.toString()
+        }
+      }
+
       const transformFn = (v?: JSONValue): JSONArray => {
         const existing: JSONArray = (v as JSONArray) ?? [];
-        existing.push(RecordedEvent.toJSONObject(value));
+        existing.push(rawEventObject);
         return existing;
       };
       await this.eventsStore.update([ping], transformFn);
