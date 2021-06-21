@@ -8,6 +8,12 @@ import { isUndefined } from "../utils.js";
 import type EventMetricType from "./types/event.js";
 import type { StorageBuilder } from "../../platform/index.js";
 import log, { LoggingLevel } from "../log.js";
+import CounterMetricType from "./types/counter.js";
+import { Context } from "../context.js";
+import { Lifetime } from "./lifetime.js";
+import { PING_INFO_STORAGE } from "../constants.js";
+import { DatetimeMetric } from "./types/datetime.js";
+import TimeUnit from "./time_unit.js";
 
 const LOG_TAG = "core.Metric.EventsDatabase";
 
@@ -80,6 +86,40 @@ class EventsDatabase {
 
   constructor(storage: StorageBuilder) {
     this.eventsStore = new storage("events");
+  }
+
+  async initialize() {
+    const stores = await this.getAvailableStoreNames();
+    for (const storeName of stores) {
+      const executionCounter = new CounterMetricType({
+        category: "",
+        name: `${storeName}#execution_counter`,
+        sendInPings: [PING_INFO_STORAGE],
+        lifetime: Lifetime.Ping,
+        disabled: false
+      });
+
+      await CounterMetricType._private_addUndispatched(executionCounter, 1);
+      const currentExecutionCount =
+        await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, executionCounter) ?? 1;
+
+      // Get the start date with a the minute resolution.
+      const startTime = DatetimeMetric.fromDate(Context.startTime, TimeUnit.Minute);
+
+      // Inject a "glean.restarted" event in all the known stores.
+      const event = new RecordedEvent(
+        "glean",
+        "restarted",
+        0,
+        {
+          "gleanStartupDate": startTime.payload(),
+          // TODO: Fixme, remove the stringification once the new events API
+          // is implemented.
+          "gleanExecutionCounter": currentExecutionCount.toString()
+        },
+      );
+      await this.record(false, [storeName], event);
+    }
   }
 
   /**
@@ -162,6 +202,15 @@ class EventsDatabase {
     }
 
     return data.map((e) => RecordedEvent.fromJSONObject(e as JSONObject));
+  }
+
+  private async getAvailableStoreNames(): Promise<string[]> {
+    const data = await this.eventsStore.get([]);
+    if (isUndefined(data)) {
+      return [];
+    }
+
+    return Object.keys(data);
   }
 
   /**
