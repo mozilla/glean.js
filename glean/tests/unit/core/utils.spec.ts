@@ -134,18 +134,4 @@ describe("utils", function() {
     assert.strictEqual(utils.validateHeader("valid-value"), true);
     assert.strictEqual(utils.validateHeader("-also-valid-value"), true);
   });
-
-  it("utf-8 enconding works the same with or without TextEncoder in the environment", function () {
-    const encoded = utils.UTF8EncodeText("{\"metrics\":{\"datetime\":{\"sample.app_started\":\"2021-06-17T11:51:45.767+02:00\"},\"counter\":{\"sample.button_clicked\":1}},\"ping_info\":{\"seq\":0,\"start_time\":\"2021-06-17T11:51+02:00\",\"end_time\":\"2021-06-17T11:51+02:00\"},\"client_info\":{\"telemetry_sdk_build\":\"0.15.0\",\"client_id\":\"9bb711c2-cff3-498c-8a65-778c66fea72d\",\"first_run_date\":\"2021-06-17+02:00\",\"os\":\"Darwin\",\"os_version\":\"Unknown\",\"architecture\":\"Unknown\",\"locale\":\"en-DE\",\"app_build\":\"Unknown\",\"app_display_version\":\"Unknown\"}}");
-
-    const originalTextEncoder = TextEncoder;
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    global.TextEncoder = undefined;
-    const encodedWithoutTextEncoder = utils.UTF8EncodeText("{\"metrics\":{\"datetime\":{\"sample.app_started\":\"2021-06-17T11:51:45.767+02:00\"},\"counter\":{\"sample.button_clicked\":1}},\"ping_info\":{\"seq\":0,\"start_time\":\"2021-06-17T11:51+02:00\",\"end_time\":\"2021-06-17T11:51+02:00\"},\"client_info\":{\"telemetry_sdk_build\":\"0.15.0\",\"client_id\":\"9bb711c2-cff3-498c-8a65-778c66fea72d\",\"first_run_date\":\"2021-06-17+02:00\",\"os\":\"Darwin\",\"os_version\":\"Unknown\",\"architecture\":\"Unknown\",\"locale\":\"en-DE\",\"app_build\":\"Unknown\",\"app_display_version\":\"Unknown\"}}");
-
-    assert.deepStrictEqual(encoded, encodedWithoutTextEncoder);
-
-    global.TextEncoder = originalTextEncoder;
-  });
 });
