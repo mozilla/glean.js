@@ -217,7 +217,8 @@ workflows:
   ci:
     jobs:
       - lint
-      - test
+      - test:
+          context: data-eng-gleanjs-gh
       - check-qt-js
       - samples-tests
       - docs-deploy:
