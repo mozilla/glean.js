@@ -20,9 +20,6 @@ import log, { LoggingLevel } from "../log.js";
 
 const LOG_TAG = "core.Pings.Maker";
 
-// The moment the current Glean.js session started.
-const GLEAN_START_TIME = new Date();
-
 /**
  * Gets, and then increments, the sequence number for a given ping.
  *
@@ -85,7 +82,7 @@ export async function getStartEndTimes(metricsDatabase: MetricsDatabase, ping: C
   if (startTimeData) {
     startTime = new DatetimeMetric(startTimeData);
   } else {
-    startTime = DatetimeMetric.fromDate(GLEAN_START_TIME, TimeUnit.Minute);
+    startTime = DatetimeMetric.fromDate(Context.startTime, TimeUnit.Minute);
   }
 
   // Update the start time with the current time.

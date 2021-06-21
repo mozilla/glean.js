@@ -40,8 +40,12 @@ export class Context {
 
   private _debugOptions!: DebugOptions;
 
+  // The moment the current Glean.js session started.
+  private _startTime: Date;
+
   private constructor() {
     this._initialized = false;
+    this._startTime = new Date();
   }
 
   static get instance(): Context {
@@ -148,5 +152,9 @@ export class Context {
 
   static set debugOptions(options: DebugOptions) {
     Context.instance._debugOptions = options;
+  }
+
+  static get startTime(): Date {
+    return Context._instance._startTime;
   }
 }
