@@ -5,9 +5,8 @@
 * [#411](https://github.com/mozilla/glean.js/pull/411): Tag all messages logged by Glean with the component they are coming from.
 * [#399](https://github.com/mozilla/glean.js/pull/399): Check if there are ping data before attempting to delete it.
   * This change lowers the amount of log messages related to attempting to delete inexistent data.
-* [#415](https://github.com/mozilla/glean.js/pull/415): Gzip ping paylod before upload
+* [#415](https://github.com/mozilla/glean.js/pull/415), [#430](https://github.com/mozilla/glean.js/pull/430): Gzip ping paylod before upload
   * This changes the signature of `Uploader.post` to accept `string | Uint8Array` for the `body` parameter, instead of only `string`.
-  * The gizpping functionality is disabled in Qt/QML environments. Follow [Bug 1716322](https://bugzilla.mozilla.org/show_bug.cgi?id=1716322) for updates on the status of this feature on that platform.
 * [#431](https://github.com/mozilla/glean.js/pull/431): BUGFIX: Record the timestamp for events before dispatching to the internal task queue.
 
 # v0.15.0 (2021-06-03)

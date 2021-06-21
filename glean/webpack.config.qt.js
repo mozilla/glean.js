@@ -9,6 +9,8 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+const OUTPUT = "glean.lib.js";
+
 /**
  * Hacky plugin that removes ".js" extensions from imports before resolving.
  *
@@ -27,6 +29,22 @@ class TsResolvePlugin {
         });
         return resolver.doResolve(target, obj, null, resolveContext, callback);
       });
+  }
+}
+
+/**
+ * Plugin to remove the "use strict" statement added by Webpack before emmiting final bundle.
+ *
+ * Context on why this is necessary: https://github.com/101arrowz/fflate/pull/75#issuecomment-865016941,
+ * tl;dr; "use strict" makes accessing a negative index throw an error in QML,
+ * and not anywhere else.
+ */
+class RemoveUseStrictPlugin {
+  apply(compiler) {
+    compiler.hooks.shouldEmit.tap("RemoveUseStrictPlugin", compilation => {
+      compilation.assets[OUTPUT]._value = compilation.assets[OUTPUT]._value.replace("\"use strict\";", "");
+      return true;
+    });
   }
 }
 
@@ -58,14 +76,14 @@ export default {
     extensions: [ ".tsx", ".ts", ".js" ],
     plugins: [
       new TsResolvePlugin()
-    ],
-    alias: {
-      "fflate": path.resolve(__dirname, "src/platform/qt/fflate.stub.js")
-    }
+    ]
   },
+  plugins: [
+    new RemoveUseStrictPlugin(),
+  ],
   output: {
     path: path.resolve(__dirname, "dist/qt/org/mozilla/Glean"),
-    filename: "glean.lib.js",
+    filename: OUTPUT,
     libraryTarget: "var",
     library: "Glean",
   }

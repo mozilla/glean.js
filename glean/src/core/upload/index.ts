@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { gzipSync } from "fflate";
+import { gzipSync, strToU8 } from "fflate";
 
 import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
@@ -140,8 +140,7 @@ class PingUploader implements PingsDatabaseObserver {
 
     const stringifiedBody = JSON.stringify(ping.payload);
     try {
-      const encoder = new TextEncoder();
-      const compressedBody = gzipSync(encoder.encode(stringifiedBody));
+      const compressedBody = gzipSync(strToU8(stringifiedBody));
       headers["Content-Encoding"] = "gzip";
       headers["Content-Length"] = compressedBody.length.toString();
       return {
