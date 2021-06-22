@@ -214,17 +214,8 @@ jobs:
 workflows:
   ci:
     jobs:
-      - lint
-      - test
-      - check-qt-js
-      - samples-tests
       - hold:
           type: approval
-          requires:
-            - lint
-            - test
-            - check-qt-js
-            - samples-tests
       - check-size:
           context: data-eng-gleanjs-gh
           requires:
@@ -235,17 +226,3 @@ workflows:
                 - main
                 - release
                 - /^release-*/
-      - docs-deploy:
-          context: data-eng-gleanjs-gh
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
-      - publish:
-          context: data-eng-gleanjs-gh
-          filters:
-            branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
