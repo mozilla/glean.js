@@ -89,7 +89,7 @@
     "eslint-plugin-mocha": "^9.0.0",
     "eslint-plugin-notice": "^0.9.10",
     "geckodriver": "^2.0.0",
-    "gh-pages": "^3.2.2",
+    "gh-pages": "^3.2.3",
     "jsdom": "16.6.0",
     "jsdom-global": "3.0.2",
     "jsonschema": "^1.4.0",
