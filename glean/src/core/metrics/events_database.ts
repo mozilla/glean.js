@@ -88,7 +88,7 @@ class EventsDatabase {
     this.eventsStore = new storage("events");
   }
 
-  async initialize() {
+  async initialize(): Promise<void> {
     const stores = await this.getAvailableStoreNames();
     // Inject the glean.restarted event only in custom pings.
     for (const storeName of stores.filter(n => n != "events")) {
@@ -101,8 +101,6 @@ class EventsDatabase {
       });
 
       await CounterMetricType._private_addUndispatched(executionCounter, 1);
-      const currentExecutionCount =
-        await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, executionCounter) ?? 1;
 
       // Get the start date with a the minute resolution.
       const startTime = DatetimeMetric.fromDate(Context.startTime, TimeUnit.Minute);
@@ -113,10 +111,7 @@ class EventsDatabase {
         "restarted",
         0,
         {
-          "gleanStartupDate": startTime.payload(),
-          // TODO: Fixme, remove the stringification once the new events API
-          // is implemented.
-          "gleanExecutionCounter": currentExecutionCount.toString()
+          "gleanStartupDate": startTime.payload()
         },
       );
       await this.record(false, [storeName], event);
@@ -151,9 +146,9 @@ class EventsDatabase {
 
         // Note that, at this point, we should always have a valid value stored
         // for the execution counter. But let's err on the side of caution and
-        // use 1 if that's not the case.
+        // use 0 if that's not the case.
         const currentExecutionCount =
-          await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, executionCounter) ?? 1;
+          await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, executionCounter) ?? 0;
 
         if (rawEventObject["extra"]) {
           // TODO: Fixme, remove the stringification once the new events API
@@ -165,7 +160,7 @@ class EventsDatabase {
             // TODO: Fixme, remove the stringification once the new events API
             // is implemented.
             "gleanExecutionCounter": currentExecutionCount.toString()
-          }
+          };
         }
       }
 
@@ -248,14 +243,88 @@ class EventsDatabase {
   }
 
   /**
+   * Gets all of the persisted metrics related to a given custom ping.
+   *
+   * @param pingData A list of unordered, unprocessed recorded events.
+   * @param referenceTime The date/time to be considered as the "zero" time. All the events
+   *        timestamps will be computed relative to this time, for the given ping.
+   * @returns An object containing all the metrics recorded to the given ping,
+   *          `undefined` in case the ping doesn't contain any recorded metrics.
+   */
+  private getCustomPingEvents(pingData: RecordedEvent[], referenceTime: Date): JSONArray | undefined {
+    // Sort the events by their timestamp.
+    const sortedData = pingData.sort((a, b) => {
+      if (a.extra && b.extra) {
+        // TODO: Fixme, remove the stringification once the new events API
+        // is implemented.
+        if(Number(a.extra["gleanExecutionCounter"]) > Number(b.extra["gleanExecutionCounter"])) {
+          return 1;
+        }
+
+        if(Number(a.extra["gleanExecutionCounter"]) < Number(b.extra["gleanExecutionCounter"])) {
+          return -1;
+        }
+
+        // Intentionally fall-through in case the two execution counter values are equal.
+        // It will perform a timestamp based comparision in that case.
+      }
+
+      // While theoretically possible, it should never happen to have events without a
+      // corresponding gleanExecutionCounter.
+      return a.timestamp - b.timestamp;
+    });
+
+    // If the first event is not a 'glean.restarted' one, insert it and use the
+    // provided reference time as the glean restart time.
+    if (sortedData[0].category != "glean" || sortedData[0].name != "restarted") {
+      sortedData.unshift(new RecordedEvent(
+        "glean",
+        "restarted",
+        0,
+        {
+          "gleanStartupDate": referenceTime.toISOString()
+        },
+      ));
+    }
+
+    // Make all the events relative to the first 'glean.restarted' date. Note
+    // that we use the bang operator because we're sure the data is not undefined,
+    // given that we created it a few lines above.
+    let previousRestartDate = sortedData.shift()!.extra!["gleanStartupDate"];
+    let currentOffsetInMs = 0;
+
+    sortedData.forEach((event, index) => {
+      if (event.category === "glean" && event.name === "restarted") {
+        // Compute the time difference in milliseconds between this event's startup
+        // date and the previous one. Then use it as an offset for the next timestamps.
+        const dateOffsetInMs = Date.parse(event.extra!["gleanStartupDate"]) - Date.parse(previousRestartDate);
+        previousRestartDate = event.extra!["gleanStartupDate"];
+
+        // TODO Drop the 'extras' from this event.
+
+        // Update the current offset and move to the next event.
+        currentOffsetInMs += dateOffsetInMs;
+      }
+
+      // Update the timestamp for the current event, to account for the
+      // computed offset.
+      sortedData[index] = new RecordedEvent(event.category, event.name, event.timestamp + currentOffsetInMs, event.extra);
+    });
+
+    return sortedData.map((e) => RecordedEvent.toJSONObject(e));
+  }
+
+  /**
    * Gets all of the persisted metrics related to a given ping.
    *
    * @param ping The name of the ping to retrieve.
    * @param clearPingLifetimeData Whether or not to clear the ping lifetime metrics retrieved.
+   * @param referenceTime The date/time to be considered as the "zero" time. All the events
+   *        timestamps will be computed relative to this time, for the given ping.
    * @returns An object containing all the metrics recorded to the given ping,
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
-  async getPingEvents(ping: string, clearPingLifetimeData: boolean): Promise<JSONArray | undefined> {
+  async getPingEvents(ping: string, clearPingLifetimeData: boolean, referenceTime: Date): Promise<JSONArray | undefined> {
     const pingData = await this.getAndValidatePingData(ping);
 
     if (clearPingLifetimeData && Object.keys(pingData).length > 0) {
@@ -266,9 +335,8 @@ class EventsDatabase {
       return;
     }
 
-
     if (ping != "events") {
-      return [];
+      return this.getCustomPingEvents(pingData, referenceTime);
     }
 
     // Sort the events by their timestamp.
