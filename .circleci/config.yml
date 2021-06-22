@@ -106,7 +106,9 @@ jobs:
       - checkout
       - run:
           name: Get and post build sizes to GitHub PR
-          command: bin/build-size-check.sh
+          command: |
+            npm --prefix ./benchmarks install
+            npm --prefix ./benchmarks run size:report
 
   check-qt-js:
     docker:
@@ -166,19 +168,16 @@ jobs:
       - run:
           name: Show contents
           command: ls -R glean/dist/docs
-      # Needed for write access to the GitHub repository;
-      # see https://circleci.com/docs/2.0/gh-bb-integration/#deployment-keys-and-user-keys
-      - add_ssh_keys:
-          fingerprints:
-            - "0c:0b:f8:f0:45:60:92:79:60:34:b2:12:9c:55:1d:fa"
-      # The gh-pages npm package can be used to push a directory to a git branch;
-      # see https://www.npmjs.com/package/gh-pages
       - run:
-          name: Deploy docs to gh-pages branch
+          name: Setup SSH key and deploy docs to gh-pages branch
           command: |
-            git config user.email "brizental@mozilla.com"
-            git config user.name "brizental"
+            eval "$(ssh-agent -s)"
+            DECODED_SSH_DEPLOY_KEY=$(echo $SSH_DEPLOY_KEY | base64 -d)
+            ssh-add - \<<< "${DECODED_SSH_DEPLOY_KEY}"
+            git config user.email "brizental+moz-glean@mozilla.com"
+            git config user.name "moz-glean"
             npm --prefix ./glean run publish:docs
+
 
   publish:
     docker:
@@ -213,27 +212,40 @@ jobs:
             ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz
 
 workflows:
-  version: 2
   ci:
     jobs:
       - lint
       - test
       - check-qt-js
       - samples-tests
+      - hold:
+          type: approval
+          requires:
+            - lint
+            - test
+            - check-qt-js
+            - samples-tests
+      - check-size:
+          context: data-eng-gleanjs-gh
+          requires:
+            - hold
+          filters:
+            branches:
+              ignore:
+                - main
+                - release
+                - /^release-*/
       - docs-deploy:
+          context: data-eng-gleanjs-gh
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^v.*/
       - publish:
+          context: data-eng-gleanjs-gh
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^v.*/
-      # Comment this job away until Bug 1681899 is resolved.
-      # - check-size:
-      #     filters:
-      #       branches:
-      #         ignore: main
