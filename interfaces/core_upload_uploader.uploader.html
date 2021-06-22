@@ -2762,13 +2762,13 @@ img {
 				<a name="post" class="tsd-anchor"></a>
 				<h3>post</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-					<li class="tsd-signature tsd-kind-icon">post<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, body<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, headers<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="core_upload_uploader.uploadresult.html" class="tsd-signature-type" data-tsd-kind="Interface">UploadResult</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">post<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, body<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Uint8Array</span>, headers<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="core_upload_uploader.uploadresult.html" class="tsd-signature-type" data-tsd-kind="Interface">UploadResult</a><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/core/upload/uploader.ts#L50">core/upload/uploader.ts:50</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/core/upload/uploader.ts#L52">core/upload/uploader.ts:52</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2785,9 +2785,11 @@ img {
 								</div>
 							</li>
 							<li>
-								<h5>body: <span class="tsd-signature-type">string</span></h5>
+								<h5>body: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Uint8Array</span></h5>
 								<div class="tsd-comment tsd-typography">
-									<p>The stringified body of this post request</p>
+									<p>The body of this post request. The body may be a stringified JSON or, most likely,
+										a Uint8Array containing the gzipped version of said stringified JSON. We need to accept
+									both in case the compression fails.</p>
 								</div>
 							</li>
 							<li>

@@ -2729,7 +2729,7 @@ img {
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-module">
 				<a name="default" class="tsd-anchor"></a>
 				<h3>default</h3>
-				<div class="tsd-signature tsd-kind-icon">default<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>initialize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>setDebugViewTag<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>setLogPings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>setSourceTags<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>setUploadEnabled<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>testResetGlean<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>unsetDebugViewTag<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>unsetSourceTags<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> }</span></div>
+				<div class="tsd-signature tsd-kind-icon">default<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-symbol">{ </span>initialize<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>setDebugViewTag<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>setLogPings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>setSourceTags<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>setUploadEnabled<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol">; </span>testResetGlean<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">any</span><span class="tsd-signature-symbol"> }</span></div>
 				<aside class="tsd-sources">
 				</aside>
 				<div class="tsd-type-declaration">
@@ -2744,20 +2744,13 @@ img {
 								<li class="tsd-description">
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/index/webext.ts#L28">index/webext.ts:28</a></li>
+											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/index/webext.ts#L20">index/webext.ts:20</a></li>
 										</ul>
 									</aside>
 									<div class="tsd-comment tsd-typography">
 										<div class="lead">
 											<p>Initialize Glean. This method should only be called once, subsequent calls will be no-op.</p>
 										</div>
-										<a href="#note" id="note" style="color: inherit; text-decoration: none;">
-											<h1>Note</h1>
-										</a>
-										<p>Before this method is called Glean will not be able to upload pings or record metrics,
-										all such operations will be no-op.</p>
-										<p>This is <em>not</em> the way glean-core deals with this. It will record tasks performed before init
-										and flush them on init. We have a bug to figure out how to do that for Glean.js, Bug 1687491.</p>
 									</div>
 									<h4 class="tsd-parameters-title">Parameters</h4>
 									<ul class="tsd-parameters">
@@ -2795,7 +2788,7 @@ img {
 								<li class="tsd-description">
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/index/webext.ts#L79">index/webext.ts:79</a></li>
+											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/index/webext.ts#L71">index/webext.ts:71</a></li>
 										</ul>
 									</aside>
 									<div class="tsd-comment tsd-typography">
@@ -2829,7 +2822,7 @@ img {
 								<li class="tsd-description">
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/index/webext.ts#L64">index/webext.ts:64</a></li>
+											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/index/webext.ts#L56">index/webext.ts:56</a></li>
 										</ul>
 									</aside>
 									<div class="tsd-comment tsd-typography">
@@ -2861,7 +2854,7 @@ img {
 								<li class="tsd-description">
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/index/webext.ts#L104">index/webext.ts:104</a></li>
+											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/index/webext.ts#L87">index/webext.ts:87</a></li>
 										</ul>
 									</aside>
 									<div class="tsd-comment tsd-typography">
@@ -2895,7 +2888,7 @@ img {
 								<li class="tsd-description">
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/index/webext.ts#L52">index/webext.ts:52</a></li>
+											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/index/webext.ts#L44">index/webext.ts:44</a></li>
 										</ul>
 									</aside>
 									<div class="tsd-comment tsd-typography">
@@ -2930,7 +2923,7 @@ img {
 								<li class="tsd-description">
 									<aside class="tsd-sources">
 										<ul>
-											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/index/webext.ts#L131">index/webext.ts:131</a></li>
+											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/index/webext.ts#L105">index/webext.ts:105</a></li>
 										</ul>
 									</aside>
 									<div class="tsd-comment tsd-typography">
@@ -2965,50 +2958,6 @@ img {
 									</ul>
 									<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 									<p>A promise that resolves when the initialization is complete.</p>
-								</li>
-							</ul>
-						</li>
-						<li class="tsd-parameter">
-							<h5>unset<wbr>Debug<wbr>View<wbr>Tag<span class="tsd-signature-symbol">: </span>function</h5>
-							<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-type-literal">
-								<li class="tsd-signature tsd-kind-icon">unset<wbr>Debug<wbr>View<wbr>Tag<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-							</ul>
-							<ul class="tsd-descriptions">
-								<li class="tsd-description">
-									<aside class="tsd-sources">
-										<ul>
-											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/index/webext.ts#L88">index/webext.ts:88</a></li>
-										</ul>
-									</aside>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>Unsets the <code>debugViewTag</code> debug option.</p>
-										</div>
-										<p>This is a no-op is case there is no <code>debugViewTag</code> set at the moment.</p>
-									</div>
-									<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
-								</li>
-							</ul>
-						</li>
-						<li class="tsd-parameter">
-							<h5>unset<wbr>Source<wbr>Tags<span class="tsd-signature-symbol">: </span>function</h5>
-							<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-type-literal">
-								<li class="tsd-signature tsd-kind-icon">unset<wbr>Source<wbr>Tags<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
-							</ul>
-							<ul class="tsd-descriptions">
-								<li class="tsd-description">
-									<aside class="tsd-sources">
-										<ul>
-											<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/index/webext.ts#L113">index/webext.ts:113</a></li>
-										</ul>
-									</aside>
-									<div class="tsd-comment tsd-typography">
-										<div class="lead">
-											<p>Unsets the <code>sourceTags</code> debug option.</p>
-										</div>
-										<p>This is a no-op is case there are no <code>sourceTags</code> set at the moment.</p>
-									</div>
-									<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 								</li>
 							</ul>
 						</li>

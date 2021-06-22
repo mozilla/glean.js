@@ -2713,6 +2713,9 @@ img {
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected">
 					<a href="core_metrics_types_timespan.timespanmetric.html#_inner" class="tsd-kind-icon">_inner</a>
 				</li>
+				<li class=" tsd-kind-get-signature tsd-parent-kind-class">
+					<a href="core_metrics_types_timespan.timespanmetric.html#timespan" class="tsd-kind-icon">timespan</a>
+				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-inherited">
 					<a href="core_metrics_types_timespan.timespanmetric.html#get" class="tsd-kind-icon">get</a>
 				</li>
@@ -2733,6 +2736,9 @@ img {
 		<li class=" tsd-kind-type-alias tsd-parent-kind-module">
 			<a href="../modules/core_metrics_types_timespan.html#timespaninternalrepresentation" class="tsd-kind-icon">Timespan<wbr>Internal<wbr>Representation</a>
 		</li>
+		<li class=" tsd-kind-type-alias tsd-parent-kind-module">
+			<a href="../modules/core_metrics_types_timespan.html#timespanpayloadrepresentation" class="tsd-kind-icon">Timespan<wbr>Payload<wbr>Representation</a>
+		</li>
 	</ul>
 </nav>
 <div class="container container-main">
@@ -2741,7 +2747,7 @@ img {
 			<h3>Hierarchy</h3>
 			<ul class="tsd-hierarchy">
 				<li>
-					<a href="core_metrics_metric.metric.html" class="tsd-signature-type" data-tsd-kind="Class">Metric</a><span class="tsd-signature-symbol">&lt;</span><a href="../modules/core_metrics_types_timespan.html#timespaninternalrepresentation" class="tsd-signature-type" data-tsd-kind="Type alias">TimespanInternalRepresentation</a><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">&gt;</span>
+					<a href="core_metrics_metric.metric.html" class="tsd-signature-type" data-tsd-kind="Class">Metric</a><span class="tsd-signature-symbol">&lt;</span><a href="../modules/core_metrics_types_timespan.html#timespaninternalrepresentation" class="tsd-signature-type" data-tsd-kind="Type alias">TimespanInternalRepresentation</a><span class="tsd-signature-symbol">, </span><a href="../modules/core_metrics_types_timespan.html#timespanpayloadrepresentation" class="tsd-signature-type" data-tsd-kind="Type alias">TimespanPayloadRepresentation</a><span class="tsd-signature-symbol">&gt;</span>
 					<ul class="tsd-hierarchy">
 						<li>
 							<span class="target">TimespanMetric</span>
@@ -2764,6 +2770,12 @@ img {
 						<h3>Properties</h3>
 						<ul class="tsd-index-list">
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-inherited tsd-is-protected"><a href="core_metrics_types_timespan.timespanmetric.html#_inner" class="tsd-kind-icon">_inner</a></li>
+						</ul>
+					</section>
+					<section class="tsd-index-section ">
+						<h3>Accessors</h3>
+						<ul class="tsd-index-list">
+							<li class="tsd-kind-get-signature tsd-parent-kind-class"><a href="core_metrics_types_timespan.timespanmetric.html#timespan" class="tsd-kind-icon">timespan</a></li>
 						</ul>
 					</section>
 					<section class="tsd-index-section ">
@@ -2791,7 +2803,7 @@ img {
 						<aside class="tsd-sources">
 							<p>Overrides <a href="core_metrics_metric.metric.html">Metric</a>.<a href="core_metrics_metric.metric.html#constructor">constructor</a></p>
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/core/metrics/types/timespan.ts#L20">core/metrics/types/timespan.ts:20</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/core/metrics/types/timespan.ts#L28">core/metrics/types/timespan.ts:28</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -2814,9 +2826,29 @@ img {
 				<aside class="tsd-sources">
 					<p>Inherited from <a href="core_metrics_metric.metric.html">Metric</a>.<a href="core_metrics_metric.metric.html#_inner">_inner</a></p>
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/core/metrics/metric.ts#L24">core/metrics/metric.ts:24</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/core/metrics/metric.ts#L27">core/metrics/metric.ts:27</a></li>
 					</ul>
 				</aside>
+			</section>
+		</section>
+		<section class="tsd-panel-group tsd-member-group ">
+			<h2>Accessors</h2>
+			<section class="tsd-panel tsd-member tsd-kind-get-signature tsd-parent-kind-class">
+				<a name="timespan" class="tsd-anchor"></a>
+				<h3>timespan</h3>
+				<ul class="tsd-signatures tsd-kind-get-signature tsd-parent-kind-class">
+					<li class="tsd-signature tsd-kind-icon"><span class="tsd-signature-symbol">get</span> timespan<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/core/metrics/types/timespan.ts#L34">core/metrics/types/timespan.ts:34</a></li>
+							</ul>
+						</aside>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+					</li>
+				</ul>
 			</section>
 		</section>
 		<section class="tsd-panel-group tsd-member-group ">
@@ -2832,7 +2864,7 @@ img {
 						<aside class="tsd-sources">
 							<p>Inherited from <a href="core_metrics_metric.metric.html">Metric</a>.<a href="core_metrics_metric.metric.html#get">get</a></p>
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/core/metrics/metric.ts#L39">core/metrics/metric.ts:39</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/core/metrics/metric.ts#L42">core/metrics/metric.ts:42</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2849,17 +2881,23 @@ img {
 				<a name="payload" class="tsd-anchor"></a>
 				<h3>payload</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-overwrite">
-					<li class="tsd-signature tsd-kind-icon">payload<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">number</span></li>
+					<li class="tsd-signature tsd-kind-icon">payload<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../modules/core_metrics_types_timespan.html#timespanpayloadrepresentation" class="tsd-signature-type" data-tsd-kind="Type alias">TimespanPayloadRepresentation</a></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<p>Overrides <a href="core_metrics_metric.metric.html">Metric</a>.<a href="core_metrics_metric.metric.html#payload">payload</a></p>
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/core/metrics/types/timespan.ts#L39">core/metrics/types/timespan.ts:39</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/core/metrics/types/timespan.ts#L67">core/metrics/types/timespan.ts:67</a></li>
 							</ul>
 						</aside>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">number</span></h4>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Gets this metrics value in its payload representation.</p>
+							</div>
+						</div>
+						<h4 class="tsd-returns-title">Returns <a href="../modules/core_metrics_types_timespan.html#timespanpayloadrepresentation" class="tsd-signature-type" data-tsd-kind="Type alias">TimespanPayloadRepresentation</a></h4>
+						<p>The metric value.</p>
 					</li>
 				</ul>
 			</section>
@@ -2874,7 +2912,7 @@ img {
 						<aside class="tsd-sources">
 							<p>Inherited from <a href="core_metrics_metric.metric.html">Metric</a>.<a href="core_metrics_metric.metric.html#set">set</a></p>
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/core/metrics/metric.ts#L49">core/metrics/metric.ts:49</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/core/metrics/metric.ts#L52">core/metrics/metric.ts:52</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2911,9 +2949,14 @@ img {
 						<aside class="tsd-sources">
 							<p>Overrides <a href="core_metrics_metric.metric.html">Metric</a>.<a href="core_metrics_metric.metric.html#validate">validate</a></p>
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/68521f5/glean/src/core/metrics/types/timespan.ts#L25">core/metrics/types/timespan.ts:25</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/28a73cc/glean/src/core/metrics/types/timespan.ts#L53">core/metrics/types/timespan.ts:53</a></li>
 							</ul>
 						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Validates that a given value is in the correct format for this metrics internal representation.</p>
+							</div>
+						</div>
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
 							<li>
@@ -2921,6 +2964,8 @@ img {
 							</li>
 						</ul>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">v</span><span class="tsd-signature-symbol"> is </span><a href="../modules/core_metrics_types_timespan.html#timespaninternalrepresentation" class="tsd-signature-type" data-tsd-kind="Type alias">TimespanInternalRepresentation</a></h4>
+						<p>A special Typescript value (which compiles down to a boolean)
+						stating whether <code>v</code> is of the correct type.</p>
 					</li>
 				</ul>
 			</section>
