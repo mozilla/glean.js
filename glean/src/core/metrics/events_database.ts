@@ -151,13 +151,13 @@ class EventsDatabase {
           await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, executionCounter) ?? 0;
 
         if (rawEventObject["extra"]) {
-          // TODO: Fixme, remove the stringification once the new events API
+          // TODO bug 1693487: remove the stringification once the new events API
           // is implemented.
           (rawEventObject["extra"] as JSONObject)["gleanExecutionCounter"] = currentExecutionCount.toString();
         } else {
           rawEventObject["extra"] =
           {
-            // TODO: Fixme, remove the stringification once the new events API
+            // TODO bug 1693487: remove the stringification once the new events API
             // is implemented.
             "gleanExecutionCounter": currentExecutionCount.toString()
           };
@@ -255,7 +255,7 @@ class EventsDatabase {
     // Sort the events by their timestamp.
     const sortedData = pingData.sort((a, b) => {
       if (a.extra && b.extra) {
-        // TODO: Fixme, remove the stringification once the new events API
+        // TODO bug 1693487: remove the stringification once the new events API
         // is implemented.
         if(Number(a.extra["gleanExecutionCounter"]) > Number(b.extra["gleanExecutionCounter"])) {
           return 1;
