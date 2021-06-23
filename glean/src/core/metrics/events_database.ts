@@ -58,6 +58,24 @@ export class RecordedEvent {
       e["extra"] as ExtraMap | undefined
     );
   }
+
+  public withoutReservedExtras(): RecordedEvent {
+    // If this event does not have any extras, return the same instance.
+    if (!this.extra) {
+      return this;
+    }
+
+    // The following line applies destructuring to return an object without
+    // the `gleanStartupDate` and `gleanExecutionCounter` properties.
+    const {gleanStartupDate, gleanExecutionCounter, ...filteredExtras } = this.extra;
+
+    return new RecordedEvent(
+      this.category,
+      this.name,
+      this.timestamp,
+      (filteredExtras && Object.keys(filteredExtras).length > 0) ? filteredExtras : undefined
+    );
+  }
 }
 
 /**
@@ -197,7 +215,8 @@ class EventsDatabase {
       // Only report events for the requested metric.
       .filter((e) => {
         return (e.category === metric.category) && (e.name === metric.name);
-      });
+      })
+      .map((e) => e.withoutReservedExtras());
   }
 
   /**
@@ -300,8 +319,6 @@ class EventsDatabase {
         const dateOffsetInMs = Date.parse(event.extra!["gleanStartupDate"]) - Date.parse(previousRestartDate);
         previousRestartDate = event.extra!["gleanStartupDate"];
 
-        // TODO Drop the 'extras' from this event.
-
         // Update the current offset and move to the next event.
         currentOffsetInMs += dateOffsetInMs;
       }
@@ -311,7 +328,7 @@ class EventsDatabase {
       sortedData[index] = new RecordedEvent(event.category, event.name, event.timestamp + currentOffsetInMs, event.extra);
     });
 
-    return sortedData.map((e) => RecordedEvent.toJSONObject(e));
+    return sortedData.map((e) => RecordedEvent.toJSONObject(e.withoutReservedExtras()));
   }
 
   /**
