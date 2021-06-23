@@ -67,6 +67,8 @@ export class RecordedEvent {
 
     // The following line applies destructuring to return an object without
     // the `gleanStartupDate` and `gleanExecutionCounter` properties.
+
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const {gleanStartupDate, gleanExecutionCounter, ...filteredExtras } = this.extra;
 
     return new RecordedEvent(
@@ -307,17 +309,23 @@ class EventsDatabase {
     }
 
     // Make all the events relative to the first 'glean.restarted' date. Note
-    // that we use the bang operator because we're sure the data is not undefined,
-    // given that we created it a few lines above.
+    // that we use the bang operator and disable the typescript linting rule
+    // because we're sure the data is not undefined, given that we created it
+    // a few lines above.
+
+    // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     let previousRestartDate = sortedData.shift()!.extra!["gleanStartupDate"];
     let currentOffsetInMs = 0;
 
     sortedData.forEach((event, index) => {
-      if (event.category === "glean" && event.name === "restarted") {
+      if (event.category === "glean"
+          && event.name === "restarted"
+          && event.extra
+          && "gleanStartupDate" in event.extra) {
         // Compute the time difference in milliseconds between this event's startup
         // date and the previous one. Then use it as an offset for the next timestamps.
-        const dateOffsetInMs = Date.parse(event.extra!["gleanStartupDate"]) - Date.parse(previousRestartDate);
-        previousRestartDate = event.extra!["gleanStartupDate"];
+        const dateOffsetInMs = Date.parse(event.extra["gleanStartupDate"]) - Date.parse(previousRestartDate);
+        previousRestartDate = event.extra["gleanStartupDate"];
 
         // Update the current offset and move to the next event.
         currentOffsetInMs += dateOffsetInMs;
