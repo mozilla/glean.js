@@ -135,12 +135,15 @@ class QMLStore implements Store {
     return new Promise((resolve, reject) => {
       try {
         handle.transaction((tx: LocalStorage.DatabaseTransaction): void => {
-          console.log(query);
           const result = tx.executeSql(query);
           resolve(result);
         });
       } catch (e) {
-        log(LOG_TAG, ["Error executing query.", e], LoggingLevel.Error);
+        log(
+          LOG_TAG,
+          [`Error executing LocalStorage query: ${query}.\n`, e],
+          LoggingLevel.Error
+        );
         reject();
       }
     });
