@@ -72,6 +72,7 @@ export class Context {
     // The closest thing we can do is making the dispatcher `null`.
     Context.instance._dispatcher = null;
     Context.initialized = false;
+    Context._instance._startTime = new Date();
   }
 
   static get dispatcher(): Dispatcher {
