@@ -252,7 +252,7 @@ class EventsDatabase {
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
   private getCustomPingEvents(pingData: RecordedEvent[], referenceTime: Date): JSONArray | undefined {
-    // Sort the events by their timestamp.
+    // Sort events by `gleanExecutionCounter`.
     const sortedData = pingData.sort((a, b) => {
       if (a.extra && b.extra) {
         // TODO bug 1693487: remove the stringification once the new events API
@@ -267,10 +267,10 @@ class EventsDatabase {
 
         // Intentionally fall-through in case the two execution counter values are equal.
         // It will perform a timestamp based comparision in that case.
+        // The timestamp check below takes care of any missing `gleanExecutionCounter`(s).
+        // While theoretically possible, it should never happen to have events without a
+        // corresponding `gleanExecutionCounter`.
       }
-
-      // While theoretically possible, it should never happen to have events without a
-      // corresponding gleanExecutionCounter.
       return a.timestamp - b.timestamp;
     });
 
