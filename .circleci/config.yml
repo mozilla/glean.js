@@ -225,16 +225,16 @@ workflows:
             - test
             - check-qt-js
             - samples-tests
-      - check-size:
-          context: data-eng-gleanjs-gh
-          requires:
-            - hold
           filters:
             branches:
               ignore:
                 - main
                 - release
                 - /^release-*/
+      - check-size:
+          context: data-eng-gleanjs-gh
+          requires:
+            - hold
       - docs-deploy:
           context: data-eng-gleanjs-gh
           filters:
