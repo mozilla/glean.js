@@ -2,18 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { WebDriver } from "selenium-webdriver";
 import assert from "assert";
 
-import { setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
+import { firefoxDriver, setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
 import type Store from "../../../src/core/storage";
 
 import TestStore from "../../../src/platform/test/storage";
 import WebExtStore from "../../../src/platform/webext/storage";
 import type { JSONValue } from "../../../src/core/utils";
 import { isUndefined } from "../../../src/core/utils";
-
-let firefox: WebDriver;
 
 // This object will contain the store names and
 // a function that will initialize and return the store when done.
@@ -30,38 +27,36 @@ const stores: {
   "WebExtStore": {
     initializeStore: (): WebExtStore => new WebExtStore("test"),
     before: async () => {
-      if (!firefox) {
-        firefox = await setupFirefox(true);
-        // Browser needs to be global so that WebExtStore will be built and able to use it.
-        global.browser = {
-          storage: {
-            // We need to ignore type checks because TS will complain about
-            // not defining the `remove` method, which is not necessary for our tests.
+      await setupFirefox();
+      // Browser needs to be global so that WebExtStore will be built and able to use it.
+      global.browser = {
+        storage: {
+          // We need to ignore type checks because TS will complain about
+          // not defining the `remove` method, which is not necessary for our tests.
+          //
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          local: {
+            // We need to ignore type checks for the following properties because they do not
+            // match perfectly with what is decribed by out web ext types package.
+            // Moreover, it will also complain about not defining the `clear` and `remove`
+            // methods, but these are not necessary for our tests.
             //
             // eslint-disable-next-line @typescript-eslint/ban-ts-comment
             // @ts-ignore
-            local: {
-              // We need to ignore type checks for the following properties because they do not
-              // match perfectly with what is decribed by out web ext types package.
-              // Moreover, it will also complain about not defining the `clear` and `remove`
-              // methods, but these are not necessary for our tests.
-              //
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              get: webExtensionAPIProxyBuilder(firefox, ["storage", "local", "get"]),
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              set: webExtensionAPIProxyBuilder(firefox, ["storage", "local", "set"]),
-              // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-              // @ts-ignore
-              clear: webExtensionAPIProxyBuilder(firefox, ["storage", "local", "clear"])
-            }
+            get: webExtensionAPIProxyBuilder(firefoxDriver, ["storage", "local", "get"]),
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            set: webExtensionAPIProxyBuilder(firefoxDriver, ["storage", "local", "set"]),
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            clear: webExtensionAPIProxyBuilder(firefoxDriver, ["storage", "local", "clear"])
           }
-        };
-      }
+        }
+      };
       await browser.storage.local.clear();
     },
-    afterAll: async () => await firefox.quit()
+    afterAll: async () => await firefoxDriver.quit()
   }
 };
 

@@ -13,20 +13,11 @@ import { fileURLToPath } from "url";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
-/**
- * Setup firefox for testing.
- *
- * @param headless whether or not to run Firefox on headless mode.
- *        Headless mode should be preferred as it is faster and doesn't open extra windows.
- *        Nevertheless, running the UI may be useful for local testing.
- * @returns The firefox instance thsa was just setup.
- */
-export async function setupFirefox(headless: boolean): Promise<WebDriver> {
-  const firefoxOptions = new firefox.Options();
-  firefoxOptions.setPreference("xpinstall.signatures.required", false);
-
-  // Unset this to run the UI (useful for local testing).
-  headless && firefoxOptions.headless();
+export const firefoxDriver = await (async function getFirefoxDriver(): Promise<WebDriver> {
+  const firefoxOptions = new firefox.Options()
+    .setPreference("xpinstall.signatures.required", false)
+    // Unset this to run the UI (useful for local testing).
+    .headless();
 
   if (process.platform === "linux") {
     // Look for the Firefox executable in different locations.
@@ -49,12 +40,19 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
     throw new Error(`Unable to run Glean.js web extension tests! Platform not supported: ${process.platform}`);
   }
 
-  const browser = await new Builder()
-    .forBrowser("firefox")
-    .withCapabilities(Capabilities.firefox())
+  return await new Builder()
     .setFirefoxOptions(firefoxOptions)
+    .withCapabilities(Capabilities.firefox())
+    .forBrowser("firefox")
     .build();
+})();
 
+/**
+ * Setup firefox for testing.
+ *
+ * @returns The firefox instance thsa was just setup.
+ */
+export async function setupFirefox(): Promise<WebDriver> {
   // Load the sample web extension as temporary addon.
   // Any web extension with storage permissions would do here,
   // we only need the web extensions context to run code that relies on the web extensions API.
@@ -65,7 +63,7 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call
-    await browser.installAddon(
+    await firefoxDriver.installAddon(
       path.resolve(__dirname, "sample/web-ext-artifacts/gleanjs-test-addon-0.0.1.zip"),
       true
     );
@@ -77,8 +75,8 @@ export async function setupFirefox(headless: boolean): Promise<WebDriver> {
     );
   }
 
-  await browser.navigate().to(`file://${path.resolve(__dirname, "test.html")}`);
-  return browser;
+  await firefoxDriver.navigate().to(`file://${path.resolve(__dirname, "test.html")}`);
+  return firefoxDriver;
 }
 
 /**
