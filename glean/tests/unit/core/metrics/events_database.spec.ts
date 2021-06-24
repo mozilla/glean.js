@@ -198,7 +198,7 @@ describe("EventsDatabase", function() {
     }
   });
 
-  it("events stitching happens for custom pings with events ", async function () {
+  it("events stitching happens for custom pings with events", async function () {
     // Clear any events from previous tests.
     const rawStorage = new Glean.platform.Storage("events");
     await rawStorage.delete([]);
@@ -231,10 +231,46 @@ describe("EventsDatabase", function() {
       const snapshot = await db2.getPingEvents(store, true, new Date());
       assert.ok(snapshot);
       assert.strictEqual(5, snapshot.length);
+
+      // Make sure timestamps are strictly increasing.
+      let prevTime = 0;
+      for (const event of snapshot) {
+        const e = RecordedEvent.fromJSONObject(event as JSONObject);
+        assert.ok(e.timestamp > prevTime);
+        prevTime = e.timestamp;
+      }
+
       assert.strictEqual("test", (snapshot[0] as JSONObject)["category"]);
       assert.strictEqual("run1", (snapshot[0] as JSONObject)["name"]);
       assert.strictEqual("glean", (snapshot[1] as JSONObject)["category"]);
       assert.strictEqual("restarted", (snapshot[1] as JSONObject)["name"]);
     }
+  });
+
+  it("internal extra properties are removed from the recorded events", async function () {
+    // Clear any events from previous tests.
+    const rawStorage = new Glean.platform.Storage("events");
+    await rawStorage.delete([]);
+    assert.deepStrictEqual({}, await rawStorage._getWholeStore());
+
+    // Initialize the database and inject some events.
+    const db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    const testEvent = new RecordedEvent("test", "run1", 10, {
+      "gleanExecutionCounter": "1",
+      "gleanStartupDate": "<date>"
+    });
+    assert.strictEqual(testEvent.withoutReservedExtras().extra, undefined);
+
+    // Record an initial event.
+    await db.record(false, ["store1"], testEvent);
+
+    const snapshot = await db.getPingEvents("store1", true, new Date());
+    assert.ok(snapshot);
+    assert.strictEqual(1, snapshot.length);
+
+    const e = RecordedEvent.fromJSONObject(snapshot[0] as JSONObject);
+    assert.strictEqual(e.extra, undefined);
   });
 });
