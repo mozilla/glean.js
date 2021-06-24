@@ -12,12 +12,15 @@ import log, { LoggingLevel } from "../../core/log.js";
 const LOG_TAG = "platform.qt.Storage";
 // The name of the file that will hold the SQLite database.
 const DATABASE_NAME = "Glean";
+// Estimated size of database file.
+const ESTIMATED_DATABASE_SIZE = 150 * 2 * 10**3; // 300Kb
 // Since we cannot have nesting in SQL databases,
 // we will have a database with only two columns: `key` and `value`.
 // The `key` column will contain the StorageIndex as a string, joined by SEPARATOR.
 //
-// !IMPORTANT! This separator cannot be "." or "#" because these values
-// are already used as separators for label and category in other places of the code.
+// !IMPORTANT! This separator cannot be ".", "#" or "/" because these values
+// are already used as separators for label, category and inside internal metric names
+// (e.g. sequence numbers) in other places of the code.
 const SEPARATOR = "+";
 
 /**
@@ -94,6 +97,7 @@ function queryResultToJSONObject(
 
 class QMLStore implements Store {
   private initialized: Promise<unknown>;
+  private dbHandle?: LocalStorage.DatabaseHandle;
 
   constructor(
     private tableName: string,
@@ -111,9 +115,6 @@ class QMLStore implements Store {
       this._executeQuery(
         `CREATE TABLE IF NOT EXISTS ${tableName}(key VARCHAR(255), value VARCHAR(255));`
       ),
-      // This allows for `REPLACE ITEM` to work.
-      // See: https://www.sqlitetutorial.net/sqlite-replace-statement/
-      this._executeQuery(`CREATE UNIQUE INDEX IF NOT EXISTS idx ON ${tableName}(key);`),
     );
 
     this.initialized = Promise.all(startQueries);
@@ -123,18 +124,39 @@ class QMLStore implements Store {
     return index.join(SEPARATOR);
   }
 
-  private _getDbHandle(): LocalStorage.DatabaseHandle {
-    return LocalStorage.LocalStorage.openDatabaseSync(
-      this.name, "1.0", `${this.name} Storage`, 1000000
-    );
+  /**
+   * Best effort at getting the database handle.
+   *
+   * @returns The database handle or `undefined`.
+   */
+  private get _dbHandle(): LocalStorage.DatabaseHandle | undefined {
+    try {
+      const handle = LocalStorage.LocalStorage.openDatabaseSync(
+        this.name, "1.0", `${this.name} Storage`, ESTIMATED_DATABASE_SIZE
+      );
+
+      this.dbHandle = handle;
+      return handle;
+    } catch(e) {
+      log(
+        LOG_TAG,
+        ["Error while attempting to access LocalStorage.\n", e],
+        LoggingLevel.Debug
+      );
+    } finally {
+      return this.dbHandle;
+    }
   }
 
   protected _executeQuery(query: string): Promise<LocalStorage.QueryResult | undefined> {
-    const handle = this._getDbHandle();
+    const handle = this._dbHandle;
 
     return new Promise((resolve, reject) => {
       try {
-        handle.transaction((tx: LocalStorage.DatabaseTransaction): void => {
+        // In case the handle is undefined we want to throw and land
+        // in the `catch` block below.
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+        handle!.transaction((tx: LocalStorage.DatabaseTransaction): void => {
           const result = tx.executeSql(query);
           resolve(result);
         });
@@ -142,7 +164,7 @@ class QMLStore implements Store {
         log(
           LOG_TAG,
           [`Error executing LocalStorage query: ${query}.\n`, e],
-          LoggingLevel.Error
+          LoggingLevel.Debug
         );
         reject();
       }
@@ -181,9 +203,16 @@ class QMLStore implements Store {
     const updates = getKeyValueArrayFromNestedObject(transformedResult);
     for (const update of updates) {
       const [ key, value ] = update;
-      await this._executeOnceInitialized(
-        `REPLACE INTO ${this.tableName}(key, value) VALUES('${key}', '${value.replace("'", "''")}');`
+      const escapedValue = value.replace("'", "''");
+      const updateResult = await this._executeOnceInitialized(
+        `UPDATE ${this.tableName} SET value='${escapedValue}' WHERE key='${key}'`
       );
+
+      if (!updateResult?.rows.length) {
+        await this._executeOnceInitialized(
+          `INSERT INTO ${this.tableName}(key, value) VALUES('${key}', '${escapedValue}');`
+        );
+      }
     }
   }
 
