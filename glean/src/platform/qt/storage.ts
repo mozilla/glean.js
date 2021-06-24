@@ -13,7 +13,10 @@ const LOG_TAG = "platform.qt.Storage";
 // The name of the file that will hold the SQLite database.
 const DATABASE_NAME = "Glean";
 // Estimated size of database file.
-const ESTIMATED_DATABASE_SIZE = 150 * 2 * 10**3; // 300Kb
+// This estimate is calculated by (rounding off and)
+// doubling the 95th percentile  of glean-core's database size on Android (150Kb).
+// https://glam.telemetry.mozilla.org/fenix/probe/glean_database_size/explore?app_id=release&timeHorizon=ALL
+const ESTIMATED_DATABASE_SIZE = 150 * 2 * 10**3; // 300Kb in bytes
 // Since we cannot have nesting in SQL databases,
 // we will have a database with only two columns: `key` and `value`.
 // The `key` column will contain the StorageIndex as a string, joined by SEPARATOR.
@@ -134,9 +137,7 @@ class QMLStore implements Store {
       const handle = LocalStorage.LocalStorage.openDatabaseSync(
         this.name, "1.0", `${this.name} Storage`, ESTIMATED_DATABASE_SIZE
       );
-
       this.dbHandle = handle;
-      return handle;
     } catch(e) {
       log(
         LOG_TAG,
