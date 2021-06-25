@@ -3,21 +3,25 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { strict as assert } from "assert";
-import Glean from "@mozilla/glean/webext";
+import Glean, { ErrorType } from "@mozilla/glean/webext";
 
 import * as sample from "../../src/generated/sample.js";
 
-describe("webext", () => {
-    const testAppId = `webext.js.test.${this.title}`;
+describe('webext', function () {
+  const testAppId = `webext.js.test.${this.title}`;
 
-    beforeEach(async () => {
-        await Glean.testResetGlean(testAppId);
+  beforeEach(async function () {
+    await Glean.testResetGlean(testAppId);
+  });
+
+  describe('sample test', function () {
+    it('a metric recording works', async function () {
+      sample.popupOpened.add(1);
+      assert.equal(await sample.popupOpened.testGetValue(), 1);
+      assert.equal(
+        await sample.popupOpened.testGetNumRecordedErrors(ErrorType.InvalidValue),
+        0
+      );
     });
-    
-    describe("sample test", () => {
-        it("a metric recording works", async () => {
-            sample.popupOpened.add(1);
-            assert.equal(await sample.popupOpened.testGetValue(), 1);
-        });
-    });
+  });
 });
