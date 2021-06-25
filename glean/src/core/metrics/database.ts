@@ -29,6 +29,11 @@ export function isValidInternalMetricsRepresentation(v: unknown): v is Metrics {
       if (isObject(metrics)) {
         for (const metricIdentifier in metrics) {
           if (!validateMetricInternalRepresentation(metricType, metrics[metricIdentifier])) {
+            log(
+              LOG_TAG,
+              `Invalid metric representation found for metric "${metricIdentifier}"`,
+              LoggingLevel.Debug
+            );
             return false;
           }
         }
@@ -238,8 +243,8 @@ class MetricsDatabase {
     if (!isValidInternalMetricsRepresentation(data)) {
       log(
         LOG_TAG,
-        `Unexpected value found for ping ${ping} in ${lifetime} store: ${JSON.stringify(data)}. Clearing.`,
-        LoggingLevel.Error
+        `Unexpected value found for ping "${ping}" in "${lifetime}" store: ${JSON.stringify(data)}. Clearing.`,
+        LoggingLevel.Debug
       );
       await store.delete([ping]);
       return {};

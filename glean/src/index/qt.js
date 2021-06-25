@@ -13,6 +13,7 @@
 
 .pragma library
 
+.import QtQuick.LocalStorage 2.15 as LocalStorage
 .import "glean.lib.js" as Glean
 
 /**
