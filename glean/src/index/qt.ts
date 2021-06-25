@@ -4,6 +4,7 @@
 
 import Glean from "../core/glean.js";
 import type { ConfigurationInterface } from "../core/config.js";
+import { ErrorType } from "../core/error/error_type.js";
 
 import platform from "../platform/qt/index.js";
 
@@ -98,6 +99,8 @@ export default {
   setSourceTags(value: string[]): void {
     Glean.setSourceTags(value);
   },
+
+  ErrorType,
 
   _private: {
     PingType,
