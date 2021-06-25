@@ -99,28 +99,16 @@ function queryResultToJSONObject(
 }
 
 class QMLStore implements Store {
-  private initialized: Promise<unknown>;
+  protected initialized: Promise<unknown>;
   private dbHandle?: LocalStorage.DatabaseHandle;
 
   constructor(
     private tableName: string,
-    private name: string = DATABASE_NAME,
-    clear = false
+    private name: string = DATABASE_NAME
   ) {
-    const startQueries = [];
-
-    if (clear) {
-      startQueries.push(this._executeQuery(`DROP TABLE ${tableName};`));
-    }
-
-    startQueries.push(
-      // Initialize the database.
-      this._executeQuery(
-        `CREATE TABLE IF NOT EXISTS ${tableName}(key VARCHAR(255), value VARCHAR(255));`
-      ),
+    this.initialized = this._executeQuery(
+      `CREATE TABLE IF NOT EXISTS ${tableName}(key VARCHAR(255), value VARCHAR(255));`
     );
-
-    this.initialized = Promise.all(startQueries);
   }
 
   private _createKeyFromIndex(index: StorageIndex) {
@@ -172,12 +160,12 @@ class QMLStore implements Store {
     });
   }
 
-  async _executeOnceInitialized(query: string): Promise<LocalStorage.QueryResult | undefined> {
+  protected async _executeOnceInitialized(query: string): Promise<LocalStorage.QueryResult | undefined> {
     await this.initialized;
     return this._executeQuery(query);
   }
 
-  async _getFullResultObject(index: StorageIndex): Promise<JSONObject | undefined> {
+  private async _getFullResultObject(index: StorageIndex): Promise<JSONObject | undefined> {
     const key = this._createKeyFromIndex(index);
     const result = await this._executeOnceInitialized(
       `SELECT * FROM ${this.tableName} WHERE key LIKE "${key}%"`

@@ -25,7 +25,8 @@ await new Promise<void>(resolve =>
 );
 class MockQMLStore extends QMLStore {
   constructor(tableName: string) {
-    super(tableName, TEST_DATABASE_NAME, true);
+    super(tableName, TEST_DATABASE_NAME);
+    this.initialized = Promise.all([super.initialized, this.delete([])]);
   }
 
   _executeQuery(query: string): Promise<LocalStorage.QueryResult | undefined> {
