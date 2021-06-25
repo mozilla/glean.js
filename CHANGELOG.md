@@ -9,6 +9,7 @@
   * This changes the signature of `Uploader.post` to accept `string | Uint8Array` for the `body` parameter, instead of only `string`.
 * [#431](https://github.com/mozilla/glean.js/pull/431): BUGFIX: Record the timestamp for events before dispatching to the internal task queue.
 * [#462](https://github.com/mozilla/glean.js/pull/462): Implement Storage module for Qt/QML platform.
+* [#466](https://github.com/mozilla/glean.js/pull/466): Expose `ErrorType` enum, for using with the `testGetNumRecordedErrors` API.
 
 # v0.15.0 (2021-06-03)
 
