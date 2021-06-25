@@ -2,13 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-"use strict";
+import path, { dirname } from "path";
+import { fileURLToPath } from 'url';
 
-const path = require("path");
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
-module.exports = {
+export default {
   entry: "./src/index.ts",
-  devtool: "inline-source-map",
   module: {
     rules: [
       {
