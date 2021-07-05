@@ -113,7 +113,7 @@
   },
   "dependencies": {
     "fflate": "^0.7.1",
-    "jose": "^3.13.0",
+    "jose": "^3.14.0",
     "uuid": "^8.3.2"
   },
   "engines": {
