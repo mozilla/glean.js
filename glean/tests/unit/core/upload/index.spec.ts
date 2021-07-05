@@ -195,9 +195,23 @@ describe("PingUploader", function() {
       status: 500,
       result: UploadResultStatus.Success
     }));
-    await fillUpPingsDatabase(1);
 
-    await waitForUploader();
+    // Create a new ping uploader with a fixed max recoverable failures limit.
+    const uploader = new PingUploader(
+      new Configuration(),
+      Glean.platform,
+      Context.pingsDatabase,
+      new Policy(
+        3, // maxRecoverableFailures
+      )
+    );
+
+    // Overwrite the Glean ping uploader with the test one.
+    Context.pingsDatabase.attachObserver(uploader);
+
+    await fillUpPingsDatabase(1);
+    await waitForUploader(uploader);
+
     assert.strictEqual(stub.callCount, 3);
   });
 

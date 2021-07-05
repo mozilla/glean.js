@@ -23,6 +23,10 @@ const LOG_TAG = "core.Upload";
  */
 export class Policy {
   constructor (
+    // The maximum recoverable failures allowed per uploading window.
+    //
+    // Limiting this is necessary to avoid infinite loops on requesting upload tasks.
+    readonly maxRecoverableFailures: number = 3,
     // The maximum size in bytes a ping body may have to be eligible for upload.
     readonly maxPingBodySize: number = 1024 * 1024 // 1MB
   ) {}
@@ -289,7 +293,7 @@ class PingUploader implements PingsDatabaseObserver {
         this.enqueuePing(nextPing);
       }
 
-      if (retries >= 3) {
+      if (retries >= this.policy.maxRecoverableFailures) {
         log(
           LOG_TAG,
           "Reached maximum recoverable failures for the current uploading window. You are done.",
