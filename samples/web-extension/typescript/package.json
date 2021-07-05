@@ -3,16 +3,18 @@
   "version": "1.0.0",
   "description": "A sample web extension using Glean.js",
   "main": "dist/bundle.js",
+  "type": "module",
   "scripts": {
+    "link:glean": "cd ../../../glean && npm i && npm run build && npm link && cd ../samples/web-extension/typescript && npm link @mozilla/glean",
     "glean": "glean translate src/metrics.yaml src/pings.yaml -f typescript -o src/generated",
     "build": "npm run glean && webpack --config webpack.config.js --mode production",
     "dev": "npm run glean && webpack --watch --config webpack.config.js --mode development",
-    "test:base": "node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js"
+    "test:base": "node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js",
+    "test": "npm run test:base -- \"./tests/unit/*.ts\""
   },
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
   "dependencies": {
-    "ts-node": "^10.0.0",
     "webextension-polyfill": "^0.8.0"
   },
   "devDependencies": {
@@ -23,6 +25,8 @@
     "typescript": "^4.3.5",
     "web-ext-types": "^3.2.1",
     "webpack": "^5.42.0",
-    "webpack-cli": "^4.7.2"
+    "webpack-cli": "^4.7.2",
+    "ts-node": "^10.0.0",
+    "strip-ansi": "^7.0.0"
   }
 }

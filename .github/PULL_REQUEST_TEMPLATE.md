@@ -1,7 +1,7 @@
 ### Pull Request checklist ###
 <!-- Before submitting the PR, please address each item -->
 - [ ] **Quality**: Make sure this PR builds and runs cleanly.
-  - Inside the `glean/folder`, run:
+  - Inside the `glean/` folder, run:
     - `npm run test` Runs _all_ tests
     - `npm run lint && npm run lint:circular-deps` Runs _all_ linters
 - [ ] **Tests**: This PR includes thorough tests or an explanation of why it does not

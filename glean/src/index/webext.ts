@@ -7,6 +7,7 @@ import type { ConfigurationInterface } from "../core/config.js";
 
 import platform from "../platform/webext/index.js";
 
+export { ErrorType } from "../core/error/error_type.js";
 export default {
   /**
    * Initialize Glean. This method should only be called once, subsequent calls will be no-op.

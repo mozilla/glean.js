@@ -64,18 +64,12 @@ jobs:
       - run:
           name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
-      - run:
-          name: Build & link Glean.js to use it in the samples
-          command: |
-              npm --prefix ./glean run build:webext
-              npm --prefix ./glean run build:cli
-              npm --prefix ./glean link
       # JS sample related jobs
       - run:
           name: Install JavaScript dependencies for the JS sample
           command: |
-              npm --prefix ./samples/web-extension/javascript install
-              npm --prefix ./samples/web-extension/javascript link @mozilla/glean
+            npm --prefix ./samples/web-extension/javascript install
+            npm --prefix ./samples/web-extension/javascript run link:glean
       - run:
           name: Build the JS sample
           command: |
@@ -88,8 +82,8 @@ jobs:
       - run:
           name: Install Typescript dependencies for the TS sample
           command: |
-              npm --prefix ./samples/web-extension/typescript install
-              npm --prefix ./samples/web-extension/typescript link @mozilla/glean
+            npm --prefix ./samples/web-extension/typescript install
+            npm --prefix ./samples/web-extension/typescript run link:glean
       - run:
           name: Build the TS sample
           command: |
