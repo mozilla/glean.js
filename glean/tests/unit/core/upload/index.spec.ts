@@ -83,7 +83,6 @@ describe("PingUploader", function() {
 
     // Create a new uploader and attach it to the existing storage.
     const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
-    uploader.setInitialized();
     Context.pingsDatabase.attachObserver(uploader);
 
     // Mock the 'triggerUpload' function so that 'scanPendingPings' does not
@@ -117,7 +116,6 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
-    uploader.setInitialized();
     Context.pingsDatabase.attachObserver(uploader);
     await Context.pingsDatabase.scanPendingPings();
 

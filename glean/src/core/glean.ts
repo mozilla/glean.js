@@ -249,7 +249,6 @@ class Glean {
       // This is fine, we are inside a dispatched task that is guaranteed to run before any
       // other task. No external API call will be executed before we leave this task.
       Context.initialized = true;
-      Glean.pingUploader.setInitialized(true);
 
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.

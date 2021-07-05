@@ -7,6 +7,7 @@ import { gzipSync, strToU8 } from "fflate";
 import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
 import { GLEAN_VERSION } from "../constants.js";
+import { Context } from "../context.js";
 import log, { LoggingLevel } from "../log.js";
 import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
 import type PingsDatabase from "../pings/database.js";
@@ -76,10 +77,6 @@ class PingUploader implements PingsDatabaseObserver {
   private readonly platformInfo: PlatformInfo;
   private readonly serverEndpoint: string;
 
-  // Whether or not Glean was initialized, as reported by the
-  // singleton object.
-  private initialized = false;
-
   constructor(
     config: Configuration,
     platform: Platform,
@@ -94,17 +91,6 @@ class PingUploader implements PingsDatabaseObserver {
     this.platformInfo = platform.info;
     this.serverEndpoint = config.serverEndpoint;
     this.pingsDatabase = pingsDatabase;
-  }
-
-  /**
-   * Signals that initialization of Glean was completed.
-   *
-   * This is required in order to not depend on the Glean object.
-   *
-   * @param state An optional state to set the initialization status to.
-   */
-  setInitialized(state?: boolean): void {
-    this.initialized = state ?? true;
   }
 
   /**
@@ -198,7 +184,7 @@ class PingUploader implements PingsDatabaseObserver {
    * @returns The status number of the response or `undefined` if unable to attempt upload.
    */
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
-    if (!this.initialized) {
+    if (!Context.initialized) {
       log(
         LOG_TAG,
         "Attempted to upload a ping, but Glean is not initialized yet. Ignoring.",
