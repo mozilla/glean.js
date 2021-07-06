@@ -134,9 +134,7 @@ describe("PingMaker", function() {
       "X-Source-Tags": "tag1,tag2,tag3"
     }, PingMaker.getPingHeaders(Context.debugOptions));
 
-    Glean.unsetDebugViewTag();
-    Glean.unsetSourceTags();
-    await Context.dispatcher.testBlockOnQueue();
+    await Glean.testResetGlean(testAppId);
     assert.strictEqual(PingMaker.getPingHeaders(Context.debugOptions), undefined);
   });
 
@@ -181,7 +179,9 @@ describe("PingMaker", function() {
     const consoleSpy = sandbox.spy(console, "info");
     await PingMaker.collectAndStorePing("ident", ping);
 
-    const loggedPayload = JSON.parse(consoleSpy.lastCall.args[0]) as JSONObject;
+    // Need to get the second argument of the console.info call,
+    // because the first one contains the log tag.
+    const loggedPayload = JSON.parse(consoleSpy.lastCall.args[1]) as JSONObject;
 
     const recordedPing = (await Context.pingsDatabase.getAllPings())["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });

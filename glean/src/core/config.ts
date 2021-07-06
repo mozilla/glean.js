@@ -7,6 +7,9 @@ import type Plugin from "../plugins/index.js";
 import { validateHeader, validateURL } from "./utils.js";
 import type Uploader from "./upload/uploader.js";
 import type { DebugOptions } from "./debug_options.js";
+import log, { LoggingLevel } from "./log.js";
+
+const LOG_TAG = "core.Config";
 
 /**
  * Describes how to configure Glean.
@@ -69,9 +72,13 @@ export class Configuration implements ConfigurationInterface {
   static validateDebugViewTag(tag: string): boolean {
     const validation = validateHeader(tag);
     if (!validation) {
-      console.error(
-        `"${tag}" is not a valid \`debugViewTag\` value.`,
-        "Please make sure the value passed satisfies the regex `^[a-zA-Z0-9-]{1,20}$`."
+      log(
+        LOG_TAG,
+        [
+          `"${tag}" is not a valid \`debugViewTag\` value.`,
+          "Please make sure the value passed satisfies the regex `^[a-zA-Z0-9-]{1,20}$`."
+        ],
+        LoggingLevel.Error
       );
     }
     return validation;
@@ -79,13 +86,21 @@ export class Configuration implements ConfigurationInterface {
 
   static validateSourceTags(tags: string[]): boolean {
     if (tags.length < 1 || tags.length > GLEAN_MAX_SOURCE_TAGS) {
-      console.error(`A list of tags cannot contain more than ${GLEAN_MAX_SOURCE_TAGS} elements.`);
+      log(
+        LOG_TAG,
+        `A list of tags cannot contain more than ${GLEAN_MAX_SOURCE_TAGS} elements.`,
+        LoggingLevel.Error
+      );
       return false;
     }
 
     for (const tag of tags) {
       if (tag.startsWith("glean")) {
-        console.error("Tags starting with `glean` are reserved and must not be used.");
+        log(
+          LOG_TAG,
+          "Tags starting with `glean` are reserved and must not be used.",
+          LoggingLevel.Error
+        );
         return false;
       }
 

@@ -1,6 +1,21 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.15.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.16.0...main)
+
+# v0.16.0 (2021-07-06)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.15.0...v0.16.0)
+
+* [#346](https://github.com/mozilla/glean.js/pull/346): Provide default HTTP client for Qt/QML platform.
+* [#399](https://github.com/mozilla/glean.js/pull/399): Check if there are ping data before attempting to delete it.
+  * This change lowers the amount of log messages related to attempting to delete inexistent data.
+* [#411](https://github.com/mozilla/glean.js/pull/411): Tag all messages logged by Glean with the component they are coming from.
+* [#415](https://github.com/mozilla/glean.js/pull/415), [#430](https://github.com/mozilla/glean.js/pull/430): Gzip ping paylod before upload
+  * This changes the signature of `Uploader.post` to accept `string | Uint8Array` for the `body` parameter, instead of only `string`.
+* [#431](https://github.com/mozilla/glean.js/pull/431): BUGFIX: Record the timestamp for events before dispatching to the internal task queue.
+* [#462](https://github.com/mozilla/glean.js/pull/462): Implement persistent storage for Qt/QML platform.
+* [#466](https://github.com/mozilla/glean.js/pull/466): Expose `ErrorType` enum, for using with the `testGetNumRecordedErrors` API.
+* [#497](https://github.com/mozilla/glean.js/pull/497): Implement limit of 1MB for ping request payload. Limit is calculated after gzip compression.
 
 # v0.15.0 (2021-06-03)
 

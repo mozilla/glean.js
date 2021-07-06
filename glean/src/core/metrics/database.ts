@@ -11,6 +11,9 @@ import type { JSONObject, JSONValue } from "../utils.js";
 import { createMetric, validateMetricInternalRepresentation } from "./utils.js";
 import { isObject, isUndefined } from "../utils.js";
 import { Lifetime } from "./lifetime.js";
+import log, { LoggingLevel } from "../log.js";
+
+const LOG_TAG = "core.Metrics.Database";
 
 /**
  * Verifies if a given value is a valid Metrics object.
@@ -26,6 +29,11 @@ export function isValidInternalMetricsRepresentation(v: unknown): v is Metrics {
       if (isObject(metrics)) {
         for (const metricIdentifier in metrics) {
           if (!validateMetricInternalRepresentation(metricType, metrics[metricIdentifier])) {
+            log(
+              LOG_TAG,
+              `Invalid metric representation found for metric "${metricIdentifier}"`,
+              LoggingLevel.Debug
+            );
             return false;
           }
         }
@@ -199,7 +207,11 @@ class MetricsDatabase {
     const storageKey = await metric.identifier(this);
     const value = await store.get([ping, metric.type, storageKey]);
     if (!isUndefined(value) && !validateMetricInternalRepresentation<T>(metric.type, value)) {
-      console.error(`Unexpected value found for metric ${storageKey}: ${JSON.stringify(value)}. Clearing.`);
+      log(
+        LOG_TAG,
+        `Unexpected value found for metric ${storageKey}: ${JSON.stringify(value)}. Clearing.`,
+        LoggingLevel.Error
+      );
       await store.delete([ping, metric.type, storageKey]);
       return;
     } else {
@@ -229,7 +241,11 @@ class MetricsDatabase {
     }
 
     if (!isValidInternalMetricsRepresentation(data)) {
-      console.error(`Unexpected value found for ping ${ping} in ${lifetime} store: ${JSON.stringify(data)}. Clearing.`);
+      log(
+        LOG_TAG,
+        `Unexpected value found for ping "${ping}" in "${lifetime}" store: ${JSON.stringify(data)}. Clearing.`,
+        LoggingLevel.Debug
+      );
       await store.delete([ping]);
       return {};
     }
@@ -274,7 +290,7 @@ class MetricsDatabase {
     const pingData = await this.getAndValidatePingData(ping, Lifetime.Ping);
     const appData = await this.getAndValidatePingData(ping, Lifetime.Application);
 
-    if (clearPingLifetimeData) {
+    if (clearPingLifetimeData && Object.keys(pingData).length > 0) {
       await this.clear(Lifetime.Ping, ping);
     }
 

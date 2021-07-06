@@ -6,6 +6,18 @@ import type { MetricType } from "../metrics/index.js";
 import type { ErrorType } from "./error_type.js";
 import CounterMetricType from "../metrics/types/counter.js";
 import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled.js";
+import log from "../log.js";
+
+/**
+ * Create a log tag for a specific metric type.
+ *
+ * @param metric The metric type to create a tag for.
+ * @returns The tag.
+ */
+function createLogTag(metric: MetricType): string {
+  const capitalizedType = metric.type.charAt(0).toUpperCase() + metric.type.slice(1);
+  return `core.Metrics.${capitalizedType}`;
+}
 
 /**
  * For a given metric, get the metric in which to record errors.
@@ -54,7 +66,7 @@ export default class ErrorManager {
     numErrors = 1
   ): Promise<void> {
     const errorMetric = getErrorMetricForMetric(metric, error);
-    console.warn(`${metric.baseIdentifier()}: ${message}`);
+    log(createLogTag(metric), `${metric.baseIdentifier()}: ${message}`);
     if (numErrors > 0) {
       await CounterMetricType._private_addUndispatched(errorMetric, numErrors);
     } else {

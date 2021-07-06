@@ -12,7 +12,7 @@ import type Platform from "../index.js";
 
 class MockUploader implements Uploader {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  post(_url: string, _body: string, _headers?: Record<string, string>): Promise<UploadResult> {
+  post(_url: string, _body: string | Uint8Array, _headers?: Record<string, string>): Promise<UploadResult> {
     const result: UploadResult = {
       result: UploadResultStatus.Success,
       status: 200

@@ -20,6 +20,7 @@ import { UploadResultStatus } from "../../../src/core/upload/uploader";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
+import { unzipPingPayload } from "../../utils";
 
 const sandbox = sinon.createSandbox();
 
@@ -60,13 +61,13 @@ describe("PingEncryptionPlugin", function() {
 
     const postSpy = sandbox.spy(TestPlatform.uploader, "post").withArgs(
       sinon.match(makePath(Context.applicationId, pingId, ping)),
-      sinon.match.string
+      sinon.match.any
     );
 
     await collectAndStorePing(pingId, ping);
     assert.ok(postSpy.calledOnce);
 
-    const payload = JSON.parse(postSpy.args[0][1]) as JSONObject;
+    const payload = unzipPingPayload(postSpy.args[0][1]);
     assert.ok("payload" in payload);
     assert.ok(typeof payload.payload === "string");
   });
@@ -127,7 +128,7 @@ describe("PingEncryptionPlugin", function() {
 
     const { url, body } = await uploadPromise;
 
-    const parsedBody = JSON.parse(body) as JSONObject;
+    const parsedBody = unzipPingPayload(body);
     const { plaintext, protectedHeader } = await compactDecrypt(
       parsedBody?.payload as string,
       privateKey
@@ -152,3 +153,4 @@ describe("PingEncryptionPlugin", function() {
     assert.ok("typ" in protectedHeader);
   });
 });
+

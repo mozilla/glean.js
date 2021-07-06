@@ -2,12 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import log, { LoggingLevel } from "../../core/log.js";
 import type Uploader from "../../core/upload/uploader.js";
 import type { UploadResult } from "../../core/upload/uploader.js";
 import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus } from "../../core/upload/uploader.js";
 
+const LOG_TAG = "platform.webext.Uploader";
+
 class BrowserUploader implements Uploader {
-  async post(url: string, body: string, headers: Record<string, string> = {}): Promise<UploadResult> {
+  async post(url: string, body: string | Uint8Array, headers: Record<string, string> = {}): Promise<UploadResult> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), DEFAULT_UPLOAD_TIMEOUT_MS);
 
@@ -27,7 +30,7 @@ class BrowserUploader implements Uploader {
       // If we time out and call controller.abort,
       // the fetch API will throw a DOMException with name "AbortError".
       if (e instanceof DOMException) {
-        console.error("Timeout while attempting to upload ping.", e);
+        log(LOG_TAG, ["Timeout while attempting to upload ping.\n", e.message], LoggingLevel.Error);
       } else if (e instanceof TypeError) {
         // From MDN: "A fetch() promise will reject with a TypeError
         // when a network error is encountered or CORS is misconfigured on the server-side,
@@ -35,9 +38,9 @@ class BrowserUploader implements Uploader {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#checking_that_the_fetch_was_successful
         //
         // We will treat this as we treat server / network errors in this case.
-        console.error("Network error while attempting to upload ping.", e);
+        log(LOG_TAG, ["Network error while attempting to upload ping.\n", e.message], LoggingLevel.Error);
       } else {
-        console.error("Unknown error while attempting to upload ping.", e);
+        log(LOG_TAG, ["Unknown error while attempting to upload ping.\n", e], LoggingLevel.Error);
       }
 
       clearTimeout(timeout);

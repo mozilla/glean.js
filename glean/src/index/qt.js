@@ -5,7 +5,7 @@
 // This file is the actual entry point file for Glean.js in QML, that users will interact with.
 //
 // I was not able to figure out a way to simply use the Webpack generated file to
-// be the entry point in Qt, because of the unusual syntax allowed in Qt Javascript.
+// be the entry point in Qt, because of the unusual syntax allowed in Qt JavaScript.
 // Thus, we compile the Glean.js library normaly into the `glean.lib.js` file and then
 // we have this file which interacts opaquely with the Webpack generated one.
 //
@@ -13,6 +13,7 @@
 
 .pragma library
 
+.import QtQuick.LocalStorage 2.15 as LocalStorage
 .import "glean.lib.js" as Glean
 
 /**

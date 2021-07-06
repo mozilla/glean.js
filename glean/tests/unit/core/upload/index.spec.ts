@@ -11,7 +11,7 @@ import { Context } from "../../../../src/core/context";
 import Glean from "../../../../src/core/glean";
 import PingType from "../../../../src/core/pings/ping_type";
 import { collectAndStorePing } from "../../../../src/core/pings/maker";
-import PingUploader from "../../../../src/core/upload";
+import PingUploader, { Policy } from "../../../../src/core/upload";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 
 const sandbox = sinon.createSandbox();
@@ -38,12 +38,16 @@ async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
 }
 
 /**
- * Waits for the uploader on the Glean singleton to end its uploading job,
+ * Waits for a PingUploader to end its uploading job,
  * if it's actualy doing any.
+ *
+ * By default will wait for the uploader on the Glean singleton.
+ *
+ * @param uploader The uploader to wait for.
  */
-async function waitForGleanUploader(): Promise<void> {
-  if (Glean["pingUploader"]["currentJob"]) {
-    await Glean["pingUploader"]["currentJob"];
+async function waitForUploader(uploader = Glean["pingUploader"]): Promise<void> {
+  if (uploader["currentJob"]) {
+    await uploader["currentJob"];
   }
 }
 
@@ -79,7 +83,6 @@ describe("PingUploader", function() {
 
     // Create a new uploader and attach it to the existing storage.
     const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
-    uploader.setInitialized();
     Context.pingsDatabase.attachObserver(uploader);
 
     // Mock the 'triggerUpload' function so that 'scanPendingPings' does not
@@ -104,7 +107,7 @@ describe("PingUploader", function() {
   it("if multiple pings are enqueued subsequently, we don't attempt to upload each ping more than once", async function () {
     const spy = sandbox.spy(Glean.platform.uploader, "post");
     await fillUpPingsDatabase(100);
-    await waitForGleanUploader();
+    await waitForUploader();
     assert.strictEqual(spy.callCount, 100);
   });
 
@@ -113,7 +116,6 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
-    uploader.setInitialized();
     Context.pingsDatabase.attachObserver(uploader);
     await Context.pingsDatabase.scanPendingPings();
 
@@ -132,7 +134,7 @@ describe("PingUploader", function() {
     // as the default exported mock already returns a success response always.
     await fillUpPingsDatabase(10);
 
-    await waitForGleanUploader();
+    await waitForUploader();
     assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 0);
   });
@@ -145,7 +147,7 @@ describe("PingUploader", function() {
     }));
     await fillUpPingsDatabase(10);
 
-    await waitForGleanUploader();
+    await waitForUploader();
     assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
     assert.strictEqual(Glean["pingUploader"]["queue"].length, 0);
   });
@@ -158,7 +160,7 @@ describe("PingUploader", function() {
     }));
     await fillUpPingsDatabase(1);
 
-    await waitForGleanUploader();
+    await waitForUploader();
     // Ping should still be there.
     const allPings = await Context.pingsDatabase.getAllPings();
     assert.deepStrictEqual(Object.keys(allPings).length, 1);
@@ -193,17 +195,56 @@ describe("PingUploader", function() {
       status: 500,
       result: UploadResultStatus.Success
     }));
-    await fillUpPingsDatabase(1);
 
-    await waitForGleanUploader();
+    // Create a new ping uploader with a fixed max recoverable failures limit.
+    const uploader = new PingUploader(
+      new Configuration(),
+      Glean.platform,
+      Context.pingsDatabase,
+      new Policy(
+        3, // maxRecoverableFailures
+      )
+    );
+
+    // Overwrite the Glean ping uploader with the test one.
+    Context.pingsDatabase.attachObserver(uploader);
+
+    await fillUpPingsDatabase(1);
+    await waitForUploader(uploader);
+
     assert.strictEqual(stub.callCount, 3);
+  });
+
+  it("pings which exceed max ping body size are not sent", async function () {
+    // Create a new ping uploader with a very low max ping body size,
+    // so that virtually any ping body will throw an error.
+    const uploader = new PingUploader(
+      new Configuration(),
+      Glean.platform,
+      Context.pingsDatabase,
+      new Policy(
+        3, // maxRecoverableFailures
+        1 // maxPingBodySize
+      )
+    );
+
+    // Overwrite the Glean ping uploader with the test one.
+    Context.pingsDatabase.attachObserver(uploader);
+
+    const spy = sandbox.spy(Glean.platform.uploader, "post");
+    // Add a bunch of pings to the database, in order to trigger upload attempts on the uploader.
+    await fillUpPingsDatabase(10);
+    await waitForUploader(uploader);
+
+    // Check that none of those pings were actually sent.
+    assert.strictEqual(spy.callCount, 0);
   });
 
   it("correctly build ping request", async function () {
     const postSpy = sandbox.spy(Glean.platform.uploader, "post");
 
     const expectedDocumentId = (await fillUpPingsDatabase(1))[0];
-    await waitForGleanUploader();
+    await waitForUploader();
 
     const url = postSpy.firstCall.args[0].split("/");
     const appId = url[url.length - 4];

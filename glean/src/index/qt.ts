@@ -4,6 +4,7 @@
 
 import Glean from "../core/glean.js";
 import type { ConfigurationInterface } from "../core/config.js";
+import { ErrorType } from "../core/error/error_type.js";
 
 import platform from "../platform/qt/index.js";
 
@@ -75,22 +76,12 @@ export default {
    * When this property is set, all subsequent outgoing pings will include the `X-Debug-ID` header
    * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
-   * To unset the `debugViewTag` call `Glean.unsetDebugViewTag();
    *
    * @param value The value of the header.
    *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
    */
   setDebugViewTag(value: string): void {
     Glean.setDebugViewTag(value);
-  },
-
-  /**
-   * Unsets the `debugViewTag` debug option.
-   *
-   * This is a no-op is case there is no `debugViewTag` set at the moment.
-   */
-  unsetDebugViewTag(): void {
-    Glean.unsetDebugViewTag();
   },
 
   /**
@@ -109,14 +100,7 @@ export default {
     Glean.setSourceTags(value);
   },
 
-  /**
-   * Unsets the `sourceTags` debug option.
-   *
-   * This is a no-op is case there are no `sourceTags` set at the moment.
-   */
-  unsetSourceTags(): void {
-    Glean.unsetSourceTags();
-  },
+  ErrorType,
 
   _private: {
     PingType,

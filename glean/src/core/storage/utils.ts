@@ -2,9 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import log, { LoggingLevel } from "../log.js";
 import type { StorageIndex } from "../storage/index.js";
 import type { JSONObject, JSONValue } from "../utils.js";
 import { isJSONValue, isObject } from "../utils.js";
+
+const LOG_TAG = "core.Storage.Utils";
 
 /**
  * Gets an entry in a given object on a given index.
@@ -80,7 +83,11 @@ export function updateNestedObject(
     target[finalKey] = value;
     return returnObject;
   } catch(e) {
-    console.error("Error while transforming stored value. Ignoring old value.", e);
+    log(
+      LOG_TAG,
+      ["Error while transforming stored value. Ignoring old value.", e],
+      LoggingLevel.Error
+    );
     target[finalKey] = transformFn(undefined);
     return returnObject;
   }
@@ -109,7 +116,7 @@ export function deleteKeyFromNestedObject(obj: JSONObject, index: StorageIndex):
   for (const key of index.slice(0, index.length - 1)) {
     const value = target[key];
     if (!isObject(value)) {
-      throw Error("Attempted to delete an entry from an invalid index.");
+      throw Error(`Attempted to delete an entry from an inexistent index: ${JSON.stringify(index)}.`);
     } else {
       target = value;
     }

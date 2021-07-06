@@ -21,6 +21,9 @@ import TestPlatform from "../platform/test/index.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import { Context } from "./context.js";
 import PingType from "./pings/ping_type.js";
+import log, { LoggingLevel } from "./log.js";
+
+const LOG_TAG = "core.Glean";
 
 class Glean {
   // The Glean singleton.
@@ -179,17 +182,29 @@ class Glean {
     config?: ConfigurationInterface
   ): void {
     if (Context.initialized) {
-      console.warn("Attempted to initialize Glean, but it has already been initialized. Ignoring.");
+      log(
+        LOG_TAG,
+        "Attempted to initialize Glean, but it has already been initialized. Ignoring.",
+        LoggingLevel.Warn
+      );
       return;
     }
 
     if (applicationId.length === 0) {
-      console.error("Unable to initialize Glean, applicationId cannot be an empty string.");
+      log(
+        LOG_TAG,
+        "Unable to initialize Glean, applicationId cannot be an empty string.",
+        LoggingLevel.Error
+      );
       return;
     }
 
     if (!Glean.instance._platform) {
-      console.error("Unable to initialize Glean, environment has not been set.");
+      log(
+        LOG_TAG,
+        "Unable to initialize Glean, environment has not been set.",
+        LoggingLevel.Error
+      );
       return;
     }
 
@@ -234,7 +249,6 @@ class Glean {
       // This is fine, we are inside a dispatched task that is guaranteed to run before any
       // other task. No external API call will be executed before we leave this task.
       Context.initialized = true;
-      Glean.pingUploader.setInitialized(true);
 
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
@@ -316,10 +330,14 @@ class Glean {
   static setUploadEnabled(flag: boolean): void {
     Context.dispatcher.launch(async () => {
       if (!Context.initialized) {
-        console.error(
-          "Changing upload enabled before Glean is initialized is not supported.\n",
-          "Pass the correct state into `Glean.initialize\n`.",
-          "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
+        log(
+          LOG_TAG,
+          [
+            "Changing upload enabled before Glean is initialized is not supported.\n",
+            "Pass the correct state into `Glean.initialize\n`.",
+            "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
+          ],
+          LoggingLevel.Error
         );
         return;
       }
@@ -356,14 +374,13 @@ class Glean {
    * When this property is set, all subsequent outgoing pings will include the `X-Debug-ID` header
    * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
-   * To unset the `debugViewTag` call `Glean.unsetDebugViewTag();
    *
    * @param value The value of the header.
    *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
    */
   static setDebugViewTag(value: string): void {
     if (!Configuration.validateDebugViewTag(value)) {
-      console.error(`Invalid \`debugViewTag\` ${value}. Ignoring.`);
+      log(LOG_TAG, `Invalid \`debugViewTag\` ${value}. Ignoring.`, LoggingLevel.Error);
       return;
     }
 
@@ -371,18 +388,6 @@ class Glean {
       Glean.instance._config.debug.debugViewTag = value;
 
       // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
-  }
-
-  /**
-   * Unsets the `debugViewTag` debug option.
-   *
-   * This is a no-op is case there is no `debugViewTag` set at the moment.
-   */
-  static unsetDebugViewTag(): void {
-    Context.dispatcher.launch(() => {
-      delete Glean.instance._config.debug.debugViewTag;
       return Promise.resolve();
     });
   }
@@ -401,7 +406,7 @@ class Glean {
    */
   static setSourceTags(value: string[]): void {
     if (!Configuration.validateSourceTags(value)) {
-      console.error(`Invalid \`sourceTags\` ${value.toString()}. Ignoring.`);
+      log(LOG_TAG, `Invalid \`sourceTags\` ${value.toString()}. Ignoring.`, LoggingLevel.Error);
       return;
     }
 
@@ -409,18 +414,6 @@ class Glean {
       Glean.instance._config.debug.sourceTags = value;
 
       // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
-  }
-
-  /**
-   * Unsets the `sourceTags` debug option.
-   *
-   * This is a no-op is case there are no `sourceTags` set at the moment.
-   */
-  static unsetSourceTags(): void {
-    Context.dispatcher.launch(() => {
-      delete Glean.instance._config.debug.sourceTags;
       return Promise.resolve();
     });
   }
@@ -451,7 +444,8 @@ class Glean {
     // we log a debug message about the change.
     if (Glean.instance._platform && Glean.instance._platform.name !== platform.name) {
       // TODO: Only show this message outside of test mode, and rephrase it as an error (depends on Bug 1682771).
-      console.debug(
+      log(
+        LOG_TAG,
         `Changing Glean platform from "${Glean.platform.name}" to "${platform.name}".`,
       );
     }

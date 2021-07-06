@@ -26,7 +26,7 @@ jobs:
               exit 1
             fi
       - run:
-          name: Install Javascript dependencies
+          name: Install JavaScript dependencies
           command: npm --prefix ./glean install
       - run:
           name: Run linter
@@ -47,7 +47,7 @@ jobs:
             sudo apt update
             sudo apt install firefox-trunk
       - run:
-          name: Install Javascript dependencies
+          name: Install JavaScript dependencies
           command: npm --prefix ./glean install
       - run:
           name: Run unit tests
@@ -62,20 +62,14 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Javascript dependencies for Glean
+          name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
-      - run:
-          name: Build & link Glean.js to use it in the samples
-          command: |
-              npm --prefix ./glean run build:webext
-              npm --prefix ./glean run build:cli
-              npm --prefix ./glean link
       # JS sample related jobs
       - run:
-          name: Install Javascript dependencies for the JS sample
+          name: Install JavaScript dependencies for the JS sample
           command: |
-              npm --prefix ./samples/web-extension/javascript install
-              npm --prefix ./samples/web-extension/javascript link @mozilla/glean
+            npm --prefix ./samples/web-extension/javascript install
+            npm --prefix ./samples/web-extension/javascript run link:glean
       - run:
           name: Build the JS sample
           command: |
@@ -88,8 +82,8 @@ jobs:
       - run:
           name: Install Typescript dependencies for the TS sample
           command: |
-              npm --prefix ./samples/web-extension/typescript install
-              npm --prefix ./samples/web-extension/typescript link @mozilla/glean
+            npm --prefix ./samples/web-extension/typescript install
+            npm --prefix ./samples/web-extension/typescript run link:glean
       - run:
           name: Build the TS sample
           command: |
@@ -106,7 +100,9 @@ jobs:
       - checkout
       - run:
           name: Get and post build sizes to GitHub PR
-          command: bin/build-size-check.sh
+          command: |
+            npm --prefix ./benchmarks install
+            npm --prefix ./benchmarks run size:report
 
   check-qt-js:
     docker:
@@ -114,7 +110,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Javascript dependencies and build Glean.js for Qt
+          name: Install JavaScript dependencies and build Glean.js for Qt
           command: |
             npm --prefix ./glean install
             npm --prefix ./glean run build:qt
@@ -136,7 +132,7 @@ jobs:
             source venv/bin/activate
             pip install -r requirements.txt
             glean_parser translate metrics.yaml pings.yaml -f javascript -o generated \
-            --option platform=qt --option version="0.15";
+            --option platform=qt --option version="0.16"
 
             sudo apt-get install xvfb
             xvfb-run python main.py &> qml.log &
@@ -155,7 +151,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Javascript dependencies
+          name: Install JavaScript dependencies
           command: npm --prefix ./glean install
       - run:
           name: Build documentation
@@ -166,19 +162,16 @@ jobs:
       - run:
           name: Show contents
           command: ls -R glean/dist/docs
-      # Needed for write access to the GitHub repository;
-      # see https://circleci.com/docs/2.0/gh-bb-integration/#deployment-keys-and-user-keys
-      - add_ssh_keys:
-          fingerprints:
-            - "0c:0b:f8:f0:45:60:92:79:60:34:b2:12:9c:55:1d:fa"
-      # The gh-pages npm package can be used to push a directory to a git branch;
-      # see https://www.npmjs.com/package/gh-pages
       - run:
-          name: Deploy docs to gh-pages branch
+          name: Setup SSH key and deploy docs to gh-pages branch
           command: |
-            git config user.email "brizental@mozilla.com"
-            git config user.name "brizental"
+            eval "$(ssh-agent -s)"
+            DECODED_SSH_DEPLOY_KEY=$(echo $SSH_DEPLOY_KEY | base64 -d)
+            ssh-add - \<<< "${DECODED_SSH_DEPLOY_KEY}"
+            git config user.email "brizental+moz-glean@mozilla.com"
+            git config user.name "moz-glean"
             npm --prefix ./glean run publish:docs
+
 
   publish:
     docker:
@@ -186,7 +179,7 @@ jobs:
     steps:
       - checkout
       - run:
-          name: Install Javascript dependencies
+          name: Install JavaScript dependencies
           command: npm --prefix ./glean install
       - run:
           name: NPM Authentication
@@ -213,27 +206,40 @@ jobs:
             ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz
 
 workflows:
-  version: 2
   ci:
     jobs:
       - lint
       - test
       - check-qt-js
       - samples-tests
+      - hold:
+          type: approval
+          requires:
+            - lint
+            - test
+            - check-qt-js
+            - samples-tests
+          filters:
+            branches:
+              ignore:
+                - main
+                - release
+                - /^release-*/
+      - check-size:
+          context: data-eng-gleanjs-gh
+          requires:
+            - hold
       - docs-deploy:
+          context: data-eng-gleanjs-gh
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^v.*/
       - publish:
+          context: data-eng-gleanjs-gh
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^v.*/
-      # Comment this job away until Bug 1681899 is resolved.
-      # - check-size:
-      #     filters:
-      #       branches:
-      #         ignore: main
