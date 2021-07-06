@@ -7,15 +7,30 @@ import { gzipSync, strToU8 } from "fflate";
 import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
 import { GLEAN_VERSION } from "../constants.js";
+import { Context } from "../context.js";
 import log, { LoggingLevel } from "../log.js";
 import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
 import type PingsDatabase from "../pings/database.js";
 import type PlatformInfo from "../platform_info.js";
-import type { UploadResult} from "./uploader.js";
+import type { UploadResult } from "./uploader.js";
 import type Uploader from "./uploader.js";
 import { UploadResultStatus } from "./uploader.js";
 
 const LOG_TAG = "core.Upload";
+
+/**
+ * Policies for ping storage, uploading and requests.
+ */
+export class Policy {
+  constructor (
+    // The maximum recoverable failures allowed per uploading window.
+    //
+    // Limiting this is necessary to avoid infinite loops on requesting upload tasks.
+    readonly maxRecoverableFailures: number = 3,
+    // The maximum size in bytes a ping body may have to be eligible for upload.
+    readonly maxPingBodySize: number = 1024 * 1024 // 1MB
+  ) {}
+}
 
 interface QueuedPing extends PingInternalRepresentation {
   identifier: string
@@ -31,6 +46,14 @@ const enum PingUploaderStatus {
   Uploading,
   // Currently processing a signal to stop uploading pings.
   Cancelling,
+}
+
+// Error to be thrown in case the final ping body is larger than MAX_PING_BODY_SIZE.
+class PingBodyOverflowError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "PingBodyOverflow";
+  }
 }
 
 /**
@@ -57,13 +80,13 @@ class PingUploader implements PingsDatabaseObserver {
 
   private readonly platformInfo: PlatformInfo;
   private readonly serverEndpoint: string;
-  private readonly pingsDatabase: PingsDatabase;
 
-  // Whether or not Glean was initialized, as reported by the
-  // singleton object.
-  private initialized = false;
-
-  constructor(config: Configuration, platform: Platform, pingsDatabase: PingsDatabase) {
+  constructor(
+    config: Configuration,
+    platform: Platform,
+    private readonly pingsDatabase: PingsDatabase,
+    private readonly policy = new Policy
+  ) {
     this.queue = [];
     this.status = PingUploaderStatus.Idle;
     // Initialize the ping uploader with either the platform defaults or a custom
@@ -72,17 +95,6 @@ class PingUploader implements PingsDatabaseObserver {
     this.platformInfo = platform.info;
     this.serverEndpoint = config.serverEndpoint;
     this.pingsDatabase = pingsDatabase;
-  }
-
-  /**
-   * Signals that initialization of Glean was completed.
-   *
-   * This is required in order to not depend on the Glean object.
-   *
-   * @param state An optional state to set the initialization status to.
-   */
-  setInitialized(state?: boolean): void {
-    this.initialized = state ?? true;
   }
 
   /**
@@ -139,21 +151,33 @@ class PingUploader implements PingsDatabaseObserver {
     };
 
     const stringifiedBody = JSON.stringify(ping.payload);
+    // We prefer using `strToU8` instead of TextEncoder directly,
+    // because it will polyfill TextEncoder if it's not present in the environment.
+    // Environments that don't provide TextEncoder are IE and most importantly QML.
+    const encodedBody = strToU8(stringifiedBody);
+
+    let finalBody: string | Uint8Array;
+    let bodySizeInBytes: number;
     try {
-      const compressedBody = gzipSync(strToU8(stringifiedBody));
+      finalBody = gzipSync(encodedBody);
+      bodySizeInBytes = finalBody.length;
       headers["Content-Encoding"] = "gzip";
-      headers["Content-Length"] = compressedBody.length.toString();
-      return {
-        headers,
-        payload: compressedBody
-      };
     } catch {
-      headers["Content-Length"] = stringifiedBody.length.toString();
-      return {
-        headers,
-        payload: stringifiedBody
-      };
+      finalBody = stringifiedBody;
+      bodySizeInBytes = encodedBody.length;
     }
+
+    if (bodySizeInBytes > this.policy.maxPingBodySize) {
+      throw new PingBodyOverflowError(
+        `Body for ping ${ping.identifier} exceeds ${this.policy.maxPingBodySize}bytes. Discarding.`
+      );
+    }
+
+    headers["Content-Length"] = bodySizeInBytes.toString();
+    return {
+      headers,
+      payload: finalBody
+    };
   }
 
   /**
@@ -163,7 +187,7 @@ class PingUploader implements PingsDatabaseObserver {
    * @returns The status number of the response or `undefined` if unable to attempt upload.
    */
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
-    if (!this.initialized) {
+    if (!Context.initialized) {
       log(
         LOG_TAG,
         "Attempted to upload a ping, but Glean is not initialized yet. Ignoring.",
@@ -172,17 +196,24 @@ class PingUploader implements PingsDatabaseObserver {
       return { result: UploadResultStatus.RecoverableFailure };
     }
 
-    const finalPing = await this.preparePingForUpload(ping);
-    const result = await this.uploader.post(
-      // We are sure that the applicationId is not `undefined` at this point,
-      // this function is only called when submitting a ping
-      // and that function return early when Glean is not initialized.
-      `${this.serverEndpoint}${ping.path}`,
-      finalPing.payload,
-      finalPing.headers
-    );
-
-    return result;
+    try {
+      const finalPing = await this.preparePingForUpload(ping);
+      return await this.uploader.post(
+        // We are sure that the applicationId is not `undefined` at this point,
+        // this function is only called when submitting a ping
+        // and that function return early when Glean is not initialized.
+        `${this.serverEndpoint}${ping.path}`,
+        finalPing.payload,
+        finalPing.headers
+      );
+    } catch(e) {
+      log(LOG_TAG, ["Error trying to build ping request:", e], LoggingLevel.Warn);
+      // An unrecoverable failure will make sure the offending ping is removed from the queue and
+      // deleted from the database, which is what we want here.
+      return {
+        result: UploadResultStatus.UnrecoverableFailure
+      };
+    }
   }
 
   /**
@@ -232,7 +263,7 @@ class PingUploader implements PingsDatabaseObserver {
     if (result === UploadResultStatus.UnrecoverableFailure || (status && status >= 400 && status < 500)) {
       log(
         LOG_TAG,
-        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was ${status ?? "no status"}.`,
+        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was: ${status ?? "no status"}.`,
         LoggingLevel.Warn
       );
       await this.pingsDatabase.deletePing(identifier);
@@ -261,7 +292,7 @@ class PingUploader implements PingsDatabaseObserver {
         this.enqueuePing(nextPing);
       }
 
-      if (retries >= 3) {
+      if (retries >= this.policy.maxRecoverableFailures) {
         log(
           LOG_TAG,
           "Reached maximum recoverable failures for the current uploading window. You are done.",

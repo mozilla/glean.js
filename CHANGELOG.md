@@ -10,6 +10,7 @@
 * [#431](https://github.com/mozilla/glean.js/pull/431): BUGFIX: Record the timestamp for events before dispatching to the internal task queue.
 * [#462](https://github.com/mozilla/glean.js/pull/462): Implement Storage module for Qt/QML platform.
 * [#466](https://github.com/mozilla/glean.js/pull/466): Expose `ErrorType` enum, for using with the `testGetNumRecordedErrors` API.
+* [#497](https://github.com/mozilla/glean.js/pull/497): Implement limit of 1MB for ping request payload. Limit is calculated after gzip compression.
 
 # v0.15.0 (2021-06-03)
 
