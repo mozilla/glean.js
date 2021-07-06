@@ -41,7 +41,7 @@ async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
  * Waits for a PingUploader to end its uploading job,
  * if it's actualy doing any.
  *
- * By default will sait for the uploader on the Glean singleton.
+ * By default will wait for the uploader on the Glean singleton.
  *
  * @param uploader The uploader to wait for.
  */

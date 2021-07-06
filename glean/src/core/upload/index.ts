@@ -162,11 +162,9 @@ class PingUploader implements PingsDatabaseObserver {
       finalBody = gzipSync(encodedBody);
       bodySizeInBytes = finalBody.length;
       headers["Content-Encoding"] = "gzip";
-      headers["Content-Length"] = finalBody.length.toString();
     } catch {
       finalBody = stringifiedBody;
       bodySizeInBytes = encodedBody.length;
-      headers["Content-Length"] = stringifiedBody.length.toString();
     }
 
     if (bodySizeInBytes > this.policy.maxPingBodySize) {
@@ -175,6 +173,7 @@ class PingUploader implements PingsDatabaseObserver {
       );
     }
 
+    headers["Content-Length"] = bodySizeInBytes.toString();
     return {
       headers,
       payload: finalBody
