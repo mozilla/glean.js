@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.15.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.16.0...main)
+
+# v0.16.0 (2021-07-06)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.15.0...v0.16.0)
 
 * [#346](https://github.com/mozilla/glean.js/pull/346): Provide default HTTP client for Qt/QML platform.
 * [#399](https://github.com/mozilla/glean.js/pull/399): Check if there are ping data before attempting to delete it.
