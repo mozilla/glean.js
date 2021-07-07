@@ -132,7 +132,7 @@ jobs:
             source venv/bin/activate
             pip install -r requirements.txt
             glean_parser translate metrics.yaml pings.yaml -f javascript -o generated \
-            --option platform=qt --option version="0.15";
+            --option platform=qt --option version="0.16"
 
             sudo apt-get install xvfb
             xvfb-run python main.py &> qml.log &
