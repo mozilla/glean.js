@@ -11,8 +11,7 @@ import compactDecrypt from "jose/jwe/compact/decrypt";
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings/ping_type";
 import type { JSONObject } from "../../../src/core/utils";
-import TestPlatform from "../../../src/platform/test";
-import WaitableUploader from "../../../src/platform/test/waitable_uploader";
+import WaitableUploader from "../../../tests/utils";
 import PingEncryptionPlugin from "../../../src/plugins/encryption";
 import collectAndStorePing, { makePath } from "../../../src/core/pings/maker";
 import type { UploadResult} from "../../../src/core/upload/uploader";
@@ -46,10 +45,7 @@ describe("PingEncryptionPlugin", function() {
 
     const path = makePath(Context.applicationId, pingId, ping);
     const mockUploader = new WaitableUploader();
-    const postSpy = sandbox.spy(mockUploader, "post");
-    // const wrongPingID = "wrong";
-    // const wrongPath = makePath(Context.applicationId, wrongPingID, ping);
-    const pingBody  = mockUploader.waitForPingSubmission("test", path);
+    const pingBody = mockUploader.waitForPingSubmission("test", path);
 
     await Glean.testResetGlean(
       testAppId,
@@ -69,11 +65,9 @@ describe("PingEncryptionPlugin", function() {
     );
 
     await collectAndStorePing(pingId, ping);
-    await pingBody;
-
-    const payload = unzipPingPayload(postSpy.args[0][1]);
-    assert.ok("payload" in payload);
-    assert.ok(typeof payload.payload === "string");
+    const pingBodyValue = await pingBody;
+    assert.ok("payload" in pingBodyValue);
+    assert.ok(typeof pingBodyValue.payload === "string");
   });
 
   it("decrypting encrypted ping returns expected payload and protected headers", async function () {
