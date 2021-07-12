@@ -6,9 +6,12 @@ import assert from "assert";
 import Glean from "../../../../src/core/glean";
 
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import EventsDatabase, { RecordedEvent } from "../../../../src/core/metrics/events_database";
+import EventsDatabase, { GLEAN_EXECUTION_COUNTER_EXTRA_KEY, RecordedEvent } from "../../../../src/core/metrics/events_database";
 import EventMetricType from "../../../../src/core/metrics/types/event";
 import type { JSONObject } from "../../../../src/core/utils";
+import CounterMetricType from "../../../../src/core/metrics/types/counter";
+import { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/database";
+import PingType from "../../../../src/core/pings/ping_type";
 
 describe("EventsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -74,6 +77,8 @@ describe("EventsDatabase", function() {
 
   it("getPingMetrics returns undefined if nothing is recorded", async function () {
     const db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
     const data = await db.getPingEvents("test-unknown-ping", true);
 
     assert.strictEqual(data, undefined);
@@ -81,6 +86,7 @@ describe("EventsDatabase", function() {
 
   it("getPingMetrics correctly clears the store", async function () {
     const db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
 
     const metric = new EventMetricType({
       category: "telemetry",
@@ -122,6 +128,7 @@ describe("EventsDatabase", function() {
 
   it("getPingMetrics sorts the timestamps", async function () {
     const db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
 
     const metric = new EventMetricType({
       category: "telemetry",
@@ -155,5 +162,170 @@ describe("EventsDatabase", function() {
     assert.strictEqual(0, (snapshot[0] as JSONObject)["timestamp"]);
     assert.strictEqual(900, (snapshot[1] as JSONObject)["timestamp"]);
     assert.strictEqual(9900, (snapshot[2] as JSONObject)["timestamp"]);
+  });
+
+  it("every recorded event gets an execution counter extra key", async function () {
+    const db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    const pings = ["aPing", "twoPing", "threePing"];
+    const executionCounter = new CounterMetricType({
+      ...generateReservedMetricIdentifiers("execution_counter"),
+      sendInPings: pings,
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    const metric = new EventMetricType({
+      category: "event",
+      name: "test",
+      sendInPings: pings,
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    await db.record(metric, new RecordedEvent(
+      metric.category,
+      metric.name,
+      100,
+    ));
+
+    for (const ping of pings) {
+      assert.strictEqual(await executionCounter.testGetValue(ping), 1);
+      // We need to use `getAndValidatePingData` here,
+      // because the public function will strip reserved extra keys.
+      const rawRecordedEvent = (await db["getAndValidatePingData"](ping))[0];
+      assert.strictEqual(rawRecordedEvent.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
+    }
+  });
+
+  it("execution counters are incremented when the database is initialized", async function () {
+    const db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    const pings = ["aPing", "twoPing", "threePing"];
+    const executionCounter = new CounterMetricType({
+      ...generateReservedMetricIdentifiers("execution_counter"),
+      sendInPings: pings,
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    const metric = new EventMetricType({
+      category: "event",
+      name: "test",
+      sendInPings: pings,
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // Record events once, so that the events database has record of them.
+    await db.record(metric, new RecordedEvent(
+      metric.category,
+      metric.name,
+      100,
+    ));
+
+    // Fake restart db a few times and check that execution counter goes up.
+    for (let i = 1; i <= 10; i++) {
+      for (const ping of pings) {
+        assert.strictEqual(await executionCounter.testGetValue(ping), i);
+      }
+      const restartedDb = new EventsDatabase(Glean.platform.Storage);
+      await restartedDb.initialize();
+    }
+  });
+
+  it("execution counters are re-created if ping storage has been cleared", async function () {
+    const db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    const pings = ["aPing"];
+    const executionCounter = new CounterMetricType({
+      ...generateReservedMetricIdentifiers("execution_counter"),
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    const metric = new EventMetricType({
+      category: "event",
+      name: "test",
+      sendInPings: pings,
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    const ping = new PingType({
+      name: "aPing",
+      includeClientId: true,
+      sendIfEmpty: false
+    });
+
+    await db.record(metric, new RecordedEvent(
+      metric.category,
+      metric.name,
+      100,
+    ));
+    // We expect only one event, execution counter 1.
+    const rawRecordedEvents1 = (await db["getAndValidatePingData"]("aPing"));
+    assert.strictEqual(rawRecordedEvents1[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
+
+    // Fake restart Glean and recorde a new event.
+    const restartedDb = new EventsDatabase(Glean.platform.Storage);
+    await restartedDb.initialize();
+    await db.record(metric, new RecordedEvent(
+      metric.category,
+      metric.name,
+      100,
+    ));
+
+    // We expect two events here, one execution counter 1, the other 2.
+    const rawRecordedEvents2 = (await db["getAndValidatePingData"]("aPing"))
+      .sort((a, b) => {
+        const executionCounterA = parseInt(a.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || "0");
+        const executionCounterB = parseInt(b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || "0");
+        return executionCounterA - executionCounterB;
+      });
+    assert.strictEqual(rawRecordedEvents2[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
+    assert.strictEqual(rawRecordedEvents2[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "2");
+
+    ping.submit();
+    // Sanity check that the execution counter was cleared.
+    assert.strictEqual(await executionCounter.testGetValue("aPing"), undefined);
+
+    await db.record(metric, new RecordedEvent(
+      metric.category,
+      metric.name,
+      100,
+    ));
+
+    // We expect only one event, the other have been cleared, execution counter 1.
+    const rawRecordedEvents3 = (await db["getAndValidatePingData"]("aPing"));
+    assert.strictEqual(rawRecordedEvents3[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
+  });
+
+  it("reserved extra properties are removed from the recorded events", async function () {
+    // Clear any events from previous tests.
+    const rawStorage = new Glean.platform.Storage("events");
+    await rawStorage.delete([]);
+    assert.deepStrictEqual({}, await rawStorage._getWholeStore());
+
+    // Initialize the database and inject some events.
+    const db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    const metric = new EventMetricType({
+      category: "event",
+      name: "test",
+      sendInPings: ["store1"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    // Record an initial event.
+    await db.record(metric, new RecordedEvent(metric.category, metric.name, 10));
+
+    const snapshot = await db.getPingEvents("store1", true);
+    assert.ok(snapshot);
+    assert.strictEqual(1, snapshot.length);
+
+    const e = RecordedEvent.fromJSONObject(snapshot[0] as JSONObject);
+    assert.strictEqual(e.extra, undefined);
   });
 });

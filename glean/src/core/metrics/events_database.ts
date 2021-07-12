@@ -8,8 +8,32 @@ import { isUndefined } from "../utils.js";
 import type EventMetricType from "./types/event.js";
 import type { StorageBuilder } from "../../platform/index.js";
 import log, { LoggingLevel } from "../log.js";
+import CounterMetricType from "./types/counter.js";
+import { Lifetime } from "./lifetime.js";
+import { Context } from "../context.js";
+import { generateReservedMetricIdentifiers } from "./database.js";
 
 const LOG_TAG = "core.Metric.EventsDatabase";
+
+export const GLEAN_EXECUTION_COUNTER_EXTRA_KEY = "glean_execution_counter";
+const GLEAN_RESERVED_EXTRA_KEYS = [
+  GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
+];
+
+/**
+ * Creates an execution counter metric.
+ *
+ * @param sendInPings The list of pings this metric is sent in.
+ * @returns A metric type instance.
+ */
+function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
+  return new CounterMetricType({
+    ...generateReservedMetricIdentifiers("execution_counter"),
+    sendInPings: sendInPings,
+    lifetime: Lifetime.Ping,
+    disabled: false
+  });
+}
 
 // An helper type for the 'extra' map.
 export type ExtraMap = Record<string, string>;
@@ -32,7 +56,7 @@ export class RecordedEvent {
     // A map of all extra data values.
     //
     // The set of allowed extra keys is defined by users in the metrics file.
-    readonly extra?: ExtraMap,
+    public extra?: ExtraMap,
   ) {}
 
   static toJSONObject(e: RecordedEvent): JSONObject {
@@ -50,6 +74,43 @@ export class RecordedEvent {
       e["name"] as string,
       e["timestamp"] as number,
       e["extra"] as ExtraMap | undefined
+    );
+  }
+
+  /**
+   * Add another extra key to a RecordedEvent object.
+   *
+   * @param key The key to add.
+   * @param value The value of the key.
+   */
+  addExtra(key: string, value: string): void {
+    if (!this.extra) {
+      this.extra = {};
+    }
+
+    this.extra[key] = value;
+  }
+
+  /**
+   * Generate a new RecordedEvent object,
+   * stripped of Glean reserved extra keys.
+   *
+   * @returns A new RecordedEvent object.
+   */
+  withoutReservedExtras(): RecordedEvent {
+    const extras = this.extra || {};
+    const filteredExtras = Object.keys(extras)
+      .filter(key => !GLEAN_RESERVED_EXTRA_KEYS.includes(key))
+      .reduce((obj: ExtraMap, key) => {
+        obj[key] = extras[key];
+        return obj;
+      }, {});
+
+    return new RecordedEvent(
+      this.category,
+      this.name,
+      this.timestamp,
+      (filteredExtras && Object.keys(filteredExtras).length > 0) ? filteredExtras : undefined
     );
   }
 }
@@ -77,9 +138,31 @@ export class RecordedEvent {
  */
 class EventsDatabase {
   private eventsStore: Store;
+  private initialized = false;
 
   constructor(storage: StorageBuilder) {
     this.eventsStore = new storage("events");
+  }
+
+  private async getAvailableStoreNames(): Promise<string[]> {
+    const data = await this.eventsStore.get([]);
+    if (isUndefined(data)) {
+      return [];
+    }
+
+    return Object.keys(data);
+  }
+
+  async initialize(): Promise<void> {
+    if (this.initialized) {
+      return;
+    }
+
+    const storeNames = await this.getAvailableStoreNames();
+    // Increment the execution counter for known stores.
+    await CounterMetricType._private_addUndispatched(getExecutionCounterMetric(storeNames), 1);
+
+    this.initialized = true;
   }
 
   /**
@@ -94,6 +177,19 @@ class EventsDatabase {
     }
 
     for (const ping of metric.sendInPings) {
+      const executionCounter = getExecutionCounterMetric([ping]);
+
+      let currentExecutionCount = await Context.metricsDatabase.getMetric(ping, executionCounter);
+      // There might not be an execution counter stored
+      // in case the ping was already sent during this session,
+      // because in this case the ping storage will have been cleared.
+      if (!currentExecutionCount) {
+        await CounterMetricType._private_addUndispatched(executionCounter, 1);
+        currentExecutionCount = 1;
+      }
+      // TODO (bug 1693487): Remove the stringification once the new events API is implemented.
+      value.addExtra(GLEAN_EXECUTION_COUNTER_EXTRA_KEY, currentExecutionCount.toString());
+
       const transformFn = (v?: JSONValue): JSONArray => {
         const existing: JSONArray = (v as JSONArray) ?? [];
         existing.push(RecordedEvent.toJSONObject(value));
@@ -125,9 +221,8 @@ class EventsDatabase {
 
     return events
       // Only report events for the requested metric.
-      .filter((e) => {
-        return (e.category === metric.category) && (e.name === metric.name);
-      });
+      .filter((e) => (e.category === metric.category) && (e.name === metric.name))
+      .map(e => e.withoutReservedExtras());
   }
 
   /**
@@ -160,7 +255,7 @@ class EventsDatabase {
       return [];
     }
 
-    return data.map((e) => RecordedEvent.fromJSONObject(e as JSONObject));
+    return data.map((e) => RecordedEvent.fromJSONObject((e as JSONObject)));
   }
 
   /**
@@ -191,7 +286,7 @@ class EventsDatabase {
     const firstTimestamp = sortedData[0].timestamp;
 
     return sortedData.map((e) => {
-      const adjusted = RecordedEvent.toJSONObject(e);
+      const adjusted = RecordedEvent.toJSONObject(e.withoutReservedExtras());
       adjusted["timestamp"] = e.timestamp - firstTimestamp;
       return adjusted;
     });

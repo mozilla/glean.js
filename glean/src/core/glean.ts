@@ -243,11 +243,14 @@ class Glean {
       Context.debugOptions = correctConfig.debug;
       Glean.instance._config = correctConfig;
 
-      // Clear application lifetime metrics.
-      //
+
       // IMPORTANT!
-      // Any pings we want to send upon initialization should happen before this.
+      // Any pings we want to send upon initialization should happen before these two lines.
+      //
+      // Clear application lifetime metrics.
       await Context.metricsDatabase.clear(Lifetime.Application);
+      // Initialize the events database.
+      await Context.eventsDatabase.initialize();
 
       // We need to mark Glean as initialized before dealing with the upload status,
       // otherwise we will not be able to submit deletion-request pings if necessary.
