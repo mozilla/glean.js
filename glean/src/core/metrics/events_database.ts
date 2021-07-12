@@ -15,8 +15,10 @@ import { generateReservedMetricIdentifiers } from "./database.js";
 
 const LOG_TAG = "core.Metric.EventsDatabase";
 
-export const GLEAN_EXECUTION_COUNTER_EXTRA_KEY = "glean_execution_counter";
-const GLEAN_STARTUP_DATE_EXTRA_KEY = "glean_startup_date";
+// glean_parser will reject extra keys with `#` in the name,
+// so there extra_keys are guaranteed not to clash with user defined extra keys.
+export const GLEAN_EXECUTION_COUNTER_EXTRA_KEY = "#glean_execution_counter";
+const GLEAN_STARTUP_DATE_EXTRA_KEY = "#glean_startup_date";
 const GLEAN_RESERVED_EXTRA_KEYS = [
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
   GLEAN_STARTUP_DATE_EXTRA_KEY
