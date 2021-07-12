@@ -4,9 +4,9 @@
 
 import type Store from "../storage/index.js";
 import type { JSONArray, JSONObject, JSONValue } from "../utils.js";
-import { isUndefined } from "../utils.js";
-import type EventMetricType from "./types/event.js";
 import type { StorageBuilder } from "../../platform/index.js";
+import { isUndefined } from "../utils.js";
+import EventMetricType from "./types/event.js";
 import log, { LoggingLevel } from "../log.js";
 import CounterMetricType from "./types/counter.js";
 import { Lifetime } from "./lifetime.js";
@@ -16,8 +16,10 @@ import { generateReservedMetricIdentifiers } from "./database.js";
 const LOG_TAG = "core.Metric.EventsDatabase";
 
 export const GLEAN_EXECUTION_COUNTER_EXTRA_KEY = "glean_execution_counter";
+const GLEAN_STARTUP_DATE_EXTRA_KEY = "glean_startup_date";
 const GLEAN_RESERVED_EXTRA_KEYS = [
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
+  GLEAN_STARTUP_DATE_EXTRA_KEY
 ];
 
 /**
@@ -33,6 +35,22 @@ function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
     lifetime: Lifetime.Ping,
     disabled: false
   });
+}
+
+/**
+ * Creates an `glean.restarted` event metric.
+ *
+ * @param sendInPings The list of pings this metric is sent in.
+ * @returns A metric type instance.
+ */
+function getGleanRestartedEvent(sendInPings: string[]): EventMetricType {
+  return new EventMetricType({
+    category: "glean",
+    name: "restarted",
+    sendInPings: sendInPings,
+    lifetime: Lifetime.Ping,
+    disabled: false
+  }, [ GLEAN_STARTUP_DATE_EXTRA_KEY ]);
 }
 
 // An helper type for the 'extra' map.
@@ -160,7 +178,17 @@ class EventsDatabase {
 
     const storeNames = await this.getAvailableStoreNames();
     // Increment the execution counter for known stores.
+    // !IMPORTANT! This must happen before any event is recorded for this run.
     await CounterMetricType._private_addUndispatched(getExecutionCounterMetric(storeNames), 1);
+
+    // Record the `glean.restarted` event.
+    await EventMetricType._private_recordUndispatched(
+      getGleanRestartedEvent(storeNames),
+      {
+        // TODO (bug 1693487): Remove the stringification once the new events API is implemented.
+        [GLEAN_STARTUP_DATE_EXTRA_KEY]: Context.startTime.toISOString()
+      }
+    );
 
     this.initialized = true;
   }

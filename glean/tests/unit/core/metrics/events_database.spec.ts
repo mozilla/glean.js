@@ -328,4 +328,40 @@ describe("EventsDatabase", function() {
     const e = RecordedEvent.fromJSONObject(snapshot[0] as JSONObject);
     assert.strictEqual(e.extra, undefined);
   });
+
+  it("glean.restarted events are properly injected when initializing", async function () {
+    const db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    const stores = ["store1", "store2"];
+
+    // Record some events.
+    const event = new EventMetricType({
+      category: "test",
+      name: "event_injection",
+      sendInPings: stores,
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    await db.record(event, new RecordedEvent(
+      event.category,
+      event.name,
+      1000,
+    ));
+
+    // Simulate a restart and use the new DB to check for injected events.
+    const db2 = new EventsDatabase(Glean.platform.Storage);
+    await db2.initialize();
+
+    for (const store of stores) {
+      const snapshot = await db2.getPingEvents(store, true);
+      assert.ok(snapshot);
+      assert.strictEqual(2, snapshot.length);
+      assert.strictEqual("test", (snapshot[0] as JSONObject)["category"]);
+      assert.strictEqual("event_injection", (snapshot[0] as JSONObject)["name"]);
+      assert.strictEqual("glean", (snapshot[1] as JSONObject)["category"]);
+      assert.strictEqual("restarted", (snapshot[1] as JSONObject)["name"]);
+    }
+  });
 });

@@ -262,6 +262,7 @@ glean.internal.metrics:
 
   start_time:
     type: datetime
+    time_unit: minute
     lifetime: user
     send_in_pings:
       - glean_internal_info
@@ -280,6 +281,7 @@ glean.internal.metrics:
 
   end_time:
     type: datetime
+    time_unit: minute
     lifetime: ping
     send_in_pings:
       - glean_internal_info
@@ -374,3 +376,40 @@ glean.error:
       - all-pings
     no_lint:
       - COMMON_PREFIX
+
+glean:
+  restarted:
+    type: event
+    lifetime: ping
+    send_in_pings:
+      - all-pings
+    description: |
+      Event that signals an application restart.
+
+      **This event is included in all pings (custom or otherwise) that contain events.**
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1716724
+    data_reviews:
+      - TODO
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+    extra_keys:
+      glean_startup_date:
+        description: |
+          This is a special key holding the Glean startup date and time,
+          with the same precision as `ping_info.start_time` (minutes), to
+          be used to approximate the time between the ping `start_time`
+          and this restart event when assembling the ping.
+
+          **This extra key is recorded by Glean internaly, but is never sent in pings.**
+        type: string
+      glean_execution_counter:
+        description: |
+          This is a special key holding the number of times Glean was
+          initialized up to the moment this event gets injected.
+
+          **This extra key is recorded by Glean internaly, but is never sent in pings.**
+        type: quantity

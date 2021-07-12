@@ -9,9 +9,7 @@ import type MetricsDatabase from "../metrics/database.js";
 import type EventsDatabase from "../metrics/events_database.js";
 import type { DebugOptions } from "../debug_options.js";
 import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
-
 import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
-
 import TimeUnit from "../metrics/time_unit.js";
 import CoreEvents from "../events/index.js";
 import { Lifetime } from "../metrics/lifetime.js";
@@ -19,9 +17,6 @@ import { Context } from "../context.js";
 import log, { LoggingLevel } from "../log.js";
 
 const LOG_TAG = "core.Pings.Maker";
-
-// The moment the current Glean.js session started.
-const GLEAN_START_TIME = new Date();
 
 /**
  * Gets, and then increments, the sequence number for a given ping.
@@ -85,7 +80,7 @@ export async function getStartEndTimes(metricsDatabase: MetricsDatabase, ping: C
   if (startTimeData) {
     startTime = new DatetimeMetric(startTimeData);
   } else {
-    startTime = DatetimeMetric.fromDate(GLEAN_START_TIME, TimeUnit.Minute);
+    startTime = DatetimeMetric.fromDate(Context.startTime, TimeUnit.Minute);
   }
 
   // Update the start time with the current time.
