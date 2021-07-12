@@ -23,6 +23,23 @@ const GLEAN_RESERVED_EXTRA_KEYS = [
 ];
 
 /**
+ * Attempts to create a date object from a string.
+ *
+ * Throws if unsuccesfull.
+ *
+ * @param str The string to generate a date from.
+ * @returns The Date object created.
+ */
+function createDateObject(str = ""): Date {
+  const date = new Date(str);
+  // Date object will not throw errors when we attempt to create an invalid date.
+  if (isNaN(date.getTime())) {
+    throw new Error(`Error attempting to generate Date object from string: ${str}`);
+  }
+  return date;
+}
+
+/**
  * Creates an execution counter metric.
  *
  * @param sendInPings The list of pings this metric is sent in.
@@ -187,7 +204,10 @@ class EventsDatabase {
       {
         // TODO (bug 1693487): Remove the stringification once the new events API is implemented.
         [GLEAN_STARTUP_DATE_EXTRA_KEY]: Context.startTime.toISOString()
-      }
+      },
+      // We manually add timestamp 0 here to make sure
+      // this is going to be sorted as the first event of this execution no matter what.
+      0
     );
 
     this.initialized = true;
@@ -287,14 +307,20 @@ class EventsDatabase {
   }
 
   /**
-   * Gets all of the persisted metrics related to a given ping.
+   * Gets all of the events related to a given ping.
    *
    * @param ping The name of the ping to retrieve.
    * @param clearPingLifetimeData Whether or not to clear the ping lifetime metrics retrieved.
+   * @param referenceTime The date/time to be considered as the "zero" time.
+   *        Event timestamps after restarts, will be computed based on this time.
    * @returns An object containing all the metrics recorded to the given ping,
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
-  async getPingEvents(ping: string, clearPingLifetimeData: boolean): Promise<JSONArray | undefined> {
+  async getPingEvents(
+    ping: string,
+    clearPingLifetimeData: boolean,
+    referenceTime: Date
+  ): Promise<JSONArray | undefined> {
     const pingData = await this.getAndValidatePingData(ping);
 
     if (clearPingLifetimeData && Object.keys(pingData).length > 0) {
@@ -305,19 +331,76 @@ class EventsDatabase {
       return;
     }
 
-    // Sort the events by their timestamp.
-    const sortedData = pingData.sort((a, b) => {
+    const payload = this.prepareEventsPayload(pingData, referenceTime);
+    if (payload.length > 0) {
+      return payload;
+    }
+  }
+
+  /**
+   * Prepares the events payload.
+   *
+   * 1. Sorts event by execution counter and timestamp;
+   * 2. Applies offset to events timestamps;
+   * 3. Removes the first event if it is a `glean.restarted` event;
+   * 4. Removes reserved extra keys.
+   *
+   * @param pingData An unsorted list of events.
+   * @param referenceTime The date/time to be considered as the "zero" time.
+   *        Event timestamps after restarts, will be computed based on this time.
+   * @returns An array of sorted events.
+   */
+  private prepareEventsPayload(pingData: RecordedEvent[], referenceTime: Date): JSONArray {
+    // Sort events by execution counter and by timestamp.
+    const sortedEvents = pingData.sort((a, b) => {
+      // TODO (bug 1693487): Remove the number casting once the new events API is implemented.
+      const executionCounterA = Number(a.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
+      const executionCounterB = Number(b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
+      // Sort by execution counter, in case they are different.
+      if (executionCounterA !== executionCounterB) {
+        return executionCounterA - executionCounterB;
+      }
+
+      // Sort by timestamp if events come from same execution.
       return a.timestamp - b.timestamp;
     });
 
-    // Make all the events relative to the first one.
-    const firstTimestamp = sortedData[0].timestamp;
+    let lastRestartDate: Date;
+    try {
+      // If the first event is a `glean.restarted` event it has the startup date already.
+      lastRestartDate = createDateObject(sortedEvents[0].extra?.[GLEAN_STARTUP_DATE_EXTRA_KEY]);
+      // In case it is a `glean.restarted` event, remove it.
+      sortedEvents.shift();
+    } catch {
+      lastRestartDate = referenceTime;
+    }
 
-    return sortedData.map((e) => {
-      const adjusted = RecordedEvent.toJSONObject(e.withoutReservedExtras());
-      adjusted["timestamp"] = e.timestamp - firstTimestamp;
-      return adjusted;
+    const firstEventOffset = sortedEvents[0]?.timestamp || 0;
+    let restartedOffset = 0;
+    sortedEvents.forEach((event, index) => {
+      try {
+        const nextRestartDate = createDateObject(event.extra?.[GLEAN_STARTUP_DATE_EXTRA_KEY]);
+        const dateOffset = nextRestartDate.getTime() - lastRestartDate.getTime();
+        lastRestartDate = nextRestartDate;
+
+        // Update the current offset and move to the next event.
+        restartedOffset += dateOffset;
+      } catch {
+        // Do nothing,
+        // this is expected to fail in case the current event is not a `glean.restarted` event.
+      }
+
+      // Update the timestamp for the current event,
+      // to account for the computed offset.
+      sortedEvents[index] = new RecordedEvent(
+        event.category,
+        event.name,
+        event.timestamp + restartedOffset - firstEventOffset,
+        event.extra
+      );
     });
+
+    return sortedEvents.map((e) => RecordedEvent.toJSONObject(e.withoutReservedExtras()));
   }
 
   /**

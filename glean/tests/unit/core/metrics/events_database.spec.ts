@@ -12,6 +12,7 @@ import type { JSONObject } from "../../../../src/core/utils";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/database";
 import PingType from "../../../../src/core/pings/ping_type";
+import { Context } from "../../../../src/core/context";
 
 describe("EventsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -79,7 +80,7 @@ describe("EventsDatabase", function() {
     const db = new EventsDatabase(Glean.platform.Storage);
     await db.initialize();
 
-    const data = await db.getPingEvents("test-unknown-ping", true);
+    const data = await db.getPingEvents("test-unknown-ping", true, new Date());
 
     assert.strictEqual(data, undefined);
   });
@@ -98,7 +99,7 @@ describe("EventsDatabase", function() {
 
     // We didn't record anything yet, so we don't expect anything to be
     // stored.
-    let snapshot = await db.getPingEvents("store1", false);
+    let snapshot = await db.getPingEvents("store1", false, new Date());
     assert.strictEqual(snapshot, undefined);
 
     await db.record(metric, new RecordedEvent(
@@ -108,14 +109,14 @@ describe("EventsDatabase", function() {
     ));
 
     // Take a first snapshot and clear the recorded content.
-    snapshot = await db.getPingEvents("store1", true);
+    snapshot = await db.getPingEvents("store1", true, new Date());
     assert.ok(snapshot != undefined);
 
     // If we snapshot a second time, the store must be empty.
-    const empty_snapshot = await db.getPingEvents("store1", false);
+    const empty_snapshot = await db.getPingEvents("store1", false, new Date());
     assert.strictEqual(empty_snapshot, undefined);
 
-    const store2 = await db.getPingEvents("store2", false);
+    const store2 = await db.getPingEvents("store2", false, new Date());
     for (const events of [snapshot, store2]) {
       assert.ok(events != undefined);
       assert.strictEqual(1, events.length);
@@ -126,7 +127,7 @@ describe("EventsDatabase", function() {
     }
   });
 
-  it("getPingMetrics sorts the timestamps", async function () {
+  it("getPingMetrics sorts by timestamp", async function () {
     const db = new EventsDatabase(Glean.platform.Storage);
     await db.initialize();
 
@@ -156,7 +157,7 @@ describe("EventsDatabase", function() {
       10000,
     ));
 
-    const snapshot = await db.getPingEvents("store1", true);
+    const snapshot = await db.getPingEvents("store1", true, new Date());
     assert.ok(snapshot);
     assert.strictEqual(3, snapshot.length);
     assert.strictEqual(0, (snapshot[0] as JSONObject)["timestamp"]);
@@ -321,7 +322,7 @@ describe("EventsDatabase", function() {
     // Record an initial event.
     await db.record(metric, new RecordedEvent(metric.category, metric.name, 10));
 
-    const snapshot = await db.getPingEvents("store1", true);
+    const snapshot = await db.getPingEvents("store1", true, new Date());
     assert.ok(snapshot);
     assert.strictEqual(1, snapshot.length);
 
@@ -355,13 +356,60 @@ describe("EventsDatabase", function() {
     await db2.initialize();
 
     for (const store of stores) {
-      const snapshot = await db2.getPingEvents(store, true);
+      const snapshot = await db2.getPingEvents(store, true, new Date());
       assert.ok(snapshot);
       assert.strictEqual(2, snapshot.length);
       assert.strictEqual("test", (snapshot[0] as JSONObject)["category"]);
       assert.strictEqual("event_injection", (snapshot[0] as JSONObject)["name"]);
       assert.strictEqual("glean", (snapshot[1] as JSONObject)["category"]);
       assert.strictEqual("restarted", (snapshot[1] as JSONObject)["name"]);
+    }
+  });
+
+  it("events are correctly sorted by execution counter and timestamp throughout restarts", async function() {
+    // Initialize the database and inject some events.
+    let db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    for (let i = 0; i < 10; i++) {
+      const event = new EventMetricType({
+        category: "test",
+        name: `stichting_test_${i}`,
+        sendInPings: ["store"],
+        lifetime: Lifetime.Ping,
+        disabled: false
+      });
+
+      await db.record(event, new RecordedEvent(event.category, event.name, 1000));
+
+      // Move the clock forward by one minute.
+      Context.startTime.setTime(Context.startTime.getTime() + 1000 * 60);
+      // Fake a re-start.
+      db = new EventsDatabase(Glean.platform.Storage);
+      await db.initialize();
+    }
+
+    const snapshot = await db.getPingEvents("store", true, new Date());
+    assert.ok(snapshot);
+
+    // First event snapshot is always 0.
+    const [ firstEvent, ...subsequentEvents ] = snapshot;
+    assert.strictEqual(RecordedEvent.fromJSONObject(firstEvent as JSONObject).timestamp, 0);
+
+    // Make sure subsequent timestamps are strictly increasing.
+    let prevTime = 0;
+    for (const event of subsequentEvents) {
+      const e = RecordedEvent.fromJSONObject(event as JSONObject);
+      assert.ok(e.timestamp > prevTime);
+      prevTime = e.timestamp;
+    }
+
+    // Make sure the found events are the expected events.
+    for (let i = 0; i < 10; i++) {
+      assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
+      assert.strictEqual(`stichting_test_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
+      assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
+      assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
     }
   });
 });
