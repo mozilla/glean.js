@@ -4,7 +4,7 @@
 
 import type { DebugOptions } from "./debug_options.js";
 import type MetricsDatabase from "./metrics/database.js";
-import type EventsDatabase from "./metrics/events_database.js";
+import type EventsDatabase from "./metrics/events_database/index.js";
 import type PingsDatabase from "./pings/database.js";
 import type ErrorManager from "./error/index.js";
 import Dispatcher from "./dispatcher.js";

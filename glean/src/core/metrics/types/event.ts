@@ -3,9 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import type { ExtraMap } from "../events_database.js";
+import type { ExtraMap } from "../events_database/recorded_event.js";
 import { MetricType } from "../index.js";
-import { RecordedEvent } from "../events_database.js";
+import { RecordedEvent } from "../events_database/recorded_event.js";
 import { getMonotonicNow, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";

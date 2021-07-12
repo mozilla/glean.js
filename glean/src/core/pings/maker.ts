@@ -6,7 +6,7 @@ import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STO
 import type { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
 import type CommonPingData from "./common_ping_data.js";
 import type MetricsDatabase from "../metrics/database.js";
-import type EventsDatabase from "../metrics/events_database.js";
+import type EventsDatabase from "../metrics/events_database/index.js";
 import type { DebugOptions } from "../debug_options.js";
 import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
 import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
