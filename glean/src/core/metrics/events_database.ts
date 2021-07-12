@@ -383,19 +383,41 @@ class EventsDatabase {
         const dateOffset = nextRestartDate.getTime() - lastRestartDate.getTime();
         lastRestartDate = nextRestartDate;
 
-        // Update the current offset and move to the next event.
-        restartedOffset += dateOffset;
+        // Calculate the new offset since new restart.
+        const newRestartedOffset = restartedOffset + dateOffset;
+        if (newRestartedOffset < 0) {
+          // In case the new offset is negative, just increase the previous timestamp by one
+          // to make sure timestamps keep increasing.
+          //
+          // TODO: Record an error when this happens. !SELF_REMINDER BEFORE MERGING! File a bug.
+          restartedOffset = sortedEvents[index - 1].timestamp + 1;
+        } else {
+          restartedOffset = newRestartedOffset;
+        }
       } catch {
         // Do nothing,
         // this is expected to fail in case the current event is not a `glean.restarted` event.
       }
 
-      // Update the timestamp for the current event,
-      // to account for the computed offset.
+      // Apply necessary offsets to timestamps:
+      // 1. If it is the first execution, subtract the firstEventOffset;
+      // 2. Otherwise add restartedOffset.
+
+      // The execution counter is a counter metric, the smallest value it can have is `1`.
+      // At this stage all metrics should have an execution counter, but out of caution we
+      // will fallback to `1` in case it is not present.
+      const executionCount = Number(event.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || 1);
+      let adjustedTimestamp: number;
+      if (executionCount === 1) {
+        adjustedTimestamp = event.timestamp - firstEventOffset;
+      } else {
+        adjustedTimestamp = event.timestamp + restartedOffset;
+      }
+
       sortedEvents[index] = new RecordedEvent(
         event.category,
         event.name,
-        event.timestamp + restartedOffset - firstEventOffset,
+        adjustedTimestamp,
         event.extra
       );
     });
