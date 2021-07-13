@@ -197,7 +197,7 @@ class TimespanMetricType extends MetricType {
         await Context.errorManager.record(
           this,
           ErrorType.InvalidState,
-          "Timespan not running"
+          "Timespan not running."
         );
         return;
       }
