@@ -15,6 +15,33 @@ import log, { LoggingLevel } from "../log.js";
 
 const LOG_TAG = "core.Metrics.Database";
 
+// Metrics whose names start with this prefix will
+// not be added to the ping payload.
+//
+// glean_parser rejects metrics with `#` in the name,
+// so this is guaranteed not to clash with user defined metrics.
+const RESERVED_METRIC_NAME_PREFIX = "reserved#";
+// The full identifier of internal metrics.
+const RESERVED_METRIC_IDENTIFIER_PREFIX = `glean.${RESERVED_METRIC_NAME_PREFIX}`;
+
+/**
+ * Generates a name for a reserved metric.
+ *
+ * Reserved metrics are not sent in ping payloads.
+ *
+ * @param name The name of the metric.
+ * @returns The name of metrics with proper identification to make it a reserved metric.
+ */
+export function generateReservedMetricIdentifiers(name: string): {
+  category: string,
+  name: string
+} {
+  return {
+    category: "glean",
+    name: `${RESERVED_METRIC_NAME_PREFIX}${name}`
+  };
+}
+
 /**
  * Verifies if a given value is a valid Metrics object.
  *
@@ -298,15 +325,17 @@ class MetricsDatabase {
     for (const data of [userData, pingData, appData]) {
       for (const metricType in data) {
         for (const metricId in data[metricType]) {
-          if (metricId.includes("/")) {
-            // While labeled data is stored within the subtype storage (e.g. counter storage), it
-            // needs to live in a different section of the ping payload (e.g. `labeled_counter`).
-            this.processLabeledMetric(response, metricType, metricId, data[metricType][metricId]);
-          } else {
-            response[metricType] = {
-              ...response[metricType],
-              [metricId]: data[metricType][metricId]
-            };
+          if (!metricId.startsWith(RESERVED_METRIC_IDENTIFIER_PREFIX)) {
+            if (metricId.includes("/")) {
+              // While labeled data is stored within the subtype storage (e.g. counter storage), it
+              // needs to live in a different section of the ping payload (e.g. `labeled_counter`).
+              this.processLabeledMetric(response, metricType, metricId, data[metricType][metricId]);
+            } else {
+              response[metricType] = {
+                ...response[metricType],
+                [metricId]: data[metricType][metricId]
+              };
+            }
           }
         }
       }
