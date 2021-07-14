@@ -110,6 +110,7 @@ describe("schema", function() {
     metrics.string.set("let's go");
     metrics.timespan.setRawNanos(10 * 10**6);
     metrics.uuid.generateAndSet();
+    metrics.url.set("glean://test");
     /* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
 
     // Set up the http client to catch the ping we will submit.

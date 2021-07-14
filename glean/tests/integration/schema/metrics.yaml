@@ -156,3 +156,16 @@ for_testing:
     send_in_pings:
       - testing
     unit: sample
+  url:
+    type: url
+    description: |
+      Sample url metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing

@@ -169,6 +169,9 @@ async function testGetValue(ping: string = this.sendInPings[0]): Promise<string 
 
 > **Note**: All testing functions must start with the prefix `test`.
 
+The `testGetNumRecordedErrors` function does not need to be implemeted individually per metric
+type as it is already implemented on the `MetricType` super class.
+
 ## Testing
 
 Tests for metric type implementations live under the `glean/tests/unit/core/metrics/types` folder. Create a new
