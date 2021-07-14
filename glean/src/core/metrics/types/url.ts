@@ -15,7 +15,7 @@ const URL_MAX_LENGTH = 2048;
 // This regex only validates that the `scheme` part of the URL is spec compliant
 // and is followed by a ":". After that anything is accepted.
 //
-// Reference: https://url.spec.whatwg.org/#url-scheme-string.
+// Reference: https://url.spec.whatwg.org/#url-scheme-string
 const URL_VALIDATION_REGEX = /^[a-zA-Z][a-zA-Z0-9-\+\.]*:(.*)$/;
 
 /**
@@ -41,7 +41,7 @@ export class UrlMetric extends Metric<string, string> {
    * 3. The URL must not be a data URL.
    * 4. Every URL must start with a valid scheme.
    *
-   * Note**: We explicitly to not validate if the URL is fully spec compliant,
+   * **Note**: We explicitly do not validate if the URL is fully spec compliant,
    * the above validations are all that is done.
    *
    * @param v The value to validate.
