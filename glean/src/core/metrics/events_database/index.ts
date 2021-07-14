@@ -307,7 +307,7 @@ class EventsDatabase {
           // In case the new offset is negative, just increase the previous timestamp by one
           // to make sure timestamps keep increasing.
           //
-          // TODO: Record an error when this happens. !SELF_REMINDER BEFORE MERGING! File a bug.
+          // TODO (bug 1720467): Record an error when this happens.
           restartedOffset = sortedEvents[index - 1].timestamp + 1;
         } else {
           restartedOffset = newRestartedOffset;
