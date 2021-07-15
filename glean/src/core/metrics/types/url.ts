@@ -41,11 +41,11 @@ export class UrlMetric extends Metric<string, string> {
    * 3. The URL must not be a data URL.
    * 4. Every URL must start with a valid scheme.
    *
-   * **Note**: We explicitly do not validate if the URL is fully spec compliant,
+   * Note: We explicitly do not validate if the URL is fully spec compliant,
    * the above validations are all that is done.
    *
    * @param v The value to validate.
-   * @returns Whether or not v is a
+   * @returns Whether or not v is a valid URL-like string.
    */
   validate(v: unknown): v is string {
     if (!isString(v)) {
