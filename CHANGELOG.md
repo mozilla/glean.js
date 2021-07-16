@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.16.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.17.0...main)
+
+# v0.17.0 (2021-07-16)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.16.0...v0.17.0)
 
 * [#529](https://github.com/mozilla/glean.js/pull/529): Implement the URL metric type.
 
