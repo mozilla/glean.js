@@ -13,6 +13,7 @@ import QuantityMetricType from "@mozilla/glean/webext/private/metrics/quantity";
 import StringMetricType from "@mozilla/glean/webext/private/metrics/string";
 import TimespanMetricType from "@mozilla/glean/webext/private/metrics/timespan";
 import UUIDMetricType from "@mozilla/glean/webext/private/metrics/uuid";
+import URLMetricType from "@mozilla/glean/webext/private/metrics/url";
 // Plugins
 import PingEncryptionPlugin from "@mozilla/glean/webext/plugins/encryption";
 
@@ -29,5 +30,6 @@ console.log(
   JSON.stringify(StringMetricType),
   JSON.stringify(TimespanMetricType),
   JSON.stringify(UUIDMetricType),
+  JSON.stringify(URLMetricType),
   JSON.stringify(PingEncryptionPlugin),
 );

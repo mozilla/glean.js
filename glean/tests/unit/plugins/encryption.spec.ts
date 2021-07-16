@@ -11,7 +11,7 @@ import compactDecrypt from "jose/jwe/compact/decrypt";
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings/ping_type";
 import type { JSONObject } from "../../../src/core/utils";
-import TestPlatform from "../../../src/platform/test";
+import WaitableUploader from "../../../tests/utils";
 import PingEncryptionPlugin from "../../../src/plugins/encryption";
 import collectAndStorePing, { makePath } from "../../../src/core/pings/maker";
 import type { UploadResult} from "../../../src/core/upload/uploader";
@@ -36,6 +36,17 @@ describe("PingEncryptionPlugin", function() {
   });
 
   it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
+    const pingId = "ident";
+    const ping = new PingType({
+      name: "test",
+      includeClientId: false,
+      sendIfEmpty: true,
+    });
+
+    const path = makePath(Context.applicationId, pingId, ping);
+    const mockUploader = new WaitableUploader();
+    const pingBody = mockUploader.waitForPingSubmission("test", path);
+
     await Glean.testResetGlean(
       testAppId,
       true,
@@ -48,28 +59,15 @@ describe("PingEncryptionPlugin", function() {
             "x": "Q20tsJdrryWJeuPXTM27wIPb_YbsdYPpkK2N9O6aXwM",
             "y": "1onW1swaCcN1jkmkIwhXpCm55aMP8GRJln5E8WQKLJk"
           })
-        ]
+        ],
+        httpClient: mockUploader,
       }
     );
 
-    const ping = new PingType({
-      name: "test",
-      includeClientId: true,
-      sendIfEmpty: true,
-    });
-    const pingId = "ident";
-
-    const postSpy = sandbox.spy(TestPlatform.uploader, "post").withArgs(
-      sinon.match(makePath(Context.applicationId, pingId, ping)),
-      sinon.match.any
-    );
-
     await collectAndStorePing(pingId, ping);
-    assert.ok(postSpy.calledOnce);
-
-    const payload = unzipPingPayload(postSpy.args[0][1]);
-    assert.ok("payload" in payload);
-    assert.ok(typeof payload.payload === "string");
+    const pingBodyValue = await pingBody;
+    assert.ok("payload" in pingBodyValue);
+    assert.ok(typeof pingBodyValue.payload === "string");
   });
 
   it("decrypting encrypted ping returns expected payload and protected headers", async function () {

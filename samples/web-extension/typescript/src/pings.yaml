@@ -18,3 +18,5 @@ custom:
     - https://bugzilla.mozilla.org/show_bug.cgi?id=1587095#c6
   notification_emails:
     - glean-team@mozilla.com
+  no_lint:
+    - REDUNDANT_PING
