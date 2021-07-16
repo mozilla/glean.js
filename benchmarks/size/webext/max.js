@@ -30,5 +30,6 @@ console.log(
   JSON.stringify(StringMetricType),
   JSON.stringify(TimespanMetricType),
   JSON.stringify(UUIDMetricType),
+  JSON.stringify(URLMetricType),
   JSON.stringify(PingEncryptionPlugin),
 );
