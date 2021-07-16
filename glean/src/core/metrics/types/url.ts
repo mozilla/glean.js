@@ -126,6 +126,11 @@ class UrlMetricType extends MetricType {
    *
    * Gets the currently stored value as a string.
    *
+   * # Note
+   *
+   * Although URL metrics are URI encoded in the ping payload,
+   * this function will return the unencoded URL for convenience.
+   *
    * This doesn't clear the stored value.
    *
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
