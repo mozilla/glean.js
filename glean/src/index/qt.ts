@@ -19,6 +19,7 @@ import QuantityMetricType from "../core/metrics/types/quantity.js";
 import StringMetricType from "../core/metrics/types/string.js";
 import TimespanMetricType from "../core/metrics/types/timespan.js";
 import UUIDMetricType from "../core/metrics/types/uuid.js";
+import URLMetricType from "../core/metrics/types/url.js";
 
 export default {
   /**
@@ -112,6 +113,7 @@ export default {
     QuantityMetricType,
     StringMetricType,
     TimespanMetricType,
-    UUIDMetricType
+    UUIDMetricType,
+    URLMetricType
   }
 };
