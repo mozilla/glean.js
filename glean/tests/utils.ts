@@ -6,8 +6,8 @@ import { gunzipSync } from "fflate";
 
 import type { JSONObject } from "../src/core/utils";
 import { isString } from "../src/core/utils";
-import type { Uploader, UploadResult } from "../src/core/upload/uploader";
-import { UploadResultStatus } from "../src/core/upload/uploader";
+import Uploader from "../src/core/upload/uploader";
+import { UploadResultStatus, UploadResult } from "../src/core/upload/uploader";
 
 /**
  * Decoded, unzips and parses the ping payload into a JSON object.
@@ -29,7 +29,7 @@ export function unzipPingPayload(payload: Uint8Array | string): JSONObject {
 /**
  * A Glean mock HTTP which allows one to wait for a specific ping submission.
  */
-class WaitableUploader implements Uploader {
+class WaitableUploader extends Uploader {
   private waitingForName?: string;
   private waitingForPath? : string;
   private waitResolver?: (pingBody: JSONObject) => void;
@@ -68,10 +68,7 @@ class WaitableUploader implements Uploader {
       this.waitResolver?.(unzipPingPayload(body));
     }
 
-    return Promise.resolve({
-      result: UploadResultStatus.Success,
-      status: 200
-    });
+    return Promise.resolve(new UploadResult(UploadResultStatus.Success, 200));
   }
 }
 

@@ -14,9 +14,8 @@ import type { JSONObject } from "../../../src/core/utils";
 import WaitableUploader from "../../../tests/utils";
 import PingEncryptionPlugin from "../../../src/plugins/encryption";
 import collectAndStorePing, { makePath } from "../../../src/core/pings/maker";
-import type { UploadResult} from "../../../src/core/upload/uploader";
-import type Uploader from "../../../src/core/upload/uploader";
-import { UploadResultStatus } from "../../../src/core/upload/uploader";
+import Uploader from "../../../src/core/upload/uploader";
+import { UploadResultStatus, UploadResult } from "../../../src/core/upload/uploader";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
@@ -82,13 +81,10 @@ describe("PingEncryptionPlugin", function() {
     let uploadPromiseResolve: (value: UploadSignature) => void;
     const uploadPromise = new Promise<UploadSignature>(r => uploadPromiseResolve = r);
 
-    class MockUploader implements Uploader {
+    class MockUploader extends Uploader {
       post(url: string, body: string, headers?: Record<string, string>): Promise<UploadResult> {
         uploadPromiseResolve({url, body, headers});
-        const result: UploadResult = {
-          result: UploadResultStatus.Success,
-          status: 200
-        };
+        const result = new UploadResult(UploadResultStatus.Success, 200);
         return Promise.resolve(result);
       }
     }

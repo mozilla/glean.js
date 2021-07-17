@@ -12,7 +12,7 @@ import log, { LoggingLevel } from "../log.js";
 import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
 import type PingsDatabase from "../pings/database.js";
 import type PlatformInfo from "../platform_info.js";
-import type { UploadResult } from "./uploader.js";
+import { UploadResult } from "./uploader.js";
 import type Uploader from "./uploader.js";
 import { UploadResultStatus } from "./uploader.js";
 
@@ -90,7 +90,7 @@ class PingUploader implements PingsDatabaseObserver {
     this.queue = [];
     this.status = PingUploaderStatus.Idle;
     // Initialize the ping uploader with either the platform defaults or a custom
-    // provided uploader from the configuration object.
+    // provided uploader from the configuration object.npm
     this.uploader = config.httpClient ? config.httpClient : platform.uploader;
     this.platformInfo = platform.info;
     this.serverEndpoint = config.serverEndpoint;
@@ -193,7 +193,7 @@ class PingUploader implements PingsDatabaseObserver {
         "Attempted to upload a ping, but Glean is not initialized yet. Ignoring.",
         LoggingLevel.Warn
       );
-      return { result: UploadResultStatus.RecoverableFailure };
+      return new UploadResult(UploadResultStatus.RecoverableFailure);
     }
 
     try {
@@ -210,9 +210,7 @@ class PingUploader implements PingsDatabaseObserver {
       log(LOG_TAG, ["Error trying to build ping request:", e], LoggingLevel.Warn);
       // An unrecoverable failure will make sure the offending ping is removed from the queue and
       // deleted from the database, which is what we want here.
-      return {
-        result: UploadResultStatus.UnrecoverableFailure
-      };
+      return new UploadResult(UploadResultStatus.RecoverableFailure);
     }
   }
 
@@ -253,17 +251,16 @@ class PingUploader implements PingsDatabaseObserver {
    * @returns Whether or not to retry the upload attempt.
    */
   private async processPingUploadResponse(identifier: string, response: UploadResult): Promise<boolean> {
-    const { status, result } = response;
-    if (status && status >= 200 && status < 300) {
-      log(LOG_TAG, `Ping ${identifier} succesfully sent ${status}.`, LoggingLevel.Info);
+    if (response.status && response.status >= 200 && response.status < 300) {
+      log(LOG_TAG, `Ping ${identifier} succesfully sent ${response.status}.`, LoggingLevel.Info);
       await this.pingsDatabase.deletePing(identifier);
       return false;
     }
 
-    if (result === UploadResultStatus.UnrecoverableFailure || (status && status >= 400 && status < 500)) {
+    if (response.result === UploadResultStatus.UnrecoverableFailure || (response.status && response.status >= 400 && response.status < 500)) {
       log(
         LOG_TAG,
-        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was: ${status ?? "no status"}.`,
+        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was: ${response.status ?? "no status"}.`,
         LoggingLevel.Warn
       );
       await this.pingsDatabase.deletePing(identifier);
@@ -274,7 +271,7 @@ class PingUploader implements PingsDatabaseObserver {
       LOG_TAG,
       [
         `Recoverable upload failure while attempting to send ping ${identifier}, will retry.`,
-        `Error was ${status ?? "no status"}.`
+        `Error was ${response.status ?? "no status"}.`
       ],
       LoggingLevel.Warn
     );

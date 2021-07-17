@@ -28,17 +28,22 @@ export const enum UploadResultStatus {
 /**
  * The result of an attempted ping upload.
  */
-export interface UploadResult {
+export class UploadResult {
   // The status is only present if `result` is UploadResultStatus.Success
-  status?: number,
+  readonly status?: number;
   // The status of an upload attempt
-  result: UploadResultStatus
+  readonly result: UploadResultStatus;
+
+  constructor(result: UploadResultStatus, status?: number) {
+    this.result = result;
+    this.status = status;
+  }
 }
 
 /**
- * Uploader interface, actualy uploading logic varies per platform.
+ * Uploader abstract class, actualy uploading logic varies per platform.
  */
-export interface Uploader {
+export abstract class Uploader {
   /**
    * Makes a POST request to a given url, with the given headers and body.
    *
@@ -49,7 +54,7 @@ export interface Uploader {
    * @param headers Optional header to include in the request
    * @returns The status code of the response.
    */
-  post(url: string, body: string | Uint8Array, headers?: Record<string, string>): Promise<UploadResult>;
+  abstract post(url: string, body: string | Uint8Array, headers?: Record<string, string>): Promise<UploadResult>;
 }
 
 export default Uploader;

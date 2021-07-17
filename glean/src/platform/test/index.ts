@@ -5,18 +5,14 @@
 import MockStorage from "../test/storage.js";
 import type PlatformInfo from "../../core/platform_info.js";
 import { KnownOperatingSystems } from "../../core/platform_info.js";
-import type { UploadResult} from "../../core/upload/uploader.js";
-import type Uploader from "../../core/upload/uploader.js";
-import { UploadResultStatus } from "../../core/upload/uploader.js";
+import Uploader from "../../core/upload/uploader.js";
+import { UploadResultStatus, UploadResult } from "../../core/upload/uploader.js";
 import type Platform from "../index.js";
 
-class MockUploader implements Uploader {
+class MockUploader extends Uploader {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   post(_url: string, _body: string | Uint8Array, _headers?: Record<string, string>): Promise<UploadResult> {
-    const result: UploadResult = {
-      result: UploadResultStatus.Success,
-      status: 200
-    };
+    const result = new UploadResult(UploadResultStatus.Success, 200);
     return Promise.resolve(result);
   }
 }

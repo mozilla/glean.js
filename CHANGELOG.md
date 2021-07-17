@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.17.0...main)
 
+* [#534](https://github.com/mozilla/glean.js/pull/534): Refactor Uploader into abstract class for external use
+
 # v0.17.0 (2021-07-16)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.16.0...v0.17.0)

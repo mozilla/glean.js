@@ -5,11 +5,10 @@
 import https from "https";
 import { validate } from "jsonschema";
 
-import type { UploadResult } from "../../../src/core/upload/uploader";
-import type Uploader from "../../../src/core/upload/uploader";
+import Uploader from "../../../src/core/upload/uploader";
 import type { JSONObject } from "../../../src/core/utils";
 import Glean from "../../../src/core/glean";
-import { UploadResultStatus } from "../../../src/core/upload/uploader";
+import { UploadResultStatus, UploadResult } from "../../../src/core/upload/uploader";
 
 // Generated files.
 import * as metrics from "./generated/forTesting";
@@ -44,7 +43,7 @@ function fetchSchema(): Promise<JSONObject> {
 /**
  * A Glean mock HTTP which allows one to wait for a specific ping submission.
  */
-class WaitableHttpClient implements Uploader {
+class WaitableHttpClient extends Uploader {
   private waitingFor?: string;
   private waitResolver?: (pingBody: JSONObject) => void;
 
@@ -73,10 +72,7 @@ class WaitableHttpClient implements Uploader {
       this.waitResolver?.(unzipPingPayload(body));
     }
 
-    return Promise.resolve({
-      result: UploadResultStatus.Success,
-      status: 200
-    });
+    return Promise.resolve(new UploadResult(UploadResultStatus.Success, 200));
   }
 }
 
