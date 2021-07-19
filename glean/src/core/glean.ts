@@ -414,6 +414,27 @@ class Glean {
   }
 
   /**
+   * Finishes executing all pending tasks
+   * and shutsdown both Glean's dispatcher and ping uploader.
+   *
+   * # Important
+   *
+   * This is irreversible.
+   * Only a restart will return Glean back to an idle state.
+   *
+   * @returns A promise which resolves once the shutdown is complete.
+   */
+  static async shutdown(): Promise<void> {
+    // Order here matters!
+    //
+    // The main dispatcher needs to be shutdown first,
+    // because some of its tasks may enqueue new tasks on the ping uploader dispatcher
+    // and we want these uploading tasks to also be executed prior to complete shutdown.
+    await Context.dispatcher.shutdown();
+    await Glean.pingUploader.shutdown();
+  }
+
+  /**
    * Sets the current environment.
    *
    * This function **must** be called before Glean.initialize.

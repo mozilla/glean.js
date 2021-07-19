@@ -18,6 +18,7 @@ import TestPlatform from "../../../src/platform/test";
 import Plugin from "../../../src/plugins";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
+import { DispatcherState } from "../../../src/core/dispatcher";
 
 class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor() {
@@ -503,5 +504,26 @@ describe("Glean", function() {
     Glean.setPlatform(MockPlatform);
 
     assert.strictEqual(TestPlatform.name, Glean.platform.name);
+  });
+
+  it("shutdown correctly shutsdown dispatcher and ping uploader", async function () {
+    await Glean.shutdown();
+    assert.strictEqual(Context.dispatcher["state"], DispatcherState.Shutdown);
+    assert.strictEqual(Glean["pingUploader"]["dispatcher"]["state"], DispatcherState.Shutdown);
+  });
+
+  it("shutdown allows all pending pings to be sent before shutting down uploader", async function() {
+    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+
+    // `setUploadEnabled` is a task dispatched on the main dispatcher,
+    // inside this task an uploading task is dispatched to the ping uploader dispatcher.
+    //
+    // We want to be sure the ping uploader dispatcher is not shutdown
+    // before it can execute this final task.
+    Glean.setUploadEnabled(false);
+    await Glean.shutdown();
+
+    assert.strictEqual(postSpy.callCount, 1);
+    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
   });
 });
