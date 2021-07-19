@@ -12,8 +12,8 @@ import Glean from "../../../../src/core/glean";
 import PingType from "../../../../src/core/pings/ping_type";
 import { collectAndStorePing } from "../../../../src/core/pings/maker";
 import PingUploader, { Policy } from "../../../../src/core/upload";
-import Uploader, { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
-import { WaitableUploader } from "../../../utils";
+import { UploadResultStatus } from "../../../../src/core/upload/uploader";
+import { CounterUploader, WaitableUploader } from "../../../utils";
 
 const sandbox = sinon.createSandbox();
 
@@ -60,23 +60,7 @@ describe("PingUploader", function() {
   });
 
   it("clearing succesfully stops ongoing upload work", async function () {
-    class CounterUploader implements Uploader {
-      public count = 0;
-      async post(_url: string, _body: string): Promise<UploadResult> {
-        this.count++;
-        // Make this just a tiny bit slow.
-        await new Promise<void>(resolve => {
-          setTimeout(() => resolve(), 10 * Math.random())
-        })
-
-        return {
-          status: 200,
-          result: UploadResultStatus.Success
-        }
-      }
-    }
-
-    const httpClient =  new CounterUploader();
+    const httpClient = new CounterUploader();
     await Glean.testResetGlean(testAppId, true, { httpClient });
 
     await fillUpPingsDatabase(10);
@@ -86,6 +70,16 @@ describe("PingUploader", function() {
     // There is really no way to know how many pings Glean will be able to upload
     // before it is done clearing. So we just check that post was called less than 10 times.
     assert.ok(httpClient.count < 10);
+  });
+
+  it("shutdown finishes executing all requests before stopping", async function () {
+    const httpClient = new CounterUploader();
+    await Glean.testResetGlean(testAppId, true, { httpClient });
+
+    await fillUpPingsDatabase(10);
+    await Glean["pingUploader"].shutdown();
+
+    assert.strictEqual(httpClient.count, 10);
   });
 
   it("correctly deletes pings when upload is successfull", async function() {

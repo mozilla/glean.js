@@ -324,6 +324,17 @@ class PingUploader implements PingsDatabaseObserver {
   }
 
   /**
+   * Shutsdown internal dispatcher, after executing all previously enqueued ping requests.
+   *
+   * This is irreversible.
+   *
+   * @returns A promise that resolves once shutdown is complete.
+   */
+  shutdown(): Promise<void> {
+    return this.dispatcher.shutdown();
+  }
+
+  /**
    * Clears the pending pings queue.
    */
   clearPendingPingsQueue(): void {

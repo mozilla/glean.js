@@ -120,3 +120,23 @@ export class WaitableUploader implements Uploader {
     });
   }
 }
+
+/**
+ * Uploader implementation that counts how many times `post` was called.
+ */
+export class CounterUploader implements Uploader {
+  public count = 0;
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  async post(_url: string, _body: string): Promise<UploadResult> {
+    this.count++;
+    // Make this just a tiny bit slow.
+    await new Promise<void>(resolve => {
+      setTimeout(() => resolve(), 10 * Math.random());
+    });
+
+    return {
+      status: 200,
+      result: UploadResultStatus.Success
+    };
+  }
+}
