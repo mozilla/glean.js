@@ -8,6 +8,7 @@ import type { JSONObject } from "../src/core/utils";
 import { isString } from "../src/core/utils";
 import type { Uploader, UploadResult } from "../src/core/upload/uploader";
 import { UploadResultStatus } from "../src/core/upload/uploader";
+import Glean from "../src/core/glean";
 
 /**
  * Decoded, unzips and parses the ping payload into a JSON object.
@@ -27,30 +28,71 @@ export function unzipPingPayload(payload: Uint8Array | string): JSONObject {
 }
 
 /**
+ * Disables the uploader on the Glean singleton,
+ * so that it doesn't interefe with tests.
+ */
+export async function stopGleanUploader(): Promise<void> {
+  await Glean["pingUploader"]["dispatcher"].shutdown();
+}
+
+/**
  * A Glean mock HTTP which allows one to wait for a specific ping submission.
  */
-class WaitableUploader implements Uploader {
+export class WaitableUploader implements Uploader {
   private waitingForName?: string;
-  private waitingForPath? : string;
-  private waitResolver?: (pingBody: JSONObject) => void;
+  private waitingForPath?: string;
+  private waitingForCount?: number;
+
+  private waitResolver?: (pingBody?: JSONObject) => void;
+  private batchResult: JSONObject[] = [];
+
+  private reset(): void {
+    this.waitingForName = undefined;
+    this.waitingForPath = undefined;
+    this.waitingForCount = undefined;
+    this.batchResult = [];
+  }
+
+  /**
+   * Returns a promise that resolves once a ping is submitted a given number of times
+   * or times out after a 2s wait.
+   *
+   * @param name The name of the ping to wait for.
+   * @param count The amount of times we expect the ping to be uploaded.
+   * @returns The body of the submitted pings, in the order they were submitted.
+   */
+  waitForBatchPingSubmission(name: string, count: number): Promise<JSONObject[]> {
+    this.waitingForName = name;
+    this.waitingForCount = count;
+    return new Promise<JSONObject[]>((resolve, reject) => {
+      this.waitResolver = () => {
+        const result = this.batchResult;
+        this.reset();
+        // Uncomment for debugging the ping payload.
+        // console.log(JSON.stringify(result, null, 2));
+        resolve(result);
+      };
+
+      setTimeout(() => reject(), 2000);
+    });
+  }
 
   /**
    * Returns a promise that resolves once a ping is submitted or times out after a 2s wait.
    *
    * @param name The name of the ping to wait for.
    * @param path The expected path of the ping to wait for.
-   * @returns A promise that resolves once a ping is submitted or times out after a 2s wait.
+   * @returns The body of the submitted ping.
    */
   waitForPingSubmission(name: string, path?: string): Promise<JSONObject> {
     this.waitingForName = name;
     this.waitingForPath = path;
     return new Promise<JSONObject>((resolve, reject) => {
-      this.waitResolver = (pingBody: JSONObject) => {
-        this.waitingForName = undefined;
-        this.waitingForPath = undefined;
+      this.waitResolver = (pingBody?: JSONObject) => {
+        this.reset();
         // Uncomment for debugging the ping payload.
         // console.log(JSON.stringify(pingBody, null, 2));
-        resolve(pingBody);
+        resolve(pingBody as JSONObject);
       };
 
       setTimeout(() => reject(), 2000);
@@ -58,14 +100,18 @@ class WaitableUploader implements Uploader {
   }
 
   post(url: string, body: string): Promise<UploadResult> {
-    if (this.waitingForPath) {
-      if (url.includes(this.waitingForPath)) {
-        this.waitResolver?.(unzipPingPayload(body));
+    const containsPath = this.waitingForPath && url.includes(this.waitingForPath);
+    const containsName = this.waitingForName && url.includes(this.waitingForName);
+
+    if (containsName || containsPath) {
+      if (this.waitingForCount) {
+        this.batchResult.push(unzipPingPayload(body));
+        if (this.batchResult.length >= this.waitingForCount) {
+          this.waitResolver?.();
+        }
       } else {
-        return Promise.reject(new Error("The submitted ping is not from the url we are waiting for."));
+        this.waitResolver?.(unzipPingPayload(body));
       }
-    } else if (this.waitingForName && url.includes(this.waitingForName)) {
-      this.waitResolver?.(unzipPingPayload(body));
     }
 
     return Promise.resolve({
@@ -74,5 +120,3 @@ class WaitableUploader implements Uploader {
     });
   }
 }
-
-export default WaitableUploader;

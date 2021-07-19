@@ -71,7 +71,7 @@ class Dispatcher {
   // This is `undefined` in case there is no ongoing execution of tasks.
   private currentJob?: Promise<void>;
 
-  constructor(readonly maxPreInitQueueSize = 100) {
+  constructor(readonly maxPreInitQueueSize = 100, readonly logTag = LOG_TAG) {
     this.queue = [];
     this.state = DispatcherState.Uninitialized;
   }
@@ -94,7 +94,7 @@ class Dispatcher {
     try {
       await task();
     } catch(e) {
-      log(LOG_TAG, ["Error executing task:", e], LoggingLevel.Error);
+      log(this.logTag, ["Error executing task:", e], LoggingLevel.Error);
     }
   }
 
@@ -161,7 +161,7 @@ class Dispatcher {
         })
         .catch(error => {
           log(
-            LOG_TAG,
+            this.logTag,
             [
               "IMPOSSIBLE: Something went wrong while the dispatcher was executing the tasks queue.",
               error
@@ -189,7 +189,7 @@ class Dispatcher {
   private launchInternal(command: Command, priorityTask = false): boolean {
     if (this.state === DispatcherState.Shutdown) {
       log(
-        LOG_TAG,
+        this.logTag,
         "Attempted to enqueue a new task but the dispatcher is shutdown. Ignoring.",
         LoggingLevel.Warn
       );
@@ -199,7 +199,7 @@ class Dispatcher {
     if (!priorityTask && this.state === DispatcherState.Uninitialized) {
       if (this.queue.length >= this.maxPreInitQueueSize) {
         log(
-          LOG_TAG,
+          this.logTag,
           "Unable to enqueue task, pre init queue is full.",
           LoggingLevel.Warn
         );
@@ -247,7 +247,7 @@ class Dispatcher {
   flushInit(task?: Task): void {
     if (this.state !== DispatcherState.Uninitialized) {
       log(
-        LOG_TAG,
+        this.logTag,
         "Attempted to initialize the Dispatcher, but it is already initialized. Ignoring.",
         LoggingLevel.Warn
       );

@@ -115,7 +115,7 @@ class Glean {
    */
   private static async clearMetrics(): Promise<void> {
     // Stop ongoing upload jobs and clear pending pings queue.
-    await Glean.pingUploader.clearPendingPingsQueue();
+    Glean.pingUploader.clearPendingPingsQueue();
 
     // There is only one metric that we want to survive after clearing all
     // metrics: first_run_date. Here, we store its value
@@ -281,11 +281,6 @@ class Glean {
       }
 
       await Context.pingsDatabase.scanPendingPings();
-
-      // Even though this returns a promise, there is no need to block on it returning.
-      //
-      // On the contrary we _want_ the uploading tasks to be executed async.
-      void Glean.pingUploader.triggerUpload();
     });
   }
 
@@ -491,11 +486,13 @@ class Glean {
     // Deregister all plugins
     testResetEvents();
 
-    // Stop ongoing jobs and clear pending pings queue.
+    // Await ongoing jobs and clear pending pings queue.
     if (Glean.pingUploader) {
+      await Glean.pingUploader.testBlockOnPingsQueue();
+
       // The first time tests run, before Glean is initialized, we are
       // not guaranteed to have an uploader. Account for this.
-      await Glean.pingUploader.clearPendingPingsQueue();
+      Glean.pingUploader.clearPendingPingsQueue();
     }
   }
 
