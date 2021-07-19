@@ -74,6 +74,17 @@ export default {
   },
 
   /**
+   * Finishes executing any ongoing tasks and shutsdown Glean.
+   *
+   * This will attempt to send pending pings before resolving.
+   *
+   * @returns A promise which resolves once shutdown is complete.
+   */
+  shutdown(): Promise<void> {
+    return Glean.shutdown();
+  },
+
+  /**
    * Sets the `sourceTags` debug option.
    *
    * Ping tags will show in the destination datasets, after ingestion.

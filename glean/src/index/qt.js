@@ -91,4 +91,15 @@ function setSourceTags(value) {
   Glean.Glean.default.setSourceTags(value);
 }
 
+/**
+ * Finishes executing any ongoing tasks and shutsdown Glean.
+ *
+ * This will attempt to send pending pings before resolving.
+ *
+ * @returns A promise which resolves once shutdown is complete.
+ */
+function shutdown() {
+  return Glean.shutdown();
+}
+
 const _private = Glean.Glean.default._private;
