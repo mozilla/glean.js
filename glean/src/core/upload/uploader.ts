@@ -29,15 +29,12 @@ export const enum UploadResultStatus {
  * The result of an attempted ping upload.
  */
 export class UploadResult {
-  // The status is only present if `result` is UploadResultStatus.Success
-  readonly status?: number;
-  // The status of an upload attempt
-  readonly result: UploadResultStatus;
-
-  constructor(result: UploadResultStatus, status?: number) {
-    this.result = result;
-    this.status = status;
-  }
+  constructor(
+    // The status of an upload attempt
+    readonly result: UploadResultStatus,
+    // The status is only present if `result` is UploadResultStatus.Success
+    readonly status?: number
+  ) {}
 }
 
 /**

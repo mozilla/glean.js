@@ -8,7 +8,7 @@ import sinon from "sinon";
 
 import BrowserUploader from "../../../../src/platform/webext/uploader";
 import type { JSONObject } from "../../../../src/core/utils";
-import {UploadResult, UploadResultStatus} from "../../../../src/core/upload/uploader";
+import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 
 const sandbox = sinon.createSandbox();
 

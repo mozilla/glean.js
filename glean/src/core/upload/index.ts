@@ -90,7 +90,7 @@ class PingUploader implements PingsDatabaseObserver {
     this.queue = [];
     this.status = PingUploaderStatus.Idle;
     // Initialize the ping uploader with either the platform defaults or a custom
-    // provided uploader from the configuration object.npm
+    // provided uploader from the configuration object.
     this.uploader = config.httpClient ? config.httpClient : platform.uploader;
     this.platformInfo = platform.info;
     this.serverEndpoint = config.serverEndpoint;
@@ -251,16 +251,17 @@ class PingUploader implements PingsDatabaseObserver {
    * @returns Whether or not to retry the upload attempt.
    */
   private async processPingUploadResponse(identifier: string, response: UploadResult): Promise<boolean> {
-    if (response.status && response.status >= 200 && response.status < 300) {
-      log(LOG_TAG, `Ping ${identifier} succesfully sent ${response.status}.`, LoggingLevel.Info);
+    const { status, result } = response;
+    if (status && status >= 200 && status < 300) {
+      log(LOG_TAG, `Ping ${identifier} succesfully sent ${status}.`, LoggingLevel.Info);
       await this.pingsDatabase.deletePing(identifier);
       return false;
     }
 
-    if (response.result === UploadResultStatus.UnrecoverableFailure || (response.status && response.status >= 400 && response.status < 500)) {
+    if (result === UploadResultStatus.UnrecoverableFailure || (status && status >= 400 && status < 500)) {
       log(
         LOG_TAG,
-        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was: ${response.status ?? "no status"}.`,
+        `Unrecoverable upload failure while attempting to send ping ${identifier}. Error was: ${status ?? "no status"}.`,
         LoggingLevel.Warn
       );
       await this.pingsDatabase.deletePing(identifier);
@@ -271,7 +272,7 @@ class PingUploader implements PingsDatabaseObserver {
       LOG_TAG,
       [
         `Recoverable upload failure while attempting to send ping ${identifier}, will retry.`,
-        `Error was ${response.status ?? "no status"}.`
+        `Error was ${status ?? "no status"}.`
       ],
       LoggingLevel.Warn
     );

@@ -7,7 +7,7 @@ import assert from "assert";
 import sinon from "sinon";
 
 import QtUploader from "../../../../src/platform/qt/uploader";
-import {DEFAULT_UPLOAD_TIMEOUT_MS, UploadResult, UploadResultStatus} from "../../../../src/core/upload/uploader";
+import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 
 describe("Uploader/Qt", function () {
   let server: sinon.SinonFakeServer;
