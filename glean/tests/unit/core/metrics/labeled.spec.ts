@@ -15,6 +15,7 @@ import LabeledMetricType from "../../../../src/core/metrics/types/labeled";
 import StringMetricType from "../../../../src/core/metrics/types/string";
 import PingType from "../../../../src/core/pings/ping_type";
 import type { JSONObject } from "../../../../src/core/utils";
+import { stopGleanUploader } from "../../../utils";
 
 const sandbox = sinon.createSandbox();
 
@@ -24,7 +25,7 @@ describe("LabeledMetric", function() {
   beforeEach(async function() {
     await Glean.testResetGlean(testAppId);
     // Disable ping uploading for it not to interfere with this tests.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    await stopGleanUploader();
   });
 
   afterEach(function () {

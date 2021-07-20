@@ -15,8 +15,8 @@ const sandbox = sinon.createSandbox();
  * @returns The promise resolved when the timeout expires.
  */
 const sampleTask = (): Promise<void> => {
-  return new Promise(resolve => setTimeout(() => {
-    resolve(undefined);
+  return new Promise<void>(resolve => setTimeout(() => {
+    resolve();
   }, Math.random() * 10));
 };
 
@@ -367,5 +367,52 @@ describe("Dispatcher", function() {
     await Promise.all([test1, test2, test3]);
 
     sinon.assert.callOrder(stub1, stub2, stub3);
+  });
+
+  it("shutdown executes all previous tasks before shutting down", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    let executionCounter = 0;
+    const counterTask = (): Promise<void> => {
+      executionCounter++;
+      return Promise.resolve();
+    };
+
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(counterTask);
+    }
+
+    await dispatcher.shutdown();
+    assert.strictEqual(executionCounter, 10);
+
+    // Attempting to enqueue new tasks after shutdown is no-op.
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(counterTask);
+    }
+    assert.strictEqual(executionCounter, 10);
+  });
+
+  it("shutdown executes all pending tasks even if the dispatcher is stopped", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+    dispatcher.stop();
+
+    let executionCounter = 0;
+    const counterTask = (): Promise<void> => {
+      executionCounter++;
+      return Promise.resolve();
+    };
+
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(counterTask);
+    }
+
+    // Before shutdown nothing has been executed yet.
+    assert.strictEqual(executionCounter, 0);
+
+    // After shutdown all previosu tasks are executed.
+    await dispatcher.shutdown();
+    assert.strictEqual(executionCounter, 10);
   });
 });

@@ -101,6 +101,17 @@ export default {
     Glean.setSourceTags(value);
   },
 
+  /**
+   * Finishes executing any ongoing tasks and shuts down Glean.
+   *
+   * This will attempt to send pending pings before resolving.
+   *
+   * @returns A promise which resolves once shutdown is complete.
+   */
+  shutdown(): Promise<void> {
+    return Glean.shutdown();
+  },
+
   ErrorType,
 
   _private: {
