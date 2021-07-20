@@ -108,37 +108,34 @@ class PingUploader implements PingsDatabaseObserver {
    * @param ping The ping to enqueue.
    */
   private enqueuePing(ping: QueuedPing): void {
-    let isDuplicate = false;
     for (const queuedPing of this.processing) {
       if (queuedPing.identifier === ping.identifier) {
-        isDuplicate = true;
+        return;
       }
     }
 
-    if (!isDuplicate) {
-      // Add the ping to the list of pings being processsed.
-      this.processing.push(ping);
-      // Dispatch the uploading task.
-      this.dispatcher.launch(async (): Promise<void> => {
-        const status = await this.attemptPingUpload(ping);
-        const shouldRetry = await this.processPingUploadResponse(ping.identifier, status);
+    // Add the ping to the list of pings being processsed.
+    this.processing.push(ping);
+    // Dispatch the uploading task.
+    this.dispatcher.launch(async (): Promise<void> => {
+      const status = await this.attemptPingUpload(ping);
+      const shouldRetry = await this.processPingUploadResponse(ping.identifier, status);
 
-        if (shouldRetry) {
-          ping.retries++;
-          this.enqueuePing(ping);
-        }
+      if (shouldRetry) {
+        ping.retries++;
+        this.enqueuePing(ping);
+      }
 
-        if (ping.retries >= this.policy.maxRecoverableFailures) {
-          log(
-            LOG_TAG,
-            `Reached maximum recoverable failures for ping "${JSON.stringify(ping.name)}". You are done.`,
-            LoggingLevel.Info
-          );
-          this.dispatcher.stop();
-          ping.retries = 0;
-        }
-      });
-    }
+      if (ping.retries >= this.policy.maxRecoverableFailures) {
+        log(
+          LOG_TAG,
+          `Reached maximum recoverable failures for ping "${JSON.stringify(ping.name)}". You are done.`,
+          LoggingLevel.Info
+        );
+        this.dispatcher.stop();
+        ping.retries = 0;
+      }
+    });
   }
 
   /**
