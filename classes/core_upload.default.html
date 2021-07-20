@@ -2714,19 +2714,16 @@ img {
 					<a href="core_upload.default.html#constructor" class="tsd-kind-icon">constructor</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a href="core_upload.default.html#currentJob" class="tsd-kind-icon">current<wbr>Job</a>
+					<a href="core_upload.default.html#dispatcher" class="tsd-kind-icon">dispatcher</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a href="core_upload.default.html#platformInfo" class="tsd-kind-icon">platform<wbr>Info</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a href="core_upload.default.html#queue" class="tsd-kind-icon">queue</a>
+					<a href="core_upload.default.html#processing" class="tsd-kind-icon">processing</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a href="core_upload.default.html#serverEndpoint" class="tsd-kind-icon">server<wbr>Endpoint</a>
-				</li>
-				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
-					<a href="core_upload.default.html#status" class="tsd-kind-icon">status</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
 					<a href="core_upload.default.html#uploader" class="tsd-kind-icon">uploader</a>
@@ -2735,16 +2732,13 @@ img {
 					<a href="core_upload.default.html#attemptPingUpload" class="tsd-kind-icon">attempt<wbr>Ping<wbr>Upload</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class">
-					<a href="core_upload.default.html#cancelUpload" class="tsd-kind-icon">cancel<wbr>Upload</a>
-				</li>
-				<li class=" tsd-kind-method tsd-parent-kind-class">
 					<a href="core_upload.default.html#clearPendingPingsQueue" class="tsd-kind-icon">clear<wbr>Pending<wbr>Pings<wbr>Queue</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
-					<a href="core_upload.default.html#enqueuePing" class="tsd-kind-icon">enqueue<wbr>Ping</a>
+					<a href="core_upload.default.html#concludePingProcessing" class="tsd-kind-icon">conclude<wbr>Ping<wbr>Processing</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
-					<a href="core_upload.default.html#getNextPing" class="tsd-kind-icon">get<wbr>Next<wbr>Ping</a>
+					<a href="core_upload.default.html#enqueuePing" class="tsd-kind-icon">enqueue<wbr>Ping</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
 					<a href="core_upload.default.html#preparePingForUpload" class="tsd-kind-icon">prepare<wbr>Ping<wbr>For<wbr>Upload</a>
@@ -2753,10 +2747,10 @@ img {
 					<a href="core_upload.default.html#processPingUploadResponse" class="tsd-kind-icon">process<wbr>Ping<wbr>Upload<wbr>Response</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class">
-					<a href="core_upload.default.html#triggerUpload" class="tsd-kind-icon">trigger<wbr>Upload</a>
+					<a href="core_upload.default.html#shutdown" class="tsd-kind-icon">shutdown</a>
 				</li>
-				<li class=" tsd-kind-method tsd-parent-kind-class tsd-is-private">
-					<a href="core_upload.default.html#triggerUploadInternal" class="tsd-kind-icon">trigger<wbr>Upload<wbr>Internal</a>
+				<li class=" tsd-kind-method tsd-parent-kind-class">
+					<a href="core_upload.default.html#testBlockOnPingsQueue" class="tsd-kind-icon">test<wbr>Block<wbr>OnPings<wbr>Queue</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class">
 					<a href="core_upload.default.html#update" class="tsd-kind-icon">update</a>
@@ -2808,11 +2802,10 @@ img {
 					<section class="tsd-index-section tsd-is-private tsd-is-private-protected">
 						<h3>Properties</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#currentJob" class="tsd-kind-icon">current<wbr>Job</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#dispatcher" class="tsd-kind-icon">dispatcher</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#platformInfo" class="tsd-kind-icon">platform<wbr>Info</a></li>
-							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#queue" class="tsd-kind-icon">queue</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#processing" class="tsd-kind-icon">processing</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#serverEndpoint" class="tsd-kind-icon">server<wbr>Endpoint</a></li>
-							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#status" class="tsd-kind-icon">status</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#uploader" class="tsd-kind-icon">uploader</a></li>
 						</ul>
 					</section>
@@ -2820,14 +2813,13 @@ img {
 						<h3>Methods</h3>
 						<ul class="tsd-index-list">
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#attemptPingUpload" class="tsd-kind-icon">attempt<wbr>Ping<wbr>Upload</a></li>
-							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_upload.default.html#cancelUpload" class="tsd-kind-icon">cancel<wbr>Upload</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_upload.default.html#clearPendingPingsQueue" class="tsd-kind-icon">clear<wbr>Pending<wbr>Pings<wbr>Queue</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#concludePingProcessing" class="tsd-kind-icon">conclude<wbr>Ping<wbr>Processing</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#enqueuePing" class="tsd-kind-icon">enqueue<wbr>Ping</a></li>
-							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#getNextPing" class="tsd-kind-icon">get<wbr>Next<wbr>Ping</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#preparePingForUpload" class="tsd-kind-icon">prepare<wbr>Ping<wbr>For<wbr>Upload</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#processPingUploadResponse" class="tsd-kind-icon">process<wbr>Ping<wbr>Upload<wbr>Response</a></li>
-							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_upload.default.html#triggerUpload" class="tsd-kind-icon">trigger<wbr>Upload</a></li>
-							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="core_upload.default.html#triggerUploadInternal" class="tsd-kind-icon">trigger<wbr>Upload<wbr>Internal</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_upload.default.html#shutdown" class="tsd-kind-icon">shutdown</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_upload.default.html#testBlockOnPingsQueue" class="tsd-kind-icon">test<wbr>Block<wbr>OnPings<wbr>Queue</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_upload.default.html#update" class="tsd-kind-icon">update</a></li>
 						</ul>
 					</section>
@@ -2846,7 +2838,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L84">core/upload/index.ts:84</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L85">core/upload/index.ts:85</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -2872,12 +2864,12 @@ img {
 		<section class="tsd-panel-group tsd-member-group tsd-is-private tsd-is-private-protected">
 			<h2>Properties</h2>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-				<a name="currentJob" class="tsd-anchor"></a>
-				<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagOptional">Optional</span> current<wbr>Job</h3>
-				<div class="tsd-signature tsd-kind-icon">current<wbr>Job<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
+				<a name="dispatcher" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagPrivate">Private</span> dispatcher</h3>
+				<div class="tsd-signature tsd-kind-icon">dispatcher<span class="tsd-signature-symbol">:</span> <a href="core_dispatcher.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L77">core/upload/index.ts:77</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L77">core/upload/index.ts:77</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2887,17 +2879,17 @@ img {
 				<div class="tsd-signature tsd-kind-icon">platform<wbr>Info<span class="tsd-signature-symbol">:</span> <a href="../interfaces/core_platform_info.default.html" class="tsd-signature-type" data-tsd-kind="Interface">default</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L81">core/upload/index.ts:81</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L81">core/upload/index.ts:81</a></li>
 					</ul>
 				</aside>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-				<a name="queue" class="tsd-anchor"></a>
-				<h3><span class="tsd-flag ts-flagPrivate">Private</span> queue</h3>
-				<div class="tsd-signature tsd-kind-icon">queue<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueuedPing</span><span class="tsd-signature-symbol">[]</span></div>
+				<a name="processing" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagPrivate">Private</span> processing</h3>
+				<div class="tsd-signature tsd-kind-icon">processing<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueuedPing</span><span class="tsd-signature-symbol">[]</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L72">core/upload/index.ts:72</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L75">core/upload/index.ts:75</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2907,17 +2899,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">server<wbr>Endpoint<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L82">core/upload/index.ts:82</a></li>
-					</ul>
-				</aside>
-			</section>
-			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
-				<a name="status" class="tsd-anchor"></a>
-				<h3><span class="tsd-flag ts-flagPrivate">Private</span> status</h3>
-				<div class="tsd-signature tsd-kind-icon">status<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">PingUploaderStatus</span></div>
-				<aside class="tsd-sources">
-					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L74">core/upload/index.ts:74</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L83">core/upload/index.ts:83</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2927,7 +2909,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">uploader<span class="tsd-signature-symbol">:</span> <a href="../interfaces/core_upload_uploader.Uploader.html" class="tsd-signature-type" data-tsd-kind="Interface">Uploader</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L79">core/upload/index.ts:79</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L79">core/upload/index.ts:79</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2944,7 +2926,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L189">core/upload/index.ts:189</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L203">core/upload/index.ts:203</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2967,51 +2949,55 @@ img {
 				</ul>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-				<a name="cancelUpload" class="tsd-anchor"></a>
-				<h3>cancel<wbr>Upload</h3>
-				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-					<li class="tsd-signature tsd-kind-icon">cancel<wbr>Upload<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
-				</ul>
-				<ul class="tsd-descriptions">
-					<li class="tsd-description">
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L341">core/upload/index.ts:341</a></li>
-							</ul>
-						</aside>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>Cancels ongoing upload.</p>
-							</div>
-							<p>Does nothing in case another cancel signal has already been issued
-							or if the uploader is current idle.</p>
-						</div>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						<p>A promise that resolves once the current uploading job is succesfully cancelled.</p>
-					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 				<a name="clearPendingPingsQueue" class="tsd-anchor"></a>
 				<h3>clear<wbr>Pending<wbr>Pings<wbr>Queue</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-					<li class="tsd-signature tsd-kind-icon">clear<wbr>Pending<wbr>Pings<wbr>Queue<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">clear<wbr>Pending<wbr>Pings<wbr>Queue<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L357">core/upload/index.ts:357</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L337">core/upload/index.ts:337</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>Clear the pending pings queue.</p>
+								<p>Clears the pending pings queue.</p>
 							</div>
-							<p>Will cancel any ongoing work before clearing.</p>
 						</div>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
-						<p>A promise that resolves once we are done clearing.</p>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
+				<a name="concludePingProcessing" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagPrivate">Private</span> conclude<wbr>Ping<wbr>Processing</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
+					<li class="tsd-signature tsd-kind-icon">conclude<wbr>Ping<wbr>Processing<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">void</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L238">core/upload/index.ts:238</a></li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Removes a ping from the processing list.</p>
+							</div>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>identifier: <span class="tsd-signature-type">string</span></h5>
+								<div class="tsd-comment tsd-typography">
+									<p>The identifier of the ping to be removed.</p>
+								</div>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4>
 					</li>
 				</ul>
 			</section>
@@ -3025,7 +3011,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L107">core/upload/index.ts:107</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L110">core/upload/index.ts:110</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3048,29 +3034,6 @@ img {
 				</ul>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
-				<a name="getNextPing" class="tsd-anchor"></a>
-				<h3><span class="tsd-flag ts-flagPrivate">Private</span> get<wbr>Next<wbr>Ping</h3>
-				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-					<li class="tsd-signature tsd-kind-icon">get<wbr>Next<wbr>Ping<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">QueuedPing</span></li>
-				</ul>
-				<ul class="tsd-descriptions">
-					<li class="tsd-description">
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L123">core/upload/index.ts:123</a></li>
-							</ul>
-						</aside>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>Gets and removes from the queue the next ping in line to be uploaded.</p>
-							</div>
-						</div>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">QueuedPing</span></h4>
-						<p>The next ping or <code>undefined</code> if no pings are enqueued.</p>
-					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
 				<a name="preparePingForUpload" class="tsd-anchor"></a>
 				<h3><span class="tsd-flag ts-flagPrivate">Private</span> prepare<wbr>Ping<wbr>For<wbr>Upload</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
@@ -3080,7 +3043,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L139">core/upload/index.ts:139</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L153">core/upload/index.ts:153</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3118,7 +3081,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L255">core/upload/index.ts:255</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L278">core/upload/index.ts:278</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3169,50 +3132,50 @@ img {
 				</ul>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
-				<a name="triggerUpload" class="tsd-anchor"></a>
-				<h3>trigger<wbr>Upload</h3>
+				<a name="shutdown" class="tsd-anchor"></a>
+				<h3>shutdown</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
-					<li class="tsd-signature tsd-kind-icon">trigger<wbr>Upload<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">shutdown<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L319">core/upload/index.ts:319</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L330">core/upload/index.ts:330</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
 							<div class="lead">
-								<p>Triggers the uploading of all enqueued pings.</p>
+								<p>Shuts down internal dispatcher, after executing all previously enqueued ping requests.</p>
 							</div>
-							<p>If upload is already ongoing, this is a no-op.</p>
-							<a href="#notes" id="notes" style="color: inherit; text-decoration: none;">
-								<h1>Notes</h1>
-							</a>
-							<ol>
-								<li>If three retriable failures happen in a row the uploader will stop retrying.</li>
-								<li>Uploading only works when Glean has been initialized.
-								Otherwise it will reach maximum retriable failures and bail out.</li>
-							</ol>
+							<p>This is irreversible.</p>
 						</div>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						<p>A promise that resolves once shutdown is complete.</p>
 					</li>
 				</ul>
 			</section>
-			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class tsd-is-private">
-				<a name="triggerUploadInternal" class="tsd-anchor"></a>
-				<h3><span class="tsd-flag ts-flagPrivate">Private</span> trigger<wbr>Upload<wbr>Internal</h3>
-				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-					<li class="tsd-signature tsd-kind-icon">trigger<wbr>Upload<wbr>Internal<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<a name="testBlockOnPingsQueue" class="tsd-anchor"></a>
+				<h3>test<wbr>Block<wbr>OnPings<wbr>Queue</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+					<li class="tsd-signature tsd-kind-icon">test<wbr>Block<wbr>OnPings<wbr>Queue<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L284">core/upload/index.ts:284</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L354">core/upload/index.ts:354</a></li>
 							</ul>
 						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Test-Only API**</p>
+							</div>
+							<p>Returns a promise that resolves once the current queue execution in finished.</p>
+						</div>
 						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						<p>The promise.</p>
 					</li>
 				</ul>
 			</section>
@@ -3227,7 +3190,7 @@ img {
 						<aside class="tsd-sources">
 							<p>Implementation of <a href="../interfaces/core_pings_database.Observer.html">Observer</a>.<a href="../interfaces/core_pings_database.Observer.html#update">update</a></p>
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/upload/index.ts#L370">core/upload/index.ts:370</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/upload/index.ts#L318">core/upload/index.ts:318</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">

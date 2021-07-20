@@ -2717,6 +2717,9 @@ img {
 					<a href="core_dispatcher.default.html#currentJob" class="tsd-kind-icon">current<wbr>Job</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class">
+					<a href="core_dispatcher.default.html#logTag" class="tsd-kind-icon">log<wbr>Tag</a>
+				</li>
+				<li class=" tsd-kind-property tsd-parent-kind-class">
 					<a href="core_dispatcher.default.html#maxPreInitQueueSize" class="tsd-kind-icon">max<wbr>Pre<wbr>Init<wbr>Queue<wbr>Size</a>
 				</li>
 				<li class=" tsd-kind-property tsd-parent-kind-class tsd-is-private">
@@ -2748,6 +2751,9 @@ img {
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class">
 					<a href="core_dispatcher.default.html#resume" class="tsd-kind-icon">resume</a>
+				</li>
+				<li class=" tsd-kind-method tsd-parent-kind-class">
+					<a href="core_dispatcher.default.html#shutdown" class="tsd-kind-icon">shutdown</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-class">
 					<a href="core_dispatcher.default.html#stop" class="tsd-kind-icon">stop</a>
@@ -2800,6 +2806,7 @@ img {
 						<h3>Properties</h3>
 						<ul class="tsd-index-list">
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_dispatcher.default.html#currentJob" class="tsd-kind-icon">current<wbr>Job</a></li>
+							<li class="tsd-kind-property tsd-parent-kind-class"><a href="core_dispatcher.default.html#logTag" class="tsd-kind-icon">log<wbr>Tag</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class"><a href="core_dispatcher.default.html#maxPreInitQueueSize" class="tsd-kind-icon">max<wbr>Pre<wbr>Init<wbr>Queue<wbr>Size</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_dispatcher.default.html#queue" class="tsd-kind-icon">queue</a></li>
 							<li class="tsd-kind-property tsd-parent-kind-class tsd-is-private"><a href="core_dispatcher.default.html#state" class="tsd-kind-icon">state</a></li>
@@ -2816,6 +2823,7 @@ img {
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_dispatcher.default.html#launch" class="tsd-kind-icon">launch</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class tsd-is-private"><a href="core_dispatcher.default.html#launchInternal" class="tsd-kind-icon">launch<wbr>Internal</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_dispatcher.default.html#resume" class="tsd-kind-icon">resume</a></li>
+							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_dispatcher.default.html#shutdown" class="tsd-kind-icon">shutdown</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_dispatcher.default.html#stop" class="tsd-kind-icon">stop</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_dispatcher.default.html#testBlockOnQueue" class="tsd-kind-icon">test<wbr>Block<wbr>OnQueue</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-class"><a href="core_dispatcher.default.html#testLaunch" class="tsd-kind-icon">test<wbr>Launch</a></li>
@@ -2832,19 +2840,22 @@ img {
 				<a name="constructor" class="tsd-anchor"></a>
 				<h3>constructor</h3>
 				<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-					<li class="tsd-signature tsd-kind-icon">new default<span class="tsd-signature-symbol">(</span>maxPreInitQueueSize<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="core_dispatcher.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></li>
+					<li class="tsd-signature tsd-kind-icon">new default<span class="tsd-signature-symbol">(</span>maxPreInitQueueSize<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">number</span>, logTag<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="core_dispatcher.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L68">core/dispatcher.ts:68</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L74">core/dispatcher.ts:74</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
 							<li>
 								<h5>maxPreInitQueueSize: <span class="tsd-signature-type">number</span><span class="tsd-signature-symbol"> = 100</span></h5>
+							</li>
+							<li>
+								<h5>logTag: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = ...</span></h5>
 							</li>
 						</ul>
 						<h4 class="tsd-returns-title">Returns <a href="core_dispatcher.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h4>
@@ -2860,8 +2871,15 @@ img {
 				<div class="tsd-signature tsd-kind-icon">current<wbr>Job<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L66">core/dispatcher.ts:66</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L72">core/dispatcher.ts:72</a></li>
 					</ul>
+				</aside>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
+				<a name="logTag" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagReadonly">Readonly</span> log<wbr>Tag</h3>
+				<div class="tsd-signature tsd-kind-icon">log<wbr>Tag<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> = ...</span></div>
+				<aside class="tsd-sources">
 				</aside>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class">
@@ -2877,7 +2895,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">queue<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Command</span><span class="tsd-signature-symbol">[]</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L60">core/dispatcher.ts:60</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L66">core/dispatcher.ts:66</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2887,7 +2905,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">state<span class="tsd-signature-symbol">:</span> <a href="../enums/core_dispatcher.DispatcherState.html" class="tsd-signature-type" data-tsd-kind="Enumeration">DispatcherState</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L62">core/dispatcher.ts:62</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L68">core/dispatcher.ts:68</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2904,7 +2922,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L258">core/dispatcher.ts:258</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L279">core/dispatcher.ts:279</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2933,7 +2951,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L98">core/dispatcher.ts:98</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L104">core/dispatcher.ts:104</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2955,7 +2973,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L87">core/dispatcher.ts:87</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L93">core/dispatcher.ts:93</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2986,7 +3004,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L226">core/dispatcher.ts:226</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L247">core/dispatcher.ts:247</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3018,7 +3036,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L78">core/dispatcher.ts:78</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L84">core/dispatcher.ts:84</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3041,7 +3059,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L212">core/dispatcher.ts:212</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L233">core/dispatcher.ts:233</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3078,7 +3096,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L177">core/dispatcher.ts:177</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L189">core/dispatcher.ts:189</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3121,7 +3139,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L282">core/dispatcher.ts:282</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L303">core/dispatcher.ts:303</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3135,6 +3153,42 @@ img {
 				</ul>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
+				<a name="shutdown" class="tsd-anchor"></a>
+				<h3>shutdown</h3>
+				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
+					<li class="tsd-signature tsd-kind-icon">shutdown<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L325">core/dispatcher.ts:325</a></li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Shutsdown the dispatcher.</p>
+							</div>
+							<ol>
+								<li>Executes all tasks launched prior to this one.</li>
+								<li>Clears the queue of any tasks launched after this one.</li>
+								<li>Puts the dispatcher in the <code>Shutdown</code> state.</li>
+							</ol>
+							<a href="#note" id="note" style="color: inherit; text-decoration: none;">
+								<h1>Note</h1>
+							</a>
+							<ul>
+								<li>This is a command like any other, if the dispatcher is uninitialized
+								it will get executed when the dispatcher is initialized.</li>
+								<li>If the dispatcher is stopped, it is resumed and all pending tasks are executed.</li>
+							</ul>
+						</div>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
+						<p>A promise which resolves once shutdown is complete.</p>
+					</li>
+				</ul>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-class">
 				<a name="stop" class="tsd-anchor"></a>
 				<h3>stop</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class">
@@ -3144,7 +3198,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L273">core/dispatcher.ts:273</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L294">core/dispatcher.ts:294</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3170,7 +3224,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L299">core/dispatcher.ts:299</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L341">core/dispatcher.ts:341</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3196,7 +3250,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L337">core/dispatcher.ts:337</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L384">core/dispatcher.ts:384</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3209,6 +3263,11 @@ img {
 							<p>This function will resume the execution of tasks if the dispatcher was stopped
 							and return the dispatcher back to an idle state.</p>
 							<p>This is important in order not to hang forever in case the dispatcher is stopped.</p>
+							<a href="#errors" id="errors" style="color: inherit; text-decoration: none;">
+								<h1>Errors</h1>
+							</a>
+							<p>This function will reject in case the task is not launched.
+							Make sure the dispatcher is initialized or is not shutdown in these cases.</p>
 						</div>
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
@@ -3235,7 +3294,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L312">core/dispatcher.ts:312</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L354">core/dispatcher.ts:354</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3260,7 +3319,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/14af0bf/glean/src/core/dispatcher.ts#L132">core/dispatcher.ts:132</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/c0095f9/glean/src/core/dispatcher.ts#L144">core/dispatcher.ts:144</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
