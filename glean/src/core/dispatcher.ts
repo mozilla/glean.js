@@ -19,6 +19,10 @@ export const enum DispatcherState {
   Processing,
   // The dispatcher is stopped, tasks queued will not be immediatelly processed.
   Stopped,
+  // The dispatcher is shutdown, attempting to queue tasks while in this state is a no-op.
+  //
+  // This state is irreversible.
+  Shutdown,
 }
 
 // The possible commands to be processed by the dispatcher.
@@ -31,6 +35,8 @@ const enum Commands {
   Stop,
   // The dispatcher should stop executing the queued tasks and clear the queue.
   Clear,
+  // The dispatcher will clear the queue and go into the Shutdown state.
+  Shutdown,
   // Exactly like a normal Task, but spawned for tests.
   TestTask,
 }
@@ -65,7 +71,7 @@ class Dispatcher {
   // This is `undefined` in case there is no ongoing execution of tasks.
   private currentJob?: Promise<void>;
 
-  constructor(readonly maxPreInitQueueSize = 100) {
+  constructor(readonly maxPreInitQueueSize = 100, readonly logTag = LOG_TAG) {
     this.queue = [];
     this.state = DispatcherState.Uninitialized;
   }
@@ -88,7 +94,7 @@ class Dispatcher {
     try {
       await task();
     } catch(e) {
-      log(LOG_TAG, ["Error executing task:", e], LoggingLevel.Error);
+      log(this.logTag, ["Error executing task:", e], LoggingLevel.Error);
     }
   }
 
@@ -102,6 +108,7 @@ class Dispatcher {
       case(Commands.Stop):
         this.state = DispatcherState.Stopped;
         return;
+      case(Commands.Shutdown):
       case(Commands.Clear):
         // Unblock test resolvers before clearing the queue.
         this.queue.forEach(c => {
@@ -111,7 +118,12 @@ class Dispatcher {
         });
 
         this.queue = [];
-        this.state = DispatcherState.Stopped;
+        if (nextCommand.command === Commands.Clear) {
+          this.state = DispatcherState.Stopped;
+        } else {
+          this.state = DispatcherState.Shutdown;
+        }
+
         return;
       case (Commands.TestTask):
         await this.executeTask(nextCommand.task);
@@ -149,7 +161,7 @@ class Dispatcher {
         })
         .catch(error => {
           log(
-            LOG_TAG,
+            this.logTag,
             [
               "IMPOSSIBLE: Something went wrong while the dispatcher was executing the tasks queue.",
               error
@@ -175,10 +187,19 @@ class Dispatcher {
    * @returns Wheter or not the task was queued.
    */
   private launchInternal(command: Command, priorityTask = false): boolean {
+    if (this.state === DispatcherState.Shutdown) {
+      log(
+        this.logTag,
+        "Attempted to enqueue a new task but the dispatcher is shutdown. Ignoring.",
+        LoggingLevel.Warn
+      );
+      return false;
+    }
+
     if (!priorityTask && this.state === DispatcherState.Uninitialized) {
       if (this.queue.length >= this.maxPreInitQueueSize) {
         log(
-          LOG_TAG,
+          this.logTag,
           "Unable to enqueue task, pre init queue is full.",
           LoggingLevel.Warn
         );
@@ -226,7 +247,7 @@ class Dispatcher {
   flushInit(task?: Task): void {
     if (this.state !== DispatcherState.Uninitialized) {
       log(
-        LOG_TAG,
+        this.logTag,
         "Attempted to initialize the Dispatcher, but it is already initialized. Ignoring.",
         LoggingLevel.Warn
       );
@@ -287,6 +308,27 @@ class Dispatcher {
   }
 
   /**
+   * Shutsdown the dispatcher.
+   *
+   * 1. Executes all tasks launched prior to this one.
+   * 2. Clears the queue of any tasks launched after this one.
+   * 3. Puts the dispatcher in the `Shutdown` state.
+   *
+   * # Note
+   *
+   * - This is a command like any other, if the dispatcher is uninitialized
+   *   it will get executed when the dispatcher is initialized.
+   * - If the dispatcher is stopped, it is resumed and all pending tasks are executed.
+   *
+   * @returns A promise which resolves once shutdown is complete.
+   */
+  shutdown(): Promise<void> {
+    this.launchInternal({ command: Commands.Shutdown });
+    this.resume();
+    return this.currentJob || Promise.resolve();
+  }
+
+  /**
    * Test-Only API**
    *
    * Returns a promise that resolves once the current task execution in finished.
@@ -329,6 +371,11 @@ class Dispatcher {
    * and return the dispatcher back to an idle state.
    *
    * This is important in order not to hang forever in case the dispatcher is stopped.
+   *
+   * # Errors
+   *
+   * This function will reject in case the task is not launched.
+   * Make sure the dispatcher is initialized or is not shutdown in these cases.
    *
    * @param task The task to launch.
    * @returns A promise which only resolves once the task is done being executed

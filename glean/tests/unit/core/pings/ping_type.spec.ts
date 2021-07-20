@@ -10,6 +10,7 @@ import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import Glean from "../../../../src/core/glean";
 import { Context } from "../../../../src/core/context";
+import { stopGleanUploader } from "../../../utils";
 
 const sandbox = sinon.createSandbox();
 
@@ -37,7 +38,7 @@ describe("PingType", function() {
 
   it("collects and stores ping on submit", async function () {
     // Disable ping uploading for it not to interfere with this tests.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    await stopGleanUploader();
 
     const ping = new PingType({
       name: "custom",
@@ -60,7 +61,7 @@ describe("PingType", function() {
 
   it("empty pings with send if empty flag are submitted", async function () {
     // Disable ping uploading for it not to interfere with this tests.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    await stopGleanUploader();
 
     const ping1 = new PingType({
       name: "ping1",
