@@ -77,7 +77,7 @@ class PingUploader implements PingsDatabaseObserver {
   private dispatcher: Dispatcher;
   // The object that concretely handles the ping transmission.
   private readonly uploader: Uploader;
-  // PlatfornInfo object containing OS information used to build ping request headers.
+  // PlatformInfo object containing OS information used to build ping request headers.
   private readonly platformInfo: PlatformInfo;
   // The server address we are sending pings to.
   private readonly serverEndpoint: string;
@@ -324,7 +324,7 @@ class PingUploader implements PingsDatabaseObserver {
   }
 
   /**
-   * Shutsdown internal dispatcher, after executing all previously enqueued ping requests.
+   * Shuts down internal dispatcher, after executing all previously enqueued ping requests.
    *
    * This is irreversible.
    *
@@ -343,7 +343,7 @@ class PingUploader implements PingsDatabaseObserver {
     // Create and initialize a new dispatcher so we don't need to wait
     // on the previous one finishing execution.
     //
-    // It will only finish execution of the current task, all other queues tasks are dropped.
+    // It will only finish execution of the current task, all other queued tasks are dropped.
     this.dispatcher = createAndInitializeDispatcher();
   }
 

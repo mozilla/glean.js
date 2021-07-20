@@ -92,7 +92,7 @@ function setSourceTags(value) {
 }
 
 /**
- * Finishes executing any ongoing tasks and shutsdown Glean.
+ * Finishes executing any ongoing tasks and shuts down Glean.
  *
  * This will attempt to send pending pings before resolving.
  *

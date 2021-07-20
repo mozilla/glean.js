@@ -415,7 +415,7 @@ class Glean {
 
   /**
    * Finishes executing all pending tasks
-   * and shutsdown both Glean's dispatcher and ping uploader.
+   * and shuts down both Glean's dispatcher and the ping uploader.
    *
    * # Important
    *
@@ -427,7 +427,7 @@ class Glean {
   static async shutdown(): Promise<void> {
     // Order here matters!
     //
-    // The main dispatcher needs to be shutdown first,
+    // The main dispatcher needs to be shut down first,
     // because some of its tasks may enqueue new tasks on the ping uploader dispatcher
     // and we want these uploading tasks to also be executed prior to complete shutdown.
     await Context.dispatcher.shutdown();

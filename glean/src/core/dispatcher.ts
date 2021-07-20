@@ -35,7 +35,7 @@ const enum Commands {
   Stop,
   // The dispatcher should stop executing the queued tasks and clear the queue.
   Clear,
-  // The dispatcher will clear the queue and go on Shutdown state.
+  // The dispatcher will clear the queue and go into the Shutdown state.
   Shutdown,
   // Exactly like a normal Task, but spawned for tests.
   TestTask,
@@ -312,13 +312,13 @@ class Dispatcher {
    *
    * 1. Executes all tasks launched prior to this one.
    * 2. Clears the queue of any tasks launched after this one.
-   * 3. Puts the dispatcher in a `Shutdown` stated.
+   * 3. Puts the dispatcher in the `Shutdown` state.
    *
    * # Note
    *
    * - This is a command like any other, if the dispatcher is uninitialized
    *   it will get executed when the dispatcher is initialized.
-   * - If the dispatcher is stopped it is resumed and all pending tasks are executed.
+   * - If the dispatcher is stopped, it is resumed and all pending tasks are executed.
    *
    * @returns A promise which resolves once shutdown is complete.
    */

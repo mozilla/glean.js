@@ -516,7 +516,7 @@ describe("Glean", function() {
     const postSpy = sandbox.spy(Glean.platform.uploader, "post");
 
     // `setUploadEnabled` is a task dispatched on the main dispatcher,
-    // inside this task an uploading task is dispatched to the ping uploader dispatcher.
+    // this task will dispatch an upload task to the upload dispatcher.
     //
     // We want to be sure the ping uploader dispatcher is not shutdown
     // before it can execute this final task.
