@@ -13,11 +13,12 @@ import CounterMetricType from "../../../src/core/metrics/types/counter";
 import PingType from "../../../src/core/pings/ping_type";
 import type { JSONObject } from "../../../src/core/utils";
 import { isObject } from "../../../src/core/utils";
-import WaitableUploader from "../../../tests/utils";
+import { stopGleanUploader, WaitableUploader } from "../../../tests/utils";
 import TestPlatform from "../../../src/platform/test";
 import Plugin from "../../../src/plugins";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
+import { DispatcherState } from "../../../src/core/dispatcher";
 
 class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor() {
@@ -277,23 +278,23 @@ describe("Glean", function() {
   });
 
   it("deletion request ping is sent when toggling upload status between runs", async function() {
-    const mockUploader = new WaitableUploader();
-    const pingBody = mockUploader.waitForPingSubmission("test");
-
     Glean.setUploadEnabled(true);
     await Context.dispatcher.testBlockOnQueue();
 
     // Can't use testResetGlean here because it clears all stores
     // and when there is no client_id at all stored, a deletion ping is also not sent.
     await Glean.testUninitialize();
+
+    const mockUploader = new WaitableUploader();
+    const pingBody = mockUploader.waitForPingSubmission("deletion-request");
     await Glean.testInitialize(
       testAppId,
       false,
       {
         httpClient: mockUploader,
-      });
+      }
+    );
 
-    // TODO: Make this nicer once Bug 1691033 is resolved.
     await pingBody;
   });
 
@@ -313,7 +314,7 @@ describe("Glean", function() {
     await Glean.testInitialize(testAppId, false);
     await Context.dispatcher.testBlockOnQueue();
     // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
-    await Glean["pingUploader"]["currentJob"];
+    await Glean["pingUploader"].testBlockOnPingsQueue();
 
     postSpy.resetHistory();
     assert.strictEqual(postSpy.callCount, 0);
@@ -431,11 +432,11 @@ describe("Glean", function() {
   //
   // Related to: https://github.com/mozilla-extensions/bergamot-browser-extension/issues/49
   it("verify that glean APIs are execute in a block when called inside an async function", async function() {
-    // Disable ping uploading for it not to interfere with this tests.
+    // Stop ping uploading for it not to interfere with this tests.
     //
     // This disables the uploading and deletion of pings from the pings database,
     // this allows us to query the database to check that our pings are as expected.
-    sandbox.stub(Glean["pingUploader"], "triggerUpload").callsFake(() => Promise.resolve());
+    await stopGleanUploader();
 
     const custom = new PingType({
       name: "custom",
@@ -503,5 +504,26 @@ describe("Glean", function() {
     Glean.setPlatform(MockPlatform);
 
     assert.strictEqual(TestPlatform.name, Glean.platform.name);
+  });
+
+  it("shutdown correctly shutsdown dispatcher and ping uploader", async function () {
+    await Glean.shutdown();
+    assert.strictEqual(Context.dispatcher["state"], DispatcherState.Shutdown);
+    assert.strictEqual(Glean["pingUploader"]["dispatcher"]["state"], DispatcherState.Shutdown);
+  });
+
+  it("shutdown allows all pending pings to be sent before shutting down uploader", async function() {
+    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+
+    // `setUploadEnabled` is a task dispatched on the main dispatcher,
+    // this task will dispatch an upload task to the upload dispatcher.
+    //
+    // We want to be sure the ping uploader dispatcher is not shutdown
+    // before it can execute this final task.
+    Glean.setUploadEnabled(false);
+    await Glean.shutdown();
+
+    assert.strictEqual(postSpy.callCount, 1);
+    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
   });
 });

@@ -1,8 +1,14 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.17.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.18.0...main)
 
 * [#534](https://github.com/mozilla/glean.js/pull/534): Expose `Uploader` base class through `@mozilla/glean/<platform>/uploader` entry point.
+
+# v0.18.0 (2021-07-20)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.17.0...v0.18.0)
+
+* [#542](https://github.com/mozilla/glean.js/pull/542): Implement `shutdown` API.
 
 # v0.17.0 (2021-07-16)
 

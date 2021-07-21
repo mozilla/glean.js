@@ -8,6 +8,7 @@ import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
 import { GLEAN_VERSION } from "../constants.js";
 import { Context } from "../context.js";
+import Dispatcher from "../dispatcher.js";
 import log, { LoggingLevel } from "../log.js";
 import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
 import type PingsDatabase from "../pings/database.js";
@@ -17,6 +18,17 @@ import type Uploader from "./uploader.js";
 import { UploadResultStatus } from "./uploader.js";
 
 const LOG_TAG = "core.Upload";
+
+/**
+ * Create and initialize a dispatcher for the PingUplaoder.
+ *
+ * @returns The created dispatcher instance.
+ */
+function createAndInitializeDispatcher(): Dispatcher {
+  const dispatcher = new Dispatcher(100, `${LOG_TAG}.Dispatcher`);
+  dispatcher.flushInit();
+  return dispatcher;
+}
 
 /**
  * Policies for ping storage, uploading and requests.
@@ -33,19 +45,10 @@ export class Policy {
 }
 
 interface QueuedPing extends PingInternalRepresentation {
-  identifier: string
-}
-
-/**
- * The possible status of the ping uploader.
- */
-const enum PingUploaderStatus {
-  // Not currently uploading pings.
-  Idle,
-  // Currently uploading pings.
-  Uploading,
-  // Currently processing a signal to stop uploading pings.
-  Cancelling,
+  // The UUID identifier for this ping.
+  readonly identifier: string,
+  // How may times there has been a failed upload attempt for this ping.
+  retries: number,
 }
 
 // Error to be thrown in case the final ping body is larger than MAX_PING_BODY_SIZE.
@@ -68,17 +71,15 @@ class PingBodyOverflowError extends Error {
  * we bail out before uploading all enqued pings.
  */
 class PingUploader implements PingsDatabaseObserver {
-  // A FIFO queue of pings.
-  private queue: QueuedPing[];
-  // The current status of the uploader.
-  private status: PingUploaderStatus;
-  // A promise that represents the current uploading job.
-  // This is `undefined` in case there is no current uploading job.
-  private currentJob?: Promise<void>;
+  // A list of pings currently being processed.
+  private processing: QueuedPing[];
+  // Local dispathcer instance to handle execution of ping requests.
+  private dispatcher: Dispatcher;
   // The object that concretely handles the ping transmission.
   private readonly uploader: Uploader;
-
+  // PlatformInfo object containing OS information used to build ping request headers.
   private readonly platformInfo: PlatformInfo;
+  // The server address we are sending pings to.
   private readonly serverEndpoint: string;
 
   constructor(
@@ -87,14 +88,16 @@ class PingUploader implements PingsDatabaseObserver {
     private readonly pingsDatabase: PingsDatabase,
     private readonly policy = new Policy
   ) {
-    this.queue = [];
-    this.status = PingUploaderStatus.Idle;
+    this.processing = [];
     // Initialize the ping uploader with either the platform defaults or a custom
     // provided uploader from the configuration object.
     this.uploader = config.httpClient ? config.httpClient : platform.uploader;
     this.platformInfo = platform.info;
     this.serverEndpoint = config.serverEndpoint;
     this.pingsDatabase = pingsDatabase;
+
+    // Initialize the dispatcher immediatelly.
+    this.dispatcher = createAndInitializeDispatcher();
   }
 
   /**
@@ -105,23 +108,34 @@ class PingUploader implements PingsDatabaseObserver {
    * @param ping The ping to enqueue.
    */
   private enqueuePing(ping: QueuedPing): void {
-    let isDuplicate = false;
-    for (const queuedPing of this.queue) {
+    for (const queuedPing of this.processing) {
       if (queuedPing.identifier === ping.identifier) {
-        isDuplicate = true;
+        return;
       }
     }
 
-    !isDuplicate && this.queue.push(ping);
-  }
+    // Add the ping to the list of pings being processsed.
+    this.processing.push(ping);
+    // Dispatch the uploading task.
+    this.dispatcher.launch(async (): Promise<void> => {
+      const status = await this.attemptPingUpload(ping);
+      const shouldRetry = await this.processPingUploadResponse(ping.identifier, status);
 
-  /**
-   * Gets and removes from the queue the next ping in line to be uploaded.
-   *
-   * @returns The next ping or `undefined` if no pings are enqueued.
-   */
-  private getNextPing(): QueuedPing | undefined {
-    return this.queue.shift();
+      if (shouldRetry) {
+        ping.retries++;
+        this.enqueuePing(ping);
+      }
+
+      if (ping.retries >= this.policy.maxRecoverableFailures) {
+        log(
+          LOG_TAG,
+          `Reached maximum recoverable failures for ping "${JSON.stringify(ping.name)}". You are done.`,
+          LoggingLevel.Info
+        );
+        this.dispatcher.stop();
+        ping.retries = 0;
+      }
+    });
   }
 
   /**
@@ -215,6 +229,15 @@ class PingUploader implements PingsDatabaseObserver {
   }
 
   /**
+   * Removes a ping from the processing list.
+   *
+   * @param identifier The identifier of the ping to be removed.
+   */
+  private concludePingProcessing(identifier: string): void {
+    this.processing = this.processing.filter(ping => ping.identifier !== identifier);
+  }
+
+  /**
    * Processes the response from an attempt to upload a ping.
    *
    * Based on the HTTP status of said response,
@@ -251,10 +274,13 @@ class PingUploader implements PingsDatabaseObserver {
    * @returns Whether or not to retry the upload attempt.
    */
   private async processPingUploadResponse(identifier: string, response: UploadResult): Promise<boolean> {
+    this.concludePingProcessing(identifier);
+
     const { status, result } = response;
     if (status && status >= 200 && status < 300) {
       log(LOG_TAG, `Ping ${identifier} succesfully sent ${status}.`, LoggingLevel.Info);
       await this.pingsDatabase.deletePing(identifier);
+      this.processing;
       return false;
     }
 
@@ -279,84 +305,6 @@ class PingUploader implements PingsDatabaseObserver {
     return true;
   }
 
-  private async triggerUploadInternal(): Promise<void> {
-    let retries = 0;
-    let nextPing = this.getNextPing();
-    while(nextPing && this.status !== PingUploaderStatus.Cancelling) {
-      const status = await this.attemptPingUpload(nextPing);
-      const shouldRetry = await this.processPingUploadResponse(nextPing.identifier, status);
-      if (shouldRetry) {
-        retries++;
-        this.enqueuePing(nextPing);
-      }
-
-      if (retries >= this.policy.maxRecoverableFailures) {
-        log(
-          LOG_TAG,
-          "Reached maximum recoverable failures for the current uploading window. You are done.",
-          LoggingLevel.Info
-        );
-        return;
-      }
-
-      nextPing = this.getNextPing();
-    }
-  }
-
-  /**
-   * Triggers the uploading of all enqueued pings.
-   *
-   * If upload is already ongoing, this is a no-op.
-   *
-   * # Notes
-   *
-   * 1. If three retriable failures happen in a row the uploader will stop retrying.
-   * 2. Uploading only works when Glean has been initialized.
-   *    Otherwise it will reach maximum retriable failures and bail out.
-   */
-  async triggerUpload(): Promise<void> {
-    if (this.status !== PingUploaderStatus.Idle) {
-      return;
-    }
-
-    this.status = PingUploaderStatus.Uploading;
-    try {
-      this.currentJob = this.triggerUploadInternal();
-      await this.currentJob;
-    } finally {
-      this.status = PingUploaderStatus.Idle;
-    }
-  }
-
-  /**
-   * Cancels ongoing upload.
-   *
-   * Does nothing in case another cancel signal has already been issued
-   * or if the uploader is current idle.
-   *
-   * @returns A promise that resolves once the current uploading job is succesfully cancelled.
-   */
-  async cancelUpload(): Promise<void> {
-    if (this.status === PingUploaderStatus.Uploading) {
-      this.status = PingUploaderStatus.Cancelling;
-      await this.currentJob;
-    }
-
-    return;
-  }
-
-  /**
-   * Clear the pending pings queue.
-   *
-   * Will cancel any ongoing work before clearing.
-   *
-   * @returns A promise that resolves once we are done clearing.
-   */
-  async clearPendingPingsQueue(): Promise<void> {
-    await this.cancelUpload();
-    this.queue = [];
-  }
-
   /**
    * Enqueues a new ping and trigger uploading of enqueued pings.
    *
@@ -366,8 +314,43 @@ class PingUploader implements PingsDatabaseObserver {
    * @param ping An object containing the newly recorded ping path, payload and optionally headers.
    */
   update(identifier: string, ping: PingInternalRepresentation): void {
-    this.enqueuePing({ identifier, ...ping });
-    void this.triggerUpload();
+    this.dispatcher.resume();
+    this.enqueuePing({ identifier, retries: 0, ...ping });
+  }
+
+  /**
+   * Shuts down internal dispatcher, after executing all previously enqueued ping requests.
+   *
+   * This is irreversible.
+   *
+   * @returns A promise that resolves once shutdown is complete.
+   */
+  shutdown(): Promise<void> {
+    return this.dispatcher.shutdown();
+  }
+
+  /**
+   * Clears the pending pings queue.
+   */
+  clearPendingPingsQueue(): void {
+    this.dispatcher.clear();
+    this.processing = [];
+    // Create and initialize a new dispatcher so we don't need to wait
+    // on the previous one finishing execution.
+    //
+    // It will only finish execution of the current task, all other queued tasks are dropped.
+    this.dispatcher = createAndInitializeDispatcher();
+  }
+
+  /**
+   * Test-Only API**
+   *
+   * Returns a promise that resolves once the current queue execution in finished.
+   *
+   * @returns The promise.
+   */
+  async testBlockOnPingsQueue(): Promise<void> {
+    return this.dispatcher.testBlockOnQueue();
   }
 }
 

@@ -5,15 +5,13 @@
 import https from "https";
 import { validate } from "jsonschema";
 
-import Uploader from "../../../src/core/upload/uploader";
 import type { JSONObject } from "../../../src/core/utils";
 import Glean from "../../../src/core/glean";
-import { UploadResultStatus, UploadResult } from "../../../src/core/upload/uploader";
+import { WaitableUploader } from "../../utils";
 
 // Generated files.
 import * as metrics from "./generated/forTesting";
 import * as pings from "./generated/pings";
-import { unzipPingPayload } from "../../utils";
 
 const GLEAN_SCHEMA_URL = "https://raw.githubusercontent.com/mozilla-services/mozilla-pipeline-schemas/main/schemas/glean/glean/glean.1.schema.json";
 
@@ -40,42 +38,6 @@ function fetchSchema(): Promise<JSONObject> {
   });
 }
 
-/**
- * A Glean mock HTTP which allows one to wait for a specific ping submission.
- */
-class WaitableHttpClient extends Uploader {
-  private waitingFor?: string;
-  private waitResolver?: (pingBody: JSONObject) => void;
-
-  /**
-   * Returns a promise that resolves once a ping is submitted or times out after a 2s wait.
-   *
-   * @param name The name of the ping to wait for.
-   * @returns A promise that resolves once a ping is submitted or times out after a 2s wait.
-   */
-  waitForPingSubmission(name: string): Promise<JSONObject> {
-    this.waitingFor = name;
-    return new Promise<JSONObject>((resolve, reject) => {
-      this.waitResolver = (pingBody: JSONObject) => {
-        this.waitingFor = undefined;
-        // Uncomment for debugging the ping payload.
-        // console.log(JSON.stringify(pingBody, null, 2));
-        resolve(pingBody);
-      };
-
-      setTimeout(() => reject(), 2000);
-    });
-  }
-
-  post(url: string, body: string): Promise<UploadResult> {
-    if (this.waitingFor && url.includes(this.waitingFor)) {
-      this.waitResolver?.(unzipPingPayload(body));
-    }
-
-    return Promise.resolve(new UploadResult(UploadResultStatus.Success, 200));
-  }
-}
-
 describe("schema", function() {
   const testAppId = `gleanjs.test.${this.title}`;
   let pingSchema: JSONObject | null;
@@ -86,7 +48,7 @@ describe("schema", function() {
   });
 
   it("validate generated ping is valid against glean schema", async function () {
-    const httpClient = new WaitableHttpClient();
+    const httpClient = new WaitableUploader();
     await Glean.testResetGlean(testAppId, true, { httpClient });
 
     // Record something for each metric type.
@@ -121,7 +83,7 @@ describe("schema", function() {
   });
 
   it("validate that the deletion-request is valid against glean schema", async function () {
-    const httpClient = new WaitableHttpClient();
+    const httpClient = new WaitableUploader();
     await Glean.testResetGlean(testAppId, true, { httpClient });
 
     const deletionPingBody = httpClient.waitForPingSubmission("deletion-request");
