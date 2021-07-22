@@ -75,7 +75,7 @@ describe("PingUploader", function() {
 
   it("clearing does not clear deletion-request ping job", async function () {
     const httpClient = new WaitableUploader();
-    const postSpy = sandbox.spy(httpClient, "post")
+    const postSpy = sandbox.spy(httpClient, "post");
     await Glean.testResetGlean(testAppId, true, { httpClient });
 
 

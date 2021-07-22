@@ -2,7 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.17.0...main)
 
-* [#542](https://github.com/mozilla/glean.js/pull/542): Implement `shutdown` API.
+* [#542](https://github.com/mozilla/glean.js/pull/542), [#552](https://github.com/mozilla/glean.js/pull/552): Implement `shutdown` API.
 
 # v0.17.0 (2021-07-16)
 

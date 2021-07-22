@@ -129,9 +129,8 @@ class PingUploader implements PingsDatabaseObserver {
 
     // If the ping is a deletion-request ping, we want to enqueue it as a persistent task,
     // so that clearing the queue does not clear it.
-    let launchFn = isDeletionRequest(ping)
-      ? this.dispatcher.launchPersistent
-        : this.dispatcher.launch;
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const launchFn = isDeletionRequest(ping) ? this.dispatcher.launchPersistent : this.dispatcher.launch;
 
     // Dispatch the uploading task.
     launchFn.bind(this.dispatcher)(async (): Promise<void> => {
@@ -238,7 +237,14 @@ class PingUploader implements PingsDatabaseObserver {
         finalPing.headers
       );
     } catch(e) {
-      log(LOG_TAG, ["Error trying to build ping request:", e.message], LoggingLevel.Warn);
+      log(
+        LOG_TAG,
+        [
+          "Error trying to build ping request:",
+          (e as Error).message
+        ],
+        LoggingLevel.Warn
+      );
       // An unrecoverable failure will make sure the offending ping is removed from the queue and
       // deleted from the database, which is what we want here.
       return {
