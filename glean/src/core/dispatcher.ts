@@ -27,10 +27,19 @@ export const enum DispatcherState {
 
 // The possible commands to be processed by the dispatcher.
 const enum Commands {
-  // The dispatcher must enqueue a new task.
+  // The dispatcher will enqueue a new task.
   //
   // This command is always followed by a concrete task for the dispatcher to execute.
   Task,
+  // Same as the `Task` command,
+  // but the task enqueued by this command is not cleared by the `Clear` command.
+  //
+  // # Note
+  //
+  // `Shutdown` will still clear these tasks.
+  //
+  // Unless unavoidable, prefer using the normal `Task`.
+  PersistentTask,
   // The dispatcher should stop executing the queued tasks.
   Stop,
   // The dispatcher should stop executing the queued tasks and clear the queue.
@@ -47,13 +56,13 @@ type Task = () => Promise<void>;
 // An executable command.
 type Command = {
   task: Task,
-  command: Commands.Task,
+  command: Commands.Task | Commands.PersistentTask,
 } | {
   resolver: (value: void | PromiseLike<void>) => void,
   task: Task,
   command: Commands.TestTask,
 } | {
-  command: Exclude<Commands, Commands.Task | Commands.TestTask>,
+  command: Exclude<Commands, Commands.Task | Commands.TestTask | Commands.PersistentTask>,
 };
 
 /**
@@ -99,6 +108,19 @@ class Dispatcher {
   }
 
   /**
+   * Resolve all test resolvers.
+   *
+   * Used before clearing the queue in on a `Shutdown` or `Clear` command.
+   */
+  private unblockTestResolvers(): void {
+    this.queue.forEach(c => {
+      if (c.command === Commands.TestTask) {
+        c.resolver();
+      }
+    });
+  }
+
+  /**
    * Executes all the commands in the queue, from oldest to newest.
    */
   private async execute(): Promise<void> {
@@ -109,27 +131,21 @@ class Dispatcher {
         this.state = DispatcherState.Stopped;
         return;
       case(Commands.Shutdown):
-      case(Commands.Clear):
-        // Unblock test resolvers before clearing the queue.
-        this.queue.forEach(c => {
-          if (c.command === Commands.TestTask) {
-            c.resolver();
-          }
-        });
-
+        this.unblockTestResolvers();
         this.queue = [];
-        if (nextCommand.command === Commands.Clear) {
-          this.state = DispatcherState.Stopped;
-        } else {
-          this.state = DispatcherState.Shutdown;
-        }
-
+        this.state = DispatcherState.Shutdown;
+        return;
+      case(Commands.Clear):
+        this.unblockTestResolvers();
+        this.queue = this.queue.filter(c => c.command === Commands.PersistentTask);
+        this.state = DispatcherState.Stopped;
         return;
       case (Commands.TestTask):
         await this.executeTask(nextCommand.task);
         nextCommand.resolver();
         nextCommand = this.getNextCommand();
         continue;
+      case(Commands.PersistentTask):
       case(Commands.Task):
         await this.executeTask(nextCommand.task);
         nextCommand = this.getNextCommand();
@@ -238,6 +254,19 @@ class Dispatcher {
   }
 
   /**
+   * Works exactly like {@link launch},
+   * but enqueues a persistent task which is not cleared by the Clear command.
+   *
+   * @param task The task to enqueue.
+   */
+  launchPersistent(task: Task): void {
+    this.launchInternal({
+      task,
+      command: Commands.PersistentTask
+    });
+  }
+
+  /**
    * Flushes the tasks enqueued while the dispatcher was uninitialized.
    *
    * This is a no-op in case the dispatcher is not in an uninitialized state.
@@ -268,7 +297,7 @@ class Dispatcher {
   /**
    * Enqueues a Clear command at the front of the queue and triggers execution.
    *
-   * The Clear command will remove all other tasks from the queue
+   * The Clear command will remove all other tasks (save from persistent tasks) from the queue
    * and put the dispatcher in a Stopped state after the command is executed.
    * In order to re-start the dispatcher, call the `resume` method.
    *
@@ -311,7 +340,7 @@ class Dispatcher {
    * Shutsdown the dispatcher.
    *
    * 1. Executes all tasks launched prior to this one.
-   * 2. Clears the queue of any tasks launched after this one.
+   * 2. Clears the queue of any tasks launched after this one (even persistent tasks).
    * 3. Puts the dispatcher in the `Shutdown` state.
    *
    * # Note
@@ -356,9 +385,10 @@ class Dispatcher {
       return;
     }
 
+    // Clear queue.
     this.clear();
-    // We need to wait for the clear command to be executed.
-    await this.testBlockOnQueue();
+    // Wait for the clear command and any persistent tasks that may still be in the queue.
+    await this.shutdown();
     this.state = DispatcherState.Uninitialized;
   }
 

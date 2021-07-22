@@ -216,6 +216,48 @@ describe("Dispatcher", function() {
     assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
   });
 
+  it("clear does not clear persistent tasks", async function() {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+    dispatcher.stop();
+
+    // Launch a bunch of ordinary tasks.
+    const stub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 10; i++) {
+      dispatcher.launch(stub);
+    }
+
+    // Launch one persistent task.
+    const persistentStub = sandbox.stub().callsFake(sampleTask);
+    dispatcher.launchPersistent(persistentStub);
+
+    assert.strictEqual(stub.callCount, 0);
+    assert.strictEqual(dispatcher["queue"].length, 11);
+
+    // The clear command here, will resume execution of tasks and execute
+    // only the Clear command, which is enqueued at the front of the line.
+    //
+    // The Clear command also return the dispatcher back to a Stopped state,
+    // we will need to resume execution later to execute the persistent task.
+    dispatcher.clear();
+    await dispatcher.testBlockOnQueue();
+
+    // Check the above assumptiosn are correct.
+    assert.strictEqual(stub.callCount, 0);
+    assert.strictEqual(persistentStub.callCount, 0);
+    assert.strictEqual(dispatcher["queue"].length, 1);
+    assert.strictEqual(dispatcher["state"], DispatcherState.Stopped);
+
+    // Resume execution, here we should still have the persistent task to execute.
+    dispatcher.resume();
+    await dispatcher.testBlockOnQueue();
+
+    // Check that the persistent task was executed.
+    assert.strictEqual(persistentStub.callCount, 1);
+    assert.strictEqual(dispatcher["queue"].length, 0);
+    assert.strictEqual(dispatcher["state"], DispatcherState.Idle);
+  });
+
   it("attempting to clear from inside a launched task finishes the current task before clearing", async function () {
     dispatcher = new Dispatcher();
     dispatcher.flushInit();
@@ -414,5 +456,33 @@ describe("Dispatcher", function() {
     // After shutdown all previosu tasks are executed.
     await dispatcher.shutdown();
     assert.strictEqual(executionCounter, 10);
+  });
+
+  it("persistent or otherwise, all tasks launched after shutdown are cleared", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    const preShutdownStub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 5; i++) {
+      dispatcher.launch(preShutdownStub);
+      dispatcher.launchPersistent(preShutdownStub);
+    }
+
+    // Don't await on shutdown just yet, let's enqueued some tasks after we call it.
+    const shutdownPromise = dispatcher.shutdown();
+
+    // Launch a bunch of persistent tasks after shutdown
+    const postShutdownStub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 5; i++) {
+      dispatcher.launch(postShutdownStub);
+      dispatcher.launchPersistent(postShutdownStub);
+    }
+
+    // Now wait for shutdown.
+    await shutdownPromise;
+
+    // Check that only preShutdown tasks were executed.
+    assert.strictEqual(preShutdownStub.callCount, 10);
+    assert.strictEqual(postShutdownStub.callCount, 0);
   });
 });
