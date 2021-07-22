@@ -277,6 +277,28 @@ describe("Glean", function() {
     assert.strictEqual(postSpy.callCount, 0);
   });
 
+  it("deletion request is sent when toggling upload from on to off and the pings queue is full", async function() {
+    const httpClient = new WaitableUploader();
+    await Glean.testResetGlean(testAppId, true, { httpClient });
+
+    // Fill up the pending pings queue.
+    const custom = new PingType({
+      name: "custom",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+    for (let i = 0; i < 10; i++) {
+      custom.submit();
+    }
+
+    const waitForDeletionRequestPing = httpClient.waitForPingSubmission(DELETION_REQUEST_PING_NAME);
+    Glean.setUploadEnabled(false);
+    await Context.dispatcher.testBlockOnQueue();
+
+    // This throws in case the ping is not sent.
+    await waitForDeletionRequestPing;
+  });
+
   it("deletion request ping is sent when toggling upload status between runs", async function() {
     Glean.setUploadEnabled(true);
     await Context.dispatcher.testBlockOnQueue();
