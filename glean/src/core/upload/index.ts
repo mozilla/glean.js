@@ -6,7 +6,7 @@ import { gzipSync, strToU8 } from "fflate";
 
 import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
-import { GLEAN_VERSION } from "../constants.js";
+import { DELETION_REQUEST_PING_NAME, GLEAN_VERSION } from "../constants.js";
 import { Context } from "../context.js";
 import Dispatcher from "../dispatcher.js";
 import log, { LoggingLevel } from "../log.js";
@@ -49,6 +49,16 @@ interface QueuedPing extends PingInternalRepresentation {
   readonly identifier: string,
   // How may times there has been a failed upload attempt for this ping.
   retries: number,
+}
+
+/**
+ * Whether or not a given queued ping is a deletion-request ping.
+ *
+ * @param ping The ping to verify.
+ * @returns Whether or not the ping is a deletion-request ping.
+ */
+function isDeletionRequest(ping: QueuedPing): boolean {
+  return ping.path.split("/")[3] === DELETION_REQUEST_PING_NAME;
 }
 
 // Error to be thrown in case the final ping body is larger than MAX_PING_BODY_SIZE.
@@ -116,8 +126,15 @@ class PingUploader implements PingsDatabaseObserver {
 
     // Add the ping to the list of pings being processsed.
     this.processing.push(ping);
+
+    // If the ping is a deletion-request ping, we want to enqueue it as a persistent task,
+    // so that clearing the queue does not clear it.
+    let launchFn = isDeletionRequest(ping)
+      ? this.dispatcher.launchPersistent
+        : this.dispatcher.launch;
+
     // Dispatch the uploading task.
-    this.dispatcher.launch(async (): Promise<void> => {
+    launchFn.bind(this.dispatcher)(async (): Promise<void> => {
       const status = await this.attemptPingUpload(ping);
       const shouldRetry = await this.processPingUploadResponse(ping.identifier, status);
 
@@ -221,7 +238,7 @@ class PingUploader implements PingsDatabaseObserver {
         finalPing.headers
       );
     } catch(e) {
-      log(LOG_TAG, ["Error trying to build ping request:", e], LoggingLevel.Warn);
+      log(LOG_TAG, ["Error trying to build ping request:", e.message], LoggingLevel.Warn);
       // An unrecoverable failure will make sure the offending ping is removed from the queue and
       // deleted from the database, which is what we want here.
       return {
@@ -321,9 +338,8 @@ class PingUploader implements PingsDatabaseObserver {
   }
 
   /**
-   * Shuts down internal dispatcher, after executing all previously enqueued ping requests.
-   *
-   * This is irreversible.
+   * Shuts down internal dispatcher,
+   * after executing all previously enqueued ping requests.
    *
    * @returns A promise that resolves once shutdown is complete.
    */
@@ -333,14 +349,25 @@ class PingUploader implements PingsDatabaseObserver {
 
   /**
    * Clears the pending pings queue.
+   *
+   * # Important
+   *
+   * This will _drop_ pending pings still enqueued.
+   * Only the `deletion-request` ping will still be processed.
    */
-  clearPendingPingsQueue(): void {
+  async clearPendingPingsQueue(): Promise<void> {
+    // Clears all tasks.
     this.dispatcher.clear();
-    this.processing = [];
-    // Create and initialize a new dispatcher so we don't need to wait
-    // on the previous one finishing execution.
+    // Wait for remaining jobs and shutdown.
     //
-    // It will only finish execution of the current task, all other queued tasks are dropped.
+    // The only jobs that may be left after clearing
+    // are `deletion-request` uploads.
+    await this.dispatcher.shutdown();
+    // At this poit we are sure the dispatcher queue is also empty,
+    // so we can empty the processing queue.
+    this.processing = [];
+
+    // Create and initialize a new dispatcher, since the `shutdown` state is irreversible.
     this.dispatcher = createAndInitializeDispatcher();
   }
 

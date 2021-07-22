@@ -114,8 +114,10 @@ class Glean {
    * This function is only supposed to be called when telemetry is disabled.
    */
   private static async clearMetrics(): Promise<void> {
-    // Stop ongoing upload jobs and clear pending pings queue.
-    Glean.pingUploader.clearPendingPingsQueue();
+    // Clear enqueued upload jobs and clear pending pings queue.
+    //
+    // The only job that will still be sent is the deletion-request ping.
+    await Glean.pingUploader.clearPendingPingsQueue();
 
     // There is only one metric that we want to survive after clearing all
     // metrics: first_run_date. Here, we store its value
@@ -216,7 +218,11 @@ class Glean {
     Context.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
     Context.errorManager = new ErrorManager();
 
-    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Context.pingsDatabase);
+    Glean.instance._pingUploader = new PingUploader(
+      correctConfig,
+      Glean.platform,
+      Context.pingsDatabase
+    );
 
     Context.pingsDatabase.attachObserver(Glean.pingUploader);
 
@@ -504,17 +510,14 @@ class Glean {
     // Get back to an uninitialized state.
     await Context.testUninitialize();
 
+    // Shutdown the current uploader.
+    //
+    // This is fine because a new uploader is created on initialize.
+    // It will also guarantee all pings to be sent before uninitializing.
+    await Glean.pingUploader?.shutdown();
+
     // Deregister all plugins
     testResetEvents();
-
-    // Await ongoing jobs and clear pending pings queue.
-    if (Glean.pingUploader) {
-      await Glean.pingUploader.testBlockOnPingsQueue();
-
-      // The first time tests run, before Glean is initialized, we are
-      // not guaranteed to have an uploader. Account for this.
-      Glean.pingUploader.clearPendingPingsQueue();
-    }
   }
 
   /**
