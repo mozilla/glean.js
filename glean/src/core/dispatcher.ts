@@ -47,7 +47,7 @@ const enum Commands {
   // The dispatcher will clear the queue and go into the Shutdown state.
   Shutdown,
   // Exactly like a normal Task, but spawned for tests.
-  TestTask,
+  TestTask = "TestTask",
 }
 
 // A task the dispatcher knows how to execute.
@@ -137,9 +137,11 @@ class Dispatcher {
         return;
       case(Commands.Clear):
         this.unblockTestResolvers();
-        this.queue = this.queue.filter(c => c.command === Commands.PersistentTask);
-        this.state = DispatcherState.Stopped;
-        return;
+        this.queue = this.queue.filter(c =>
+          [Commands.PersistentTask, Commands.Shutdown].includes(c.command)
+        );
+        nextCommand = this.getNextCommand();
+        continue;
       case (Commands.TestTask):
         await this.executeTask(nextCommand.task);
         nextCommand.resolver();
@@ -297,9 +299,8 @@ class Dispatcher {
   /**
    * Enqueues a Clear command at the front of the queue and triggers execution.
    *
-   * The Clear command will remove all other tasks (save from persistent tasks) from the queue
-   * and put the dispatcher in a Stopped state after the command is executed.
-   * In order to re-start the dispatcher, call the `resume` method.
+   * The Clear command will remove all other tasks
+   * except for persistent tasks or shutdown tasks.
    *
    * # Note
    *
