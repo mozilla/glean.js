@@ -91,7 +91,7 @@ export class WaitableUploader extends Uploader {
       this.waitResolver = (pingBody?: JSONObject) => {
         this.reset();
         // Uncomment for debugging the ping payload.
-        // console.log(JSON.stringify(pingBody, null, 2));
+        console.log(JSON.stringify(pingBody, null, 2));
         resolve(pingBody as JSONObject);
       };
 
@@ -99,7 +99,12 @@ export class WaitableUploader extends Uploader {
     });
   }
 
-  post(url: string, body: string): Promise<UploadResult> {
+  async post(url: string, body: string): Promise<UploadResult> {
+    // Make this a tiny bit slow to mimic reality a bit better.
+    await new Promise<void>(resolve => {
+      setTimeout(() => resolve(), Math.random() * 10);
+    });
+
     const containsPath = this.waitingForPath && url.includes(this.waitingForPath);
     const containsName = this.waitingForName && url.includes(this.waitingForName);
 

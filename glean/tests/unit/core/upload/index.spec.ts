@@ -14,6 +14,7 @@ import { collectAndStorePing } from "../../../../src/core/pings/maker";
 import PingUploader, { Policy } from "../../../../src/core/upload";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 import { CounterUploader, WaitableUploader } from "../../../utils";
+import { DELETION_REQUEST_PING_NAME } from "../../../../src/core/constants";
 
 const sandbox = sinon.createSandbox();
 
@@ -21,11 +22,12 @@ const sandbox = sinon.createSandbox();
  * Fills the pings database with dummmy pings.
  *
  * @param numPings number of pings we want to add to the database.
+ * @param pingName the name of the ping to fill the database with, defaults to "ping".
  * @returns The array of identifiers of the pings added to the database.
  */
-async function fillUpPingsDatabase(numPings: number): Promise<string[]> {
+async function fillUpPingsDatabase(numPings: number, pingName = "ping"): Promise<string[]> {
   const ping = new PingType({
-    name: "ping",
+    name: pingName,
     includeClientId: true,
     sendIfEmpty: true,
   });
@@ -64,12 +66,31 @@ describe("PingUploader", function() {
     await Glean.testResetGlean(testAppId, true, { httpClient });
 
     await fillUpPingsDatabase(10);
-    Glean["pingUploader"].clearPendingPingsQueue();
-    await Glean["pingUploader"].testBlockOnPingsQueue();
+    await Glean["pingUploader"].clearPendingPingsQueue();
 
     // There is really no way to know how many pings Glean will be able to upload
     // before it is done clearing. So we just check that post was called less than 10 times.
     assert.ok(httpClient.count < 10);
+  });
+
+  it("clearing does not clear deletion-request ping job", async function () {
+    const httpClient = new WaitableUploader();
+    const postSpy = sandbox.spy(httpClient, "post");
+    await Glean.testResetGlean(testAppId, true, { httpClient });
+
+
+    await fillUpPingsDatabase(10);
+    await fillUpPingsDatabase(1, DELETION_REQUEST_PING_NAME);
+
+    const waitForDeletionRequestPing = httpClient.waitForPingSubmission(DELETION_REQUEST_PING_NAME);
+    await Glean["pingUploader"].clearPendingPingsQueue();
+
+    // This throws in case the deletion-request ping is not sent.
+    await waitForDeletionRequestPing;
+
+    // Check that even though the deletion-request ping was sent for sure,
+    // the previously enqueued pings were not all sent.
+    assert.ok(postSpy.callCount < 11);
   });
 
   it("shutdown finishes executing all requests before stopping", async function () {
