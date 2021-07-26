@@ -13,7 +13,7 @@ import log, { LoggingLevel } from "../log.js";
 import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
 import type PingsDatabase from "../pings/database.js";
 import type PlatformInfo from "../platform_info.js";
-import type { UploadResult } from "./uploader.js";
+import { UploadResult } from "./uploader.js";
 import type Uploader from "./uploader.js";
 import { UploadResultStatus } from "./uploader.js";
 
@@ -223,7 +223,7 @@ class PingUploader implements PingsDatabaseObserver {
         "Attempted to upload a ping, but Glean is not initialized yet. Ignoring.",
         LoggingLevel.Warn
       );
-      return { result: UploadResultStatus.RecoverableFailure };
+      return new UploadResult(UploadResultStatus.RecoverableFailure);
     }
 
     try {
@@ -247,9 +247,7 @@ class PingUploader implements PingsDatabaseObserver {
       );
       // An unrecoverable failure will make sure the offending ping is removed from the queue and
       // deleted from the database, which is what we want here.
-      return {
-        result: UploadResultStatus.UnrecoverableFailure
-      };
+      return new UploadResult(UploadResultStatus.RecoverableFailure);
     }
   }
 

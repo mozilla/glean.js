@@ -9,7 +9,8 @@
     "./webext": "./dist/webext/index/webext.js",
     "./webext/private/metrics/*": "./dist/webext/core/metrics/types/*.js",
     "./webext/private/ping": "./dist/webext/core/pings/ping_type.js",
-    "./webext/plugins/*": "./dist/webext/plugins/*.js"
+    "./webext/plugins/*": "./dist/webext/plugins/*.js",
+    "./webext/uploader": "./dist/webext/core/upload/uploader.js"
   },
   "typesVersions": {
     "*": {
@@ -24,6 +25,9 @@
       ],
       "webext/plugins/*": [
         "./dist/webext/types/plugins/*"
+      ],
+      "webext/uploader": [
+        "./dist/webext/types/core/upload/uploader.d.ts"
       ]
     }
   },

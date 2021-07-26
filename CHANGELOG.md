@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.18.1...main)
 
+* [#534](https://github.com/mozilla/glean.js/pull/534): Expose `Uploader` base class through `@mozilla/glean/<platform>/uploader` entry point.
+
 # v0.18.1 (2021-07-22)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.18.0...v0.18.1)

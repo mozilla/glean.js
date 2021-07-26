@@ -6,8 +6,8 @@ import { gunzipSync } from "fflate";
 
 import type { JSONObject } from "../src/core/utils";
 import { isString } from "../src/core/utils";
-import type { Uploader, UploadResult } from "../src/core/upload/uploader";
-import { UploadResultStatus } from "../src/core/upload/uploader";
+import Uploader from "../src/core/upload/uploader";
+import { UploadResultStatus, UploadResult } from "../src/core/upload/uploader";
 import Glean from "../src/core/glean";
 
 /**
@@ -38,7 +38,7 @@ export async function stopGleanUploader(): Promise<void> {
 /**
  * A Glean mock HTTP which allows one to wait for a specific ping submission.
  */
-export class WaitableUploader implements Uploader {
+export class WaitableUploader extends Uploader {
   private waitingForName?: string;
   private waitingForPath?: string;
   private waitingForCount?: number;
@@ -119,17 +119,14 @@ export class WaitableUploader implements Uploader {
       }
     }
 
-    return {
-      result: UploadResultStatus.Success,
-      status: 200
-    };
+    return Promise.resolve(new UploadResult(UploadResultStatus.Success, 200));
   }
 }
 
 /**
  * Uploader implementation that counts how many times `post` was called.
  */
-export class CounterUploader implements Uploader {
+export class CounterUploader extends Uploader {
   public count = 0;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async post(_url: string, _body: string): Promise<UploadResult> {
