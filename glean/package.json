@@ -76,7 +76,7 @@
   "homepage": "https://github.com/mozilla/glean.js#readme",
   "devDependencies": {
     "@types/assert": "^1.5.4",
-    "@types/mocha": "^8.2.0",
+    "@types/mocha": "^9.0.0",
     "@types/node": "^16.0.0",
     "@types/selenium-webdriver": "^4.0.14",
     "@types/sinon": "^10.0.0",
