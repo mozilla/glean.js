@@ -268,9 +268,10 @@ describe("EventsDatabase", function() {
     ));
     // We expect only one event, execution counter 1.
     const rawRecordedEvents1 = (await db["getAndValidatePingData"]("aPing"));
+    assert.strictEqual(rawRecordedEvents1.length, 1);
     assert.strictEqual(rawRecordedEvents1[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
 
-    // Fake restart Glean and recorde a new event.
+    // Fake restart Glean and record a new event.
     const restartedDb = new EventsDatabase(Glean.platform.Storage);
     await restartedDb.initialize();
     await db.record(metric, new RecordedEvent(
@@ -279,15 +280,19 @@ describe("EventsDatabase", function() {
       100,
     ));
 
-    // We expect two events here, one execution counter 1, the other 2.
+    // We expect two more events here,
+    // the first event is the one we recorded before restart, so it's execution counter is 1,
+    // the next two events are this run's restart event + the event we just recorded and both are execution counter 2.
     const rawRecordedEvents2 = (await db["getAndValidatePingData"]("aPing"))
       .sort((a, b) => {
         const executionCounterA = parseInt(a.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || "0");
         const executionCounterB = parseInt(b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || "0");
         return executionCounterA - executionCounterB;
       });
+    assert.strictEqual(rawRecordedEvents2.length, 3);
     assert.strictEqual(rawRecordedEvents2[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
     assert.strictEqual(rawRecordedEvents2[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "2");
+    assert.strictEqual(rawRecordedEvents2[2].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "2");
 
     ping.submit();
     // Sanity check that the execution counter was cleared.
@@ -301,6 +306,7 @@ describe("EventsDatabase", function() {
 
     // We expect only one event, the other have been cleared, execution counter 1.
     const rawRecordedEvents3 = (await db["getAndValidatePingData"]("aPing"));
+    assert.strictEqual(rawRecordedEvents3.length, 1);
     assert.strictEqual(rawRecordedEvents3[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
   });
 

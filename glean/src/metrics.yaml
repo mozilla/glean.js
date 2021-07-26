@@ -396,20 +396,3 @@ glean:
     notification_emails:
       - glean-team@mozilla.com
     expires: never
-    extra_keys:
-      glean_startup_date:
-        description: |
-          This is a special key holding the Glean startup date and time,
-          with the same precision as `ping_info.start_time` (minutes), to
-          be used to approximate the time between the ping `start_time`
-          and this restart event when assembling the ping.
-
-          **This extra key is recorded by Glean internaly, but is never sent in pings.**
-        type: string
-      glean_execution_counter:
-        description: |
-          This is a special key holding the number of times Glean was
-          initialized up to the moment this event gets injected.
-
-          **This extra key is recorded by Glean internaly, but is never sent in pings.**
-        type: quantity

@@ -23,7 +23,7 @@ const LOG_TAG = "core.Metric.EventsDatabase";
 /**
  * Attempts to create a date object from a string.
  *
- * Throws if unsuccesfull.
+ * Throws if unsuccessful.
  *
  * @param str The string to generate a date from.
  * @returns The Date object created.
@@ -53,7 +53,7 @@ function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
 }
 
 /**
- * Creates an `glean.restarted` event metric.
+ * Creates a `glean.restarted` event metric.
  *
  * @param sendInPings The list of pings this metric is sent in.
  * @returns A metric type instance.
@@ -265,7 +265,7 @@ class EventsDatabase {
    *
    * @param pingData An unsorted list of events.
    * @param referenceTime The date/time to be considered as the "zero" time.
-   *        Event timestamps after restarts, will be computed based on this time.
+   *        Event timestamps after restarts will be computed based on this time.
    * @returns An array of sorted events.
    */
   private prepareEventsPayload(pingData: RecordedEvent[], referenceTime: Date): JSONArray {
