@@ -59,7 +59,7 @@ function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
  * @returns A promise that resolved once recording is complete.
  */
 async function recordGleanRestartedEvent(sendInPings: string[]): Promise<void> {
-  const metric =  new EventMetricType({
+  const metric = new EventMetricType({
     category: "glean",
     name: "restarted",
     sendInPings: sendInPings,

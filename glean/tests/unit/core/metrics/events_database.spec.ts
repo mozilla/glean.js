@@ -649,7 +649,7 @@ describe("EventsDatabase", function() {
   });
 
   it("event timestamps are correct when there are multiple ping submission with no restart", async function () {
-    let db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase(Glean.platform.Storage);
     await db.initialize();
 
     const timestamps = [[0, 10], [10, 40]];
