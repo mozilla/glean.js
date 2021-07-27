@@ -62,7 +62,8 @@ export class Context {
    * Resets the Context to an uninitialized state.
    */
   static async testUninitialize(): Promise<void> {
-    // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
+    // Clear the dispatcher queue
+    // and return the dispatcher back to an uninitialized state.
     if (Context.instance._dispatcher) {
       await Context.instance._dispatcher.testUninitialize();
     }
@@ -71,7 +72,9 @@ export class Context {
     // we can't simply wipe out the full `Context` instance.
     // The closest thing we can do is making the dispatcher `null`.
     Context.instance._dispatcher = null;
+
     Context.initialized = false;
+    Context._instance._startTime = new Date();
   }
 
   static get dispatcher(): Dispatcher {
