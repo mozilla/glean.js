@@ -15,6 +15,7 @@ import PingType from "../../../../src/core/pings/ping_type";
 import { Context } from "../../../../src/core/context";
 import { RecordedEvent } from "../../../../src/core/metrics/events_database/recorded_event";
 import { GLEAN_EXECUTION_COUNTER_EXTRA_KEY } from "../../../../src/core/constants";
+import { collectPing } from "../../../../src/core/pings/maker";
 
 describe("EventsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -514,6 +515,182 @@ describe("EventsDatabase", function() {
       assert.strictEqual(`time_travel_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
       assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
       assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+    }
+  });
+
+  it("event timestamps are correct throughout a restart", async function () {
+    // Product starts.
+    const firstStartTime = new Date();
+    Context.startTime.setTime(firstStartTime.getTime());
+    let db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    const ping = new PingType({
+      name: "aPing",
+      includeClientId: true,
+      sendIfEmpty: false
+    });
+    const event = new EventMetricType({
+      category: "test",
+      name: "aEvent",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // Events are recorded.
+    await db.record(event, new RecordedEvent(event.category, event.name, 0));
+    await db.record(event, new RecordedEvent(event.category, event.name, 10));
+
+    // Move the clock forward by one hour.
+    const restartedTimeOffset = 1000 * 60 * 60;
+    Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset);
+    // Product is rebooted.
+    db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    // New events are recorded.
+    await db.record(event, new RecordedEvent(event.category, event.name, 10));
+    await db.record(event, new RecordedEvent(event.category, event.name, 40));
+
+    // Fake submit ping and perform checks on the ping payload.
+    const payload = await collectPing(
+      Context.metricsDatabase,
+      Context.eventsDatabase,
+      ping
+    );
+
+    assert.ok(payload);
+    const [
+      firstEvent,
+      secondEvent,
+      restartedEvent,
+      thirdEvent,
+      fourthEvent
+    ] = payload.events as JSONObject[];
+    assert.strictEqual(firstEvent.timestamp, 0);
+    assert.strictEqual(secondEvent.timestamp, 10);
+    assert.strictEqual(restartedEvent.timestamp, 0 + restartedTimeOffset);
+    assert.strictEqual(thirdEvent.timestamp, 10 + restartedTimeOffset);
+    assert.strictEqual(fourthEvent.timestamp, 40 + restartedTimeOffset);
+  });
+
+  it("event timestamps are correct when there are multiple ping submission with multiple restarts", async function () {
+    // Product starts.
+    const firstStartTime = new Date();
+    Context.startTime.setTime(firstStartTime.getTime());
+    let db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    const ping = new PingType({
+      name: "aPing",
+      includeClientId: true,
+      sendIfEmpty: false
+    });
+    const event = new EventMetricType({
+      category: "test",
+      name: "aEvent",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // Events are recorded.
+    await db.record(event, new RecordedEvent(event.category, event.name, 0));
+    await db.record(event, new RecordedEvent(event.category, event.name, 10));
+
+    // Move the clock forward by one hour.
+    const restartedTimeOffset = 1000 * 60 * 60;
+    Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset);
+    // Product is rebooted.
+    db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    // New set of events are recorded
+    await db.record(event, new RecordedEvent(event.category, event.name, 10));
+    await db.record(event, new RecordedEvent(event.category, event.name, 40));
+
+    // Move the clock forward by one more hour.
+    Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset * 2);
+    // Product is rebooted.
+    db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    // New set of events are recorded
+    await db.record(event, new RecordedEvent(event.category, event.name, 20));
+    await db.record(event, new RecordedEvent(event.category, event.name, 30));
+
+    // Fake submit ping and perform checks on the ping payload.
+    const payload = await collectPing(
+      Context.metricsDatabase,
+      Context.eventsDatabase,
+      ping
+    );
+
+    assert.ok(payload);
+    const [
+      firstEvent,
+      secondEvent,
+      firstRestartedEvent,
+      thirdEvent,
+      fourthEvent,
+      secondRestartedEvent,
+      fifthEvent,
+      sixthEvent,
+    ] = payload.events as JSONObject[];
+    assert.strictEqual(firstEvent.timestamp, 0);
+    assert.strictEqual(secondEvent.timestamp, 10);
+    assert.strictEqual(firstRestartedEvent.timestamp, 0 + restartedTimeOffset);
+    assert.strictEqual(thirdEvent.timestamp, 10 + restartedTimeOffset);
+    assert.strictEqual(fourthEvent.timestamp, 40 + restartedTimeOffset);
+    assert.strictEqual(secondRestartedEvent.timestamp, 0 + restartedTimeOffset * 2);
+    assert.strictEqual(fifthEvent.timestamp, 20 + restartedTimeOffset * 2);
+    assert.strictEqual(sixthEvent.timestamp, 30 + restartedTimeOffset * 2);
+  });
+
+  it("event timestamps are correct when there are multiple ping submission with no restart", async function () {
+    let db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    const timestamps = [[0, 10], [10, 40]];
+
+    // Record events in different pings.
+    for (const [index, [timestamp1, timestamp2]] of timestamps.entries()) {
+      const event = new EventMetricType({
+        category: "test",
+        name: `event${index}`,
+        sendInPings: [`ping${index}`],
+        lifetime: Lifetime.Ping,
+        disabled: false
+      });
+
+      await db.record(event, new RecordedEvent(event.category, event.name, timestamp1));
+      await db.record(event, new RecordedEvent(event.category, event.name, timestamp2));
+    }
+
+    // Check timestamps are correct.
+    const expectedTimestamps = [[0, 10], [0, 30]];
+    for (const [index, [timestamp1, timestamp2]] of expectedTimestamps.entries()) {
+      const ping = new PingType({
+        name: `ping${index}`,
+        includeClientId: true,
+        sendIfEmpty: false
+      });
+
+      // Fake submit ping and perform checks on the ping payload.
+      const payload = await collectPing(
+        Context.metricsDatabase,
+        Context.eventsDatabase,
+        ping
+      );
+
+      assert.ok(payload);
+      const [
+        firstEvent,
+        secondEvent,
+      ] = payload.events as JSONObject[];
+      assert.strictEqual(firstEvent.timestamp, timestamp1);
+      assert.strictEqual(secondEvent.timestamp, timestamp2);
     }
   });
 });
