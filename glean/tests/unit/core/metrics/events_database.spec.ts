@@ -82,7 +82,7 @@ describe("EventsDatabase", function() {
     const db = new EventsDatabase(Glean.platform.Storage);
     await db.initialize();
 
-    const data = await db.getPingEvents("test-unknown-ping", true, new Date());
+    const data = await db.getPingEvents("test-unknown-ping", true);
 
     assert.strictEqual(data, undefined);
   });
@@ -101,7 +101,7 @@ describe("EventsDatabase", function() {
 
     // We didn't record anything yet, so we don't expect anything to be
     // stored.
-    let snapshot = await db.getPingEvents("store1", false, new Date());
+    let snapshot = await db.getPingEvents("store1", false);
     assert.strictEqual(snapshot, undefined);
 
     await db.record(metric, new RecordedEvent(
@@ -111,14 +111,14 @@ describe("EventsDatabase", function() {
     ));
 
     // Take a first snapshot and clear the recorded content.
-    snapshot = await db.getPingEvents("store1", true, new Date());
+    snapshot = await db.getPingEvents("store1", true);
     assert.ok(snapshot != undefined);
 
     // If we snapshot a second time, the store must be empty.
-    const empty_snapshot = await db.getPingEvents("store1", false, new Date());
+    const empty_snapshot = await db.getPingEvents("store1", false);
     assert.strictEqual(empty_snapshot, undefined);
 
-    const store2 = await db.getPingEvents("store2", false, new Date());
+    const store2 = await db.getPingEvents("store2", false);
     for (const events of [snapshot, store2]) {
       assert.ok(events != undefined);
       assert.strictEqual(1, events.length);
@@ -159,7 +159,7 @@ describe("EventsDatabase", function() {
       10000,
     ));
 
-    const snapshot = await db.getPingEvents("store1", true, new Date());
+    const snapshot = await db.getPingEvents("store1", true);
     assert.ok(snapshot);
     assert.strictEqual(3, snapshot.length);
     assert.strictEqual(0, (snapshot[0] as JSONObject)["timestamp"]);
@@ -266,10 +266,11 @@ describe("EventsDatabase", function() {
       metric.name,
       100,
     ));
-    // We expect only one event, execution counter 1.
+    // We expect only two events here, restarted and the above. Execution counter 1.
     const rawRecordedEvents1 = (await db["getAndValidatePingData"]("aPing"));
-    assert.strictEqual(rawRecordedEvents1.length, 1);
+    assert.strictEqual(rawRecordedEvents1.length, 2);
     assert.strictEqual(rawRecordedEvents1[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
+    assert.strictEqual(rawRecordedEvents1[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
 
     // Fake restart Glean and record a new event.
     const restartedDb = new EventsDatabase(Glean.platform.Storage);
@@ -281,7 +282,7 @@ describe("EventsDatabase", function() {
     ));
 
     // We expect two more events here,
-    // the first event is the one we recorded before restart, so it's execution counter is 1,
+    // the first two are the ones we recorded before restart, so it's execution counter is 1,
     // the next two events are this run's restart event + the event we just recorded and both are execution counter 2.
     const rawRecordedEvents2 = (await db["getAndValidatePingData"]("aPing"))
       .sort((a, b) => {
@@ -289,10 +290,11 @@ describe("EventsDatabase", function() {
         const executionCounterB = parseInt(b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || "0");
         return executionCounterA - executionCounterB;
       });
-    assert.strictEqual(rawRecordedEvents2.length, 3);
+    assert.strictEqual(rawRecordedEvents2.length, 4);
     assert.strictEqual(rawRecordedEvents2[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
-    assert.strictEqual(rawRecordedEvents2[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "2");
+    assert.strictEqual(rawRecordedEvents2[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
     assert.strictEqual(rawRecordedEvents2[2].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "2");
+    assert.strictEqual(rawRecordedEvents2[3].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "2");
 
     ping.submit();
     // Sanity check that the execution counter was cleared.
@@ -304,10 +306,11 @@ describe("EventsDatabase", function() {
       100,
     ));
 
-    // We expect only one event, the other have been cleared, execution counter 1.
+    // We expect only two events again, the other have been cleared, execution counter 1.
     const rawRecordedEvents3 = (await db["getAndValidatePingData"]("aPing"));
-    assert.strictEqual(rawRecordedEvents3.length, 1);
+    assert.strictEqual(rawRecordedEvents3.length, 2);
     assert.strictEqual(rawRecordedEvents3[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
+    assert.strictEqual(rawRecordedEvents3[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
   });
 
   it("reserved extra properties are removed from the recorded events", async function () {
@@ -330,7 +333,7 @@ describe("EventsDatabase", function() {
     // Record an initial event.
     await db.record(metric, new RecordedEvent(metric.category, metric.name, 10));
 
-    const snapshot = await db.getPingEvents("store1", true, new Date());
+    const snapshot = await db.getPingEvents("store1", true);
     assert.ok(snapshot);
     assert.strictEqual(1, snapshot.length);
 
@@ -364,7 +367,7 @@ describe("EventsDatabase", function() {
     await db2.initialize();
 
     for (const store of stores) {
-      const snapshot = await db2.getPingEvents(store, true, new Date());
+      const snapshot = await db2.getPingEvents(store, true);
       assert.ok(snapshot);
       assert.strictEqual(2, snapshot.length);
       assert.strictEqual("test", (snapshot[0] as JSONObject)["category"]);
@@ -397,7 +400,7 @@ describe("EventsDatabase", function() {
       await db.initialize();
     }
 
-    const snapshot = await db.getPingEvents("store", true, new Date());
+    const snapshot = await db.getPingEvents("store", true);
     assert.ok(snapshot);
 
     // First event snapshot is always 0.
@@ -444,7 +447,7 @@ describe("EventsDatabase", function() {
       await db.initialize();
     }
 
-    const snapshot = await db.getPingEvents("store", true, new Date());
+    const snapshot = await db.getPingEvents("store", true);
     assert.ok(snapshot);
 
     // First event snapshot is always 0.

@@ -53,19 +53,29 @@ function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
 }
 
 /**
- * Creates a `glean.restarted` event metric.
+ * Records a `glean.restarted` event metric.
  *
  * @param sendInPings The list of pings this metric is sent in.
- * @returns A metric type instance.
+ * @returns A promise that resolved once recording is complete.
  */
-function getGleanRestartedEvent(sendInPings: string[]): EventMetricType {
-  return new EventMetricType({
+async function recordGleanRestartedEvent(sendInPings: string[]): Promise<void> {
+  const metric =  new EventMetricType({
     category: "glean",
     name: "restarted",
     sendInPings: sendInPings,
     lifetime: Lifetime.Ping,
     disabled: false
   }, [ GLEAN_STARTUP_DATE_EXTRA_KEY ]);
+
+  await EventMetricType._private_recordUndispatched(
+    metric,
+    {
+      [GLEAN_STARTUP_DATE_EXTRA_KEY]: Context.startTime.toISOString()
+    },
+    // We manually add timestamp 0 here to make sure
+    // this is going to be sorted as the first event of this execution always.
+    0
+  );
 }
 
 /**
@@ -115,18 +125,7 @@ class EventsDatabase {
     // Increment the execution counter for known stores.
     // !IMPORTANT! This must happen before any event is recorded for this run.
     await CounterMetricType._private_addUndispatched(getExecutionCounterMetric(storeNames), 1);
-
-    // Record the `glean.restarted` event.
-    await EventMetricType._private_recordUndispatched(
-      getGleanRestartedEvent(storeNames),
-      {
-        // TODO (bug 1693487): Remove the stringification once the new events API is implemented.
-        [GLEAN_STARTUP_DATE_EXTRA_KEY]: Context.startTime.toISOString()
-      },
-      // We manually add timestamp 0 here to make sure
-      // this is going to be sorted as the first event of this execution no matter what.
-      0
-    );
+    await recordGleanRestartedEvent(storeNames);
 
     this.initialized = true;
   }
@@ -146,12 +145,17 @@ class EventsDatabase {
       const executionCounter = getExecutionCounterMetric([ping]);
 
       let currentExecutionCount = await Context.metricsDatabase.getMetric(ping, executionCounter);
-      // There might not be an execution counter stored
-      // in case the ping was already sent during this session,
-      // because in this case the ping storage will have been cleared.
+      // There might not be an execution counter stored in case:
+      //
+      // 1. The ping was already sent during this session and the events storare was cleared;
+      // 2. No event has ever been recorded for this ping.
       if (!currentExecutionCount) {
         await CounterMetricType._private_addUndispatched(executionCounter, 1);
         currentExecutionCount = 1;
+
+        // Record the `glean.restarted` event,
+        // this must **always** be the first event of any events list.
+        await recordGleanRestartedEvent([ping]);
       }
       // TODO (bug 1693487): Remove the stringification once the new events API is implemented.
       value.addExtra(GLEAN_EXECUTION_COUNTER_EXTRA_KEY, currentExecutionCount.toString());
@@ -229,16 +233,10 @@ class EventsDatabase {
    *
    * @param ping The name of the ping to retrieve.
    * @param clearPingLifetimeData Whether or not to clear the ping lifetime metrics retrieved.
-   * @param referenceTime The date/time to be considered as the "zero" time.
-   *        Event timestamps after restarts, will be computed based on this time.
    * @returns An object containing all the metrics recorded to the given ping,
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
-  async getPingEvents(
-    ping: string,
-    clearPingLifetimeData: boolean,
-    referenceTime: Date
-  ): Promise<JSONArray | undefined> {
+  async getPingEvents(ping: string, clearPingLifetimeData: boolean): Promise<JSONArray | undefined> {
     const pingData = await this.getAndValidatePingData(ping);
 
     if (clearPingLifetimeData && Object.keys(pingData).length > 0) {
@@ -249,7 +247,7 @@ class EventsDatabase {
       return;
     }
 
-    const payload = this.prepareEventsPayload(pingData, referenceTime);
+    const payload = this.prepareEventsPayload(pingData);
     if (payload.length > 0) {
       return payload;
     }
@@ -264,11 +262,9 @@ class EventsDatabase {
    * 4. Removes reserved extra keys.
    *
    * @param pingData An unsorted list of events.
-   * @param referenceTime The date/time to be considered as the "zero" time.
-   *        Event timestamps after restarts will be computed based on this time.
    * @returns An array of sorted events.
    */
-  private prepareEventsPayload(pingData: RecordedEvent[], referenceTime: Date): JSONArray {
+  private prepareEventsPayload(pingData: RecordedEvent[]): JSONArray {
     // Sort events by execution counter and by timestamp.
     const sortedEvents = pingData.sort((a, b) => {
       // TODO (bug 1693487): Remove the number casting once the new events API is implemented.
@@ -285,12 +281,13 @@ class EventsDatabase {
 
     let lastRestartDate: Date;
     try {
-      // If the first event is a `glean.restarted` event it has the startup date already.
       lastRestartDate = createDateObject(sortedEvents[0].extra?.[GLEAN_STARTUP_DATE_EXTRA_KEY]);
-      // In case it is a `glean.restarted` event, remove it.
+      // Drop the first `restarted` event.
       sortedEvents.shift();
     } catch {
-      lastRestartDate = referenceTime;
+      // In the unlikely case that the first event was not a `glean.restarted` event,
+      // let's rely on the start time of the current session.
+      lastRestartDate = Context.startTime;
     }
 
     const firstEventOffset = sortedEvents[0]?.timestamp || 0;

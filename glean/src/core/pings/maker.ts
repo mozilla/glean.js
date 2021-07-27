@@ -205,9 +205,8 @@ export function getPingHeaders(debugOptions?: DebugOptions): Record<string, stri
  *          If there is no data stored for the ping, `undefined` is returned.
  */
 export async function collectPing(metricsDatabase: MetricsDatabase, eventsDatabase: EventsDatabase, ping: CommonPingData, reason?: string): Promise<PingPayload | undefined> {
-  const { startTime } = await getStartTimeMetricAndData(metricsDatabase, ping);
   const metricsData = await metricsDatabase.getPingMetrics(ping.name, true);
-  const eventsData = await eventsDatabase.getPingEvents(ping.name, true, startTime.date);
+  const eventsData = await eventsDatabase.getPingEvents(ping.name, true);
   if (!metricsData && !eventsData) {
     if (!ping.sendIfEmpty) {
       log(LOG_TAG, `Storage for ${ping.name} empty. Bailing out.`, LoggingLevel.Info);
