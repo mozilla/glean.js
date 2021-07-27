@@ -470,4 +470,50 @@ describe("EventsDatabase", function() {
       assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
     }
   });
+
+  it("events are correctly sorted if time decides to stand still throughout restarts", async function() {
+    // Initialize the database and inject some events.
+    let db = new EventsDatabase(Glean.platform.Storage);
+    await db.initialize();
+
+    for (let i = 0; i < 10; i++) {
+      const event = new EventMetricType({
+        category: "test",
+        name: `time_travel_${i}`,
+        sendInPings: ["store"],
+        lifetime: Lifetime.Ping,
+        disabled: false
+      });
+
+      await db.record(event, new RecordedEvent(event.category, event.name, 1000));
+
+      // Do not move the clock forward, time stands still.
+      // Fake a re-start.
+      db = new EventsDatabase(Glean.platform.Storage);
+      await db.initialize();
+    }
+
+    const snapshot = await db.getPingEvents("store", true);
+    assert.ok(snapshot);
+
+    // First event snapshot is always 0.
+    const [ firstEvent, ...subsequentEvents ] = snapshot;
+    assert.strictEqual(RecordedEvent.fromJSONObject(firstEvent as JSONObject).timestamp, 0);
+
+    // Make sure subsequent timestamps are strictly increasing.
+    let prevTime = 0;
+    for (const event of subsequentEvents) {
+      const e = RecordedEvent.fromJSONObject(event as JSONObject);
+      assert.ok(e.timestamp > prevTime);
+      prevTime = e.timestamp;
+    }
+
+    // Make sure the found events are the expected events.
+    for (let i = 0; i < 10; i++) {
+      assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
+      assert.strictEqual(`time_travel_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
+      assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
+      assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+    }
+  });
 });

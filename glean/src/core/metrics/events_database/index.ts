@@ -300,12 +300,17 @@ class EventsDatabase {
 
         // Calculate the new offset since new restart.
         const newRestartedOffset = restartedOffset + dateOffset;
-        if (newRestartedOffset < 0) {
-          // In case the new offset is negative, just increase the previous timestamp by one
-          // to make sure timestamps keep increasing.
+
+        // The restarted event is always timestamp 0,
+        // so in order to guarantee event timestamps are always in ascending order,
+        // the offset needs to be _at least_ larger than the previous timestamp.
+        const previousEventTimestamp = sortedEvents[index - 1].timestamp;
+        if (newRestartedOffset <= previousEventTimestamp) {
+          // In case the new offset results in descending timestamps,
+          // we increase the previous timestamp by one to make sure timestamps keep increasing.
           //
           // TODO (bug 1720467): Record an error when this happens.
-          restartedOffset = sortedEvents[index - 1].timestamp + 1;
+          restartedOffset = previousEventTimestamp + 1;
         } else {
           restartedOffset = newRestartedOffset;
         }
