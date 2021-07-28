@@ -20,6 +20,11 @@
     "semi": "off",
     "@typescript-eslint/semi": ["error", "always"],
     "@typescript-eslint/consistent-type-imports": "error",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [ "error", {
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_"
+    }],
     "no-debugger":  ["error"],
     "no-multi-spaces": "error",
     "jsdoc/no-types": "off",
