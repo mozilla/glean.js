@@ -51,7 +51,7 @@ describe("PingUploader", function() {
     await Glean.testResetGlean(testAppId);
   });
 
-  it("whenever the pings dabase records a new ping, upload is triggered", async function() {
+  it("whenever the pings database records a new ping, upload is triggered", async function() {
     const httpClient = new WaitableUploader();
     await Glean.testResetGlean(testAppId, true, { httpClient });
 
@@ -109,7 +109,7 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     await Glean["pingUploader"].testBlockOnPingsQueue();
-    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), []);
   });
 
   it("correctly deletes pings when upload is unrecoverably unsuccesfull", async function() {
@@ -120,7 +120,7 @@ describe("PingUploader", function() {
     }));
     await fillUpPingsDatabase(10);
     await Glean["pingUploader"].testBlockOnPingsQueue();
-    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), []);
   });
 
   it("correctly re-enqueues pings when upload is recoverably unsuccesfull", async function() {
@@ -146,6 +146,7 @@ describe("PingUploader", function() {
 
     for (let i = 0; i < 10; i++) {
       uploader["enqueuePing"]({
+        collectionDate: (new Date()).toISOString(),
         identifier: "id",
         retries: 0,
         payload: {

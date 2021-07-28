@@ -3,16 +3,28 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import type { SinonFakeTimers } from "sinon";
+import sinon from "sinon";
 
 import type { Observer} from "../../../../src/core/pings/database";
 import Database, { isValidPingInternalRepresentation } from "../../../../src/core/pings/database";
 import Glean from "../../../../src/core/glean";
 
+const sandbox = sinon.createSandbox();
+const now = new Date();
+
 describe("PingsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
+  let clock: SinonFakeTimers;
 
   beforeEach(async function() {
+    clock = sandbox.useFakeTimers(now.getTime());
     await Glean.testResetGlean(testAppId);
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+    clock.restore();
   });
 
   describe("record", function () {
@@ -32,14 +44,14 @@ describe("PingsDatabase", function() {
       };
       await db.recordPing(path, identifier, payload);
       assert.deepStrictEqual(await db["store"].get([identifier]), {
-        path, payload
+        collectionDate: now.toISOString(), path, payload
       });
 
       const headers = { "X-Debug-ID": "test" };
       const otherIdentifier = "THE OTHER IDENTIFIER";
       await db.recordPing(path, otherIdentifier, payload, headers);
       assert.deepStrictEqual(await db["store"].get([otherIdentifier]), {
-        path, payload, headers
+        collectionDate: now.toISOString(), path, payload, headers
       });
 
       assert.strictEqual(Object.keys(await db["store"]._getWholeStore()).length, 2);
@@ -111,13 +123,13 @@ describe("PingsDatabase", function() {
       await db["store"].update(["more", "incorrectness"], () => "more wrong data");
 
       const allPings = await db.getAllPings();
-      assert.strictEqual(Object.keys(allPings).length, 1);
-      assert.deepStrictEqual({
-        [identifier]: { path, payload }
-      }, allPings);
+      assert.strictEqual(allPings.length, 1);
+      assert.deepStrictEqual([
+        [ identifier, { collectionDate: now.toISOString(), path, payload } ]
+      ], allPings);
     });
 
-    it("getAllPings works correct when data is all correct", async function () {
+    it("getAllPings works correctly when data is all correct", async function () {
       const db = new Database(Glean.platform.Storage);
       const path = "some/random/path/doesnt/matter";
       const payload = {
@@ -137,15 +149,51 @@ describe("PingsDatabase", function() {
       }
 
       const allPings = await db.getAllPings();
-      assert.strictEqual(Object.keys(allPings).length, 5);
+      assert.strictEqual(allPings.length, 5);
+      for (const [index, [ identifier, _ ] ] of allPings.entries()) {
+        assert.strictEqual(identifier, identifiers[index]);
+      }
+    });
+
+    it("getAllPings returns pings in ascending order by date", async function () {
+      const db = new Database(Glean.platform.Storage);
+      const path = "some/random/path/doesnt/matter";
+      const payload = {
+        ping_info: {
+          seq: 1,
+          start_time: "2020-01-11+01:00",
+          end_time: "2020-01-12+01:00",
+        },
+        client_info: {
+          telemetry_sdk_build: "32.0.0"
+        }
+      };
+
+      const identifiers = ["foo", "bar", "baz", "qux", "etc"];
       for (const [index, identifier] of identifiers.entries()) {
+        // Move time backwards, so that orderding needs to be the reverse of the recording order.
+        // This way we are sure there was intentional sorting.
+        //
+        // Note: It is not possible to use sinon's fake timers here,
+        // because they don't tick backwards.
+        const fakeISOString = (new Date(now.getTime() - 100 * index)).toISOString();
+        const stub = sinon
+          .stub(Date.prototype, "toISOString")
+          .callsFake(() => fakeISOString);
+        await db.recordPing(path, identifier, payload);
+        stub.restore();
+      }
+
+      const allPings = await db.getAllPings();
+      assert.strictEqual(allPings.length, 5);
+      for (const [index, [ identifier, _ ] ] of allPings.reverse().entries()) {
         assert.strictEqual(identifier, identifiers[index]);
       }
     });
 
     it("getAllPings dosen't error when there are no pings stored", async function () {
       const db = new Database(Glean.platform.Storage);
-      assert.deepStrictEqual({}, await db.getAllPings());
+      assert.deepStrictEqual([], await db.getAllPings());
     });
   });
 
@@ -171,16 +219,16 @@ describe("PingsDatabase", function() {
 
       await db.deletePing("foo");
       const allPings = await db.getAllPings();
-      assert.strictEqual(Object.keys(allPings).length, 4);
-      for (const [index, identifier] of identifiers.entries()) {
-        assert.strictEqual(identifier, identifiers[index]);
+      assert.strictEqual(allPings.length, 4);
+      for (const [index, [identifier, _]] of allPings.entries()) {
+        assert.strictEqual(identifier, identifiers[index + 1]);
       }
 
       await db.deletePing("bar");
       const allPings2 = await db.getAllPings();
-      assert.strictEqual(Object.keys(allPings2).length, 3);
-      for (const [index, identifier] of identifiers.entries()) {
-        assert.strictEqual(identifier, identifiers[index]);
+      assert.strictEqual(allPings2.length, 3);
+      for (const [index, [identifier, _]] of allPings2.entries()) {
+        assert.strictEqual(identifier, identifiers[index + 2]);
       }
     });
 
@@ -205,8 +253,8 @@ describe("PingsDatabase", function() {
 
       await db.deletePing("no existo");
       const allPings = await db.getAllPings();
-      assert.strictEqual(Object.keys(allPings).length, 5);
-      for (const [index, identifier] of identifiers.entries()) {
+      assert.strictEqual(allPings.length, 5);
+      for (const [index, [ identifier, _]] of allPings.entries()) {
         assert.strictEqual(identifier, identifiers[index]);
       }
     });

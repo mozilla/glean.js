@@ -11,6 +11,7 @@ import log, { LoggingLevel } from "../log.js";
 const LOG_TAG = "core.Pings.Database";
 
 export interface PingInternalRepresentation extends JSONObject {
+  collectionDate: string,
   path: string,
   payload: JSONObject,
   headers?: Record<string, string>
@@ -95,6 +96,7 @@ class PingsDatabase {
     headers?: Record<string, string>
   ): Promise<void> {
     const ping: PingInternalRepresentation = {
+      collectionDate: (new Date()).toISOString(),
       path,
       payload
     };
@@ -119,11 +121,16 @@ class PingsDatabase {
   }
 
   /**
-   * Gets all pings from the pings database. Deletes any data in unexpected format that is found.
+   * Gets all pings from the pings database.
+   * Deletes any data in unexpected format that is found.
    *
-   * @returns List of all currently stored pings.
+   * # Note
+   *
+   * The return value of this function can be turned into an object using Object.fromEntries.
+   *
+   * @returns List of all currently stored pings in ascending order by date.
    */
-  async getAllPings(): Promise<{ [id: string]: PingInternalRepresentation }> {
+  async getAllPings(): Promise<[ string, PingInternalRepresentation ][]> {
     const allStoredPings = await this.store._getWholeStore();
     const finalPings: { [ident: string]: PingInternalRepresentation } = {};
     for (const identifier in allStoredPings) {
@@ -136,7 +143,12 @@ class PingsDatabase {
       }
     }
 
-    return finalPings;
+    return Object.entries(finalPings)
+      .sort(([_idA, { collectionDate: dateA }], [_idB, { collectionDate: dateB }]): number => {
+        const timeA = (new Date(dateA)).getTime();
+        const timeB = (new Date(dateB)).getTime();
+        return timeA - timeB;
+      });
   }
 
   /**
@@ -149,9 +161,9 @@ class PingsDatabase {
     }
 
     const pings = await this.getAllPings();
-    for (const identifier in pings) {
+    for (const [identifier, ping] of pings) {
       // Notify the observer that a new ping has been added to the pings database.
-      this.observer.update(identifier, pings[identifier]);
+      this.observer.update(identifier, ping);
     }
   }
 
