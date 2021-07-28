@@ -218,11 +218,7 @@ class Glean {
     Context.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
     Context.errorManager = new ErrorManager();
 
-    Glean.instance._pingUploader = new PingUploader(
-      correctConfig,
-      Glean.platform,
-      Context.pingsDatabase
-    );
+    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform);
 
     Context.pingsDatabase.attachObserver(Glean.pingUploader);
 
@@ -289,6 +285,10 @@ class Glean {
         }
       }
 
+      // We only scan the pendings pings **after** dealing with the upload state.
+      // If upload is disabled, we delete all pending pings files
+      // and we need to do that **before** scanning the pending pings
+      // to ensure we don't enqueue pings before their files are deleted.
       await Context.pingsDatabase.scanPendingPings();
     });
   }

@@ -90,8 +90,8 @@ class PingUploader implements PingsDatabaseObserver {
   constructor(
     config: Configuration,
     platform: Platform,
-    private readonly pingsDatabase: PingsDatabase,
-    private readonly policy = new Policy
+    private readonly pingsDatabase = Context.pingsDatabase,
+    private readonly policy = new Policy()
   ) {
     this.processing = [];
     // Initialize the ping uploader with either the platform defaults or a custom
@@ -99,7 +99,6 @@ class PingUploader implements PingsDatabaseObserver {
     this.uploader = config.httpClient ? config.httpClient : platform.uploader;
     this.platformInfo = platform.info;
     this.serverEndpoint = config.serverEndpoint;
-    this.pingsDatabase = pingsDatabase;
 
     // Initialize the dispatcher immediatelly.
     this.dispatcher = createAndInitializeDispatcher();
@@ -124,6 +123,7 @@ class PingUploader implements PingsDatabaseObserver {
 
     // If the ping is a deletion-request ping, we want to enqueue it as a persistent task,
     // so that clearing the queue does not clear it.
+    //
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const launchFn = isDeletionRequest(ping) ? this.dispatcher.launchPersistent : this.dispatcher.launch;
 
@@ -298,7 +298,6 @@ class PingUploader implements PingsDatabaseObserver {
     if (status && status >= 200 && status < 300) {
       log(LOG_TAG, `Ping ${identifier} succesfully sent ${status}.`, LoggingLevel.Info);
       await this.pingsDatabase.deletePing(identifier);
-      this.processing;
       return false;
     }
 
