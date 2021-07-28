@@ -6,12 +6,17 @@ import { gzipSync, strToU8 } from "fflate";
 
 import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
-import { DELETION_REQUEST_PING_NAME, GLEAN_VERSION } from "../constants.js";
+import { GLEAN_VERSION } from "../constants.js";
 import { Context } from "../context.js";
 import Dispatcher from "../dispatcher.js";
 import log, { LoggingLevel } from "../log.js";
-import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
-import type PingsDatabase from "../pings/database.js";
+import type {
+  Observer as PingsDatabaseObserver,
+  PingInternalRepresentation
+} from "../pings/database.js";
+import {
+  isDeletionRequest
+} from "../pings/database.js";
 import type PlatformInfo from "../platform_info.js";
 import { UploadResult } from "./uploader.js";
 import type Uploader from "./uploader.js";
@@ -49,16 +54,6 @@ interface QueuedPing extends PingInternalRepresentation {
   readonly identifier: string,
   // How may times there has been a failed upload attempt for this ping.
   retries: number,
-}
-
-/**
- * Whether or not a given queued ping is a deletion-request ping.
- *
- * @param ping The ping to verify.
- * @returns Whether or not the ping is a deletion-request ping.
- */
-function isDeletionRequest(ping: QueuedPing): boolean {
-  return ping.path.split("/")[3] === DELETION_REQUEST_PING_NAME;
 }
 
 // Error to be thrown in case the final ping body is larger than MAX_PING_BODY_SIZE.

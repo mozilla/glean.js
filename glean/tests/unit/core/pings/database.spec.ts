@@ -195,6 +195,104 @@ describe("PingsDatabase", function() {
       const db = new Database(Glean.platform.Storage);
       assert.deepStrictEqual([], await db.getAllPings());
     });
+
+    it("size quota is enforced by getAllPingsWithoutSurplus", async function() {
+      const db = new Database(Glean.platform.Storage);
+      const path = "some/random/path/doesnt/matter";
+      const payload = {
+        ping_info: {
+          seq: 1,
+          start_time: "2020-01-11+01:00",
+          end_time: "2020-01-12+01:00",
+        },
+        client_info: {
+          telemetry_sdk_build: "32.0.0"
+        }
+      };
+
+      const identifiers = ["foo", "bar", "baz", "qux", "etc"];
+      for (const identifier of identifiers) {
+        await db.recordPing(path, identifier, payload);
+      }
+
+      // Set a size quota that is just above the size of `payload`,
+      // that will leave one ping in the db, but all others should be deleted.
+      const allPings = await db["getAllPingsWithoutSurplus"](
+        250 /* maxCount */,
+        300 /* maxSize */
+      );
+      assert.strictEqual(allPings.length, 1);
+      // Only newest ping was left.
+      const [[ identifier ]] = allPings;
+      assert.strictEqual(identifier, identifiers[identifiers.length - 1]);
+    });
+
+    it("ping count quota is enforced by getAllPingsWithoutSurplus", async function() {
+      const db = new Database(Glean.platform.Storage);
+      const path = "some/random/path/doesnt/matter";
+      const payload = {
+        ping_info: {
+          seq: 1,
+          start_time: "2020-01-11+01:00",
+          end_time: "2020-01-12+01:00",
+        },
+        client_info: {
+          telemetry_sdk_build: "32.0.0"
+        }
+      };
+
+      const identifiers = ["foo", "bar", "baz", "qux", "etc"];
+      for (const identifier of identifiers) {
+        await db.recordPing(path, identifier, payload);
+      }
+
+      // Set a size quota that is just above the size of `payload`,
+      // that will leave one ping in the db, but all others should be deleted.
+      const allPings = await db["getAllPingsWithoutSurplus"](
+        1 /* maxCount */,
+      );
+      assert.strictEqual(allPings.length, 1);
+      // Only newest ping was left.
+      const [[ identifier ]] = allPings;
+      assert.strictEqual(identifier, identifiers[identifiers.length - 1]);
+    });
+
+    it("deletion-request are never deleted, even if quota is hit", async function() {
+      const db = new Database(Glean.platform.Storage);
+      const deletionRequestPath = "/submit/applicationId/deletion-request/schema-version/identifier";
+      const path = "some/random/path/doesnt/matter";
+      const payload = {
+        ping_info: {
+          seq: 1,
+          start_time: "2020-01-11+01:00",
+          end_time: "2020-01-12+01:00",
+        },
+        client_info: {
+          telemetry_sdk_build: "32.0.0"
+        }
+      };
+
+      const identifiers = ["foo", "bar", "baz", "qux", "etc"];
+      for (const identifier of identifiers) {
+        await db.recordPing(deletionRequestPath, `deletion-${identifier}`, payload);
+        await db.recordPing(path, identifier, payload);
+      }
+
+      // Set a size quota that is just above the size of `payload`,
+      // that will leave one ping in the db, but all others should be deleted.
+      const allPings = await db["getAllPingsWithoutSurplus"](
+        1 /* maxCount */,
+      );
+
+      // All deletion pings were left and only one of the ordinary pings.
+      assert.strictEqual(allPings.length, identifiers.length + 1);
+
+      // The first five pings are deletion request pings.
+      const deletionRequestPings = allPings.slice(0, identifiers.length);
+      for (const [ identifier ] of deletionRequestPings) {
+        assert.ok(identifier.startsWith("deletion-"));
+      }
+    });
   });
 
   describe("delete", function() {
