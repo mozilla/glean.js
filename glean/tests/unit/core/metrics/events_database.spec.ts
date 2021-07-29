@@ -561,6 +561,7 @@ describe("EventsDatabase", function() {
     );
 
     assert.ok(payload);
+    assert.strictEqual(payload.events?.length, 5);
     const [
       firstEvent,
       secondEvent,
@@ -628,6 +629,7 @@ describe("EventsDatabase", function() {
     );
 
     assert.ok(payload);
+    assert.strictEqual(payload.events?.length, 8);
     const [
       firstEvent,
       secondEvent,
@@ -685,6 +687,7 @@ describe("EventsDatabase", function() {
       );
 
       assert.ok(payload);
+      assert.strictEqual(payload.events?.length, 2);
       const [
         firstEvent,
         secondEvent,
