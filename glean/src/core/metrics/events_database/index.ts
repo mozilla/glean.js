@@ -147,7 +147,7 @@ class EventsDatabase {
       let currentExecutionCount = await Context.metricsDatabase.getMetric(ping, executionCounter);
       // There might not be an execution counter stored in case:
       //
-      // 1. The ping was already sent during this session and the events storare was cleared;
+      // 1. The ping was already sent during this session and the events storage was cleared;
       // 2. No event has ever been recorded for this ping.
       if (!currentExecutionCount) {
         await CounterMetricType._private_addUndispatched(executionCounter, 1);
