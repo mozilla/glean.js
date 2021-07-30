@@ -16,11 +16,11 @@ For user documenation on the Glean SDKs, refer to [The Glean Book](https://mozil
 ### Guides
 
 - [Contribution guide](../CONTRIBUTING.md)
-- [Getting started](./getting_started.md)
-- [Adding a new metric type](./adding_a_new_metric_type.md)
-- [Updating `glean_parser`](./update_glean_parser.md)
-- [Making a new release](./release.md)
+- [Getting started](./guides/getting_started.md)
+- [Adding a new metric type](./guides/adding_a_new_metric_type.md)
+- [Updating `glean_parser`](./guides/update_glean_parser.md)
+- [Making a new release](./guides/release.md)
 
 ### Reference
 
-- [Continuous Integration](./ci.md)
+- [Continuous Integration](./reference/ci.md)
