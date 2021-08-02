@@ -39,3 +39,14 @@ export const DELETION_REQUEST_PING_NAME = "deletion-request";
 
 // The maximum amount of source tags a user can set.
 export const GLEAN_MAX_SOURCE_TAGS = 5;
+
+// Reserved extra keys used by the events database to assint in sorting events throughout restarts.
+//
+// glean_parser will reject extra keys with `#` in the name,
+// so these extra_keys are guaranteed not to clash with user defined extra keys.
+export const GLEAN_REFERENCE_TIME_EXTRA_KEY = "#glean_reference_time";
+export const GLEAN_EXECUTION_COUNTER_EXTRA_KEY = "#glean_execution_counter";
+export const GLEAN_RESERVED_EXTRA_KEYS = [
+  GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
+  GLEAN_REFERENCE_TIME_EXTRA_KEY
+];

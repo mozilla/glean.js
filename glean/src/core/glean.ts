@@ -10,7 +10,7 @@ import PingsDatabase from "./pings/database.js";
 import PingUploader from "./upload/index.js";
 import { isUndefined, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
-import EventsDatabase from "./metrics/events_database.js";
+import EventsDatabase from "./metrics/events_database/index.js";
 import UUIDMetricType from "./metrics/types/uuid.js";
 import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
 import CorePings from "./internal_pings.js";
@@ -243,11 +243,14 @@ class Glean {
       Context.debugOptions = correctConfig.debug;
       Glean.instance._config = correctConfig;
 
-      // Clear application lifetime metrics.
-      //
+
       // IMPORTANT!
-      // Any pings we want to send upon initialization should happen before this.
+      // Any pings we want to send upon initialization should happen before these two lines.
+      //
+      // Clear application lifetime metrics.
       await Context.metricsDatabase.clear(Lifetime.Application);
+      // Initialize the events database.
+      await Context.eventsDatabase.initialize();
 
       // We need to mark Glean as initialized before dealing with the upload status,
       // otherwise we will not be able to submit deletion-request pings if necessary.

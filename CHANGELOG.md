@@ -22,6 +22,9 @@
 
 * [#529](https://github.com/mozilla/glean.js/pull/529): Implement the URL metric type.
 
+* [#526](https://github.com/mozilla/glean.js/pull/526): Implement new events sorting
+logic, which allows for reliable sorting of events throughout restarts.
+
 # v0.16.0 (2021-07-06)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.15.0...v0.16.0)

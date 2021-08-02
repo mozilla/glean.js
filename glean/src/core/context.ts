@@ -4,7 +4,7 @@
 
 import type { DebugOptions } from "./debug_options.js";
 import type MetricsDatabase from "./metrics/database.js";
-import type EventsDatabase from "./metrics/events_database.js";
+import type EventsDatabase from "./metrics/events_database/index.js";
 import type PingsDatabase from "./pings/database.js";
 import type ErrorManager from "./error/index.js";
 import Dispatcher from "./dispatcher.js";
@@ -40,8 +40,12 @@ export class Context {
 
   private _debugOptions!: DebugOptions;
 
+  // The moment the current Glean.js session started.
+  private _startTime: Date;
+
   private constructor() {
     this._initialized = false;
+    this._startTime = new Date();
   }
 
   static get instance(): Context {
@@ -58,7 +62,8 @@ export class Context {
    * Resets the Context to an uninitialized state.
    */
   static async testUninitialize(): Promise<void> {
-    // Clear the dispatcher queue and return the dispatcher back to an uninitialized state.
+    // Clear the dispatcher queue
+    // and return the dispatcher back to an uninitialized state.
     if (Context.instance._dispatcher) {
       await Context.instance._dispatcher.testUninitialize();
     }
@@ -67,7 +72,9 @@ export class Context {
     // we can't simply wipe out the full `Context` instance.
     // The closest thing we can do is making the dispatcher `null`.
     Context.instance._dispatcher = null;
+
     Context.initialized = false;
+    Context._instance._startTime = new Date();
   }
 
   static get dispatcher(): Dispatcher {
@@ -148,5 +155,9 @@ export class Context {
 
   static set debugOptions(options: DebugOptions) {
     Context.instance._debugOptions = options;
+  }
+
+  static get startTime(): Date {
+    return Context._instance._startTime;
   }
 }
