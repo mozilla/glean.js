@@ -15,7 +15,7 @@ import { generateReservedMetricIdentifiers } from "../database.js";
 import { RecordedEvent } from "./recorded_event.js";
 import {
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
-  GLEAN_STARTUP_DATE_EXTRA_KEY
+  GLEAN_REFERENCE_TIME_EXTRA_KEY
 } from "../../constants.js";
 
 const LOG_TAG = "core.Metric.EventsDatabase";
@@ -56,21 +56,25 @@ function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
  * Records a `glean.restarted` event metric.
  *
  * @param sendInPings The list of pings this metric is sent in.
+ * @param time The time to record on the `#glean_reference_time` extra key. Defaults to `Context.startTime`.
  * @returns A promise that resolved once recording is complete.
  */
-async function recordGleanRestartedEvent(sendInPings: string[]): Promise<void> {
+async function recordGleanRestartedEvent(
+  sendInPings: string[],
+  time = Context.startTime
+): Promise<void> {
   const metric = new EventMetricType({
     category: "glean",
     name: "restarted",
     sendInPings: sendInPings,
     lifetime: Lifetime.Ping,
     disabled: false
-  }, [ GLEAN_STARTUP_DATE_EXTRA_KEY ]);
+  }, [ GLEAN_REFERENCE_TIME_EXTRA_KEY ]);
 
   await EventMetricType._private_recordUndispatched(
     metric,
     {
-      [GLEAN_STARTUP_DATE_EXTRA_KEY]: Context.startTime.toISOString()
+      [GLEAN_REFERENCE_TIME_EXTRA_KEY]: time.toISOString()
     },
     // We manually add timestamp 0 here to make sure
     // this is going to be sorted as the first event of this execution always.
@@ -155,7 +159,7 @@ class EventsDatabase {
 
         // Record the `glean.restarted` event,
         // this must **always** be the first event of any events list.
-        await recordGleanRestartedEvent([ping]);
+        await recordGleanRestartedEvent([ping], new Date());
       }
       // TODO (bug 1693487): Remove the stringification once the new events API is implemented.
       value.addExtra(GLEAN_EXECUTION_COUNTER_EXTRA_KEY, currentExecutionCount.toString());
@@ -281,7 +285,7 @@ class EventsDatabase {
 
     let lastRestartDate: Date;
     try {
-      lastRestartDate = createDateObject(sortedEvents[0].extra?.[GLEAN_STARTUP_DATE_EXTRA_KEY]);
+      lastRestartDate = createDateObject(sortedEvents[0].extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
       // Drop the first `restarted` event.
       sortedEvents.shift();
     } catch {
@@ -294,7 +298,7 @@ class EventsDatabase {
     let restartedOffset = 0;
     sortedEvents.forEach((event, index) => {
       try {
-        const nextRestartDate = createDateObject(event.extra?.[GLEAN_STARTUP_DATE_EXTRA_KEY]);
+        const nextRestartDate = createDateObject(event.extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
         const dateOffset = nextRestartDate.getTime() - lastRestartDate.getTime();
         lastRestartDate = nextRestartDate;
 

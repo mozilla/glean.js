@@ -44,9 +44,9 @@ export const GLEAN_MAX_SOURCE_TAGS = 5;
 //
 // glean_parser will reject extra keys with `#` in the name,
 // so these extra_keys are guaranteed not to clash with user defined extra keys.
-export const GLEAN_STARTUP_DATE_EXTRA_KEY = "#glean_startup_date";
+export const GLEAN_REFERENCE_TIME_EXTRA_KEY = "#glean_reference_time";
 export const GLEAN_EXECUTION_COUNTER_EXTRA_KEY = "#glean_execution_counter";
 export const GLEAN_RESERVED_EXTRA_KEYS = [
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
-  GLEAN_STARTUP_DATE_EXTRA_KEY
+  GLEAN_REFERENCE_TIME_EXTRA_KEY
 ];
