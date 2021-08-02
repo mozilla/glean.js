@@ -59,6 +59,7 @@
     "build:webext": "rm -rf dist/webext && run-s build:webext:lib build:webext:types",
     "build:qt": "rm -rf dist/qt && webpack --config webpack.config.qt.js && ../bin/prepare-qml-module.sh",
     "build:docs": "rm -rf dist/docs && typedoc src/ --out dist/docs --tsconfig tsconfig/docs.json --theme minimal",
+    "build:metrics-docs": "npm run cli -- translate src/metrics.yaml src/pings.yaml -o ../docs/reference/ --format markdown --allow-reserved",
     "publish:docs": "NODE_DEBUG=gh-pages gh-pages --dotfiles --message \"[skip ci] Updates\" --dist dist/docs",
     "prepublishOnly": "cp ../README.md ./README.md && run-s build:cli build:webext",
     "postpublish": "rm ./README.md",
