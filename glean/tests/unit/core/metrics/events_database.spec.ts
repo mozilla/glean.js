@@ -6,7 +6,7 @@ import assert from "assert";
 import Glean from "../../../../src/core/glean";
 
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import EventsDatabase from "../../../../src/core/metrics/events_database";
+import EventsDatabase, { getGleanRestartedEventMetric } from "../../../../src/core/metrics/events_database";
 import EventMetricType from "../../../../src/core/metrics/types/event";
 import type { JSONObject } from "../../../../src/core/utils";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
@@ -16,6 +16,7 @@ import { Context } from "../../../../src/core/context";
 import { RecordedEvent } from "../../../../src/core/metrics/events_database/recorded_event";
 import { GLEAN_EXECUTION_COUNTER_EXTRA_KEY } from "../../../../src/core/constants";
 import { collectPing } from "../../../../src/core/pings/maker";
+import { ErrorType } from "../../../../src/core/error/error_type";
 
 describe("EventsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -363,7 +364,9 @@ describe("EventsDatabase", function() {
       1000,
     ));
 
-    // Simulate a restart and use the new DB to check for injected events.
+    // Move the clock forward by one minute to look like Glean was really restarted.
+    Context.startTime.setTime(Context.startTime.getTime() + 1000 * 60);
+    // Fake a re-start.
     const db2 = new EventsDatabase(Glean.platform.Storage);
     await db2.initialize();
 
@@ -375,6 +378,10 @@ describe("EventsDatabase", function() {
       assert.strictEqual("event_injection", (snapshot[0] as JSONObject)["name"]);
       assert.strictEqual("glean", (snapshot[1] as JSONObject)["category"]);
       assert.strictEqual("restarted", (snapshot[1] as JSONObject)["name"]);
+
+      // Check that no errors were recorded for the `glean.restarted` metric.
+      const restartedMetric = getGleanRestartedEventMetric([store]);
+      assert.strictEqual(await restartedMetric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0);
     }
   });
 
@@ -422,6 +429,10 @@ describe("EventsDatabase", function() {
       assert.strictEqual(`stichting_test_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
       assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
       assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+
+      // Check that no errors were recorded for the `glean.restarted` metric.
+      const restartedMetric = getGleanRestartedEventMetric(["store"]);
+      assert.strictEqual(await restartedMetric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0);
     }
   });
 
@@ -470,6 +481,10 @@ describe("EventsDatabase", function() {
       assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
       assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
     }
+
+    // Time went backwards, so errors must have been recorded.
+    const restartedMetric = getGleanRestartedEventMetric(["store"]);
+    assert.strictEqual(await restartedMetric.testGetNumRecordedErrors(ErrorType.InvalidValue), 10);
   });
 
   it("events are correctly sorted if time decides to stand still throughout restarts", async function() {
@@ -516,6 +531,10 @@ describe("EventsDatabase", function() {
       assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
       assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
     }
+
+    // Time stood still, so an error must have been recorded.
+    const restartedMetric = getGleanRestartedEventMetric(["store"]);
+    assert.strictEqual(await restartedMetric.testGetNumRecordedErrors(ErrorType.InvalidValue), 10);
   });
 
   it("event timestamps are correct throughout a restart", async function () {
