@@ -12,6 +12,7 @@
     "strictNullChecks": true,
     "removeComments": true,
     "preserveConstEnums": true,
+    "downlevelIteration": true,
     "typeRoots": [
       "../node_modules/@types",
       "../node_modules/web-ext-types",
