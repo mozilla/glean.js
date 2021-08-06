@@ -29,11 +29,8 @@ jobs:
           name: Install JavaScript dependencies
           command: npm --prefix ./glean install
       - run:
-          name: Run linter
+          name: Run linters
           command: npm --prefix ./glean run lint
-      - run:
-          name: Run circular dependencies checker
-          command: npm --prefix ./glean run lint:circular-deps
 
   test:
     docker:
