@@ -386,7 +386,8 @@ glean:
     description: |
       Event that signals an application restart.
 
-      **This event is included in all pings (custom or otherwise) that contain events.**
+      **This event is included in all pings (custom or otherwise)
+      that contain events.**
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1716724
     data_reviews:
