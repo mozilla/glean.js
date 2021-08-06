@@ -9,9 +9,19 @@ version: 2.1
 jobs:
   lint:
     docker:
-      - image: cimg/python:3.9.4-node
+      - image: cimg/python:3.9.4
     steps:
       - checkout
+      - run:
+          name: Install NVM
+          command: |
+            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
+            export NVM_DIR="$HOME/.nvm"
+            echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
+            echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
+      - run:
+          name: Install Node.js
+          command: nvm install 16.5.0
       - run:
           name: Check that package-lock.json is updated as needed
           command: |
