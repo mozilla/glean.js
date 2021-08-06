@@ -13,6 +13,8 @@ import Plugin from "../../../../src/plugins";
 import type { JSONObject } from "../../../../src/core/utils";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
+import EventMetricType from "../../../../src/core/metrics/types/event";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
 
 const sandbox = sinon.createSandbox();
 
@@ -225,5 +227,48 @@ describe("PingMaker", function() {
 
     const recordedPings = await Context.pingsDatabase.getAllPings();
     assert.ok(!("ident" in recordedPings));
+  });
+
+  it("errors recorded during events collection make it to the current payload", async function () {
+    const ping = new PingType({
+      name: "aPing",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+    const event = new EventMetricType({
+      category: "test",
+      name: "aEvent",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    event.record();
+    // Wait for recording action to complete.
+    await event.testGetValue();
+
+    // Uninitialize and re=initialize manually instead of using testResetGlean
+    // in order to have control over the startTime at initialization.
+    await Glean.testUninitialize();
+    // Move the clock backwards by one hour.
+    //
+    // This will generate incoherent timestamps in events at collection time
+    // and record an `InvalidValue` error for the `glean.restarted` event.
+    Context.startTime.setTime(Context.startTime.getTime() - 1000 * 60 * 60);
+    Glean.initialize(testAppId, true);
+
+    event.record();
+    // Wait for recording action to complete.
+    await event.testGetValue();
+
+    await PingMaker.collectAndStorePing("ident", ping);
+    const allPings = Object.fromEntries(await Context.pingsDatabase.getAllPings());
+    const payload = allPings["ident"]["payload"];
+
+    // Check that the expected error metric is in the payload
+    assert.ok(payload?.metrics);
+    assert.deepStrictEqual(payload.metrics, {
+      labeled_counter: { "glean.error.invalid_value": { "glean.restarted": 1 } }
+    });
   });
 });

@@ -1,6 +1,6 @@
-// /* This Source Code Form is subject to the terms of the Mozilla Public
-//  * License, v. 2.0. If a copy of the MPL was not distributed with this
-//  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type Store from "../../storage/index.js";
 import type { JSONArray, JSONObject, JSONValue } from "../../utils.js";
@@ -17,6 +17,7 @@ import {
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
   GLEAN_REFERENCE_TIME_EXTRA_KEY
 } from "../../constants.js";
+import { ErrorType } from "../../error/error_type.js";
 
 const LOG_TAG = "core.Metric.EventsDatabase";
 
@@ -53,6 +54,22 @@ function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
 }
 
 /**
+ * Creates an `glean.restarted` event metric.
+ *
+ * @param sendInPings The list of pings this metric is sent in.
+ * @returns A metric type instance.
+ */
+export function getGleanRestartedEventMetric(sendInPings: string[]): EventMetricType {
+  return new EventMetricType({
+    category: "glean",
+    name: "restarted",
+    sendInPings: sendInPings,
+    lifetime: Lifetime.Ping,
+    disabled: false
+  }, [ GLEAN_REFERENCE_TIME_EXTRA_KEY ]);
+}
+
+/**
  * Records a `glean.restarted` event metric.
  *
  * @param sendInPings The list of pings this metric is sent in.
@@ -63,14 +80,7 @@ async function recordGleanRestartedEvent(
   sendInPings: string[],
   time = Context.startTime
 ): Promise<void> {
-  const metric = new EventMetricType({
-    category: "glean",
-    name: "restarted",
-    sendInPings: sendInPings,
-    lifetime: Lifetime.Ping,
-    disabled: false
-  }, [ GLEAN_REFERENCE_TIME_EXTRA_KEY ]);
-
+  const metric = getGleanRestartedEventMetric(sendInPings);
   await EventMetricType._private_recordUndispatched(
     metric,
     {
@@ -251,7 +261,7 @@ class EventsDatabase {
       return;
     }
 
-    const payload = this.prepareEventsPayload(pingData);
+    const payload = await this.prepareEventsPayload(ping, pingData);
     if (payload.length > 0) {
       return payload;
     }
@@ -265,10 +275,14 @@ class EventsDatabase {
    * 3. Removes the first event if it is a `glean.restarted` event;
    * 4. Removes reserved extra keys.
    *
+   * @param pingName The name of the ping for which the payload is being prepared.
    * @param pingData An unsorted list of events.
    * @returns An array of sorted events.
    */
-  private prepareEventsPayload(pingData: RecordedEvent[]): JSONArray {
+  private async prepareEventsPayload(
+    pingName: string,
+    pingData: RecordedEvent[]
+  ): Promise<JSONArray> {
     // Sort events by execution counter and by timestamp.
     const sortedEvents = pingData.sort((a, b) => {
       // TODO (bug 1693487): Remove the number casting once the new events API is implemented.
@@ -296,7 +310,7 @@ class EventsDatabase {
 
     const firstEventOffset = sortedEvents[0]?.timestamp || 0;
     let restartedOffset = 0;
-    sortedEvents.forEach((event, index) => {
+    for (const [index, event] of sortedEvents.entries()) {
       try {
         const nextRestartDate = createDateObject(event.extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
         const dateOffset = nextRestartDate.getTime() - lastRestartDate.getTime();
@@ -311,10 +325,14 @@ class EventsDatabase {
         const previousEventTimestamp = sortedEvents[index - 1].timestamp;
         if (newRestartedOffset <= previousEventTimestamp) {
           // In case the new offset results in descending timestamps,
-          // we increase the previous timestamp by one to make sure timestamps keep increasing.
-          //
-          // TODO (bug 1720467): Record an error when this happens.
+          // we increase the previous timestamp by one to make sure
+          // timestamps keep increasing.
           restartedOffset = previousEventTimestamp + 1;
+          await Context.errorManager.record(
+            getGleanRestartedEventMetric([pingName]),
+            ErrorType.InvalidValue,
+            `Invalid time offset between application sessions found for ping "${pingName}". Ignoring.`
+          );
         } else {
           restartedOffset = newRestartedOffset;
         }
@@ -344,7 +362,7 @@ class EventsDatabase {
         adjustedTimestamp,
         event.extra
       );
-    });
+    }
 
     return sortedEvents.map((e) => RecordedEvent.toJSONObject(e.withoutReservedExtras()));
   }
