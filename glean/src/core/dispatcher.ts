@@ -47,7 +47,7 @@ const enum Commands {
   // The dispatcher will clear the queue and go into the Shutdown state.
   Shutdown,
   // Exactly like a normal Task, but spawned for tests.
-  TestTask = "TestTask",
+  TestTask,
 }
 
 // A task the dispatcher knows how to execute.

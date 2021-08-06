@@ -6,12 +6,17 @@ import { gzipSync, strToU8 } from "fflate";
 
 import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
-import { DELETION_REQUEST_PING_NAME, GLEAN_VERSION } from "../constants.js";
+import { GLEAN_VERSION } from "../constants.js";
 import { Context } from "../context.js";
 import Dispatcher from "../dispatcher.js";
 import log, { LoggingLevel } from "../log.js";
-import type { Observer as PingsDatabaseObserver, PingInternalRepresentation } from "../pings/database.js";
-import type PingsDatabase from "../pings/database.js";
+import type {
+  Observer as PingsDatabaseObserver,
+  PingInternalRepresentation
+} from "../pings/database.js";
+import {
+  isDeletionRequest
+} from "../pings/database.js";
 import type PlatformInfo from "../platform_info.js";
 import { UploadResult } from "./uploader.js";
 import type Uploader from "./uploader.js";
@@ -51,16 +56,6 @@ interface QueuedPing extends PingInternalRepresentation {
   retries: number,
 }
 
-/**
- * Whether or not a given queued ping is a deletion-request ping.
- *
- * @param ping The ping to verify.
- * @returns Whether or not the ping is a deletion-request ping.
- */
-function isDeletionRequest(ping: QueuedPing): boolean {
-  return ping.path.split("/")[3] === DELETION_REQUEST_PING_NAME;
-}
-
 // Error to be thrown in case the final ping body is larger than MAX_PING_BODY_SIZE.
 class PingBodyOverflowError extends Error {
   constructor(message?: string) {
@@ -95,8 +90,8 @@ class PingUploader implements PingsDatabaseObserver {
   constructor(
     config: Configuration,
     platform: Platform,
-    private readonly pingsDatabase: PingsDatabase,
-    private readonly policy = new Policy
+    private readonly pingsDatabase = Context.pingsDatabase,
+    private readonly policy = new Policy()
   ) {
     this.processing = [];
     // Initialize the ping uploader with either the platform defaults or a custom
@@ -104,7 +99,6 @@ class PingUploader implements PingsDatabaseObserver {
     this.uploader = config.httpClient ? config.httpClient : platform.uploader;
     this.platformInfo = platform.info;
     this.serverEndpoint = config.serverEndpoint;
-    this.pingsDatabase = pingsDatabase;
 
     // Initialize the dispatcher immediatelly.
     this.dispatcher = createAndInitializeDispatcher();
@@ -129,6 +123,7 @@ class PingUploader implements PingsDatabaseObserver {
 
     // If the ping is a deletion-request ping, we want to enqueue it as a persistent task,
     // so that clearing the queue does not clear it.
+    //
     // eslint-disable-next-line @typescript-eslint/unbound-method
     const launchFn = isDeletionRequest(ping) ? this.dispatcher.launchPersistent : this.dispatcher.launch;
 
@@ -303,7 +298,6 @@ class PingUploader implements PingsDatabaseObserver {
     if (status && status >= 200 && status < 300) {
       log(LOG_TAG, `Ping ${identifier} succesfully sent ${status}.`, LoggingLevel.Info);
       await this.pingsDatabase.deletePing(identifier);
-      this.processing;
       return false;
     }
 

@@ -3,6 +3,8 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.18.1...main)
 
 * [#534](https://github.com/mozilla/glean.js/pull/534): Expose `Uploader` base class through `@mozilla/glean/<platform>/uploader` entry point.
+* [#580](https://github.com/mozilla/glean.js/pull/580): Limit size of pings database to 250 pings or 10MB.
+* [#580](https://github.com/mozilla/glean.js/pull/580): BUGFIX: Pending pings at startup up are uploaded from oldest to newest.
 
 # v0.18.1 (2021-07-22)
 

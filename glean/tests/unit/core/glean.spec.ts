@@ -501,8 +501,8 @@ describe("Glean", function() {
     await Context.dispatcher.testBlockOnQueue();
     const storedPings = await Context.pingsDatabase.getAllPings();
     const counterValues = [];
-    for (const ident in storedPings) {
-      const metrics = storedPings[ident].payload.metrics;
+    for (const [_, ping] of storedPings) {
+      const metrics = ping.payload.metrics;
       const counterValue = isObject(metrics) && isObject(metrics.counter) ? metrics.counter["aCategory.aCounterMetric"] : undefined;
       // Get the value of `aCounterMetric` inside each submitted ping.
       counterValues.push(Number(counterValue));

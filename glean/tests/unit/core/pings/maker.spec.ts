@@ -151,12 +151,16 @@ describe("PingMaker", function() {
     });
 
     await PingMaker.collectAndStorePing("ident", ping);
-    const recordedPing = (await Context.pingsDatabase.getAllPings())["ident"];
+    const recordedPing = Object.fromEntries(
+      (await Context.pingsDatabase.getAllPings())
+    )["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
 
     await Glean.testResetGlean(testAppId, true);
     await PingMaker.collectAndStorePing("ident", ping);
-    const recordedPingNoPlugin = (await Context.pingsDatabase.getAllPings())["ident"];
+    const recordedPingNoPlugin = Object.fromEntries(
+      (await Context.pingsDatabase.getAllPings())
+    )["ident"];
     assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
   });
 
@@ -184,7 +188,9 @@ describe("PingMaker", function() {
     // because the first one contains the log tag.
     const loggedPayload = JSON.parse(consoleSpy.lastCall.args[1]) as JSONObject;
 
-    const recordedPing = (await Context.pingsDatabase.getAllPings())["ident"];
+    const recordedPing = Object.fromEntries(
+      (await Context.pingsDatabase.getAllPings())
+    )["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
     assert.notDeepStrictEqual(loggedPayload, { "you": "got mocked!" });
     assert.ok("client_info" in loggedPayload);
