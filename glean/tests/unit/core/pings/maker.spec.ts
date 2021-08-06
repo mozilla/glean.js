@@ -262,10 +262,11 @@ describe("PingMaker", function() {
     await event.testGetValue();
 
     await PingMaker.collectAndStorePing("ident", ping);
-    const payload = (await Context.pingsDatabase.getAllPings())["ident"]["payload"];
+    const allPings = Object.fromEntries(await Context.pingsDatabase.getAllPings());
+    const payload = allPings["ident"]["payload"];
 
     // Check that the expected error metric is in the payload
-    assert.ok(payload.metrics);
+    assert.ok(payload?.metrics);
     assert.deepStrictEqual(payload.metrics, {
       labeled_counter: { "glean.error.invalid_value": { "glean.restarted": 1 } }
     });
