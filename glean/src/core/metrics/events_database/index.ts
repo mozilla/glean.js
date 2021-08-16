@@ -278,7 +278,7 @@ class EventsDatabase {
    * 1. Sorts event by execution counter and timestamp;
    * 2. Applies offset to events timestamps;
    * 3. Removes the first event if it is a `glean.restarted` event;
-   * 4. Removes reserved extra keys.
+   * 4. Removes reserved extra keys and stringifies all extras values.
    *
    * @param pingName The name of the ping for which the payload is being prepared.
    * @param pingData An unsorted list of events.
@@ -368,7 +368,7 @@ class EventsDatabase {
       );
     }
 
-    return sortedEvents.map((e) => RecordedEvent.toJSONObject(e.withoutReservedExtras()));
+    return sortedEvents.map((e) => RecordedEvent.toJSONObject(e.payload()));
   }
 
   /**

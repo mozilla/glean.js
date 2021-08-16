@@ -139,9 +139,15 @@ for_testing:
     send_in_pings:
       - testing
     extra_keys:
-      sample:
-        description: |
-          Sample extra key.
+      sample_string:
+        description: Sample string extra key.
+        type: string
+      sample_boolean:
+        description: Sample boolean extra key.
+        type: boolean
+      sample_quantity:
+        description: Sample quantity extra key.
+        type: quantity
   quantity:
     type: quantity
     description: |
