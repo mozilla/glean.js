@@ -32,7 +32,8 @@
     "jsdoc/require-returns-type": "off",
     "import/no-named-as-default": "off",
     "import/no-duplicates": "off",
-    "import/no-unresolved": "off"
+    "import/no-unresolved": "off",
+    "import/no-named-as-default-member": "off"
   },
   "extends": [
     "plugin:jsdoc/recommended",
