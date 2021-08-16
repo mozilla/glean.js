@@ -4,6 +4,7 @@
 
 import type Store from "../../storage/index.js";
 import type { JSONArray, JSONObject, JSONValue } from "../../utils.js";
+import { isString } from "../../utils.js";
 import type { StorageBuilder } from "../../../platform/index.js";
 import { isUndefined } from "../../utils.js";
 import EventMetricType from "../types/event.js";
@@ -12,6 +13,7 @@ import CounterMetricType from "../types/counter.js";
 import { Lifetime } from "../lifetime.js";
 import { Context } from "../../context.js";
 import { generateReservedMetricIdentifiers } from "../database.js";
+import type { ExtraValues} from "./recorded_event.js";
 import { RecordedEvent } from "./recorded_event.js";
 import {
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
@@ -29,7 +31,11 @@ const LOG_TAG = "core.Metric.EventsDatabase";
  * @param str The string to generate a date from.
  * @returns The Date object created.
  */
-function createDateObject(str = ""): Date {
+function createDateObject(str?: ExtraValues): Date {
+  if (!isString(str)) {
+    str = "";
+  }
+
   const date = new Date(str);
   // Date object will not throw errors when we attempt to create an invalid date.
   if (isNaN(date.getTime())) {
@@ -158,7 +164,7 @@ class EventsDatabase {
     for (const ping of metric.sendInPings) {
       const executionCounter = getExecutionCounterMetric([ping]);
 
-      let currentExecutionCount = await Context.metricsDatabase.getMetric(ping, executionCounter);
+      let currentExecutionCount = await Context.metricsDatabase.getMetric<number>(ping, executionCounter);
       // There might not be an execution counter stored in case:
       //
       // 1. The ping was already sent during this session and the events storage was cleared;
@@ -171,8 +177,7 @@ class EventsDatabase {
         // this must **always** be the first event of any events list.
         await recordGleanRestartedEvent([ping], new Date());
       }
-      // TODO (bug 1693487): Remove the stringification once the new events API is implemented.
-      value.addExtra(GLEAN_EXECUTION_COUNTER_EXTRA_KEY, currentExecutionCount.toString());
+      value.addExtra(GLEAN_EXECUTION_COUNTER_EXTRA_KEY, currentExecutionCount);
 
       const transformFn = (v?: JSONValue): JSONArray => {
         const existing: JSONArray = (v as JSONArray) ?? [];
@@ -285,7 +290,6 @@ class EventsDatabase {
   ): Promise<JSONArray> {
     // Sort events by execution counter and by timestamp.
     const sortedEvents = pingData.sort((a, b) => {
-      // TODO (bug 1693487): Remove the number casting once the new events API is implemented.
       const executionCounterA = Number(a.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
       const executionCounterB = Number(b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
       // Sort by execution counter, in case they are different.

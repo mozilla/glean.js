@@ -199,7 +199,7 @@ describe("EventsDatabase", function() {
       // We need to use `getAndValidatePingData` here,
       // because the public function will strip reserved extra keys.
       const rawRecordedEvent = (await db["getAndValidatePingData"](ping))[0];
-      assert.strictEqual(rawRecordedEvent.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
+      assert.strictEqual(rawRecordedEvent.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
     }
   });
 
@@ -271,8 +271,8 @@ describe("EventsDatabase", function() {
     // We expect only two events here, restarted and the above. Execution counter 1.
     const rawRecordedEvents1 = (await db["getAndValidatePingData"]("aPing"));
     assert.strictEqual(rawRecordedEvents1.length, 2);
-    assert.strictEqual(rawRecordedEvents1[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
-    assert.strictEqual(rawRecordedEvents1[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
+    assert.strictEqual(rawRecordedEvents1[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents1[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
 
     // Fake restart Glean and record a new event.
     const restartedDb = new EventsDatabase(Glean.platform.Storage);
@@ -288,15 +288,15 @@ describe("EventsDatabase", function() {
     // the next two events are this run's restart event + the event we just recorded and both are execution counter 2.
     const rawRecordedEvents2 = (await db["getAndValidatePingData"]("aPing"))
       .sort((a, b) => {
-        const executionCounterA = parseInt(a.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || "0");
-        const executionCounterB = parseInt(b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || "0");
+        const executionCounterA = a.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] as number;
+        const executionCounterB = b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] as number;
         return executionCounterA - executionCounterB;
       });
     assert.strictEqual(rawRecordedEvents2.length, 4);
-    assert.strictEqual(rawRecordedEvents2[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
-    assert.strictEqual(rawRecordedEvents2[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
-    assert.strictEqual(rawRecordedEvents2[2].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "2");
-    assert.strictEqual(rawRecordedEvents2[3].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "2");
+    assert.strictEqual(rawRecordedEvents2[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents2[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents2[2].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 2);
+    assert.strictEqual(rawRecordedEvents2[3].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 2);
 
     ping.submit();
     // Sanity check that the execution counter was cleared.
@@ -311,8 +311,8 @@ describe("EventsDatabase", function() {
     // We expect only two events again, the other have been cleared, execution counter 1.
     const rawRecordedEvents3 = (await db["getAndValidatePingData"]("aPing"));
     assert.strictEqual(rawRecordedEvents3.length, 2);
-    assert.strictEqual(rawRecordedEvents3[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
-    assert.strictEqual(rawRecordedEvents3[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], "1");
+    assert.strictEqual(rawRecordedEvents3[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents3[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
   });
 
   it("reserved extra properties are removed from the recorded events", async function () {

@@ -5,8 +5,9 @@
 import { GLEAN_RESERVED_EXTRA_KEYS } from "../../constants.js";
 import type { JSONObject } from "../../utils.js";
 
-// An helper type for the 'extra' map.
-export type ExtraMap = Record<string, string>;
+export type ExtraValues = string | boolean | number;
+// A helper type for the 'extra' map.
+export type ExtraMap = Record<string, ExtraValues>;
 
 // Represents the recorded data for a single event.
 export class RecordedEvent {
@@ -53,7 +54,7 @@ export class RecordedEvent {
    * @param key The key to add.
    * @param value The value of the key.
    */
-  addExtra(key: string, value: string): void {
+  addExtra(key: string, value: ExtraValues): void {
     if (!this.extra) {
       this.extra = {};
     }

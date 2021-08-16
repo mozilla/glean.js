@@ -234,4 +234,50 @@ describe("EventMetric", function() {
       event.extra["truncatedExtra"]
     );
   });
+
+  it("all types of event keys are recorded correctly", async function () {
+    const event = new EventMetricType<{
+      "string"?: string,
+      "boolean"?: boolean,
+      "number"?: number
+    }>({
+      category: "test",
+      name: "event",
+      sendInPings: ["store1"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, ["string", "boolean", "number"]);
+
+    event.record({
+      "string": "aString",
+      "boolean": false,
+      "number": 42
+    });
+    // Record again with incomplete extras
+    event.record({
+      "string": "twoString",
+      "boolean": true,
+    });
+    // Record again without extras
+    event.record();
+
+    const snapshot = await event.testGetValue();
+    assert.ok(snapshot);
+    assert.strictEqual(snapshot.length, 3);
+
+    const extras1 = snapshot[0].extra;
+    assert.ok(extras1);
+    assert.strictEqual(extras1["string"], "aString");
+    assert.strictEqual(extras1["boolean"], false);
+    assert.strictEqual(extras1["number"], 42);
+
+    const extras2 = snapshot[1].extra;
+    assert.ok(extras2);
+    assert.strictEqual(extras2["string"], "twoString");
+    assert.strictEqual(extras2["boolean"], true);
+    assert.strictEqual(extras2["number"], undefined);
+
+    const extras3 = snapshot[2].extra;
+    assert.ok(!extras3);
+  });
 });
