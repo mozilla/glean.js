@@ -60,7 +60,11 @@ describe("schema", function() {
     metrics.boolean.set(false);
     metrics.counter.add(10);
     metrics.datetime.set();
-    metrics.event.record({ sample: "hey" });
+    metrics.event.record({
+      sample_string: "hey",
+      sample_boolean: false,
+      sample_quantity: 42,
+    });
     metrics.labeledBoolean["a_label"].set(true);
     metrics.labeledCounter["a_label"].add();
     metrics.labeledString["a_label"].set("ho");

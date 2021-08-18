@@ -6,7 +6,7 @@ import type { CommonMetricData } from "../index.js";
 import type { ExtraMap } from "../events_database/recorded_event.js";
 import { MetricType } from "../index.js";
 import { RecordedEvent } from "../events_database/recorded_event.js";
-import { getMonotonicNow, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { getMonotonicNow, isString, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 
@@ -15,7 +15,7 @@ const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 /**
  * An event metric.
  */
-class EventMetricType extends MetricType {
+class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends MetricType {
   private allowedExtraKeys?: string[];
 
   constructor(meta: CommonMetricData, allowedExtraKeys?: string[]) {
@@ -33,10 +33,8 @@ class EventMetricType extends MetricType {
    * that the recording of the metric will happen in order with other Glean API calls.
    *
    * @param instance The metric instance to record to.
-   * @param extra optional. This is a map, both keys and values need to be
-   *        strings, keys are identifiers. This is used for events where
-   *        additional richer context is needed.
-   *        The maximum length for values is 100 bytes.
+   * @param extra optional. Used for events where additional richer context is needed.
+   *        The maximum length for string values is 100 bytes.
    * @param timestamp The event timestamp, defaults to now.
    * @returns A promise that resolves once the event is recorded.
    */
@@ -55,7 +53,11 @@ class EventMetricType extends MetricType {
       truncatedExtra = {};
       for (const [name, value] of Object.entries(extra)) {
         if (instance.allowedExtraKeys.includes(name)) {
-          truncatedExtra[name] = await truncateStringAtBoundaryWithError(instance, value, MAX_LENGTH_EXTRA_KEY_VALUE);
+          if (isString(value)) {
+            truncatedExtra[name] = await truncateStringAtBoundaryWithError(instance, value, MAX_LENGTH_EXTRA_KEY_VALUE);
+          } else {
+            truncatedExtra[name] = value;
+          }
         } else {
           await Context.errorManager.record(instance, ErrorType.InvalidValue, `Invalid key index: ${name}`);
           continue;
@@ -77,12 +79,10 @@ class EventMetricType extends MetricType {
   /**
    * Record an event.
    *
-   * @param extra optional. This is a map, both keys and values need to be
-   *        strings, keys are identifiers. This is used for events where
-   *        additional richer context is needed.
-   *        The maximum length for values is 100 bytes.
+   * @param extra optional. Used for events where additional richer context is needed.
+   *        The maximum length for string values is 100 bytes.
    */
-  record(extra?: ExtraMap): void {
+  record(extra?: SpecificExtraMap): void {
     const timestamp = getMonotonicNow();
 
     Context.dispatcher.launch(async () => {

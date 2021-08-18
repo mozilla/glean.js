@@ -5,8 +5,9 @@
 import { GLEAN_RESERVED_EXTRA_KEYS } from "../../constants.js";
 import type { JSONObject } from "../../utils.js";
 
-// An helper type for the 'extra' map.
-export type ExtraMap = Record<string, string>;
+export type ExtraValues = string | boolean | number;
+// A helper type for the 'extra' map.
+export type ExtraMap = Record<string, ExtraValues>;
 
 // Represents the recorded data for a single event.
 export class RecordedEvent {
@@ -47,13 +48,27 @@ export class RecordedEvent {
     );
   }
 
+  private static withTransformedExtras(
+    e: RecordedEvent,
+    transformFn: (extras: ExtraMap) => ExtraMap
+  ): RecordedEvent {
+    const extras = e.extra || {};
+    const transformedExtras = transformFn(extras);
+    return new RecordedEvent(
+      e.category,
+      e.name,
+      e.timestamp,
+      (transformedExtras && Object.keys(transformedExtras).length > 0) ? transformedExtras : undefined
+    );
+  }
+
   /**
    * Add another extra key to a RecordedEvent object.
    *
    * @param key The key to add.
    * @param value The value of the key.
    */
-  addExtra(key: string, value: string): void {
+  addExtra(key: string, value: ExtraValues): void {
     if (!this.extra) {
       this.extra = {};
     }
@@ -68,19 +83,38 @@ export class RecordedEvent {
    * @returns A new RecordedEvent object.
    */
   withoutReservedExtras(): RecordedEvent {
-    const extras = this.extra || {};
-    const filteredExtras = Object.keys(extras)
-      .filter(key => !GLEAN_RESERVED_EXTRA_KEYS.includes(key))
-      .reduce((obj: ExtraMap, key) => {
-        obj[key] = extras[key];
-        return obj;
-      }, {});
+    return RecordedEvent.withTransformedExtras(
+      this,
+      (extras: ExtraMap): ExtraMap => {
+        return Object.keys(extras)
+          .filter(key => !GLEAN_RESERVED_EXTRA_KEYS.includes(key))
+          .reduce((obj: ExtraMap, key) => {
+            obj[key] = extras[key];
+            return obj;
+          }, {});
+      }
+    );
+  }
 
-    return new RecordedEvent(
-      this.category,
-      this.name,
-      this.timestamp,
-      (filteredExtras && Object.keys(filteredExtras).length > 0) ? filteredExtras : undefined
+  /**
+   * Generate a new RecordedEvent object,
+   * in the format expected on ping payloads.
+   *
+   * Strips reserved extra keys
+   * and stringifies all event extras.
+   *
+   * @returns A new RecordedEvent object.
+   */
+  payload(): RecordedEvent {
+    return RecordedEvent.withTransformedExtras(
+      this.withoutReservedExtras(),
+      (extras: ExtraMap): ExtraMap => {
+        return Object.keys(extras)
+          .reduce((extra: Record<string, string>, key) => {
+            extra[key] = extras[key].toString();
+            return extra;
+          }, {});
+      }
     );
   }
 }
