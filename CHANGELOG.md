@@ -11,6 +11,7 @@
   * Only up to 15 ping submissions every 60 seconds are now allowed.
 * [#658](https://github.com/mozilla/glean.js/pull/658): BUGFIX: Unblock ping uploading jobs after the maximum of upload failures are hit for a given uploading window.
 * [#661](https://github.com/mozilla/glean.js/pull/661): Include unminified version of library on Qt/QML builds.
+* [#647](https://github.com/mozilla/glean.js/pull/647): Implement the Text metric type.
 
 # v0.18.1 (2021-07-22)
 
