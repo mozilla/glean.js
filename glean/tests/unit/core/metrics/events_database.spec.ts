@@ -3,8 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import Glean from "../../../../src/core/glean";
+import type { SinonFakeTimers } from "sinon";
+import sinon from "sinon";
 
+import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import EventsDatabase, { getGleanRestartedEventMetric } from "../../../../src/core/metrics/events_database";
 import EventMetricType from "../../../../src/core/metrics/types/event";
@@ -18,11 +20,21 @@ import { GLEAN_EXECUTION_COUNTER_EXTRA_KEY } from "../../../../src/core/constant
 import { collectPing } from "../../../../src/core/pings/maker";
 import { ErrorType } from "../../../../src/core/error/error_type";
 
+const sandbox = sinon.createSandbox();
+const now = new Date();
+
 describe("EventsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
+  let clock: SinonFakeTimers;
 
   beforeEach(async function() {
+    clock = sandbox.useFakeTimers(now.getTime());
     await Glean.testResetGlean(testAppId);
+  });
+
+  afterEach(function () {
+    sandbox.restore();
+    clock.restore();
   });
 
   it("stable serialization", function () {
