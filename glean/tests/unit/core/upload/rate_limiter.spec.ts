@@ -70,4 +70,22 @@ describe("RateLimiter", function() {
     assert.strictEqual(nextState.state, RateLimiterState.Throttled);
     assert.ok(nextState.remainingTime as number <= 1000 && nextState.remainingTime as number > 0);
   });
+
+  it("rate limiter returns stopped state when it is stopped", function () {
+    const rateLimiter = new RateLimiter(
+      1000, /* interval */
+      3, /* maxCount */
+    );
+
+    // Don't reach the count for the current interval.
+    assert.deepStrictEqual(rateLimiter.getState(), { state: RateLimiterState.Incrementing });
+
+    // Stop the rate limiter
+    rateLimiter.stop();
+
+    // Try one more time and we should be stopped.
+    const nextState = rateLimiter.getState();
+    assert.strictEqual(nextState.state, RateLimiterState.Stopped);
+    assert.ok(nextState.remainingTime as number <= 1000 && nextState.remainingTime as number > 0);
+  });
 });
