@@ -7,6 +7,7 @@
 * [#580](https://github.com/mozilla/glean.js/pull/580): BUGFIX: Pending pings at startup up are uploaded from oldest to newest.
 * [#607](https://github.com/mozilla/glean.js/pull/607): Record an error when incoherent timestamps are calculated for events after a restart.
 * [#630](https://github.com/mozilla/glean.js/pull/630): Accept booleans and numbers as event extras.
+* [#614](https://github.com/mozilla/glean.js/pull/614): Implement the String List metric type.
 
 # v0.18.1 (2021-07-22)
 
