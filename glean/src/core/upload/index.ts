@@ -148,7 +148,7 @@ class PingUploader implements PingsDatabaseObserver {
         log(
           LOG_TAG,
           [
-            "Attempted to upload a ping, but Glean is has reached maximum recoverable upload failures",
+            "Attempted to upload a ping, but Glean has reached maximum recoverable upload failures",
             "for the current uploading window.",
             `Will retry in ${(remainingTime || 0) / 1000}s.`
           ],
