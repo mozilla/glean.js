@@ -147,7 +147,7 @@ describe("StringListMetric", function() {
     }
 
     metric.set(testStringList);
-    await metric.add(testString);
+    metric.add(testString);
     assert.strictEqual(
       await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0
     );
@@ -158,7 +158,7 @@ describe("StringListMetric", function() {
       testStringList
     );
 
-    await metric.add(testString);
+    metric.add(testString);
     assert.strictEqual(
       await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1
     );

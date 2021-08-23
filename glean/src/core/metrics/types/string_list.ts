@@ -6,7 +6,8 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
-import { isString, JSONValue, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { isString, truncateStringAtBoundaryWithError } from "../../utils.js";
+import type { JSONValue } from "../../utils.js";
 import { ErrorType } from "../../error/error_type.js";
 
 export const MAX_LIST_LENGTH = 20;
@@ -79,7 +80,7 @@ class StringListMetricType extends MetricType {
 
       for (let i = 0; i < Math.min(value.length, MAX_LIST_LENGTH); ++i) {
         const truncatedString = await truncateStringAtBoundaryWithError(this, value[i], MAX_STRING_LENGTH);
-        truncatedList.push(truncatedString)
+        truncatedList.push(truncatedString);
       }
       const metric = new StringListMetric(truncatedList);
       await Context.metricsDatabase.record(this, metric);
@@ -104,6 +105,7 @@ class StringListMetricType extends MetricType {
       }
 
       const truncatedValue = await truncateStringAtBoundaryWithError(this, value, MAX_STRING_LENGTH);
+      let currentLen = -1;
 
       const transformFn = ((value) => {
         return (v?: JSONValue): StringListMetric => {
@@ -112,26 +114,28 @@ class StringListMetricType extends MetricType {
           try {
             metric = new StringListMetric(v);
             result = metric.get();
+            currentLen = result.length;
             if (result.length < MAX_LIST_LENGTH) {
               result.push(value);
-            } else {
-              Context.errorManager.record(
-                this,
-                ErrorType.InvalidValue,
-                `String list length of ${result.length}+1 exceeds maximum of ${MAX_LIST_LENGTH}.`
-              );
             }
           } catch {
             metric = new StringListMetric([value]);
             result = [value];
           }
-
           metric.set(result);
-          return metric
-        }
+          return metric;
+        };
       })(truncatedValue);
 
       await Context.metricsDatabase.transform(this, transformFn);
+
+      if (currentLen == MAX_LIST_LENGTH) {
+        await Context.errorManager.record(
+          this,
+          ErrorType.InvalidValue,
+          `String list length of ${currentLen}+1 exceeds maximum of ${MAX_LIST_LENGTH}.`
+        );
+      }
     });
   }
 
