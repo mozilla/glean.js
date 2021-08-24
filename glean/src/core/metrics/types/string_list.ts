@@ -135,7 +135,7 @@ class StringListMetricType extends MetricType {
         await Context.errorManager.record(
           this,
           ErrorType.InvalidValue,
-          `String list length of ${currentLen}+1 exceeds maximum of ${MAX_LIST_LENGTH}.`
+          `String list length of ${currentLen+1} exceeds maximum of ${MAX_LIST_LENGTH}.`
         );
       }
     });
