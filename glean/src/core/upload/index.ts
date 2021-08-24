@@ -21,8 +21,14 @@ import type PlatformInfo from "../platform_info.js";
 import { UploadResult } from "./uploader.js";
 import type Uploader from "./uploader.js";
 import { UploadResultStatus } from "./uploader.js";
+import RateLimiter, { RateLimiterState } from "./rate_limiter.js";
 
 const LOG_TAG = "core.Upload";
+
+// Default rate limiter interval, in milliseconds.
+const RATE_LIMITER_INTERVAL_MS = 60 * 1000;
+// Default max pings per internal.
+const MAX_PINGS_PER_INTERVAL = 15;
 
 /**
  * Create and initialize a dispatcher for the PingUplaoder.
@@ -91,7 +97,8 @@ class PingUploader implements PingsDatabaseObserver {
     config: Configuration,
     platform: Platform,
     private readonly pingsDatabase = Context.pingsDatabase,
-    private readonly policy = new Policy()
+    private readonly policy = new Policy(),
+    private readonly rateLimiter = new RateLimiter(RATE_LIMITER_INTERVAL_MS, MAX_PINGS_PER_INTERVAL)
   ) {
     this.processing = [];
     // Initialize the ping uploader with either the platform defaults or a custom
@@ -121,6 +128,35 @@ class PingUploader implements PingsDatabaseObserver {
     // Add the ping to the list of pings being processsed.
     this.processing.push(ping);
 
+    const { state: rateLimiterState, remainingTime } = this.rateLimiter.getState();
+    if (rateLimiterState === RateLimiterState.Incrementing) {
+      this.dispatcher.resume();
+    } else {
+      this.dispatcher.stop();
+
+      if (rateLimiterState === RateLimiterState.Throttled) {
+        log(
+          LOG_TAG,
+          [
+            "Attempted to upload a ping, but Glean is currently throttled.",
+            `Pending pings will be processed in ${(remainingTime || 0) / 1000}s.`
+          ],
+          LoggingLevel.Debug
+        );
+      }
+      else if (rateLimiterState === RateLimiterState.Stopped) {
+        log(
+          LOG_TAG,
+          [
+            "Attempted to upload a ping, but Glean has reached maximum recoverable upload failures",
+            "for the current uploading window.",
+            `Will retry in ${(remainingTime || 0) / 1000}s.`
+          ],
+          LoggingLevel.Debug
+        );
+      }
+    }
+
     // If the ping is a deletion-request ping, we want to enqueue it as a persistent task,
     // so that clearing the queue does not clear it.
     //
@@ -143,6 +179,7 @@ class PingUploader implements PingsDatabaseObserver {
           `Reached maximum recoverable failures for ping "${JSON.stringify(ping.name)}". You are done.`,
           LoggingLevel.Info
         );
+        this.rateLimiter.stop();
         this.dispatcher.stop();
         ping.retries = 0;
       }
