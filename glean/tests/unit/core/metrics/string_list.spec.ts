@@ -140,11 +140,8 @@ describe("StringListMetric", function() {
       disabled: false,
     });
 
-    const testStringList = [];
     const testString = "test";
-    for(let i = 0; i < MAX_LIST_LENGTH - 1; ++i) {
-      testStringList.push(testString);
-    }
+    const testStringList = Array(MAX_LIST_LENGTH - 1).fill(testString);
 
     metric.set(testStringList);
     metric.add(testString);

@@ -26,6 +26,7 @@ export class StringListMetric extends Metric<string[], string[]> {
     if (v.length > MAX_LIST_LENGTH) {
       return false;
     }
+
     for (const s of v) {
       if (!isString(s) || s.length > MAX_STRING_LENGTH) {
         return false;
@@ -57,18 +58,19 @@ class StringListMetricType extends MetricType {
    *
    * # Note
    *
-   * Truncates the list if it is longer than `MAX_LIST_LENGTH` and logs an error.
+   * Truncates the list if it is longer than `MAX_LIST_LENGTH` and records an error.
    *
-   * Truncates the value if it is longer than `MAX_STRING_LENGTH` bytes
-   * and logs an error.
+   * Truncates the value if it is longer than `MAX_STRING_LENGTH` characters
+   * and records an error.
    *
-   * @param value the list of string to set the metric to.
+   * @param value The list of strings to set the metric to.
    */
   set(value: string[]): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
+
       const truncatedList: string[] = [];
       if (value.length > MAX_LIST_LENGTH) {
         await Context.errorManager.record(
