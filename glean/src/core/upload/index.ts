@@ -26,7 +26,7 @@ import RateLimiter, { RateLimiterState } from "./rate_limiter.js";
 const LOG_TAG = "core.Upload";
 
 // Default rate limiter interval, in milliseconds.
-const RATE_LIMITER_INTERVAL = 60 * 1000;
+const RATE_LIMITER_INTERVAL_MS = 60 * 1000;
 // Default max pings per internal.
 const MAX_PINGS_PER_INTERVAL = 15;
 
