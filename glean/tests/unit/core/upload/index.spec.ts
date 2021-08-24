@@ -137,15 +137,12 @@ describe("PingUploader", function() {
     assert.deepStrictEqual(Object.keys(allPings).length, 1);
   });
 
-  it("duplicates are not enqueued", function() {
-    // Don't initialize to keep the dispatcher in an uninitialized state
-    // thus making sure no upload attempt is executed and we can look at the dispatcher queue.
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
-    // Stop the dispatcher so that pings can be enqueued but not sent.
-    uploader["dispatcher"].stop();
+  it("duplicates are not enqueued", async function() {
+    const httpClient = new CounterUploader();
+    await Glean.testResetGlean(testAppId, true, { httpClient });
 
     for (let i = 0; i < 10; i++) {
-      uploader["enqueuePing"]({
+      Glean["pingUploader"]["enqueuePing"]({
         collectionDate: (new Date()).toISOString(),
         identifier: "id",
         retries: 0,
@@ -163,7 +160,8 @@ describe("PingUploader", function() {
       });
     }
 
-    assert.strictEqual(uploader["dispatcher"]["queue"].length, 1);
+    await Glean["pingUploader"].testBlockOnPingsQueue();
+    assert.strictEqual(httpClient.count, 1);
   });
 
   it("maximum of recoverable errors is enforced", async function () {
