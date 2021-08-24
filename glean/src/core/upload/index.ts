@@ -98,7 +98,7 @@ class PingUploader implements PingsDatabaseObserver {
     platform: Platform,
     private readonly pingsDatabase = Context.pingsDatabase,
     private readonly policy = new Policy(),
-    private readonly rateLimiter = new RateLimiter(RATE_LIMITER_INTERVAL, MAX_PINGS_PER_INTERVAL)
+    private readonly rateLimiter = new RateLimiter(RATE_LIMITER_INTERVAL_MS, MAX_PINGS_PER_INTERVAL)
   ) {
     this.processing = [];
     // Initialize the ping uploader with either the platform defaults or a custom

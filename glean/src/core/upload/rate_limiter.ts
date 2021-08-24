@@ -13,9 +13,6 @@ export const enum RateLimiterState {
   // The RateLimiter has not reached the maximum count, but it is also not incrementing.
   Stopped,
   // The RateLimiter has reached the maximum count for the current interval.
-  //
-  // This variant contains the remaining time (in milliseconds)
-  // until the rate limiter is not throttled anymore.
   Throttled,
 }
 
@@ -62,7 +59,7 @@ class RateLimiter {
   /**
    * The rate limiter should reset if
    *
-   * 1. It has never started;
+   * 1. It has never started i.e. `started` is still `undefined`;
    * 2. It has been started more than the interval time ago;
    * 3. Something goes wrong while trying to calculate the elapsed time since the last reset.
    *
