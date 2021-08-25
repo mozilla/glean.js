@@ -180,7 +180,14 @@ class QMLStore implements Store {
 
   async get(index: StorageIndex): Promise<JSONValue | undefined> {
     const obj = (await this._getFullResultObject(index)) || {};
-    return getValueFromNestedObject(obj, index);
+    try {
+      return getValueFromNestedObject(obj, index);
+    } catch(e) {
+      log(LOG_TAG, [
+        "Error getting value from database.",
+        JSON.stringify((e as Error).message)
+      ]);
+    }
   }
 
   async update(
