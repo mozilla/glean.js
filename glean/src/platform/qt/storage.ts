@@ -129,7 +129,7 @@ class QMLStore implements Store {
     } catch(e) {
       log(
         LOG_TAG,
-        ["Error while attempting to access LocalStorage.\n", e],
+        ["Error while attempting to access LocalStorage.\n", JSON.stringify(e)],
         LoggingLevel.Debug
       );
     } finally {
@@ -152,7 +152,7 @@ class QMLStore implements Store {
       } catch (e) {
         log(
           LOG_TAG,
-          [`Error executing LocalStorage query: ${query}.\n`, e],
+          [`Error executing LocalStorage query: ${query}.\n`, JSON.stringify(e)],
           LoggingLevel.Debug
         );
         reject();

@@ -153,7 +153,7 @@ class WebExtStore implements Store {
       );
       return this.store.set(query);
     } catch(e) {
-      log(LOG_TAG, ["Ignoring key", e], LoggingLevel.Warn);
+      log(LOG_TAG, ["Ignoring key", JSON.stringify(e)], LoggingLevel.Warn);
     }
   }
 }
