@@ -101,6 +101,7 @@ function queryResultToJSONObject(
 class QMLStore implements Store {
   protected initialized: Promise<unknown>;
   private dbHandle?: LocalStorage.DatabaseHandle;
+  private logTag: string;
 
   constructor(
     private tableName: string,
@@ -109,6 +110,7 @@ class QMLStore implements Store {
     this.initialized = this._executeQuery(
       `CREATE TABLE IF NOT EXISTS ${tableName}(key VARCHAR(255), value VARCHAR(255));`
     );
+    this.logTag = `${LOG_TAG}.${tableName}`;
   }
 
   private _createKeyFromIndex(index: StorageIndex) {
@@ -128,7 +130,7 @@ class QMLStore implements Store {
       this.dbHandle = handle;
     } catch(e) {
       log(
-        LOG_TAG,
+        this.logTag,
         ["Error while attempting to access LocalStorage.\n", JSON.stringify(e)],
         LoggingLevel.Debug
       );
@@ -151,7 +153,7 @@ class QMLStore implements Store {
         });
       } catch (e) {
         log(
-          LOG_TAG,
+          this.logTag,
           [`Error executing LocalStorage query: ${query}.\n`, JSON.stringify(e)],
           LoggingLevel.Debug
         );
@@ -183,7 +185,7 @@ class QMLStore implements Store {
     try {
       return getValueFromNestedObject(obj, index);
     } catch(e) {
-      log(LOG_TAG, [
+      log(this.logTag, [
         "Error getting value from database.",
         JSON.stringify((e as Error).message)
       ]);
