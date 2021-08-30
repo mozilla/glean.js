@@ -309,9 +309,11 @@ class Dispatcher {
    * # Note
    *
    * Even if the dispatcher is stopped this command will be executed.
+   *
+   * @param priorityTask Whether or not to launch the clear command as a priority task.
    */
-  clear(): void {
-    this.launchInternal({ command: Commands.Clear }, true);
+  clear(priorityTask = true): void {
+    this.launchInternal({ command: Commands.Clear }, priorityTask);
     this.resume();
   }
 
@@ -329,12 +331,15 @@ class Dispatcher {
    *
    * In case a Shutdown command has been launched before this command,
    * this command will result in the queue being cleared.
+   *
+   * @param priorityTask Whether or not to launch the clear command as a priority task.
+   * This is `true` by default.
    */
-  stop(): void {
+  stop(priorityTask = true): void {
     if (this.shuttingDown) {
-      this.clear();
+      this.clear(priorityTask);
     } else {
-      this.launchInternal({ command: Commands.Stop }, true);
+      this.launchInternal({ command: Commands.Stop }, priorityTask);
     }
   }
 
