@@ -9,7 +9,7 @@ import sinon from "sinon";
 import type { Observer} from "../../../../src/core/pings/database";
 import Database, { isValidPingInternalRepresentation } from "../../../../src/core/pings/database";
 import Glean from "../../../../src/core/glean";
-import type { JSONObject } from "../../../../dist/webext/types/core/utils";
+import type { JSONObject } from "../../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 const now = new Date();

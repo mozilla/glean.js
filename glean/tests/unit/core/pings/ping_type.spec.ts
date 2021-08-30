@@ -11,7 +11,7 @@ import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import Glean from "../../../../src/core/glean";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
-import type { JSONObject } from "../../../../dist/webext/types/core/utils";
+import type { JSONObject } from "../../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 
