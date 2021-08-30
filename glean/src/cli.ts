@@ -236,7 +236,14 @@ async function run(args: string[]) {
   try {
     await setup(projectRoot);
   } catch (err) {
-    log(LOG_TAG, ["Failed to setup the Glean build environment.\n", err], LoggingLevel.Error);
+    log(
+      LOG_TAG,
+      [
+        "Failed to setup the Glean build environment.\n",
+        JSON.stringify(err)
+      ],
+      LoggingLevel.Error
+    );
     process.exit(1);
   }
 

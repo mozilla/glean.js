@@ -39,7 +39,7 @@ class BrowserUploader extends Uploader {
         // We will treat this as we treat server / network errors in this case.
         log(LOG_TAG, ["Network error while attempting to upload ping.\n", e.message], LoggingLevel.Error);
       } else {
-        log(LOG_TAG, ["Unknown error while attempting to upload ping.\n", e], LoggingLevel.Error);
+        log(LOG_TAG, ["Unknown error while attempting to upload ping.\n", JSON.stringify(e)], LoggingLevel.Error);
       }
 
       clearTimeout(timeout);
