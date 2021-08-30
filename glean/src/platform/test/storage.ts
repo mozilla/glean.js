@@ -27,12 +27,7 @@ class MockStore implements Store {
     this.rootKey = rootKey;
   }
 
-  _getWholeStore(): Promise<JSONObject> {
-    const result: JSONObject = (globalStore[this.rootKey] as JSONObject) || {};
-    return Promise.resolve(result);
-  }
-
-  get(index: StorageIndex): Promise<JSONValue | undefined> {
+  get(index: StorageIndex = []): Promise<JSONValue | undefined> {
     try {
       const value = getValueFromNestedObject(globalStore, [ this.rootKey, ...index ]);
       return Promise.resolve(value);

@@ -64,8 +64,8 @@ function getKeyValueArrayFromNestedObject(
 function queryResultToJSONObject(
   queryResult: LocalStorage.QueryResult | undefined
 ): JSONObject | undefined {
-  if (!queryResult) {
-    return {};
+  if (!queryResult || queryResult.rows.length === 0) {
+    return;
   }
 
   const obj: JSONObject = {};
@@ -95,6 +95,7 @@ function queryResultToJSONObject(
       target[index[index.length - 1]] = item.value;
     }
   }
+
   return obj;
 }
 
@@ -175,12 +176,16 @@ class QMLStore implements Store {
     return queryResultToJSONObject(result);
   }
 
-  async _getWholeStore(): Promise<JSONObject> {
+  private async _getWholeStore(): Promise<JSONObject | undefined> {
     const result = await this._executeOnceInitialized(`SELECT * FROM ${this.tableName}`);
-    return queryResultToJSONObject(result) || {};
+    return queryResultToJSONObject(result);
   }
 
-  async get(index: StorageIndex): Promise<JSONValue | undefined> {
+  async get(index: StorageIndex = []): Promise<JSONValue | undefined> {
+    if (index.length === 0) {
+      return this._getWholeStore();
+    }
+
     const obj = (await this._getFullResultObject(index)) || {};
     try {
       return getValueFromNestedObject(obj, index);

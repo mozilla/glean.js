@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { JSONObject, JSONValue } from "../utils.js";
+import type { JSONValue } from "../utils.js";
 
 /**
  * The storage index in the ordered list of keys to navigate on the store
@@ -27,24 +27,15 @@ export type StorageIndex = string[];
 
 interface Store {
   /**
-   * Test-only API**
-   *
-   * Gets the whole store.
-   *
-   * @returns An object representing all the data recorded in the store.
-   */
-  _getWholeStore(): Promise<JSONObject>;
-
-  /**
    * Gets the value recorded to the given index on the store.
    *
-   * @param index The index  of the entry to get.
+   * @param index The index  of the entry to get. If the index is empty,
+   *        the whole store is returned.
    * @returns The value found for the given index on the storage.
    *          In case nothing has been recorded on the given index, returns `undefined`.
-   * @throws - In case the index is an empty array.
-   *         - In case a value that is not `string` or `object` is found.
+   * @throws In case an value which is not valid JSON is found.
    */
-  get(index: StorageIndex): Promise<JSONValue | undefined>;
+  get(index?: StorageIndex): Promise<JSONValue | undefined>;
 
   /**
    * Updates a specific entry from the store.

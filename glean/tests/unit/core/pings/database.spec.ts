@@ -9,6 +9,7 @@ import sinon from "sinon";
 import type { Observer} from "../../../../src/core/pings/database";
 import Database, { isValidPingInternalRepresentation } from "../../../../src/core/pings/database";
 import Glean from "../../../../src/core/glean";
+import type { JSONObject } from "../../../../dist/webext/types/core/utils";
 
 const sandbox = sinon.createSandbox();
 const now = new Date();
@@ -54,7 +55,7 @@ describe("PingsDatabase", function() {
         collectionDate: now.toISOString(), path, payload, headers
       });
 
-      assert.strictEqual(Object.keys(await db["store"]._getWholeStore()).length, 2);
+      assert.strictEqual(Object.keys(await db["store"].get() as JSONObject).length, 2);
     });
 
     it("observer is notified when a new ping is added to the database", async function() {
@@ -379,7 +380,7 @@ describe("PingsDatabase", function() {
       }
 
       await db.clearAll();
-      assert.strictEqual(Object.keys(await db["store"]._getWholeStore()).length, 0);
+      assert.strictEqual(Object.keys(await db["store"].get() || {}).length, 0);
     });
   });
 

@@ -331,7 +331,7 @@ describe("EventsDatabase", function() {
     // Clear any events from previous tests.
     const rawStorage = new Glean.platform.Storage("events");
     await rawStorage.delete([]);
-    assert.deepStrictEqual({}, await rawStorage._getWholeStore());
+    assert.deepStrictEqual(await rawStorage.get(), undefined);
 
     // Initialize the database and inject some events.
     const db = new EventsDatabase(Glean.platform.Storage);
