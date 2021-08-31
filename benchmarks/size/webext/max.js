@@ -11,7 +11,6 @@ import EventMetricType from "@mozilla/glean/webext/private/metrics/event";
 import LabeledMetricType from "@mozilla/glean/webext/private/metrics/labeled";
 import QuantityMetricType from "@mozilla/glean/webext/private/metrics/quantity";
 import StringMetricType from "@mozilla/glean/webext/private/metrics/string";
-import TextMetricType from "@mozilla/glean/webext/private/metrics/text";
 import TimespanMetricType from "@mozilla/glean/webext/private/metrics/timespan";
 import UUIDMetricType from "@mozilla/glean/webext/private/metrics/uuid";
 import URLMetricType from "@mozilla/glean/webext/private/metrics/url";
@@ -29,7 +28,6 @@ console.log(
   JSON.stringify(LabeledMetricType),
   JSON.stringify(QuantityMetricType),
   JSON.stringify(StringMetricType),
-  JSON.stringify(TextMetricType),
   JSON.stringify(TimespanMetricType),
   JSON.stringify(UUIDMetricType),
   JSON.stringify(URLMetricType),

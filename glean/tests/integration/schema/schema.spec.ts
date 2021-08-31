@@ -70,7 +70,6 @@ describe("schema", function() {
     metrics.labeledString["a_label"].set("ho");
     metrics.quantity.set(42);
     metrics.string.set("let's go");
-    metrics.text.set("let's gooooooooo");
     metrics.timespan.setRawNanos(10 * 10**6);
     metrics.uuid.generateAndSet();
     metrics.url.set("glean://test");

@@ -12,7 +12,6 @@ import { CounterMetric } from "./types/counter.js";
 import { DatetimeMetric } from "./types/datetime.js";
 import { QuantityMetric } from "./types/quantity.js";
 import { StringMetric } from "./types/string.js";
-import { TextMetric } from "./types/text.js";
 import { TimespanMetric } from "./types/timespan.js";
 import { UrlMetric } from "./types/url.js";
 import { UUIDMetric } from "./types/uuid.js";
@@ -31,7 +30,6 @@ const METRIC_MAP: {
   "labeled_string": LabeledMetric,
   "quantity": QuantityMetric,
   "string": StringMetric,
-  "text": TextMetric,
   "timespan": TimespanMetric,
   "url": UrlMetric,
   "uuid": UUIDMetric,
