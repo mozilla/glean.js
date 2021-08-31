@@ -12,6 +12,7 @@ import Glean from "../../../../src/core/glean";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
 import type { JSONObject } from "../../../../src/core/utils";
+import TestPlatform from "../../../../src/platform/test";
 
 const sandbox = sinon.createSandbox();
 
@@ -100,14 +101,15 @@ describe("PingType", function() {
   it("no pings are submitted if Glean has not been initialized", async function() {
     await Glean.testUninitialize();
 
+    const spy = sandbox.spy(TestPlatform.uploader, "post");
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false,
     });
     await submitSync(ping);
-    const storedPings = await Context.pingsDatabase["store"].get();
-    assert.strictEqual(storedPings, undefined);
+
+    assert.ok(!spy.calledOnce);
   });
 
   it("runs a validator with no metrics tests", async function() {

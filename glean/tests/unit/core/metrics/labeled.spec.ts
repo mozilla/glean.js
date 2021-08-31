@@ -433,8 +433,7 @@ describe("LabeledMetric", function() {
     }
 
     // Reset glean without clearing the storage.
-    await Glean.testUninitialize();
-    await Glean.testInitialize("gleanjs.unit.test", true);
+    await Glean.testResetGlean(testAppId, true, undefined, false);
 
     // Try to store another label.
     labeledCounterMetric["new_label"].add(40);

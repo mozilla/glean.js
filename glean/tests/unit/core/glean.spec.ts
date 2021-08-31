@@ -301,11 +301,9 @@ describe("Glean", function() {
 
   it("deletion request ping is sent when toggling upload status between runs", async function() {
     Glean.setUploadEnabled(true);
-    await Context.dispatcher.testBlockOnQueue();
 
-    // Can't use testResetGlean here because it clears all stores
-    // and when there is no client_id at all stored, a deletion ping is also not sent.
-    await Glean.testUninitialize();
+    // Un-initialize, but don't clear the stores.
+    await Glean.testUninitialize(false);
 
     const mockUploader = new WaitableUploader();
     const pingBody = mockUploader.waitForPingSubmission("deletion-request");

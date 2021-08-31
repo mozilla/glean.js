@@ -77,7 +77,7 @@ describe("Context", function() {
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    assert.strictEqual(Context.instance._dispatcher, null);
+    assert.strictEqual(Context._instance?._dispatcher, undefined);
 
     // Trying to access the dispatcher will instantiate a new one.
     const newDispatcher = Context.instance;

@@ -26,9 +26,9 @@ const LOG_TAG = "core.Context";
  * which only matter for Typescript and don't cause circular dependency issues.
  */
 export class Context {
-  private static _instance: Context;
+  private static _instance?: Context;
 
-  private _dispatcher!: Dispatcher | null;
+  private _dispatcher: Dispatcher;
 
   // The following group of properties are all set on Glean.initialize
   // Attempting to get them before initialize Glean will throw an error.
@@ -48,6 +48,7 @@ export class Context {
   private constructor() {
     this._initialized = false;
     this._startTime = new Date();
+    this._dispatcher = new Dispatcher();
   }
 
   static get instance(): Context {
@@ -64,30 +65,12 @@ export class Context {
    * Resets the Context to an uninitialized state.
    */
   static async testUninitialize(): Promise<void> {
-    // Clear the dispatcher queue
-    // and return the dispatcher back to an uninitialized state.
-    if (Context.instance._dispatcher) {
-      await Context.instance._dispatcher.testUninitialize();
-    }
-
-    // Due to the test requirement of keeping storage in place,
-    // we can't simply wipe out the full `Context` instance.
-    // The closest thing we can do is making the dispatcher `null`.
-    Context.instance._dispatcher = null;
-
-    Context.initialized = false;
-    Context._instance._startTime = new Date();
+    // Clear the dispatcher queue.
+    await Context.instance._dispatcher?.testUninitialize();
+    Context._instance = undefined;
   }
 
   static get dispatcher(): Dispatcher {
-    // Create a dispatcher if one isn't available already.
-    // This is required since the dispatcher may be used
-    // earlier than Glean initialization, so we can't rely
-    // on `Glean.initialize` to set it.
-    if (!Context.instance._dispatcher) {
-      Context.instance._dispatcher = new Dispatcher();
-    }
-
     return Context.instance._dispatcher;
   }
 
