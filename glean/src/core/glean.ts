@@ -239,21 +239,18 @@ class Glean {
       Context.debugOptions = correctConfig.debug;
       Glean.instance._config = correctConfig;
 
-
-      // IMPORTANT!
-      // Any pings we want to send upon initialization should happen before these two lines.
-      //
-      // Clear application lifetime metrics.
-      await Context.metricsDatabase.clear(Lifetime.Application);
-      // Initialize the events database.
-      await Context.eventsDatabase.initialize();
-
       // We need to mark Glean as initialized before dealing with the upload status,
       // otherwise we will not be able to submit deletion-request pings if necessary.
       //
       // This is fine, we are inside a dispatched task that is guaranteed to run before any
       // other task. No external API call will be executed before we leave this task.
       Context.initialized = true;
+
+      // IMPORTANT!
+      // Any pings we want to send upon initialization should happen before this line.
+      //
+      // Clear application lifetime metrics.
+      await Context.metricsDatabase.clear(Lifetime.Application);
 
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
@@ -285,9 +282,16 @@ class Glean {
         }
       }
 
+      // Initialize the events database.
+      //
+      // It's important this happens _after_ the upload state is dealt with,
+      // because initializing the events database may record the execution_counter and
+      // glean.restarted metrics. If the upload state is not defined these metrics can't be recorded.
+      await Context.eventsDatabase.initialize();
+
       // We only scan the pendings pings **after** dealing with the upload state.
-      // If upload is disabled, we delete all pending pings files
-      // and we need to do that **before** scanning the pending pings
+      // If upload is disabled, pending pings files are deleted
+      // so we need to know that state **before** scanning the pending pings
       // to ensure we don't enqueue pings before their files are deleted.
       await Context.pingsDatabase.scanPendingPings();
     });
