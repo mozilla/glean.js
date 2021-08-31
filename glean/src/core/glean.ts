@@ -210,8 +210,12 @@ class Glean {
       return;
     }
 
+    Context.applicationId = sanitizeApplicationId(applicationId);
+
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
+    Context.debugOptions = correctConfig.debug;
+    Glean.instance._config = correctConfig;
 
     Context.metricsDatabase = new MetricsDatabase(Glean.platform.Storage);
     Context.eventsDatabase = new EventsDatabase(Glean.platform.Storage);
