@@ -19,6 +19,8 @@ import Plugin from "../../../src/plugins";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
 import { DispatcherState } from "../../../src/core/dispatcher";
+import EventMetricType from "../../../src/core/metrics/types/event";
+import { getGleanRestartedEventMetric } from "../../../src/core/metrics/events_database";
 
 class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor() {
@@ -545,5 +547,29 @@ describe("Glean", function() {
 
     assert.strictEqual(postSpy.callCount, 1);
     assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+  });
+
+  it("events database is initialized at a time when metrics can already be recorded", async function() {
+    const event = new EventMetricType({
+      category: "test",
+      name: "event",
+      sendInPings: ["custom"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // Record this event, so that when we re-initialize the events database
+    // it will record a glean.restarted event on the `custom` ping events list.
+    event.record();
+
+    await Glean.testResetGlean(testAppId, true, undefined, false);
+
+    // Check that Glean was able to record the `glean.restarted` event on initialization.
+    const restartedEvent = getGleanRestartedEventMetric(["custom"]);
+    console.log(await restartedEvent.testGetValue("custom"));
+    // We expect two events. One that was recorded when we recorded an event on the custom ping
+    // for the first time and another once we re-initialized.
+    assert.strictEqual((await restartedEvent.testGetValue("custom"))?.length, 2);
+
   });
 });
