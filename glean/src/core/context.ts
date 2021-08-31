@@ -8,6 +8,10 @@ import type EventsDatabase from "./metrics/events_database/index.js";
 import type PingsDatabase from "./pings/database.js";
 import type ErrorManager from "./error/index.js";
 import Dispatcher from "./dispatcher.js";
+import log, { LoggingLevel } from "./log.js";
+import { isUndefined } from "./utils.js";
+
+const LOG_TAG = "core.Context";
 
 /**
  * This class holds all of the Glean singleton's state and internal dependencies.
@@ -26,19 +30,17 @@ export class Context {
 
   private _dispatcher!: Dispatcher | null;
 
+  // The following group of properties are all set on Glean.initialize
+  // Attempting to get them before initialize Glean will throw an error.
   private _uploadEnabled!: boolean;
   private _metricsDatabase!: MetricsDatabase;
   private _eventsDatabase!: EventsDatabase;
   private _pingsDatabase!: PingsDatabase;
-  // The reason this was added to the Context,
-  // is to avoid a circular dependency between
-  // the ErrorManager's module and the CounterMetricType module.
   private _errorManager!: ErrorManager;
-
   private _applicationId!: string;
-  private _initialized: boolean;
-
   private _debugOptions!: DebugOptions;
+
+  private _initialized: boolean;
 
   // The moment the current Glean.js session started.
   private _startTime: Date;
@@ -89,11 +91,17 @@ export class Context {
     return Context.instance._dispatcher;
   }
 
-  static set dispatcher(dispatcher: Dispatcher) {
-    Context.instance._dispatcher = dispatcher;
-  }
-
   static get uploadEnabled(): boolean {
+    if (isUndefined(Context.instance._uploadEnabled)) {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.uploadEnabled before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._uploadEnabled;
   }
 
@@ -102,6 +110,16 @@ export class Context {
   }
 
   static get metricsDatabase(): MetricsDatabase {
+    if (isUndefined(Context.instance._metricsDatabase)) {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.metricsDatabase before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._metricsDatabase;
   }
 
@@ -110,6 +128,16 @@ export class Context {
   }
 
   static get eventsDatabase(): EventsDatabase {
+    if (isUndefined(Context.instance._eventsDatabase)) {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.eventsDatabase before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._eventsDatabase;
   }
 
@@ -118,6 +146,16 @@ export class Context {
   }
 
   static get pingsDatabase(): PingsDatabase {
+    if (isUndefined(Context.instance._pingsDatabase)) {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.pingsDatabase before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._pingsDatabase;
   }
 
@@ -126,6 +164,16 @@ export class Context {
   }
 
   static get errorManager(): ErrorManager {
+    if (isUndefined(Context.instance._errorManager)) {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.errorManager before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._errorManager;
   }
 
@@ -134,6 +182,16 @@ export class Context {
   }
 
   static get applicationId(): string {
+    if (isUndefined(Context.instance._applicationId)) {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.applicationId before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._applicationId;
   }
 
@@ -150,6 +208,16 @@ export class Context {
   }
 
   static get debugOptions(): DebugOptions {
+    if (isUndefined(Context.instance._debugOptions)) {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.debugOptions before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._debugOptions;
   }
 
@@ -158,6 +226,6 @@ export class Context {
   }
 
   static get startTime(): Date {
-    return Context._instance._startTime;
+    return Context.instance._startTime;
   }
 }
