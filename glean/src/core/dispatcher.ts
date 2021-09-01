@@ -30,7 +30,7 @@ const enum Commands {
   // The dispatcher will enqueue a new task.
   //
   // This command is always followed by a concrete task for the dispatcher to execute.
-  Task,
+  Task = "Task",
   // Same as the `Task` command,
   // but the task enqueued by this command is not cleared by the `Clear` command.
   //
@@ -39,15 +39,15 @@ const enum Commands {
   // `Shutdown` will still clear these tasks.
   //
   // Unless unavoidable, prefer using the normal `Task`.
-  PersistentTask,
+  PersistentTask = "PersistentTask",
   // The dispatcher should stop executing the queued tasks.
-  Stop,
+  Stop = "Stop",
   // The dispatcher should stop executing the queued tasks and clear the queue.
-  Clear,
+  Clear = "Clear",
   // The dispatcher will clear the queue and go into the Shutdown state.
-  Shutdown,
+  Shutdown = "Shutdown",
   // Exactly like a normal Task, but spawned for tests.
-  TestTask,
+  TestTask = "TestTask",
 }
 
 // A task the dispatcher knows how to execute.
@@ -75,7 +75,10 @@ class Dispatcher {
   private queue: Command[];
   // The current state of this dispatcher.
   private state: DispatcherState;
-  // A promise contianing the current execution promise.
+  // Whether or not the dispatcher is currently in the process of shutting down
+  // i.e. a Shutdown command is in the queue.
+  private shuttingDown = false;
+  // A promise containing the current execution promise.
   //
   // This is `undefined` in case there is no ongoing execution of tasks.
   private currentJob?: Promise<void>;
@@ -134,6 +137,7 @@ class Dispatcher {
         this.unblockTestResolvers();
         this.queue = [];
         this.state = DispatcherState.Shutdown;
+        this.shuttingDown = false;
         return;
       case(Commands.Clear):
         this.unblockTestResolvers();
@@ -305,9 +309,11 @@ class Dispatcher {
    * # Note
    *
    * Even if the dispatcher is stopped this command will be executed.
+   *
+   * @param priorityTask Whether or not to launch the clear command as a priority task.
    */
-  clear(): void {
-    this.launchInternal({ command: Commands.Clear }, true);
+  clear(priorityTask = true): void {
+    this.launchInternal({ command: Commands.Clear }, priorityTask);
     this.resume();
   }
 
@@ -320,9 +326,21 @@ class Dispatcher {
    * While stopped the dispatcher will still enqueue tasks but won't execute them.
    *
    * In order to re-start the dispatcher, call the `resume` method.
+   *
+   * # Note
+   *
+   * In case a Shutdown command has been launched before this command,
+   * this command will result in the queue being cleared.
+   *
+   * @param priorityTask Whether or not to launch the clear command as a priority task.
+   * This is `true` by default.
    */
-  stop(): void {
-    this.launchInternal({ command: Commands.Stop }, true);
+  stop(priorityTask = true): void {
+    if (this.shuttingDown) {
+      this.clear(priorityTask);
+    } else {
+      this.launchInternal({ command: Commands.Stop }, priorityTask);
+    }
   }
 
   /**
@@ -353,6 +371,7 @@ class Dispatcher {
    * @returns A promise which resolves once shutdown is complete.
    */
   shutdown(): Promise<void> {
+    this.shuttingDown = true;
     this.launchInternal({ command: Commands.Shutdown });
     this.resume();
     return this.currentJob || Promise.resolve();
