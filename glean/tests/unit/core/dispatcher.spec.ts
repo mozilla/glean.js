@@ -474,7 +474,7 @@ describe("Dispatcher", function() {
       return Promise.resolve();
     };
 
-    // Launch a group of tasks
+    // Launch a group of tasks.
     for (let i = 0; i < 5; i++) {
       dispatcher.launch(counterTask1);
     }
@@ -490,7 +490,7 @@ describe("Dispatcher", function() {
       executionCounter2++;
       return Promise.resolve();
     };
-    // Launch another group of tasks
+    // Launch another group of tasks.
     for (let i = 0; i < 5; i++) {
       dispatcher.launch(counterTask2);
     }
