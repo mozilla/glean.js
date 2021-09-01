@@ -46,7 +46,7 @@ export class StringListMetric extends Metric<string[], string[]> {
  *
  * This allows appending a string value with arbitrary content to a list.
  * The list is length-limited to `MAX_LIST_LENGTH`.
- * Strings are length-limited to `MAX_STRING_LENGTH` bytes.
+ * Strings are length-limited to `MAX_STRING_LENGTH` characters.
  */
 class StringListMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
@@ -94,9 +94,9 @@ class StringListMetricType extends MetricType {
    *
    * # Note
    *
-   * - If the list is already of length `MAX_LIST_LENGTH`, log an error.
-   * - Truncates the value if it is longer than `MAX_STRING_LENGTH` bytes
-   * and logs an error.
+   * - If the list is already of length `MAX_LIST_LENGTH`, record an error.
+   * - Truncates the value if it is longer than `MAX_STRING_LENGTH` characters
+   * and records an error.
    *
    * @param value The string to add.
    */
@@ -107,7 +107,7 @@ class StringListMetricType extends MetricType {
       }
 
       const truncatedValue = await truncateStringAtBoundaryWithError(this, value, MAX_STRING_LENGTH);
-      let currentLen = -1;
+      let currentLen = 0;
 
       const transformFn = ((value) => {
         return (v?: JSONValue): StringListMetric => {
@@ -131,7 +131,7 @@ class StringListMetricType extends MetricType {
 
       await Context.metricsDatabase.transform(this, transformFn);
 
-      if (currentLen == MAX_LIST_LENGTH) {
+      if (currentLen >= MAX_LIST_LENGTH) {
         await Context.errorManager.record(
           this,
           ErrorType.InvalidValue,
