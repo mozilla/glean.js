@@ -398,8 +398,8 @@ describe("MetricsDatabase", function() {
       await db.record(appMetric, new StringMetric("appValue"));
 
       await db.getPingMetrics("aPing", true);
-      assert.notDeepStrictEqual(await db["userStore"]._getWholeStore(), {});
-      assert.deepStrictEqual(await db["pingStore"]._getWholeStore(), {
+      assert.notDeepStrictEqual(await db["userStore"].get(), {});
+      assert.deepStrictEqual(await db["pingStore"].get(), {
         "twoPing": {
           "string": {
             "ping.metric": "pingValue"
@@ -411,7 +411,7 @@ describe("MetricsDatabase", function() {
           }
         }
       });
-      assert.notDeepStrictEqual(await db["appStore"]._getWholeStore(), {});
+      assert.notDeepStrictEqual(await db["appStore"].get(), {});
     });
 
     it("reserved metrics are not added to snapshot", async function() {
@@ -472,9 +472,9 @@ describe("MetricsDatabase", function() {
       await db.record(appMetric, new StringMetric("appValue"));
 
       await db.clearAll();
-      assert.deepStrictEqual(await db["userStore"]._getWholeStore(), {});
-      assert.deepStrictEqual(await db["pingStore"]._getWholeStore(), {});
-      assert.deepStrictEqual(await db["appStore"]._getWholeStore(), {});
+      assert.deepStrictEqual(await db["userStore"].get(), undefined);
+      assert.deepStrictEqual(await db["pingStore"].get(), undefined);
+      assert.deepStrictEqual(await db["appStore"].get(), undefined);
     });
 
     it("clears separate stores correctly", async function() {
@@ -507,9 +507,9 @@ describe("MetricsDatabase", function() {
       await db.record(appMetric, new StringMetric("appValue"));
 
       await db.clear(Lifetime.User);
-      assert.deepStrictEqual(await db["userStore"]._getWholeStore(), {});
-      assert.notDeepStrictEqual(await db["pingStore"]._getWholeStore(), {});
-      assert.notDeepStrictEqual(await db["appStore"]._getWholeStore(), {});
+      assert.deepStrictEqual(await db["userStore"].get(), undefined);
+      assert.notDeepStrictEqual(await db["pingStore"].get(), undefined);
+      assert.notDeepStrictEqual(await db["appStore"].get(), undefined);
     });
 
     it("clears data from specific ping when specified", async function () {

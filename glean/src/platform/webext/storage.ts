@@ -52,6 +52,7 @@ function stripNulls(query: WebExtStoreQuery) {
  */
 class WebExtStore implements Store {
   private store;
+  private logTag: string;
 
   // The main key under which all other entries will be recorded for this store instance.
   private rootKey: string;
@@ -66,9 +67,10 @@ class WebExtStore implements Store {
     }
     this.store = browser.storage.local;
     this.rootKey = rootKey;
+    this.logTag = `${LOG_TAG}.${rootKey}`;
   }
 
-  async _getWholeStore(): Promise<JSONObject> {
+  private async _getWholeStore(): Promise<JSONObject> {
     const result = await this.store.get({ [this.rootKey]: {} });
     return result[this.rootKey];
   }
@@ -81,7 +83,7 @@ class WebExtStore implements Store {
    */
   private _buildQuery(index: StorageIndex): WebExtStoreQuery {
     let query = null;
-    for (const key of [ this.rootKey, ...index].reverse()) {
+    for (const key of [ this.rootKey, ...index ].reverse()) {
       query = { [key]: query };
     }
 
@@ -99,7 +101,7 @@ class WebExtStore implements Store {
     return { [this.rootKey]: transformFn(store) };
   }
 
-  async get(index: StorageIndex): Promise<JSONValue | undefined> {
+  async get(index: StorageIndex = []): Promise<JSONValue | undefined> {
     const query = this._buildQuery(index);
     const response = await this.store.get(query);
     stripNulls(response);
@@ -116,7 +118,7 @@ class WebExtStore implements Store {
     }
 
     log(
-      LOG_TAG,
+      this.logTag,
       [
         `Unexpected value found in storage for index ${JSON.stringify(index)}. Ignoring.
         ${JSON.stringify(response, null, 2)}`
@@ -153,7 +155,7 @@ class WebExtStore implements Store {
       );
       return this.store.set(query);
     } catch(e) {
-      log(LOG_TAG, ["Ignoring key", e], LoggingLevel.Warn);
+      log(this.logTag, ["Ignoring key", JSON.stringify(e)], LoggingLevel.Warn);
     }
   }
 }

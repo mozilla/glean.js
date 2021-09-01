@@ -11,7 +11,7 @@ import { Context } from "../../../../src/core/context";
 import Glean from "../../../../src/core/glean";
 import PingType from "../../../../src/core/pings/ping_type";
 import { collectAndStorePing } from "../../../../src/core/pings/maker";
-import PingUploader, { Policy } from "../../../../src/core/upload";
+import PingUploader, { MAX_PINGS_PER_INTERVAL, Policy } from "../../../../src/core/upload";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 import { CounterUploader, WaitableUploader } from "../../../utils";
 import { DELETION_REQUEST_PING_NAME } from "../../../../src/core/constants";
@@ -93,14 +93,24 @@ describe("PingUploader", function() {
     assert.ok(postSpy.callCount < 11);
   });
 
-  it("shutdown finishes executing all requests before stopping", async function () {
+  it("shutdown finishes executing requests before stopping", async function () {
     const httpClient = new CounterUploader();
     await Glean.testResetGlean(testAppId, true, { httpClient });
 
     await fillUpPingsDatabase(10);
-    await Glean["pingUploader"].shutdown();
+    await Glean.shutdown();
 
     assert.strictEqual(httpClient.count, 10);
+  });
+
+  it("shutdown only executes a fraction of the requests if rate limit is hit", async function () {
+    const httpClient = new CounterUploader();
+    await Glean.testResetGlean(testAppId, true, { httpClient });
+
+    await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL + 5);
+    await Glean.shutdown();
+
+    assert.strictEqual(httpClient.count, MAX_PINGS_PER_INTERVAL);
   });
 
   it("correctly deletes pings when upload is successfull", async function() {

@@ -19,7 +19,7 @@ const LOG_TAG = "CLI";
 const VIRTUAL_ENVIRONMENT_DIR = ".venv";
 
 // The version of glean_parser to install from PyPI.
-const GLEAN_PARSER_VERSION = "3.8.0";
+const GLEAN_PARSER_VERSION = "4.0.0";
 
 // This script runs a given Python module as a "main" module, like
 // `python -m module`. However, it first checks that the installed
@@ -236,7 +236,14 @@ async function run(args: string[]) {
   try {
     await setup(projectRoot);
   } catch (err) {
-    log(LOG_TAG, ["Failed to setup the Glean build environment.\n", err], LoggingLevel.Error);
+    log(
+      LOG_TAG,
+      [
+        "Failed to setup the Glean build environment.\n",
+        JSON.stringify(err)
+      ],
+      LoggingLevel.Error
+    );
     process.exit(1);
   }
 

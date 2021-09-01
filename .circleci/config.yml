@@ -108,8 +108,7 @@ jobs:
       - run:
           name: Get and post build sizes to GitHub PR
           command: |
-            npm --prefix ./benchmarks install
-            npm --prefix ./benchmarks run size:report
+            ./benchmarks/run.sh
 
   check-qt-js:
     docker:

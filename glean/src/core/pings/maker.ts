@@ -272,7 +272,7 @@ export async function collectAndStorePing(identifier: string, ping: CommonPingDa
         `Error while attempting to modify ping payload for the "${ping.name}" ping using`,
         `the ${JSON.stringify(CoreEvents.afterPingCollection.registeredPluginIdentifier)} plugin.`,
         "Ping will not be submitted. See more logs below.\n\n",
-        e
+        JSON.stringify(e)
       ],
       LoggingLevel.Error
     );

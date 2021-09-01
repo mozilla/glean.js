@@ -144,7 +144,7 @@ for (const store in stores) {
       });
 
       it("Attempting to get the whole store works", async function () {
-        const value = await store._getWholeStore();
+        const value = await store.get();
         assert.deepStrictEqual(value, expected);
       });
 
@@ -234,29 +234,29 @@ for (const store in stores) {
 
       it("Attempting to delete a non-existing entry is a no-op", async function () {
         await store.update(index, () => value);
-        const storeSnapshot = await store._getWholeStore();
+        const storeSnapshot = await store.get();
 
         await store.delete(["random", "inexistent", "index"]);
         assert.deepStrictEqual(
           storeSnapshot,
-          await store._getWholeStore()
+          await store.get()
         );
       });
 
       it("Attempting to delete an index that is not correct is a no-op", async function () {
         await store.update(index, () => value);
-        const storeSnapshot = await store._getWholeStore();
+        const storeSnapshot = await store.get();
 
         await store.delete(index.slice(1));
         assert.deepStrictEqual(
           storeSnapshot,
-          await store._getWholeStore()
+          await store.get()
         );
       });
 
       it("Attempting to delete an empty index deletes all entries in the store", async function () {
         await store.delete([]);
-        assert.deepStrictEqual({}, await store._getWholeStore());
+        assert.deepStrictEqual(undefined, await store.get());
       });
     });
   });

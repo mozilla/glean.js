@@ -18,6 +18,7 @@ import LabeledMetricType from "../core/metrics/types/labeled.js";
 import QuantityMetricType from "../core/metrics/types/quantity.js";
 import StringMetricType from "../core/metrics/types/string.js";
 import StringListMetricType from "../core/metrics/types/string_list.js";
+import TextMetricType from "../core/metrics/types/text.js";
 import TimespanMetricType from "../core/metrics/types/timespan.js";
 import UUIDMetricType from "../core/metrics/types/uuid.js";
 import URLMetricType from "../core/metrics/types/url.js";
@@ -126,6 +127,7 @@ export default {
     StringMetricType,
     StringListMetricType,
     TimespanMetricType,
+    TextMetricType,
     UUIDMetricType,
     URLMetricType
   }
