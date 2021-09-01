@@ -528,7 +528,7 @@ class Glean {
       }
 
       // Get back to an uninitialized state.
-      await Context.testUninitialize();
+      Context.testUninitialize();
 
       // Deregister all plugins
       testResetEvents();

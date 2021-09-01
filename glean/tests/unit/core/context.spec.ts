@@ -69,11 +69,11 @@ describe("Context", function() {
     assert.ok(Context.pingsDatabase instanceof PingsDatabase);
   });
 
-  it("the dispatcher is always available", async function () {
+  it("the dispatcher is always available", function () {
     const originalDispatcher = Context.dispatcher;
     assert.notStrictEqual(originalDispatcher, null);
 
-    await Context.testUninitialize();
+    Context.testUninitialize();
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore

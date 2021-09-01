@@ -9,7 +9,6 @@ import type PingsDatabase from "./pings/database.js";
 import type ErrorManager from "./error/index.js";
 import Dispatcher from "./dispatcher.js";
 import log, { LoggingLevel } from "./log.js";
-import { isUndefined } from "./utils.js";
 
 const LOG_TAG = "core.Context";
 
@@ -31,7 +30,7 @@ export class Context {
   private _dispatcher: Dispatcher;
 
   // The following group of properties are all set on Glean.initialize
-  // Attempting to get them before initialize Glean will throw an error.
+  // Attempting to get them before they are set will log an error.
   private _uploadEnabled!: boolean;
   private _metricsDatabase!: MetricsDatabase;
   private _eventsDatabase!: EventsDatabase;
@@ -64,9 +63,7 @@ export class Context {
    *
    * Resets the Context to an uninitialized state.
    */
-  static async testUninitialize(): Promise<void> {
-    // Clear the dispatcher queue.
-    await Context.instance._dispatcher?.testUninitialize();
+  static testUninitialize(): void {
     Context._instance = undefined;
   }
 
@@ -75,7 +72,7 @@ export class Context {
   }
 
   static get uploadEnabled(): boolean {
-    if (isUndefined(Context.instance._uploadEnabled)) {
+    if (typeof Context.instance._uploadEnabled === "undefined") {
       log(
         LOG_TAG,
         [
@@ -93,7 +90,7 @@ export class Context {
   }
 
   static get metricsDatabase(): MetricsDatabase {
-    if (isUndefined(Context.instance._metricsDatabase)) {
+    if (typeof Context.instance._metricsDatabase === "undefined") {
       log(
         LOG_TAG,
         [
@@ -111,7 +108,7 @@ export class Context {
   }
 
   static get eventsDatabase(): EventsDatabase {
-    if (isUndefined(Context.instance._eventsDatabase)) {
+    if (typeof Context.instance._eventsDatabase === "undefined") {
       log(
         LOG_TAG,
         [
@@ -129,7 +126,7 @@ export class Context {
   }
 
   static get pingsDatabase(): PingsDatabase {
-    if (isUndefined(Context.instance._pingsDatabase)) {
+    if (typeof Context.instance._pingsDatabase === "undefined") {
       log(
         LOG_TAG,
         [
@@ -147,7 +144,7 @@ export class Context {
   }
 
   static get errorManager(): ErrorManager {
-    if (isUndefined(Context.instance._errorManager)) {
+    if (typeof Context.instance._errorManager === "undefined") {
       log(
         LOG_TAG,
         [
@@ -165,7 +162,7 @@ export class Context {
   }
 
   static get applicationId(): string {
-    if (isUndefined(Context.instance._applicationId)) {
+    if (typeof Context.instance._applicationId === "undefined") {
       log(
         LOG_TAG,
         [
@@ -191,7 +188,7 @@ export class Context {
   }
 
   static get debugOptions(): DebugOptions {
-    if (isUndefined(Context.instance._debugOptions)) {
+    if (typeof Context.instance._debugOptions === "undefined") {
       log(
         LOG_TAG,
         [
