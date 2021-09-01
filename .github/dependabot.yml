@@ -13,7 +13,7 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
-    directory: "/glean/tests/platform/utils/webext/sample"
+    directory: "/glean/tests/unit/platform/utils/webext/sample"
     schedule:
       interval: "daily"
   - package-ecosystem: "pip"

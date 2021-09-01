@@ -153,15 +153,17 @@ class PingsDatabase {
    * @returns List of all currently stored pings in ascending order by date.
    */
   async getAllPings(): Promise<[ string, PingInternalRepresentation ][]> {
-    const allStoredPings = await this.store._getWholeStore();
+    const allStoredPings = await this.store.get();
     const finalPings: { [ident: string]: PingInternalRepresentation } = {};
-    for (const identifier in allStoredPings) {
-      const ping = allStoredPings[identifier];
-      if (isValidPingInternalRepresentation(ping)) {
-        finalPings[identifier] = ping;
-      } else {
-        log(LOG_TAG, "Unexpected data found in pings database. Deleting.", LoggingLevel.Warn);
-        await this.store.delete([identifier]);
+    if (isObject(allStoredPings)) {
+      for (const identifier in allStoredPings) {
+        const ping = allStoredPings[identifier];
+        if (isValidPingInternalRepresentation(ping)) {
+          finalPings[identifier] = ping;
+        } else {
+          log(LOG_TAG, "Unexpected data found in pings database. Deleting.", LoggingLevel.Warn);
+          await this.store.delete([identifier]);
+        }
       }
     }
 

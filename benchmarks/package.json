@@ -6,15 +6,14 @@
   "type": "module",
   "scripts": {
     "link:glean": "cd ../glean && npm i && npm run build && npm link && cd ../benchmarks && npm link @mozilla/glean",
-    "link:glean:main": "git stash && git checkout main && npm run link:glean && git checkout @{-1} && git stash apply",
     "size:build:webext": "webpack --config ./size/webext/webpack.config.js",
     "size:build:webext:main": "npm run size:build:webext -- -o dist/size/webext/main",
     "size:build:qt": "mkdir -p ./dist/size/qt/ && cp ../glean/dist/qt/org/mozilla/Glean/glean.lib.js ./dist/size/qt/",
     "size:build:qt:main": "mkdir -p ./dist/size/qt/ && cp ../glean/dist/qt/org/mozilla/Glean/glean.lib.js ./dist/size/qt/glean.main.lib.js",
     "size:build": "run-s link:glean size:build:webext size:build:qt",
-    "size:build:main": "run-s link:glean:main size:build:webext:main size:build:qt:main",
-    "size:report:dry": "run-s size:build size:build:main && DRY_RUN=1 node --experimental-json-modules size/report.js",
-    "size:report": "run-s size:build:main size:build && node --experimental-json-modules size/report.js"
+    "size:build:main": "run-s link:glean size:build:webext:main size:build:qt:main",
+    "size:report:dry": "DRY_RUN=1 ./run.sh",
+    "size:report": "./run.sh"
   },
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",

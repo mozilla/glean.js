@@ -26,9 +26,9 @@ import RateLimiter, { RateLimiterState } from "./rate_limiter.js";
 const LOG_TAG = "core.Upload";
 
 // Default rate limiter interval, in milliseconds.
-const RATE_LIMITER_INTERVAL_MS = 60 * 1000;
+export const RATE_LIMITER_INTERVAL_MS = 60 * 1000;
 // Default max pings per internal.
-const MAX_PINGS_PER_INTERVAL = 15;
+export const MAX_PINGS_PER_INTERVAL = 15;
 
 /**
  * Create and initialize a dispatcher for the PingUplaoder.
@@ -132,7 +132,9 @@ class PingUploader implements PingsDatabaseObserver {
     if (rateLimiterState === RateLimiterState.Incrementing) {
       this.dispatcher.resume();
     } else {
-      this.dispatcher.stop();
+      // Stop the dispatcher respecting the order of the dispatcher queue,
+      // to make sure the Stop command is enqueued _after_ previously enqueued requests.
+      this.dispatcher.stop(false);
 
       if (rateLimiterState === RateLimiterState.Throttled) {
         log(

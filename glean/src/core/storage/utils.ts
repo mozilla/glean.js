@@ -85,7 +85,7 @@ export function updateNestedObject(
   } catch(e) {
     log(
       LOG_TAG,
-      ["Error while transforming stored value. Ignoring old value.", e],
+      ["Error while transforming stored value. Ignoring old value.", JSON.stringify(e)],
       LoggingLevel.Error
     );
     target[finalKey] = transformFn(undefined);

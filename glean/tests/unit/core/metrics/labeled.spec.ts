@@ -61,7 +61,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -114,7 +114,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -291,7 +291,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -339,7 +339,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
