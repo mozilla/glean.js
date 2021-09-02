@@ -566,7 +566,6 @@ describe("Glean", function() {
 
     // Check that Glean was able to record the `glean.restarted` event on initialization.
     const restartedEvent = getGleanRestartedEventMetric(["custom"]);
-    console.log(await restartedEvent.testGetValue("custom"));
     // We expect two events. One that was recorded when we recorded an event on the custom ping
     // for the first time and another once we re-initialized.
     assert.strictEqual((await restartedEvent.testGetValue("custom"))?.length, 2);
