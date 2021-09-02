@@ -8,6 +8,9 @@ import type EventsDatabase from "./metrics/events_database/index.js";
 import type PingsDatabase from "./pings/database.js";
 import type ErrorManager from "./error/index.js";
 import Dispatcher from "./dispatcher.js";
+import log, { LoggingLevel } from "./log.js";
+
+const LOG_TAG = "core.Context";
 
 /**
  * This class holds all of the Glean singleton's state and internal dependencies.
@@ -22,23 +25,21 @@ import Dispatcher from "./dispatcher.js";
  * which only matter for Typescript and don't cause circular dependency issues.
  */
 export class Context {
-  private static _instance: Context;
+  private static _instance?: Context;
 
-  private _dispatcher!: Dispatcher | null;
+  private _dispatcher: Dispatcher;
 
+  // The following group of properties are all set on Glean.initialize
+  // Attempting to get them before they are set will log an error.
   private _uploadEnabled!: boolean;
   private _metricsDatabase!: MetricsDatabase;
   private _eventsDatabase!: EventsDatabase;
   private _pingsDatabase!: PingsDatabase;
-  // The reason this was added to the Context,
-  // is to avoid a circular dependency between
-  // the ErrorManager's module and the CounterMetricType module.
   private _errorManager!: ErrorManager;
-
   private _applicationId!: string;
-  private _initialized: boolean;
-
   private _debugOptions!: DebugOptions;
+
+  private _initialized: boolean;
 
   // The moment the current Glean.js session started.
   private _startTime: Date;
@@ -46,6 +47,7 @@ export class Context {
   private constructor() {
     this._initialized = false;
     this._startTime = new Date();
+    this._dispatcher = new Dispatcher();
   }
 
   static get instance(): Context {
@@ -61,39 +63,25 @@ export class Context {
    *
    * Resets the Context to an uninitialized state.
    */
-  static async testUninitialize(): Promise<void> {
-    // Clear the dispatcher queue
-    // and return the dispatcher back to an uninitialized state.
-    if (Context.instance._dispatcher) {
-      await Context.instance._dispatcher.testUninitialize();
-    }
-
-    // Due to the test requirement of keeping storage in place,
-    // we can't simply wipe out the full `Context` instance.
-    // The closest thing we can do is making the dispatcher `null`.
-    Context.instance._dispatcher = null;
-
-    Context.initialized = false;
-    Context._instance._startTime = new Date();
+  static testUninitialize(): void {
+    Context._instance = undefined;
   }
 
   static get dispatcher(): Dispatcher {
-    // Create a dispatcher if one isn't available already.
-    // This is required since the dispatcher may be used
-    // earlier than Glean initialization, so we can't rely
-    // on `Glean.initialize` to set it.
-    if (!Context.instance._dispatcher) {
-      Context.instance._dispatcher = new Dispatcher();
-    }
-
     return Context.instance._dispatcher;
   }
 
-  static set dispatcher(dispatcher: Dispatcher) {
-    Context.instance._dispatcher = dispatcher;
-  }
-
   static get uploadEnabled(): boolean {
+    if (typeof Context.instance._uploadEnabled === "undefined") {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.uploadEnabled before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._uploadEnabled;
   }
 
@@ -102,6 +90,16 @@ export class Context {
   }
 
   static get metricsDatabase(): MetricsDatabase {
+    if (typeof Context.instance._metricsDatabase === "undefined") {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.metricsDatabase before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._metricsDatabase;
   }
 
@@ -110,6 +108,16 @@ export class Context {
   }
 
   static get eventsDatabase(): EventsDatabase {
+    if (typeof Context.instance._eventsDatabase === "undefined") {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.eventsDatabase before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._eventsDatabase;
   }
 
@@ -118,6 +126,16 @@ export class Context {
   }
 
   static get pingsDatabase(): PingsDatabase {
+    if (typeof Context.instance._pingsDatabase === "undefined") {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.pingsDatabase before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._pingsDatabase;
   }
 
@@ -126,6 +144,16 @@ export class Context {
   }
 
   static get errorManager(): ErrorManager {
+    if (typeof Context.instance._errorManager === "undefined") {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.errorManager before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._errorManager;
   }
 
@@ -134,6 +162,16 @@ export class Context {
   }
 
   static get applicationId(): string {
+    if (typeof Context.instance._applicationId === "undefined") {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.applicationId before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._applicationId;
   }
 
@@ -150,6 +188,16 @@ export class Context {
   }
 
   static get debugOptions(): DebugOptions {
+    if (typeof Context.instance._debugOptions === "undefined") {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.debugOptions before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._debugOptions;
   }
 
@@ -158,6 +206,6 @@ export class Context {
   }
 
   static get startTime(): Date {
-    return Context._instance._startTime;
+    return Context.instance._startTime;
   }
 }

@@ -67,17 +67,20 @@ describe("PingMaker", function() {
   });
 
   it("buildClientInfo must report all the available data", async function() {
-    await Glean.testUninitialize();
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false,
     });
+    // Clear the metrics database to fake a worst case scenario
+    // when Glean doesn't have any of the required metrics
+    // for building the client info.
+    await Context.metricsDatabase.clearAll();
     const clientInfo1 = await PingMaker.buildClientInfoSection(Context.metricsDatabase, ping);
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
     // Initialize will also initialize core metrics that are part of the client info.
-    await Glean.testInitialize(testAppId, true, {
+    await Glean.testResetGlean(testAppId, true, {
       appBuild:"build",
       appDisplayVersion: "display version",
       serverEndpoint: "http://localhost:8080"
@@ -247,9 +250,9 @@ describe("PingMaker", function() {
     // Wait for recording action to complete.
     await event.testGetValue();
 
-    // Uninitialize and re=initialize manually instead of using testResetGlean
+    // Un-initialize and re-initialize manually instead of using testResetGlean
     // in order to have control over the startTime at initialization.
-    await Glean.testUninitialize();
+    await Glean.testUninitialize(false);
     // Move the clock backwards by one hour.
     //
     // This will generate incoherent timestamps in events at collection time

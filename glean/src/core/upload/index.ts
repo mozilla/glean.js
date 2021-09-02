@@ -14,6 +14,7 @@ import type {
   Observer as PingsDatabaseObserver,
   PingInternalRepresentation
 } from "../pings/database.js";
+import type PingsDatabase from "../pings/database.js";
 import {
   isDeletionRequest
 } from "../pings/database.js";
@@ -96,7 +97,7 @@ class PingUploader implements PingsDatabaseObserver {
   constructor(
     config: Configuration,
     platform: Platform,
-    private readonly pingsDatabase = Context.pingsDatabase,
+    private readonly pingsDatabase: PingsDatabase,
     private readonly policy = new Policy(),
     private readonly rateLimiter = new RateLimiter(RATE_LIMITER_INTERVAL_MS, MAX_PINGS_PER_INTERVAL)
   ) {

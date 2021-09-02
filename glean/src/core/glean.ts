@@ -99,12 +99,13 @@ class Glean {
    * Afterward, the upload_enabled flag is set to false.
    */
   private static async onUploadDisabled(): Promise<void> {
+    // It's fine to set this before submitting the deletion request ping,
+    // that ping is still sent even if upload is disabled.
+    Context.uploadEnabled = false;
     // We need to use an undispatched submission to guarantee that the
     // ping is collected before metric are cleared, otherwise we end up
     // with malformed pings.
     await PingType._private_submitUndispatched(Glean.corePings.deletionRequest);
-
-    Context.uploadEnabled = false;
     await Glean.clearMetrics();
   }
 
@@ -210,15 +211,19 @@ class Glean {
       return;
     }
 
+    Context.applicationId = sanitizeApplicationId(applicationId);
+
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
+    Context.debugOptions = correctConfig.debug;
+    Glean.instance._config = correctConfig;
 
     Context.metricsDatabase = new MetricsDatabase(Glean.platform.Storage);
     Context.eventsDatabase = new EventsDatabase(Glean.platform.Storage);
     Context.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
     Context.errorManager = new ErrorManager();
 
-    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform);
+    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Context.pingsDatabase);
 
     Context.pingsDatabase.attachObserver(Glean.pingUploader);
 
@@ -235,25 +240,18 @@ class Glean {
     //
     // The dispatcher will catch and log any exceptions.
     Context.dispatcher.flushInit(async () => {
-      Context.applicationId = sanitizeApplicationId(applicationId);
-      Context.debugOptions = correctConfig.debug;
-      Glean.instance._config = correctConfig;
-
-
-      // IMPORTANT!
-      // Any pings we want to send upon initialization should happen before these two lines.
-      //
-      // Clear application lifetime metrics.
-      await Context.metricsDatabase.clear(Lifetime.Application);
-      // Initialize the events database.
-      await Context.eventsDatabase.initialize();
-
       // We need to mark Glean as initialized before dealing with the upload status,
       // otherwise we will not be able to submit deletion-request pings if necessary.
       //
       // This is fine, we are inside a dispatched task that is guaranteed to run before any
       // other task. No external API call will be executed before we leave this task.
       Context.initialized = true;
+
+      // IMPORTANT!
+      // Any pings we want to send upon initialization should happen before this line.
+      //
+      // Clear application lifetime metrics.
+      await Context.metricsDatabase.clear(Lifetime.Application);
 
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
@@ -285,9 +283,16 @@ class Glean {
         }
       }
 
+      // Initialize the events database.
+      //
+      // It's important this happens _after_ the upload state is dealt with,
+      // because initializing the events database may record the execution_counter and
+      // glean.restarted metrics. If the upload state is not defined these metrics can't be recorded.
+      await Context.eventsDatabase.initialize();
+
       // We only scan the pendings pings **after** dealing with the upload state.
-      // If upload is disabled, we delete all pending pings files
-      // and we need to do that **before** scanning the pending pings
+      // If upload is disabled, pending pings files are deleted
+      // so we need to know that state **before** scanning the pending pings
       // to ensure we don't enqueue pings before their files are deleted.
       await Context.pingsDatabase.scanPendingPings();
     });
@@ -505,22 +510,29 @@ class Glean {
   /**
    * Test-only API**
    *
-   * Resets the Glean to an uninitialized state.
+   * Resets Glean to an uninitialized state.
+   * This is a no-op in case Glean has not been initialized.
    *
    * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
+   *
+   * @param clearStores Whether or not to clear the events, metrics and pings databases on uninitialize.
    */
-  static async testUninitialize(): Promise<void> {
-    // Get back to an uninitialized state.
-    await Context.testUninitialize();
+  static async testUninitialize(clearStores = true): Promise<void> {
+    if (Context.initialized) {
+      await Glean.shutdown();
 
-    // Shutdown the current uploader.
-    //
-    // This is fine because a new uploader is created on initialize.
-    // It will also guarantee all pings to be sent before uninitializing.
-    await Glean.pingUploader?.shutdown();
+      if (clearStores) {
+        await Context.eventsDatabase.clearAll();
+        await Context.metricsDatabase.clearAll();
+        await Context.pingsDatabase.clearAll();
+      }
 
-    // Deregister all plugins
-    testResetEvents();
+      // Get back to an uninitialized state.
+      Context.testUninitialize();
+
+      // Deregister all plugins
+      testResetEvents();
+    }
   }
 
   /**
@@ -535,25 +547,15 @@ class Glean {
    *        If disabled, all persisted metrics, events and queued pings (except
    *        first_run_date) are cleared. Default to `true`.
    * @param config Glean configuration options.
+   * @param clearStores Whether or not to clear the events, metrics and pings databases on reset.
    */
   static async testResetGlean(
     applicationId: string,
     uploadEnabled = true,
-    config?: ConfigurationInterface
+    config?: ConfigurationInterface,
+    clearStores = true,
   ): Promise<void> {
-    await Glean.testUninitialize();
-
-    // Clear the databases.
-    try {
-      await Context.eventsDatabase.clearAll();
-      await Context.metricsDatabase.clearAll();
-      await Context.pingsDatabase.clearAll();
-    } catch {
-      // Nothing to do here.
-      // It is expected that these will fail in case we are initializing Glean for the first time.
-    }
-
-    // Re-Initialize Glean.
+    await Glean.testUninitialize(clearStores);
     await Glean.testInitialize(applicationId, uploadEnabled, config);
   }
 }
