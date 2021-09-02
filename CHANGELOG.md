@@ -14,6 +14,7 @@
 * [#647](https://github.com/mozilla/glean.js/pull/647): Implement the Text metric type.
 * [#681](https://github.com/mozilla/glean.js/pull/681): BUGFIX: Fix error in scanning events database upon initialization on Qt/QML.
   * This bug prevents the changes introduced in [#526](https://github.com/mozilla/glean.js/pull/526) from working properly.
+* [#614](https://github.com/mozilla/glean.js/pull/614): Implement the String List metric type.
 
 # v0.18.1 (2021-07-22)
 
