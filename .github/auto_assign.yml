@@ -7,5 +7,6 @@ reviewers:
   - brizental
   - mdboom
   - chutten
-
 numberOfReviewers: 1
+skipKeywords:
+  - Bump
