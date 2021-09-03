@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.18.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.19.0...main)
+
+# v0.19.0 (2021-09-03)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.18.1...v0.19.0)
 
 * [#526](https://github.com/mozilla/glean.js/pull/526): Implement mechanism to sort events reliably throughout restarts.
   * A new event (`glean.restarted`) will be included in the events payload of pings, in case there
