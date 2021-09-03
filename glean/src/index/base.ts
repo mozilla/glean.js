@@ -27,7 +27,7 @@ export default (platform: Platform): {
     /**
      * Initialize Glean. This method should only be called once, subsequent calls will be no-op.
      *
-     * @param applicationId The application ID (will be sanitized during initialization).
+     * @param applicationId The application ID (will be sanitized, if necessary).
      * @param uploadEnabled Determines whether telemetry is enabled.
      *                      If disabled, all persisted metrics, events and queued pings (except
      *                      first_run_date) are cleared.
