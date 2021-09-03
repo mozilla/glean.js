@@ -2708,9 +2708,6 @@ img {
 			<a href="core_storage.default.html" class="tsd-kind-icon">default</a>
 			<ul>
 				<li class=" tsd-kind-method tsd-parent-kind-interface">
-					<a href="core_storage.default.html#_getWholeStore" class="tsd-kind-icon">_get<wbr>Whole<wbr>Store</a>
-				</li>
-				<li class=" tsd-kind-method tsd-parent-kind-interface">
 					<a href="core_storage.default.html#delete" class="tsd-kind-icon">delete</a>
 				</li>
 				<li class=" tsd-kind-method tsd-parent-kind-interface">
@@ -2751,7 +2748,6 @@ img {
 					<section class="tsd-index-section ">
 						<h3>Methods</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-method tsd-parent-kind-interface"><a href="core_storage.default.html#_getWholeStore" class="tsd-kind-icon">_get<wbr>Whole<wbr>Store</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-interface"><a href="core_storage.default.html#delete" class="tsd-kind-icon">delete</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-interface"><a href="core_storage.default.html#get" class="tsd-kind-icon">get</a></li>
 							<li class="tsd-kind-method tsd-parent-kind-interface"><a href="core_storage.default.html#update" class="tsd-kind-icon">update</a></li>
@@ -2763,30 +2759,6 @@ img {
 		<section class="tsd-panel-group tsd-member-group ">
 			<h2>Methods</h2>
 			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-				<a name="_getWholeStore" class="tsd-anchor"></a>
-				<h3>_get<wbr>Whole<wbr>Store</h3>
-				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-					<li class="tsd-signature tsd-kind-icon">_get<wbr>Whole<wbr>Store<span class="tsd-signature-symbol">(</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/core_utils.html#JSONObject" class="tsd-signature-type" data-tsd-kind="Type alias">JSONObject</a><span class="tsd-signature-symbol">&gt;</span></li>
-				</ul>
-				<ul class="tsd-descriptions">
-					<li class="tsd-description">
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/storage/index.ts#L36">core/storage/index.ts:36</a></li>
-							</ul>
-						</aside>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>Test-only API**</p>
-							</div>
-							<p>Gets the whole store.</p>
-						</div>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../modules/core_utils.html#JSONObject" class="tsd-signature-type" data-tsd-kind="Type alias">JSONObject</a><span class="tsd-signature-symbol">&gt;</span></h4>
-						<p>An object representing all the data recorded in the store.</p>
-					</li>
-				</ul>
-			</section>
-			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
 				<a name="delete" class="tsd-anchor"></a>
 				<h3>delete</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
@@ -2796,7 +2768,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/storage/index.ts#L91">core/storage/index.ts:91</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/storage/index.ts#L82">core/storage/index.ts:82</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2822,13 +2794,13 @@ img {
 				<a name="get" class="tsd-anchor"></a>
 				<h3>get</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-					<li class="tsd-signature tsd-kind-icon">get<span class="tsd-signature-symbol">(</span>index<span class="tsd-signature-symbol">: </span><a href="../modules/core_storage.html#StorageIndex" class="tsd-signature-type" data-tsd-kind="Type alias">StorageIndex</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../modules/core_utils.html#JSONValue" class="tsd-signature-type" data-tsd-kind="Type alias">JSONValue</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">get<span class="tsd-signature-symbol">(</span>index<span class="tsd-signature-symbol">?: </span><a href="../modules/core_storage.html#StorageIndex" class="tsd-signature-type" data-tsd-kind="Type alias">StorageIndex</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">undefined</span><span class="tsd-signature-symbol"> | </span><a href="../modules/core_utils.html#JSONValue" class="tsd-signature-type" data-tsd-kind="Type alias">JSONValue</a><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/storage/index.ts#L47">core/storage/index.ts:47</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/storage/index.ts#L38">core/storage/index.ts:38</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2837,20 +2809,17 @@ img {
 							</div>
 							<dl class="tsd-comment-tags">
 								<dt>throws</dt>
-								<dd><ul>
-										<li>In case the index is an empty array.<pre><code><span style="color: #000000">  - </span><span style="color: #001080">In</span><span style="color: #000000"> </span><span style="color: #AF00DB">case</span><span style="color: #000000"> </span><span style="color: #001080">a</span><span style="color: #000000"> </span><span style="color: #001080">value</span><span style="color: #000000"> </span><span style="color: #001080">that</span><span style="color: #000000"> </span><span style="color: #001080">is</span><span style="color: #000000"> </span><span style="color: #001080">not</span><span style="color: #000000"> </span><span style="color: #A31515">`string`</span><span style="color: #000000"> </span><span style="color: #001080">or</span><span style="color: #000000"> </span><span style="color: #A31515">`object`</span><span style="color: #000000"> </span><span style="color: #001080">is</span><span style="color: #000000"> </span><span style="color: #001080">found</span><span style="color: #000000">.</span>
-</code></pre>
-										</li>
-									</ul>
+								<dd><p>In case an value which is not valid JSON is found.</p>
 								</dd>
 							</dl>
 						</div>
 						<h4 class="tsd-parameters-title">Parameters</h4>
 						<ul class="tsd-parameters">
 							<li>
-								<h5>index: <a href="../modules/core_storage.html#StorageIndex" class="tsd-signature-type" data-tsd-kind="Type alias">StorageIndex</a></h5>
+								<h5><span class="tsd-flag ts-flagOptional">Optional</span> index: <a href="../modules/core_storage.html#StorageIndex" class="tsd-signature-type" data-tsd-kind="Type alias">StorageIndex</a></h5>
 								<div class="tsd-comment tsd-typography">
-									<p>The index  of the entry to get.</p>
+									<p>The index  of the entry to get. If the index is empty,
+									the whole store is returned.</p>
 								</div>
 							</li>
 						</ul>
@@ -2870,7 +2839,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/storage/index.ts#L80">core/storage/index.ts:80</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/storage/index.ts#L71">core/storage/index.ts:71</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">

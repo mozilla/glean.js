@@ -2708,6 +2708,9 @@ img {
 			<a href="../classes/core_metrics_database.default.html" class="tsd-kind-icon">default</a>
 		</li>
 		<li class=" tsd-kind-function tsd-parent-kind-module">
+			<a href="core_metrics_database.html#generateReservedMetricIdentifiers" class="tsd-kind-icon">generate<wbr>Reserved<wbr>Metric<wbr>Identifiers</a>
+		</li>
+		<li class=" tsd-kind-function tsd-parent-kind-module">
 			<a href="core_metrics_database.html#isValidInternalMetricsRepresentation" class="tsd-kind-icon">is<wbr>Valid<wbr>Internal<wbr>Metrics<wbr>Representation</a>
 		</li>
 	</ul>
@@ -2727,6 +2730,7 @@ img {
 					<section class="tsd-index-section ">
 						<h3>Functions</h3>
 						<ul class="tsd-index-list">
+							<li class="tsd-kind-function tsd-parent-kind-module"><a href="core_metrics_database.html#generateReservedMetricIdentifiers" class="tsd-kind-icon">generate<wbr>Reserved<wbr>Metric<wbr>Identifiers</a></li>
 							<li class="tsd-kind-function tsd-parent-kind-module"><a href="core_metrics_database.html#isValidInternalMetricsRepresentation" class="tsd-kind-icon">is<wbr>Valid<wbr>Internal<wbr>Metrics<wbr>Representation</a></li>
 						</ul>
 					</section>
@@ -2735,6 +2739,47 @@ img {
 		</section>
 		<section class="tsd-panel-group tsd-member-group ">
 			<h2>Functions</h2>
+			<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+				<a name="generateReservedMetricIdentifiers" class="tsd-anchor"></a>
+				<h3>generate<wbr>Reserved<wbr>Metric<wbr>Identifiers</h3>
+				<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+					<li class="tsd-signature tsd-kind-icon">generate<wbr>Reserved<wbr>Metric<wbr>Identifiers<span class="tsd-signature-symbol">(</span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-symbol">{ </span>category<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/metrics/database.ts#L35">core/metrics/database.ts:35</a></li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Generates a name for a reserved metric.</p>
+							</div>
+							<p>Reserved metrics are not sent in ping payloads.</p>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>name: <span class="tsd-signature-type">string</span></h5>
+								<div class="tsd-comment tsd-typography">
+									<p>The name of the metric.</p>
+								</div>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-symbol">{ </span>category<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">; </span>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> }</span></h4>
+						<p>The name of metrics with proper identification to make it a reserved metric.</p>
+						<ul class="tsd-parameters">
+							<li class="tsd-parameter">
+								<h5>category<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+							</li>
+							<li class="tsd-parameter">
+								<h5>name<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span></h5>
+							</li>
+						</ul>
+					</li>
+				</ul>
+			</section>
 			<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 				<a name="isValidInternalMetricsRepresentation" class="tsd-anchor"></a>
 				<h3>is<wbr>Valid<wbr>Internal<wbr>Metrics<wbr>Representation</h3>
@@ -2745,7 +2790,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/metrics/database.ts#L24">core/metrics/database.ts:24</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/metrics/database.ts#L51">core/metrics/database.ts:51</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">

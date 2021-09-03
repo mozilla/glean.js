@@ -2705,13 +2705,10 @@ img {
 <nav class="tsd-navigation secondary">
 	<ul>
 		<li class=" tsd-kind-class tsd-parent-kind-module">
-			<a href="../classes/core_metrics_events_database.RecordedEvent.html" class="tsd-kind-icon">Recorded<wbr>Event</a>
-		</li>
-		<li class=" tsd-kind-class tsd-parent-kind-module">
 			<a href="../classes/core_metrics_events_database.default.html" class="tsd-kind-icon">default</a>
 		</li>
-		<li class=" tsd-kind-type-alias tsd-parent-kind-module">
-			<a href="core_metrics_events_database.html#ExtraMap" class="tsd-kind-icon">Extra<wbr>Map</a>
+		<li class=" tsd-kind-function tsd-parent-kind-module">
+			<a href="core_metrics_events_database.html#getGleanRestartedEventMetric" class="tsd-kind-icon">get<wbr>Glean<wbr>Restarted<wbr>Event<wbr>Metric</a>
 		</li>
 	</ul>
 </nav>
@@ -2724,30 +2721,51 @@ img {
 					<section class="tsd-index-section ">
 						<h3>Classes</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/core_metrics_events_database.RecordedEvent.html" class="tsd-kind-icon">Recorded<wbr>Event</a></li>
 							<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/core_metrics_events_database.default.html" class="tsd-kind-icon">default</a></li>
 						</ul>
 					</section>
 					<section class="tsd-index-section ">
-						<h3>Type aliases</h3>
+						<h3>Functions</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-type-alias tsd-parent-kind-module"><a href="core_metrics_events_database.html#ExtraMap" class="tsd-kind-icon">Extra<wbr>Map</a></li>
+							<li class="tsd-kind-function tsd-parent-kind-module"><a href="core_metrics_events_database.html#getGleanRestartedEventMetric" class="tsd-kind-icon">get<wbr>Glean<wbr>Restarted<wbr>Event<wbr>Metric</a></li>
 						</ul>
 					</section>
 				</div>
 			</section>
 		</section>
 		<section class="tsd-panel-group tsd-member-group ">
-			<h2>Type aliases</h2>
-			<section class="tsd-panel tsd-member tsd-kind-type-alias tsd-parent-kind-module">
-				<a name="ExtraMap" class="tsd-anchor"></a>
-				<h3>Extra<wbr>Map</h3>
-				<div class="tsd-signature tsd-kind-icon">Extra<wbr>Map<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></div>
-				<aside class="tsd-sources">
-					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/metrics/events_database.ts#L15">core/metrics/events_database.ts:15</a></li>
-					</ul>
-				</aside>
+			<h2>Functions</h2>
+			<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+				<a name="getGleanRestartedEventMetric" class="tsd-anchor"></a>
+				<h3>get<wbr>Glean<wbr>Restarted<wbr>Event<wbr>Metric</h3>
+				<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+					<li class="tsd-signature tsd-kind-icon">get<wbr>Glean<wbr>Restarted<wbr>Event<wbr>Metric<span class="tsd-signature-symbol">(</span>sendInPings<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="../classes/core_metrics_types_event.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/metrics/events_database/index.ts#L68">core/metrics/events_database/index.ts:68</a></li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Creates an <code>glean.restarted</code> event metric.</p>
+							</div>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>sendInPings: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></h5>
+								<div class="tsd-comment tsd-typography">
+									<p>The list of pings this metric is sent in.</p>
+								</div>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <a href="../classes/core_metrics_types_event.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h4>
+						<p>A metric type instance.</p>
+					</li>
+				</ul>
 			</section>
 		</section>
 		<footer class="with-border-bottom">

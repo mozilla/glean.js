@@ -2714,6 +2714,9 @@ img {
 			<a href="../interfaces/core_pings_database.PingInternalRepresentation.html" class="tsd-kind-icon">Ping<wbr>Internal<wbr>Representation</a>
 		</li>
 		<li class=" tsd-kind-function tsd-parent-kind-module">
+			<a href="core_pings_database.html#isDeletionRequest" class="tsd-kind-icon">is<wbr>Deletion<wbr>Request</a>
+		</li>
+		<li class=" tsd-kind-function tsd-parent-kind-module">
 			<a href="core_pings_database.html#isValidPingInternalRepresentation" class="tsd-kind-icon">is<wbr>Valid<wbr>Ping<wbr>Internal<wbr>Representation</a>
 		</li>
 	</ul>
@@ -2740,6 +2743,7 @@ img {
 					<section class="tsd-index-section ">
 						<h3>Functions</h3>
 						<ul class="tsd-index-list">
+							<li class="tsd-kind-function tsd-parent-kind-module"><a href="core_pings_database.html#isDeletionRequest" class="tsd-kind-icon">is<wbr>Deletion<wbr>Request</a></li>
 							<li class="tsd-kind-function tsd-parent-kind-module"><a href="core_pings_database.html#isValidPingInternalRepresentation" class="tsd-kind-icon">is<wbr>Valid<wbr>Ping<wbr>Internal<wbr>Representation</a></li>
 						</ul>
 					</section>
@@ -2748,6 +2752,38 @@ img {
 		</section>
 		<section class="tsd-panel-group tsd-member-group ">
 			<h2>Functions</h2>
+			<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
+				<a name="isDeletionRequest" class="tsd-anchor"></a>
+				<h3>is<wbr>Deletion<wbr>Request</h3>
+				<ul class="tsd-signatures tsd-kind-function tsd-parent-kind-module">
+					<li class="tsd-signature tsd-kind-icon">is<wbr>Deletion<wbr>Request<span class="tsd-signature-symbol">(</span>ping<span class="tsd-signature-symbol">: </span><a href="../interfaces/core_pings_database.PingInternalRepresentation.html" class="tsd-signature-type" data-tsd-kind="Interface">PingInternalRepresentation</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">boolean</span></li>
+				</ul>
+				<ul class="tsd-descriptions">
+					<li class="tsd-description">
+						<aside class="tsd-sources">
+							<ul>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/pings/database.ts#L21">core/pings/database.ts:21</a></li>
+							</ul>
+						</aside>
+						<div class="tsd-comment tsd-typography">
+							<div class="lead">
+								<p>Whether or not a given ping is a deletion-request ping.</p>
+							</div>
+						</div>
+						<h4 class="tsd-parameters-title">Parameters</h4>
+						<ul class="tsd-parameters">
+							<li>
+								<h5>ping: <a href="../interfaces/core_pings_database.PingInternalRepresentation.html" class="tsd-signature-type" data-tsd-kind="Interface">PingInternalRepresentation</a></h5>
+								<div class="tsd-comment tsd-typography">
+									<p>The ping to verify.</p>
+								</div>
+							</li>
+						</ul>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">boolean</span></h4>
+						<p>Whether or not the ping is a deletion-request ping.</p>
+					</li>
+				</ul>
+			</section>
 			<section class="tsd-panel tsd-member tsd-kind-function tsd-parent-kind-module">
 				<a name="isValidPingInternalRepresentation" class="tsd-anchor"></a>
 				<h3>is<wbr>Valid<wbr>Ping<wbr>Internal<wbr>Representation</h3>
@@ -2758,7 +2794,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/pings/database.ts#L26">core/pings/database.ts:26</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/pings/database.ts#L49">core/pings/database.ts:49</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">

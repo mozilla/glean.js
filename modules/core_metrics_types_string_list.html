@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
-	<title>Uploader | @mozilla/glean</title>
+	<title>core/metrics/types/string_list | @mozilla/glean</title>
 	<meta name="description" content="Documentation for @mozilla/glean">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
 	<style type="text/css">:root {
@@ -2704,105 +2704,64 @@ img {
 </header>
 <nav class="tsd-navigation secondary">
 	<ul>
-		<li class=" tsd-kind-reference tsd-parent-kind-module">
-			<a href="../modules/core_upload_uploader.html#default" class="tsd-kind-icon">default</a>
+		<li class=" tsd-kind-class tsd-parent-kind-module">
+			<a href="../classes/core_metrics_types_string_list.StringListMetric.html" class="tsd-kind-icon">String<wbr>List<wbr>Metric</a>
 		</li>
-		<li class=" tsd-kind-enum tsd-parent-kind-module">
-			<a href="../enums/core_upload_uploader.UploadResultStatus.html" class="tsd-kind-icon">Upload<wbr>Result<wbr>Status</a>
-		</li>
-		<li class=" tsd-kind-interface tsd-parent-kind-module">
-			<a href="core_upload_uploader.UploadResult.html" class="tsd-kind-icon">Upload<wbr>Result</a>
-		</li>
-		<li class="current tsd-kind-interface tsd-parent-kind-module">
-			<a href="core_upload_uploader.Uploader.html" class="tsd-kind-icon">Uploader</a>
-			<ul>
-				<li class=" tsd-kind-method tsd-parent-kind-interface">
-					<a href="core_upload_uploader.Uploader.html#post" class="tsd-kind-icon">post</a>
-				</li>
-			</ul>
+		<li class=" tsd-kind-class tsd-parent-kind-module">
+			<a href="../classes/core_metrics_types_string_list.default.html" class="tsd-kind-icon">default</a>
 		</li>
 		<li class=" tsd-kind-variable tsd-parent-kind-module">
-			<a href="../modules/core_upload_uploader.html#DEFAULT_UPLOAD_TIMEOUT_MS" class="tsd-kind-icon">DEFAULT_<wbr>UPLOAD_<wbr>TIMEOUT_<wbr>MS</a>
+			<a href="core_metrics_types_string_list.html#MAX_LIST_LENGTH" class="tsd-kind-icon">MAX_<wbr>LIST_<wbr>LENGTH</a>
+		</li>
+		<li class=" tsd-kind-variable tsd-parent-kind-module">
+			<a href="core_metrics_types_string_list.html#MAX_STRING_LENGTH" class="tsd-kind-icon">MAX_<wbr>STRING_<wbr>LENGTH</a>
 		</li>
 	</ul>
 </nav>
 <div class="container container-main">
 	<div class="content-wrap">
-		<section class="tsd-panel tsd-comment">
-			<div class="tsd-comment tsd-typography">
-				<div class="lead">
-					<p>Uploader interface, actualy uploading logic varies per platform.</p>
-				</div>
-			</div>
-		</section>
-		<section class="tsd-panel tsd-hierarchy">
-			<h3>Hierarchy</h3>
-			<ul class="tsd-hierarchy">
-				<li>
-					<span class="target">Uploader</span>
-				</li>
-			</ul>
-		</section>
 		<section class="tsd-panel-group tsd-index-group">
 			<h2>Index</h2>
 			<section class="tsd-panel tsd-index-panel">
 				<div class="tsd-index-content">
 					<section class="tsd-index-section ">
-						<h3>Methods</h3>
+						<h3>Classes</h3>
 						<ul class="tsd-index-list">
-							<li class="tsd-kind-method tsd-parent-kind-interface"><a href="core_upload_uploader.Uploader.html#post" class="tsd-kind-icon">post</a></li>
+							<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/core_metrics_types_string_list.StringListMetric.html" class="tsd-kind-icon">String<wbr>List<wbr>Metric</a></li>
+							<li class="tsd-kind-class tsd-parent-kind-module"><a href="../classes/core_metrics_types_string_list.default.html" class="tsd-kind-icon">default</a></li>
+						</ul>
+					</section>
+					<section class="tsd-index-section ">
+						<h3>Variables</h3>
+						<ul class="tsd-index-list">
+							<li class="tsd-kind-variable tsd-parent-kind-module"><a href="core_metrics_types_string_list.html#MAX_LIST_LENGTH" class="tsd-kind-icon">MAX_<wbr>LIST_<wbr>LENGTH</a></li>
+							<li class="tsd-kind-variable tsd-parent-kind-module"><a href="core_metrics_types_string_list.html#MAX_STRING_LENGTH" class="tsd-kind-icon">MAX_<wbr>STRING_<wbr>LENGTH</a></li>
 						</ul>
 					</section>
 				</div>
 			</section>
 		</section>
 		<section class="tsd-panel-group tsd-member-group ">
-			<h2>Methods</h2>
-			<section class="tsd-panel tsd-member tsd-kind-method tsd-parent-kind-interface">
-				<a name="post" class="tsd-anchor"></a>
-				<h3>post</h3>
-				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-interface">
-					<li class="tsd-signature tsd-kind-icon">post<span class="tsd-signature-symbol">(</span>url<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, body<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Uint8Array</span>, headers<span class="tsd-signature-symbol">?: </span><span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Interface">UploadResult</a><span class="tsd-signature-symbol">&gt;</span></li>
-				</ul>
-				<ul class="tsd-descriptions">
-					<li class="tsd-description">
-						<aside class="tsd-sources">
-							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/uploader.ts#L52">core/upload/uploader.ts:52</a></li>
-							</ul>
-						</aside>
-						<div class="tsd-comment tsd-typography">
-							<div class="lead">
-								<p>Makes a POST request to a given url, with the given headers and body.</p>
-							</div>
-						</div>
-						<h4 class="tsd-parameters-title">Parameters</h4>
-						<ul class="tsd-parameters">
-							<li>
-								<h5>url: <span class="tsd-signature-type">string</span></h5>
-								<div class="tsd-comment tsd-typography">
-									<p>The URL to make the POST request</p>
-								</div>
-							</li>
-							<li>
-								<h5>body: <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol"> | </span><span class="tsd-signature-type">Uint8Array</span></h5>
-								<div class="tsd-comment tsd-typography">
-									<p>The body of this post request. The body may be a stringified JSON or, most likely,
-										a Uint8Array containing the gzipped version of said stringified JSON. We need to accept
-									both in case the compression fails.</p>
-								</div>
-							</li>
-							<li>
-								<h5><span class="tsd-flag ts-flagOptional">Optional</span> headers: <span class="tsd-signature-type">Record</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">, </span><span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">&gt;</span></h5>
-								<div class="tsd-comment tsd-typography">
-									<p>Optional header to include in the request</p>
-								</div>
-							</li>
-						</ul>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Interface">UploadResult</a><span class="tsd-signature-symbol">&gt;</span></h4>
-						<p>The status code of the response.</p>
-					</li>
-				</ul>
+			<h2>Variables</h2>
+			<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module">
+				<a name="MAX_LIST_LENGTH" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> MAX_<wbr>LIST_<wbr>LENGTH</h3>
+				<div class="tsd-signature tsd-kind-icon">MAX_<wbr>LIST_<wbr>LENGTH<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">20</span><span class="tsd-signature-symbol"> = 20</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/metrics/types/string_list.ts#L13">core/metrics/types/string_list.ts:13</a></li>
+					</ul>
+				</aside>
+			</section>
+			<section class="tsd-panel tsd-member tsd-kind-variable tsd-parent-kind-module">
+				<a name="MAX_STRING_LENGTH" class="tsd-anchor"></a>
+				<h3><span class="tsd-flag ts-flagConst">Const</span> MAX_<wbr>STRING_<wbr>LENGTH</h3>
+				<div class="tsd-signature tsd-kind-icon">MAX_<wbr>STRING_<wbr>LENGTH<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">50</span><span class="tsd-signature-symbol"> = 50</span></div>
+				<aside class="tsd-sources">
+					<ul>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/metrics/types/string_list.ts#L14">core/metrics/types/string_list.ts:14</a></li>
+					</ul>
+				</aside>
 			</section>
 		</section>
 		<footer class="with-border-bottom">
@@ -2817,15 +2776,14 @@ img {
 						<li class="tsd-kind-type-alias tsd-has-type-parameter"><span class="tsd-kind-icon">Type alias with type parameter</span></li>
 					</ul>
 					<ul class="tsd-legend">
-						<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
-						<li class="tsd-kind-method tsd-parent-kind-interface"><span class="tsd-kind-icon">Method</span></li>
-					</ul>
-					<ul class="tsd-legend">
 						<li class="tsd-kind-class"><span class="tsd-kind-icon">Class</span></li>
 						<li class="tsd-kind-class tsd-has-type-parameter"><span class="tsd-kind-icon">Class with type parameter</span></li>
 					</ul>
 					<ul class="tsd-legend">
 						<li class="tsd-kind-enum"><span class="tsd-kind-icon">Enumeration</span></li>
+					</ul>
+					<ul class="tsd-legend">
+						<li class="tsd-kind-interface"><span class="tsd-kind-icon">Interface</span></li>
 					</ul>
 				</div>
 			</div>

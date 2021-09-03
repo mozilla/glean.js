@@ -2757,6 +2757,12 @@ img {
 				</li>
 			</ul>
 		</li>
+		<li class=" tsd-kind-variable tsd-parent-kind-module">
+			<a href="../modules/core_upload.html#MAX_PINGS_PER_INTERVAL" class="tsd-kind-icon">MAX_<wbr>PINGS_<wbr>PER_<wbr>INTERVAL</a>
+		</li>
+		<li class=" tsd-kind-variable tsd-parent-kind-module">
+			<a href="../modules/core_upload.html#RATE_LIMITER_INTERVAL_MS" class="tsd-kind-icon">RATE_<wbr>LIMITER_<wbr>INTERVAL_<wbr>MS</a>
+		</li>
 	</ul>
 </nav>
 <div class="container container-main">
@@ -2832,13 +2838,13 @@ img {
 				<a name="constructor" class="tsd-anchor"></a>
 				<h3>constructor</h3>
 				<ul class="tsd-signatures tsd-kind-constructor tsd-parent-kind-class">
-					<li class="tsd-signature tsd-kind-icon">new default<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">: </span><a href="core_config.Configuration.html" class="tsd-signature-type" data-tsd-kind="Class">Configuration</a>, platform<span class="tsd-signature-symbol">: </span><a href="../interfaces/platform.default.html" class="tsd-signature-type" data-tsd-kind="Interface">default</a>, pingsDatabase<span class="tsd-signature-symbol">: </span><a href="core_pings_database.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a>, policy<span class="tsd-signature-symbol">?: </span><a href="core_upload.Policy.html" class="tsd-signature-type" data-tsd-kind="Class">Policy</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="core_upload.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></li>
+					<li class="tsd-signature tsd-kind-icon">new default<span class="tsd-signature-symbol">(</span>config<span class="tsd-signature-symbol">: </span><a href="core_config.Configuration.html" class="tsd-signature-type" data-tsd-kind="Class">Configuration</a>, platform<span class="tsd-signature-symbol">: </span><a href="../interfaces/platform.default.html" class="tsd-signature-type" data-tsd-kind="Interface">default</a>, pingsDatabase<span class="tsd-signature-symbol">: </span><a href="core_pings_database.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a>, policy<span class="tsd-signature-symbol">?: </span><a href="core_upload.Policy.html" class="tsd-signature-type" data-tsd-kind="Class">Policy</a>, rateLimiter<span class="tsd-signature-symbol">?: </span><a href="core_upload_rate_limiter.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><a href="core_upload.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L95">core/upload/index.ts:95</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L97">core/upload/index.ts:97</a></li>
 							</ul>
 						</aside>
 						<h4 class="tsd-parameters-title">Parameters</h4>
@@ -2855,6 +2861,9 @@ img {
 							<li>
 								<h5>policy: <a href="core_upload.Policy.html" class="tsd-signature-type" data-tsd-kind="Class">Policy</a><span class="tsd-signature-symbol"> = ...</span></h5>
 							</li>
+							<li>
+								<h5>rateLimiter: <a href="core_upload_rate_limiter.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a><span class="tsd-signature-symbol"> = ...</span></h5>
+							</li>
 						</ul>
 						<h4 class="tsd-returns-title">Returns <a href="core_upload.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></h4>
 					</li>
@@ -2869,7 +2878,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">dispatcher<span class="tsd-signature-symbol">:</span> <a href="core_dispatcher.default.html" class="tsd-signature-type" data-tsd-kind="Class">default</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L87">core/upload/index.ts:87</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L89">core/upload/index.ts:89</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2879,7 +2888,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">platform<wbr>Info<span class="tsd-signature-symbol">:</span> <a href="../interfaces/core_platform_info.default.html" class="tsd-signature-type" data-tsd-kind="Interface">default</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L91">core/upload/index.ts:91</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L93">core/upload/index.ts:93</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2889,7 +2898,7 @@ img {
 				<div class="tsd-signature tsd-kind-icon">processing<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">QueuedPing</span><span class="tsd-signature-symbol">[]</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L85">core/upload/index.ts:85</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L87">core/upload/index.ts:87</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2899,17 +2908,17 @@ img {
 				<div class="tsd-signature tsd-kind-icon">server<wbr>Endpoint<span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L93">core/upload/index.ts:93</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L95">core/upload/index.ts:95</a></li>
 					</ul>
 				</aside>
 			</section>
 			<section class="tsd-panel tsd-member tsd-kind-property tsd-parent-kind-class tsd-is-private">
 				<a name="uploader" class="tsd-anchor"></a>
 				<h3><span class="tsd-flag ts-flagPrivate">Private</span> <span class="tsd-flag ts-flagReadonly">Readonly</span> uploader</h3>
-				<div class="tsd-signature tsd-kind-icon">uploader<span class="tsd-signature-symbol">:</span> <a href="../interfaces/core_upload_uploader.Uploader.html" class="tsd-signature-type" data-tsd-kind="Interface">Uploader</a></div>
+				<div class="tsd-signature tsd-kind-icon">uploader<span class="tsd-signature-symbol">:</span> <a href="core_upload_uploader.Uploader.html" class="tsd-signature-type" data-tsd-kind="Class">Uploader</a></div>
 				<aside class="tsd-sources">
 					<ul>
-						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L89">core/upload/index.ts:89</a></li>
+						<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L91">core/upload/index.ts:91</a></li>
 					</ul>
 				</aside>
 			</section>
@@ -2920,13 +2929,13 @@ img {
 				<a name="attemptPingUpload" class="tsd-anchor"></a>
 				<h3><span class="tsd-flag ts-flagPrivate">Private</span> attempt<wbr>Ping<wbr>Upload</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-					<li class="tsd-signature tsd-kind-icon">attempt<wbr>Ping<wbr>Upload<span class="tsd-signature-symbol">(</span>ping<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueuedPing</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Interface">UploadResult</a><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">attempt<wbr>Ping<wbr>Upload<span class="tsd-signature-symbol">(</span>ping<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">QueuedPing</span><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Class">UploadResult</a><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L219">core/upload/index.ts:219</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L254">core/upload/index.ts:254</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2943,7 +2952,7 @@ img {
 								</div>
 							</li>
 						</ul>
-						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="../interfaces/core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Interface">UploadResult</a><span class="tsd-signature-symbol">&gt;</span></h4>
+						<h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><a href="core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Class">UploadResult</a><span class="tsd-signature-symbol">&gt;</span></h4>
 						<p>The status number of the response or <code>undefined</code> if unable to attempt upload.</p>
 					</li>
 				</ul>
@@ -2958,7 +2967,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L364">core/upload/index.ts:364</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L396">core/upload/index.ts:396</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -2985,7 +2994,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L261">core/upload/index.ts:261</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L294">core/upload/index.ts:294</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3016,7 +3025,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L120">core/upload/index.ts:120</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L122">core/upload/index.ts:122</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3048,7 +3057,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L169">core/upload/index.ts:169</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L204">core/upload/index.ts:204</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3080,13 +3089,13 @@ img {
 				<a name="processPingUploadResponse" class="tsd-anchor"></a>
 				<h3><span class="tsd-flag ts-flagPrivate">Private</span> process<wbr>Ping<wbr>Upload<wbr>Response</h3>
 				<ul class="tsd-signatures tsd-kind-method tsd-parent-kind-class tsd-is-private">
-					<li class="tsd-signature tsd-kind-icon">process<wbr>Ping<wbr>Upload<wbr>Response<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, response<span class="tsd-signature-symbol">: </span><a href="../interfaces/core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Interface">UploadResult</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
+					<li class="tsd-signature tsd-kind-icon">process<wbr>Ping<wbr>Upload<wbr>Response<span class="tsd-signature-symbol">(</span>identifier<span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">string</span>, response<span class="tsd-signature-symbol">: </span><a href="core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Class">UploadResult</a><span class="tsd-signature-symbol">)</span><span class="tsd-signature-symbol">: </span><span class="tsd-signature-type">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">boolean</span><span class="tsd-signature-symbol">&gt;</span></li>
 				</ul>
 				<ul class="tsd-descriptions">
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L301">core/upload/index.ts:301</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L334">core/upload/index.ts:334</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3125,7 +3134,7 @@ img {
 								</div>
 							</li>
 							<li>
-								<h5>response: <a href="../interfaces/core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Interface">UploadResult</a></h5>
+								<h5>response: <a href="core_upload_uploader.UploadResult.html" class="tsd-signature-type" data-tsd-kind="Class">UploadResult</a></h5>
 								<div class="tsd-comment tsd-typography">
 									<p>The response of a ping upload attempt.</p>
 								</div>
@@ -3146,7 +3155,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L352">core/upload/index.ts:352</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L384">core/upload/index.ts:384</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3170,7 +3179,7 @@ img {
 					<li class="tsd-description">
 						<aside class="tsd-sources">
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L387">core/upload/index.ts:387</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L419">core/upload/index.ts:419</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
@@ -3195,7 +3204,7 @@ img {
 						<aside class="tsd-sources">
 							<p>Implementation of <a href="../interfaces/core_pings_database.Observer.html">Observer</a>.<a href="../interfaces/core_pings_database.Observer.html#update">update</a></p>
 							<ul>
-								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/fba7916/glean/src/core/upload/index.ts#L341">core/upload/index.ts:341</a></li>
+								<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/623d907/glean/src/core/upload/index.ts#L373">core/upload/index.ts:373</a></li>
 							</ul>
 						</aside>
 						<div class="tsd-comment tsd-typography">
