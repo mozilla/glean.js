@@ -1,6 +1,28 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.18.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.19.0...main)
+
+# v0.19.0 (2021-09-03)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.18.1...v0.19.0)
+
+* [#526](https://github.com/mozilla/glean.js/pull/526): Implement mechanism to sort events reliably throughout restarts.
+  * A new event (`glean.restarted`) will be included in the events payload of pings, in case there
+  was a restart in the middle of the ping measurement window.
+* [#534](https://github.com/mozilla/glean.js/pull/534): Expose `Uploader` base class through `@mozilla/glean/<platform>/uploader` entry point.
+* [#580](https://github.com/mozilla/glean.js/pull/580): Limit size of pings database to 250 pings or 10MB.
+* [#580](https://github.com/mozilla/glean.js/pull/580): BUGFIX: Pending pings at startup up are uploaded from oldest to newest.
+* [#607](https://github.com/mozilla/glean.js/pull/607): Record an error when incoherent timestamps are calculated for events after a restart.
+* [#630](https://github.com/mozilla/glean.js/pull/630): Accept booleans and numbers as event extras.
+* [#647](https://github.com/mozilla/glean.js/pull/647): Implement the Text metric type.
+* [#658](https://github.com/mozilla/glean.js/pull/658): Implement rate limiting for ping upload.
+  * Only up to 15 ping submissions every 60 seconds are now allowed.
+* [#658](https://github.com/mozilla/glean.js/pull/658): BUGFIX: Unblock ping uploading jobs after the maximum of upload failures are hit for a given uploading window.
+* [#661](https://github.com/mozilla/glean.js/pull/661): Include unminified version of library on Qt/QML builds.
+* [#681](https://github.com/mozilla/glean.js/pull/681): BUGFIX: Fix error in scanning events database upon initialization on Qt/QML.
+  * This bug prevents the changes introduced in [#526](https://github.com/mozilla/glean.js/pull/526) from working properly in Qt/QML.
+* [#692](https://github.com/mozilla/glean.js/pull/692): BUGFIX: Ensure events database is initialized at a time Glean is already able to record metrics.
+  * This bug also prevents the changes introduced in [#526](https://github.com/mozilla/glean.js/pull/526) from working properly in all platforms.
 
 # v0.18.1 (2021-07-22)
 
@@ -19,6 +41,9 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.16.0...v0.17.0)
 
 * [#529](https://github.com/mozilla/glean.js/pull/529): Implement the URL metric type.
+
+* [#526](https://github.com/mozilla/glean.js/pull/526): Implement new events sorting
+logic, which allows for reliable sorting of events throughout restarts.
 
 # v0.16.0 (2021-07-06)
 

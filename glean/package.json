@@ -1,6 +1,6 @@
 {
   "name": "@mozilla/glean",
-  "version": "0.18.1",
+  "version": "0.19.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for JavaScript environments.",
   "type": "module",
   "sideEffects": "false",
@@ -9,7 +9,8 @@
     "./webext": "./dist/webext/index/webext.js",
     "./webext/private/metrics/*": "./dist/webext/core/metrics/types/*.js",
     "./webext/private/ping": "./dist/webext/core/pings/ping_type.js",
-    "./webext/plugins/*": "./dist/webext/plugins/*.js"
+    "./webext/plugins/*": "./dist/webext/plugins/*.js",
+    "./webext/uploader": "./dist/webext/core/upload/uploader.js"
   },
   "typesVersions": {
     "*": {
@@ -24,6 +25,9 @@
       ],
       "webext/plugins/*": [
         "./dist/webext/types/plugins/*"
+      ],
+      "webext/uploader": [
+        "./dist/webext/types/core/upload/uploader.d.ts"
       ]
     }
   },
@@ -45,8 +49,10 @@
     "test:unit:platform": "npm run test:base -- \"tests/unit/platform/**/*.spec.ts\" --recursive --timeout 0",
     "pretest:unit:platform": "cd tests/unit/platform/utils/webext/sample/ && npm install && npm run build:xpi",
     "test:base": "node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js",
-    "lint": "eslint . --ext .ts,.js,.json --max-warnings=0",
+    "lint": "run-s lint:eslint lint:circular-deps lint:glinter",
+    "lint:eslint": "eslint . --ext .ts,.js,.json --max-warnings=0",
     "lint:circular-deps": "madge --circular src/ --extensions ts",
+    "lint:glinter": "npm run cli -- glinter src/metrics.yaml src/pings.yaml --allow-reserved",
     "fix": "eslint . --ext .ts,.js,.json --fix",
     "build": "run-s build:cli build:webext build:qt",
     "build:cli": "tsc -p ./tsconfig/cli.json",
@@ -55,6 +61,7 @@
     "build:webext": "rm -rf dist/webext && run-s build:webext:lib build:webext:types",
     "build:qt": "rm -rf dist/qt && webpack --config webpack.config.qt.js && ../bin/prepare-qml-module.sh",
     "build:docs": "rm -rf dist/docs && typedoc src/ --out dist/docs --tsconfig tsconfig/docs.json --theme minimal",
+    "build:metrics-docs": "npm run cli -- translate src/metrics.yaml src/pings.yaml -o ../docs/reference/ --format markdown --allow-reserved",
     "publish:docs": "NODE_DEBUG=gh-pages gh-pages --dotfiles --message \"[skip ci] Updates\" --dist dist/docs",
     "prepublishOnly": "cp ../README.md ./README.md && run-s build:cli build:webext",
     "postpublish": "rm ./README.md",
@@ -76,7 +83,7 @@
   "homepage": "https://github.com/mozilla/glean.js#readme",
   "devDependencies": {
     "@types/assert": "^1.5.4",
-    "@types/mocha": "^8.2.0",
+    "@types/mocha": "^9.0.0",
     "@types/node": "^16.0.0",
     "@types/selenium-webdriver": "^4.0.14",
     "@types/sinon": "^10.0.0",
@@ -86,13 +93,13 @@
     "@typescript-eslint/parser": "^4.28.2",
     "eslint": "^7.30.0",
     "eslint-plugin-import": "^2.23.2",
-    "eslint-plugin-jsdoc": "^35.4.1",
+    "eslint-plugin-jsdoc": "^36.0.2",
     "eslint-plugin-json": "^3.0.0",
     "eslint-plugin-mocha": "^9.0.0",
     "eslint-plugin-notice": "^0.9.10",
     "geckodriver": "^2.0.1",
     "gh-pages": "^3.2.3",
-    "jsdom": "16.6.0",
+    "jsdom": "17.0.0",
     "jsdom-global": "3.0.2",
     "jsonschema": "^1.4.0",
     "madge": "^5.0.1",

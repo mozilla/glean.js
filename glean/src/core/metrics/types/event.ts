@@ -3,10 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import type { ExtraMap } from "../events_database.js";
+import type { ExtraMap } from "../events_database/recorded_event.js";
 import { MetricType } from "../index.js";
-import { RecordedEvent } from "../events_database.js";
-import { getMonotonicNow, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { RecordedEvent } from "../events_database/recorded_event.js";
+import { getMonotonicNow, isString, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 
@@ -15,7 +15,7 @@ const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 /**
  * An event metric.
  */
-class EventMetricType extends MetricType {
+class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends MetricType {
   private allowedExtraKeys?: string[];
 
   constructor(meta: CommonMetricData, allowedExtraKeys?: string[]) {
@@ -24,43 +24,69 @@ class EventMetricType extends MetricType {
   }
 
   /**
-   * Record an event by using the information
-   * provided by the instance of this class.
+   * An internal implemention of `record` that does not dispatch the recording task.
    *
-   * @param extra optional. This is a map, both keys and values need to be
-   *        strings, keys are identifiers. This is used for events where
-   *        additional richer context is needed.
-   *        The maximum length for values is 100 bytes.
+   * # Important
+   *
+   * This is absolutely not meant to be used outside of Glean itself.
+   * It may cause multiple issues because it cannot guarantee
+   * that the recording of the metric will happen in order with other Glean API calls.
+   *
+   * @param instance The metric instance to record to.
+   * @param extra optional. Used for events where additional richer context is needed.
+   *        The maximum length for string values is 100 bytes.
+   * @param timestamp The event timestamp, defaults to now.
+   * @returns A promise that resolves once the event is recorded.
    */
-  record(extra?: ExtraMap): void {
+  static async _private_recordUndispatched(
+    instance: EventMetricType,
+    extra?: ExtraMap,
+    timestamp: number = getMonotonicNow()
+  ): Promise<void> {
+    if (!instance.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    // Truncate the extra keys, if needed.
+    let truncatedExtra: ExtraMap | undefined = undefined;
+    if (extra && instance.allowedExtraKeys) {
+      truncatedExtra = {};
+      for (const [name, value] of Object.entries(extra)) {
+        if (instance.allowedExtraKeys.includes(name)) {
+          if (isString(value)) {
+            truncatedExtra[name] = await truncateStringAtBoundaryWithError(instance, value, MAX_LENGTH_EXTRA_KEY_VALUE);
+          } else {
+            truncatedExtra[name] = value;
+          }
+        } else {
+          await Context.errorManager.record(instance, ErrorType.InvalidValue, `Invalid key index: ${name}`);
+          continue;
+        }
+      }
+    }
+
+    return Context.eventsDatabase.record(
+      instance,
+      new RecordedEvent(
+        instance.category,
+        instance.name,
+        timestamp,
+        truncatedExtra,
+      )
+    );
+  }
+
+  /**
+   * Record an event.
+   *
+   * @param extra optional. Used for events where additional richer context is needed.
+   *        The maximum length for string values is 100 bytes.
+   */
+  record(extra?: SpecificExtraMap): void {
     const timestamp = getMonotonicNow();
 
     Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      // Truncate the extra keys, if needed.
-      let truncatedExtra: ExtraMap | undefined = undefined;
-      if (extra && this.allowedExtraKeys) {
-        truncatedExtra = {};
-        for (const [name, value] of Object.entries(extra)) {
-          if (this.allowedExtraKeys.includes(name)) {
-            truncatedExtra[name] = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_EXTRA_KEY_VALUE);
-          } else {
-            await Context.errorManager.record(this, ErrorType.InvalidValue, `Invalid key index: ${name}`);
-            continue;
-          }
-        }
-      }
-
-      const event = new RecordedEvent(
-        this.category,
-        this.name,
-        timestamp,
-        truncatedExtra,
-      );
-      await Context.eventsDatabase.record(this, event);
+      await EventMetricType._private_recordUndispatched(this, extra, timestamp);
     });
   }
 

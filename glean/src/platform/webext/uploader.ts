@@ -3,13 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import log, { LoggingLevel } from "../../core/log.js";
-import type Uploader from "../../core/upload/uploader.js";
-import type { UploadResult } from "../../core/upload/uploader.js";
-import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus } from "../../core/upload/uploader.js";
+import Uploader from "../../core/upload/uploader.js";
+import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus, UploadResult } from "../../core/upload/uploader.js";
 
 const LOG_TAG = "platform.webext.Uploader";
 
-class BrowserUploader implements Uploader {
+class BrowserUploader extends Uploader {
   async post(url: string, body: string | Uint8Array, headers: Record<string, string> = {}): Promise<UploadResult> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), DEFAULT_UPLOAD_TIMEOUT_MS);
@@ -40,18 +39,15 @@ class BrowserUploader implements Uploader {
         // We will treat this as we treat server / network errors in this case.
         log(LOG_TAG, ["Network error while attempting to upload ping.\n", e.message], LoggingLevel.Error);
       } else {
-        log(LOG_TAG, ["Unknown error while attempting to upload ping.\n", e], LoggingLevel.Error);
+        log(LOG_TAG, ["Unknown error while attempting to upload ping.\n", JSON.stringify(e)], LoggingLevel.Error);
       }
 
       clearTimeout(timeout);
-      return { result: UploadResultStatus.RecoverableFailure };
+      return new UploadResult(UploadResultStatus.RecoverableFailure);
     }
 
     clearTimeout(timeout);
-    return {
-      result: UploadResultStatus.Success,
-      status: response.status
-    };
+    return new UploadResult(UploadResultStatus.Success, response.status);
   }
 }
 

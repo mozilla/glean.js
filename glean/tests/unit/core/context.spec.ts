@@ -69,15 +69,15 @@ describe("Context", function() {
     assert.ok(Context.pingsDatabase instanceof PingsDatabase);
   });
 
-  it("the dispatcher is always available", async function () {
+  it("the dispatcher is always available", function () {
     const originalDispatcher = Context.dispatcher;
     assert.notStrictEqual(originalDispatcher, null);
 
-    await Context.testUninitialize();
+    Context.testUninitialize();
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    assert.strictEqual(Context.instance._dispatcher, null);
+    assert.strictEqual(Context._instance?._dispatcher, undefined);
 
     // Trying to access the dispatcher will instantiate a new one.
     const newDispatcher = Context.instance;

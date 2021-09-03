@@ -2,7 +2,7 @@
 
 Hey, we are glad you are interested in contributing to Glean.js!
 
-Contributions are always welcome and they can take many forms: bug reports, 
+Contributions are always welcome and they can take many forms: bug reports,
 documentation changes, feature requests or pull requests.
 
 Before you dive into technical details, take a moment to read our 
@@ -10,13 +10,8 @@ Before you dive into technical details, take a moment to read our
 Any form of communication from chat rooms and mailing lists to code comments
 is expected to follow this code of conduct, so that all can enjoy working on Glean.js.
 
-Glean.js' developer document lives in the [`docs/`](https://github.com/mozilla/glean.js/tree/main/docs)
+Glean.js' developer document lives in the [`docs/`](https://github.com/mozilla/glean.js/tree/main/docs/index.md)
 folder in this repository and Glean.js' user documentation lives in [The Glean Book](https://mozilla.github.io/glean/book/index.html).
-
-> **Note** Glean.js' documentation is still very much a work in progress.
-> You will probably find a lot of missing documentation. If what you are missing
-> does not have a related bug filed with the [`[docdays]`](https://bugzilla.mozilla.org/buglist.cgi?query_format=advanced&f2=component&o1=substring&o2=equals&f1=status_whiteboard&v1=%5Bdocdays%5D&classification=Client%20Software&classification=Developer%20Infrastructure&classification=Components&classification=Server%20Software&classification=Other&list_id=15653426&resolution=---&v2=Glean.js) tag,
-> please file a bug.
 
 Here's the [guide](https://github.com/mozilla/glean.js/tree/main/docs/getting_started.md) to get you started!
 
@@ -24,7 +19,7 @@ Here's the [guide](https://github.com/mozilla/glean.js/tree/main/docs/getting_st
 
 If you are using Glean.js and found a bug or a missing feature, please file a bug.
 
-Glean.js bugs are filed in Bugzilla. Use [this link](https://bugzilla.mozilla.org/enter_bug.cgi?product=Data+Platform+and+Tools&component=Glean.js&priority=P4&status_whiteboard=%5Btelemetry%3Aglean-js%3Am%3F%5D) 
+Glean.js bugs are filed in Bugzilla. Use [this link](https://bugzilla.mozilla.org/enter_bug.cgi?product=Data+Platform+and+Tools&component=Glean.js&priority=P4&status_whiteboard=%5Btelemetry%3Aglean-js%3Am%3F%5D)
 to file a bug in the Glean.js Bugzilla component.
 
 ## Finding a bug to work on

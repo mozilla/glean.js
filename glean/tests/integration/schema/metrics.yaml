@@ -84,6 +84,19 @@ for_testing:
     expires: never
     send_in_pings:
       - testing
+  string_list:
+    type: string_list
+    description: |
+      Sample string list metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
   timespan:
     type: timespan
     description: |
@@ -139,9 +152,15 @@ for_testing:
     send_in_pings:
       - testing
     extra_keys:
-      sample:
-        description: |
-          Sample extra key.
+      sample_string:
+        description: Sample string extra key.
+        type: string
+      sample_boolean:
+        description: Sample boolean extra key.
+        type: boolean
+      sample_quantity:
+        description: Sample quantity extra key.
+        type: quantity
   quantity:
     type: quantity
     description: |
@@ -169,3 +188,18 @@ for_testing:
     expires: never
     send_in_pings:
       - testing
+  text:
+    type: text
+    description: |
+      Sample text metric.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+    data_sensitivity:
+      - highly_sensitive

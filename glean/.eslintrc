@@ -20,6 +20,11 @@
     "semi": "off",
     "@typescript-eslint/semi": ["error", "always"],
     "@typescript-eslint/consistent-type-imports": "error",
+    "no-unused-vars": "off",
+    "@typescript-eslint/no-unused-vars": [ "error", {
+      "argsIgnorePattern": "^_",
+      "varsIgnorePattern": "^_"
+    }],
     "no-debugger":  ["error"],
     "no-multi-spaces": "error",
     "jsdoc/no-types": "off",
@@ -27,7 +32,8 @@
     "jsdoc/require-returns-type": "off",
     "import/no-named-as-default": "off",
     "import/no-duplicates": "off",
-    "import/no-unresolved": "off"
+    "import/no-unresolved": "off",
+    "import/no-named-as-default-member": "off"
   },
   "extends": [
     "plugin:jsdoc/recommended",

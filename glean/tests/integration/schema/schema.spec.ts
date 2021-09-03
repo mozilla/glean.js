@@ -60,12 +60,18 @@ describe("schema", function() {
     metrics.boolean.set(false);
     metrics.counter.add(10);
     metrics.datetime.set();
-    metrics.event.record({ sample: "hey" });
+    metrics.event.record({
+      sample_string: "hey",
+      sample_boolean: false,
+      sample_quantity: 42,
+    });
     metrics.labeledBoolean["a_label"].set(true);
     metrics.labeledCounter["a_label"].add();
     metrics.labeledString["a_label"].set("ho");
     metrics.quantity.set(42);
     metrics.string.set("let's go");
+    metrics.stringList.set(["let's go"]);
+    metrics.text.set("let's gooooooooo");
     metrics.timespan.setRawNanos(10 * 10**6);
     metrics.uuid.generateAndSet();
     metrics.url.set("glean://test");

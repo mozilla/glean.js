@@ -13,6 +13,8 @@ import Plugin from "../../../../src/plugins";
 import type { JSONObject } from "../../../../src/core/utils";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
+import EventMetricType from "../../../../src/core/metrics/types/event";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
 
 const sandbox = sinon.createSandbox();
 
@@ -65,17 +67,20 @@ describe("PingMaker", function() {
   });
 
   it("buildClientInfo must report all the available data", async function() {
-    await Glean.testUninitialize();
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false,
     });
+    // Clear the metrics database to fake a worst case scenario
+    // when Glean doesn't have any of the required metrics
+    // for building the client info.
+    await Context.metricsDatabase.clearAll();
     const clientInfo1 = await PingMaker.buildClientInfoSection(Context.metricsDatabase, ping);
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
     // Initialize will also initialize core metrics that are part of the client info.
-    await Glean.testInitialize(testAppId, true, {
+    await Glean.testResetGlean(testAppId, true, {
       appBuild:"build",
       appDisplayVersion: "display version",
       serverEndpoint: "http://localhost:8080"
@@ -151,12 +156,16 @@ describe("PingMaker", function() {
     });
 
     await PingMaker.collectAndStorePing("ident", ping);
-    const recordedPing = (await Context.pingsDatabase.getAllPings())["ident"];
+    const recordedPing = Object.fromEntries(
+      (await Context.pingsDatabase.getAllPings())
+    )["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
 
     await Glean.testResetGlean(testAppId, true);
     await PingMaker.collectAndStorePing("ident", ping);
-    const recordedPingNoPlugin = (await Context.pingsDatabase.getAllPings())["ident"];
+    const recordedPingNoPlugin = Object.fromEntries(
+      (await Context.pingsDatabase.getAllPings())
+    )["ident"];
     assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
   });
 
@@ -184,7 +193,9 @@ describe("PingMaker", function() {
     // because the first one contains the log tag.
     const loggedPayload = JSON.parse(consoleSpy.lastCall.args[1]) as JSONObject;
 
-    const recordedPing = (await Context.pingsDatabase.getAllPings())["ident"];
+    const recordedPing = Object.fromEntries(
+      (await Context.pingsDatabase.getAllPings())
+    )["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
     assert.notDeepStrictEqual(loggedPayload, { "you": "got mocked!" });
     assert.ok("client_info" in loggedPayload);
@@ -219,5 +230,48 @@ describe("PingMaker", function() {
 
     const recordedPings = await Context.pingsDatabase.getAllPings();
     assert.ok(!("ident" in recordedPings));
+  });
+
+  it("errors recorded during events collection make it to the current payload", async function () {
+    const ping = new PingType({
+      name: "aPing",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+    const event = new EventMetricType({
+      category: "test",
+      name: "aEvent",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    event.record();
+    // Wait for recording action to complete.
+    await event.testGetValue();
+
+    // Un-initialize and re-initialize manually instead of using testResetGlean
+    // in order to have control over the startTime at initialization.
+    await Glean.testUninitialize(false);
+    // Move the clock backwards by one hour.
+    //
+    // This will generate incoherent timestamps in events at collection time
+    // and record an `InvalidValue` error for the `glean.restarted` event.
+    Context.startTime.setTime(Context.startTime.getTime() - 1000 * 60 * 60);
+    Glean.initialize(testAppId, true);
+
+    event.record();
+    // Wait for recording action to complete.
+    await event.testGetValue();
+
+    await PingMaker.collectAndStorePing("ident", ping);
+    const allPings = Object.fromEntries(await Context.pingsDatabase.getAllPings());
+    const payload = allPings["ident"]["payload"];
+
+    // Check that the expected error metric is in the payload
+    assert.ok(payload?.metrics);
+    assert.deepStrictEqual(payload.metrics, {
+      labeled_counter: { "glean.error.invalid_value": { "glean.restarted": 1 } }
+    });
   });
 });

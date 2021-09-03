@@ -7,7 +7,7 @@ import assert from "assert";
 import sinon from "sinon";
 
 import QtUploader from "../../../../src/platform/qt/uploader";
-import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus } from "../../../../src/core/upload/uploader";
+import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 
 describe("Uploader/Qt", function () {
   let server: sinon.SinonFakeServer;
@@ -25,9 +25,10 @@ describe("Uploader/Qt", function () {
       const response = QtUploader.post("/hello", "");
       server.respondWith("POST", "/hello", [status, {}, ""]);
       server.respond();
+      const expectedResponse = new UploadResult(UploadResultStatus.Success, status);
       assert.deepStrictEqual(
         await response,
-        { status: status, result: UploadResultStatus.Success });
+        expectedResponse);
     }
   });
 
@@ -37,8 +38,9 @@ describe("Uploader/Qt", function () {
     clock.tick(DEFAULT_UPLOAD_TIMEOUT_MS + 1);
     server.respondWith("POST", "/hello", [200, {}, ""]);
     server.respond();
+    const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
     assert.deepStrictEqual(
       await response,
-      { result: UploadResultStatus.RecoverableFailure });
+      expectedResponse);
   });
 });

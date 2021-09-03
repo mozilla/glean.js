@@ -11,7 +11,7 @@ import { Context } from "../../../../src/core/context";
 import Glean from "../../../../src/core/glean";
 import PingType from "../../../../src/core/pings/ping_type";
 import { collectAndStorePing } from "../../../../src/core/pings/maker";
-import PingUploader, { Policy } from "../../../../src/core/upload";
+import PingUploader, { MAX_PINGS_PER_INTERVAL, Policy } from "../../../../src/core/upload";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 import { CounterUploader, WaitableUploader } from "../../../utils";
 import { DELETION_REQUEST_PING_NAME } from "../../../../src/core/constants";
@@ -51,7 +51,7 @@ describe("PingUploader", function() {
     await Glean.testResetGlean(testAppId);
   });
 
-  it("whenever the pings dabase records a new ping, upload is triggered", async function() {
+  it("whenever the pings database records a new ping, upload is triggered", async function() {
     const httpClient = new WaitableUploader();
     await Glean.testResetGlean(testAppId, true, { httpClient });
 
@@ -93,14 +93,24 @@ describe("PingUploader", function() {
     assert.ok(postSpy.callCount < 11);
   });
 
-  it("shutdown finishes executing all requests before stopping", async function () {
+  it("shutdown finishes executing requests before stopping", async function () {
     const httpClient = new CounterUploader();
     await Glean.testResetGlean(testAppId, true, { httpClient });
 
     await fillUpPingsDatabase(10);
-    await Glean["pingUploader"].shutdown();
+    await Glean.shutdown();
 
     assert.strictEqual(httpClient.count, 10);
+  });
+
+  it("shutdown only executes a fraction of the requests if rate limit is hit", async function () {
+    const httpClient = new CounterUploader();
+    await Glean.testResetGlean(testAppId, true, { httpClient });
+
+    await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL + 5);
+    await Glean.shutdown();
+
+    assert.strictEqual(httpClient.count, MAX_PINGS_PER_INTERVAL);
   });
 
   it("correctly deletes pings when upload is successfull", async function() {
@@ -109,7 +119,7 @@ describe("PingUploader", function() {
     await fillUpPingsDatabase(10);
 
     await Glean["pingUploader"].testBlockOnPingsQueue();
-    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), []);
   });
 
   it("correctly deletes pings when upload is unrecoverably unsuccesfull", async function() {
@@ -120,7 +130,7 @@ describe("PingUploader", function() {
     }));
     await fillUpPingsDatabase(10);
     await Glean["pingUploader"].testBlockOnPingsQueue();
-    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), {});
+    assert.deepStrictEqual(await Context.pingsDatabase.getAllPings(), []);
   });
 
   it("correctly re-enqueues pings when upload is recoverably unsuccesfull", async function() {
@@ -137,15 +147,13 @@ describe("PingUploader", function() {
     assert.deepStrictEqual(Object.keys(allPings).length, 1);
   });
 
-  it("duplicates are not enqueued", function() {
-    // Don't initialize to keep the dispatcher in an uninitialized state
-    // thus making sure no upload attempt is executed and we can look at the dispatcher queue.
-    const uploader = new PingUploader(new Configuration(), Glean.platform, Context.pingsDatabase);
-    // Stop the dispatcher so that pings can be enqueued but not sent.
-    uploader["dispatcher"].stop();
+  it("duplicates are not enqueued", async function() {
+    const httpClient = new CounterUploader();
+    await Glean.testResetGlean(testAppId, true, { httpClient });
 
     for (let i = 0; i < 10; i++) {
-      uploader["enqueuePing"]({
+      Glean["pingUploader"]["enqueuePing"]({
+        collectionDate: (new Date()).toISOString(),
         identifier: "id",
         retries: 0,
         payload: {
@@ -162,7 +170,8 @@ describe("PingUploader", function() {
       });
     }
 
-    assert.strictEqual(uploader["dispatcher"]["queue"].length, 1);
+    await Glean["pingUploader"].testBlockOnPingsQueue();
+    assert.strictEqual(httpClient.count, 1);
   });
 
   it("maximum of recoverable errors is enforced", async function () {

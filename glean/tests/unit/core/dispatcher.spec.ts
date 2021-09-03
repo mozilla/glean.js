@@ -10,7 +10,7 @@ import Dispatcher, { DispatcherState } from "../../../src/core/dispatcher";
 const sandbox = sinon.createSandbox();
 
 /**
- * A sample task which returns a promise that takes between 0 and 10 ms to resolve.
+ * A sample task which returns a promise that takes between 0 and 10ms to resolve.
  *
  * @returns The promise resolved when the timeout expires.
  */
@@ -462,6 +462,44 @@ describe("Dispatcher", function() {
     // After shutdown all previosu tasks are executed.
     await dispatcher.shutdown();
     assert.strictEqual(executionCounter, 10);
+  });
+
+  it("dispatcher can't be stopped while it's being shutdown, queue is actually cleared", async function () {
+    dispatcher = new Dispatcher();
+    dispatcher.flushInit();
+
+    let executionCounter1 = 0;
+    const counterTask1 = (): Promise<void> => {
+      executionCounter1++;
+      return Promise.resolve();
+    };
+
+    // Launch a group of tasks.
+    for (let i = 0; i < 5; i++) {
+      dispatcher.launch(counterTask1);
+    }
+
+    // Launch a task that will also attempt to stop the dispatcher.
+    dispatcher.launch(async () => {
+      await new Promise<void>(resolve => setTimeout(() => resolve(), 100));
+      dispatcher.stop();
+    });
+
+    let executionCounter2 = 0;
+    const counterTask2 = (): Promise<void> => {
+      executionCounter2++;
+      return Promise.resolve();
+    };
+    // Launch another group of tasks.
+    for (let i = 0; i < 5; i++) {
+      dispatcher.launch(counterTask2);
+    }
+
+    await dispatcher.shutdown();
+    // Tasks launched before the stop command were executed after shutdown.
+    assert.strictEqual(executionCounter1, 5);
+    // Tasks launched after were not.
+    assert.strictEqual(executionCounter2, 0);
   });
 
   it("persistent or otherwise, all tasks launched after shutdown are cleared", async function () {

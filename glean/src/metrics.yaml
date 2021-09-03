@@ -262,6 +262,7 @@ glean.internal.metrics:
 
   start_time:
     type: datetime
+    time_unit: minute
     lifetime: user
     send_in_pings:
       - glean_internal_info
@@ -280,6 +281,7 @@ glean.internal.metrics:
 
   end_time:
     type: datetime
+    time_unit: minute
     lifetime: ping
     send_in_pings:
       - glean_internal_info
@@ -374,3 +376,24 @@ glean.error:
       - all-pings
     no_lint:
       - COMMON_PREFIX
+
+glean:
+  restarted:
+    type: event
+    lifetime: ping
+    send_in_pings:
+      - all-pings
+    description: |
+      Event that signals an application restart.
+
+      **This event is included in all pings (custom or otherwise)
+      that contain events.**
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1716724
+    data_reviews:
+      - https://github.com/mozilla/glean.js/pull/526#issuecomment-889892100
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never

@@ -11,6 +11,8 @@ import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import Glean from "../../../../src/core/glean";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
+import type { JSONObject } from "../../../../src/core/utils";
+import TestPlatform from "../../../../src/platform/test";
 
 const sandbox = sinon.createSandbox();
 
@@ -55,7 +57,7 @@ describe("PingType", function() {
     counter.add();
 
     await submitSync(ping);
-    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
+    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
@@ -75,11 +77,11 @@ describe("PingType", function() {
     });
 
     await submitSync(ping1);
-    let storedPings = await Context.pingsDatabase["store"]._getWholeStore();
-    assert.strictEqual(Object.keys(storedPings).length, 0);
+    let storedPings = await Context.pingsDatabase["store"].get();
+    assert.strictEqual(storedPings, undefined);
 
     await submitSync(ping2);
-    storedPings = await Context.pingsDatabase["store"]._getWholeStore();
+    storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
@@ -92,21 +94,22 @@ describe("PingType", function() {
       sendIfEmpty: false,
     });
     await submitSync(ping);
-    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
-    assert.strictEqual(Object.keys(storedPings).length, 0);
+    const storedPings = await Context.pingsDatabase["store"].get();
+    assert.strictEqual(storedPings, undefined);
   });
 
   it("no pings are submitted if Glean has not been initialized", async function() {
     await Glean.testUninitialize();
 
+    const spy = sandbox.spy(TestPlatform.uploader, "post");
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false,
     });
     await submitSync(ping);
-    const storedPings = await Context.pingsDatabase["store"]._getWholeStore();
-    assert.strictEqual(Object.keys(storedPings).length, 0);
+
+    assert.ok(!spy.calledOnce);
   });
 
   it("runs a validator with no metrics tests", async function() {

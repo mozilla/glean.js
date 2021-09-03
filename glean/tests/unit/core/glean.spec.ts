@@ -19,6 +19,8 @@ import Plugin from "../../../src/plugins";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
 import { DispatcherState } from "../../../src/core/dispatcher";
+import EventMetricType from "../../../src/core/metrics/types/event";
+import { getGleanRestartedEventMetric } from "../../../src/core/metrics/events_database";
 
 class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor() {
@@ -301,11 +303,9 @@ describe("Glean", function() {
 
   it("deletion request ping is sent when toggling upload status between runs", async function() {
     Glean.setUploadEnabled(true);
-    await Context.dispatcher.testBlockOnQueue();
 
-    // Can't use testResetGlean here because it clears all stores
-    // and when there is no client_id at all stored, a deletion ping is also not sent.
-    await Glean.testUninitialize();
+    // Un-initialize, but don't clear the stores.
+    await Glean.testUninitialize(false);
 
     const mockUploader = new WaitableUploader();
     const pingBody = mockUploader.waitForPingSubmission("deletion-request");
@@ -501,8 +501,8 @@ describe("Glean", function() {
     await Context.dispatcher.testBlockOnQueue();
     const storedPings = await Context.pingsDatabase.getAllPings();
     const counterValues = [];
-    for (const ident in storedPings) {
-      const metrics = storedPings[ident].payload.metrics;
+    for (const [_, ping] of storedPings) {
+      const metrics = ping.payload.metrics;
       const counterValue = isObject(metrics) && isObject(metrics.counter) ? metrics.counter["aCategory.aCounterMetric"] : undefined;
       // Get the value of `aCounterMetric` inside each submitted ping.
       counterValues.push(Number(counterValue));
@@ -547,5 +547,28 @@ describe("Glean", function() {
 
     assert.strictEqual(postSpy.callCount, 1);
     assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+  });
+
+  it("events database is initialized at a time when metrics can already be recorded", async function() {
+    const event = new EventMetricType({
+      category: "test",
+      name: "event",
+      sendInPings: ["custom"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // Record this event, so that when we re-initialize the events database
+    // it will record a glean.restarted event on the `custom` ping events list.
+    event.record();
+
+    await Glean.testResetGlean(testAppId, true, undefined, false);
+
+    // Check that Glean was able to record the `glean.restarted` event on initialization.
+    const restartedEvent = getGleanRestartedEventMetric(["custom"]);
+    // We expect two events. One that was recorded when we recorded an event on the custom ping
+    // for the first time and another once we re-initialized.
+    assert.strictEqual((await restartedEvent.testGetValue("custom"))?.length, 2);
+
   });
 });

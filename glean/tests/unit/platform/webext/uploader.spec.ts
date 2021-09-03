@@ -8,7 +8,7 @@ import sinon from "sinon";
 
 import BrowserUploader from "../../../../src/platform/webext/uploader";
 import type { JSONObject } from "../../../../src/core/utils";
-import { UploadResultStatus } from "../../../../src/core/upload/uploader";
+import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 
 const sandbox = sinon.createSandbox();
 
@@ -64,17 +64,19 @@ describe("Uploader/browser", function () {
     const stub = sandbox.stub(global, "fetch");
     for (const [index, status] of [200, 400, 500].entries()) {
       stub.onCall(index).returns(Promise.resolve(createResponse(status)));
+      const expectedResponse = new UploadResult(UploadResultStatus.Success, status);
       assert.deepStrictEqual(
         await BrowserUploader.post("https://localhost:8080", ""),
-        { status: status, result: UploadResultStatus.Success });
+        expectedResponse);
     }
   });
 
   it("doesn't throw if upload action throws", async function () {
     sandbox.stub(global, "fetch").callsFake(() => Promise.reject());
+    const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
     assert.deepStrictEqual(
       await BrowserUploader.post("https://localhost:8080", ""),
-      { result: UploadResultStatus.RecoverableFailure }
+      expectedResponse
     );
   });
 });

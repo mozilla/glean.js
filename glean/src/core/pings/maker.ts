@@ -6,12 +6,10 @@ import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STO
 import type { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
 import type CommonPingData from "./common_ping_data.js";
 import type MetricsDatabase from "../metrics/database.js";
-import type EventsDatabase from "../metrics/events_database.js";
+import type EventsDatabase from "../metrics/events_database/index.js";
 import type { DebugOptions } from "../debug_options.js";
 import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
-
 import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
-
 import TimeUnit from "../metrics/time_unit.js";
 import CoreEvents from "../events/index.js";
 import { Lifetime } from "../metrics/lifetime.js";
@@ -20,8 +18,37 @@ import log, { LoggingLevel } from "../log.js";
 
 const LOG_TAG = "core.Pings.Maker";
 
-// The moment the current Glean.js session started.
-const GLEAN_START_TIME = new Date();
+/**
+ * Gets the start time metric and its currently stored data.
+ *
+ * @param metricsDatabase The metrics database.
+ * @param ping The ping for which we want to get the times.
+ * @returns An object containing the start time metric and its value.
+ */
+async function getStartTimeMetricAndData(metricsDatabase: MetricsDatabase, ping: CommonPingData): Promise<{startTimeMetric: DatetimeMetricType, startTime: DatetimeMetric}> {
+  const startTimeMetric = new DatetimeMetricType({
+    category: "",
+    name: `${ping.name}#start`,
+    sendInPings: [PING_INFO_STORAGE],
+    lifetime: Lifetime.User,
+    disabled: false
+  }, TimeUnit.Minute);
+
+  // "startTime" is the time the ping was generated the last time.
+  // If not available, we use the date the Glean object was initialized.
+  const startTimeData = await metricsDatabase.getMetric(PING_INFO_STORAGE, startTimeMetric);
+  let startTime: DatetimeMetric;
+  if (startTimeData) {
+    startTime = new DatetimeMetric(startTimeData);
+  } else {
+    startTime = DatetimeMetric.fromDate(Context.startTime, TimeUnit.Minute);
+  }
+
+  return {
+    startTimeMetric,
+    startTime,
+  };
+}
 
 /**
  * Gets, and then increments, the sequence number for a given ping.
@@ -70,27 +97,11 @@ export async function getSequenceNumber(metricsDatabase: MetricsDatabase, ping: 
  * @returns An object containing start and times in their payload format.
  */
 export async function getStartEndTimes(metricsDatabase: MetricsDatabase, ping: CommonPingData): Promise<{ startTime: string, endTime: string }> {
-  const start = new DatetimeMetricType({
-    category: "",
-    name: `${ping.name}#start`,
-    sendInPings: [PING_INFO_STORAGE],
-    lifetime: Lifetime.User,
-    disabled: false
-  }, TimeUnit.Minute);
-
-  // "startTime" is the time the ping was generated the last time.
-  // If not available, we use the date the Glean object was initialized.
-  const startTimeData = await metricsDatabase.getMetric(PING_INFO_STORAGE, start);
-  let startTime: DatetimeMetric;
-  if (startTimeData) {
-    startTime = new DatetimeMetric(startTimeData);
-  } else {
-    startTime = DatetimeMetric.fromDate(GLEAN_START_TIME, TimeUnit.Minute);
-  }
+  const { startTimeMetric, startTime } = await getStartTimeMetricAndData(metricsDatabase, ping);
 
   // Update the start time with the current time.
   const endTimeData = new Date();
-  await DatetimeMetricType._private_setUndispatched(start, endTimeData);
+  await DatetimeMetricType._private_setUndispatched(startTimeMetric, endTimeData);
   const endTime = DatetimeMetric.fromDate(endTimeData, TimeUnit.Minute);
 
   return {
@@ -194,8 +205,10 @@ export function getPingHeaders(debugOptions?: DebugOptions): Record<string, stri
  *          If there is no data stored for the ping, `undefined` is returned.
  */
 export async function collectPing(metricsDatabase: MetricsDatabase, eventsDatabase: EventsDatabase, ping: CommonPingData, reason?: string): Promise<PingPayload | undefined> {
-  const metricsData = await metricsDatabase.getPingMetrics(ping.name, true);
+  // !IMPORTANT! Events data needs to be collected BEFORE other metrics,
+  // because events collection may result in recording of error metrics.
   const eventsData = await eventsDatabase.getPingEvents(ping.name, true);
+  const metricsData = await metricsDatabase.getPingMetrics(ping.name, true);
   if (!metricsData && !eventsData) {
     if (!ping.sendIfEmpty) {
       log(LOG_TAG, `Storage for ${ping.name} empty. Bailing out.`, LoggingLevel.Info);
@@ -259,7 +272,7 @@ export async function collectAndStorePing(identifier: string, ping: CommonPingDa
         `Error while attempting to modify ping payload for the "${ping.name}" ping using`,
         `the ${JSON.stringify(CoreEvents.afterPingCollection.registeredPluginIdentifier)} plugin.`,
         "Ping will not be submitted. See more logs below.\n\n",
-        e
+        JSON.stringify(e)
       ],
       LoggingLevel.Error
     );

@@ -4,10 +4,10 @@
 
 import assert from "assert";
 
-import Database, { isValidInternalMetricsRepresentation } from "../../../../src/core/metrics/database";
+import Database, { generateReservedMetricIdentifiers, isValidInternalMetricsRepresentation } from "../../../../src/core/metrics/database";
 import StringMetricType, { StringMetric } from "../../../../src/core/metrics/types/string";
 
-import type { JSONValue } from "../../../../src/core/utils";
+import type { JSONObject, JSONValue } from "../../../../src/core/utils";
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";
@@ -398,8 +398,8 @@ describe("MetricsDatabase", function() {
       await db.record(appMetric, new StringMetric("appValue"));
 
       await db.getPingMetrics("aPing", true);
-      assert.notDeepStrictEqual(await db["userStore"]._getWholeStore(), {});
-      assert.deepStrictEqual(await db["pingStore"]._getWholeStore(), {
+      assert.notDeepStrictEqual(await db["userStore"].get(), {});
+      assert.deepStrictEqual(await db["pingStore"].get(), {
         "twoPing": {
           "string": {
             "ping.metric": "pingValue"
@@ -411,7 +411,33 @@ describe("MetricsDatabase", function() {
           }
         }
       });
-      assert.notDeepStrictEqual(await db["appStore"]._getWholeStore(), {});
+      assert.notDeepStrictEqual(await db["appStore"].get(), {});
+    });
+
+    it("reserved metrics are not added to snapshot", async function() {
+      const db = new Database(Glean.platform.Storage);
+      const reservedMetric = new StringMetricType({
+        ...generateReservedMetricIdentifiers("test"),
+        sendInPings: ["aPing"],
+        lifetime: Lifetime.Ping,
+        disabled: false
+      });
+      await db.record(reservedMetric, new StringMetric("reserved"));
+
+      const nonReservedMetric = new StringMetricType({
+        category: "ping",
+        name: "metric",
+        sendInPings: ["aPing"],
+        lifetime: Lifetime.Ping,
+        disabled: false
+      });
+      await db.record(nonReservedMetric, new StringMetric("not reserved"));
+
+      const snapshot = await db.getPingMetrics("aPing", true);
+      // Check that the non reserved metric was in the snapshot.
+      assert.ok("ping.metric" in (snapshot?.string as JSONObject));
+      // Check that no other metric was there.
+      assert.strictEqual(Object.keys(snapshot?.string || {}).length, 1);
     });
   });
 
@@ -446,9 +472,9 @@ describe("MetricsDatabase", function() {
       await db.record(appMetric, new StringMetric("appValue"));
 
       await db.clearAll();
-      assert.deepStrictEqual(await db["userStore"]._getWholeStore(), {});
-      assert.deepStrictEqual(await db["pingStore"]._getWholeStore(), {});
-      assert.deepStrictEqual(await db["appStore"]._getWholeStore(), {});
+      assert.deepStrictEqual(await db["userStore"].get(), undefined);
+      assert.deepStrictEqual(await db["pingStore"].get(), undefined);
+      assert.deepStrictEqual(await db["appStore"].get(), undefined);
     });
 
     it("clears separate stores correctly", async function() {
@@ -481,9 +507,9 @@ describe("MetricsDatabase", function() {
       await db.record(appMetric, new StringMetric("appValue"));
 
       await db.clear(Lifetime.User);
-      assert.deepStrictEqual(await db["userStore"]._getWholeStore(), {});
-      assert.notDeepStrictEqual(await db["pingStore"]._getWholeStore(), {});
-      assert.notDeepStrictEqual(await db["appStore"]._getWholeStore(), {});
+      assert.deepStrictEqual(await db["userStore"].get(), undefined);
+      assert.notDeepStrictEqual(await db["pingStore"].get(), undefined);
+      assert.notDeepStrictEqual(await db["appStore"].get(), undefined);
     });
 
     it("clears data from specific ping when specified", async function () {
