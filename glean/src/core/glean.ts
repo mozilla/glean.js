@@ -295,7 +295,7 @@ class Glean {
       // so we need to know that state **before** scanning the pending pings
       // to ensure we don't enqueue pings before their files are deleted.
       await Context.pingsDatabase.scanPendingPings();
-    });
+    }, `${LOG_TAG}.initialize`);
   }
 
   static get serverEndpoint(): string | undefined {
@@ -358,7 +358,7 @@ class Glean {
           await Glean.onUploadDisabled();
         }
       }
-    });
+    }, `${LOG_TAG}.setUploadEnabled`);
   }
 
   /**
@@ -374,7 +374,7 @@ class Glean {
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
-    });
+    }, `${LOG_TAG}.setLogPings`);
   }
 
   /**
@@ -398,7 +398,7 @@ class Glean {
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
-    });
+    }, `${LOG_TAG}.setDebugViewTag`);
   }
 
   /**
@@ -424,7 +424,7 @@ class Glean {
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
-    });
+    }, `${LOG_TAG}.setSourceTags`);
   }
 
   /**

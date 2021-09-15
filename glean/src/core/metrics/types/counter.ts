@@ -10,6 +10,8 @@ import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.CounterMetricType";
+
 export class CounterMetric extends Metric<number, number> {
   constructor(v: unknown) {
     super(v);
@@ -110,7 +112,10 @@ class CounterMetricType extends MetricType {
    *               If not provided will default to `1`.
    */
   add(amount?: number): void {
-    Context.dispatcher.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
+    Context.dispatcher.launch(
+      async () => CounterMetricType._private_addUndispatched(this, amount),
+      `${LOG_TAG}.${this.baseIdentifier()}.add`
+    );
   }
 
   /**

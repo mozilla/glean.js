@@ -8,6 +8,7 @@ import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { isString, truncateStringAtBoundaryWithError } from "../../utils.js";
 
+const LOG_TAG = "core.metrics.StringMetricType";
 export const MAX_LENGTH_VALUE = 100;
 
 export class StringMetric extends Metric<string, string> {
@@ -76,7 +77,10 @@ class StringMetricType extends MetricType {
    * @param value the value to set.
    */
   set(value: string): void {
-    Context.dispatcher.launch(() => StringMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(
+      () => StringMetricType._private_setUndispatched(this, value),
+      `${LOG_TAG}.${this.baseIdentifier()}.set`
+    );
   }
 
   /**

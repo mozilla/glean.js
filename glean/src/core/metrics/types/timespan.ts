@@ -11,6 +11,8 @@ import { Metric } from "../metric.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.TimespanMetricType";
+
 export type TimespanInternalRepresentation = {
   // The time unit of the metric type at the time of recording.
   timeUnit: TimeUnit,
@@ -172,7 +174,7 @@ class TimespanMetricType extends MetricType {
       this.startTime = startTime;
 
       return Promise.resolve();
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.start`);
   }
 
   /**
@@ -215,7 +217,7 @@ class TimespanMetricType extends MetricType {
       }
 
       await TimespanMetricType._private_setRawUndispatched(this, elapsed);
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.stop`);
   }
 
   /**
@@ -227,7 +229,7 @@ class TimespanMetricType extends MetricType {
     Context.dispatcher.launch(() => {
       this.startTime = undefined;
       return Promise.resolve();
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.cancel`);
   }
 
   /**
@@ -248,7 +250,7 @@ class TimespanMetricType extends MetricType {
       // `elapsed` is in nanoseconds in order to match the glean-core API.
       const elapsedMillis = elapsed * 10**(-6);
       await TimespanMetricType._private_setRawUndispatched(this, elapsedMillis);
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.setRawNanos`);
   }
 
   /**

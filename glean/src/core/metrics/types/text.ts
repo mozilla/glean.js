@@ -8,6 +8,7 @@ import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 
+const LOG_TAG = "core.metrics.TextMetricType";
 // The maximum number of characters for text.
 export const TEXT_MAX_LENGTH = 200 * 1024;
 
@@ -61,7 +62,7 @@ class TextMetricType extends MetricType {
       const truncatedValue = await truncateStringAtBoundaryWithError(this, text, TEXT_MAX_LENGTH);
       const metric = new TextMetric(truncatedValue);
       await Context.metricsDatabase.record(this, metric);
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.set`);
   }
 
   /**

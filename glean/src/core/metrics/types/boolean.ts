@@ -8,6 +8,8 @@ import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { isBoolean } from "../../utils.js";
 
+const LOG_TAG = "core.metrics.BooleanMetricType";
+
 export class BooleanMetric extends Metric<boolean, boolean> {
   constructor(v: unknown) {
     super(v);
@@ -45,7 +47,7 @@ class BooleanMetricType extends MetricType {
 
       const metric = new BooleanMetric(value);
       await Context.metricsDatabase.record(this, metric);
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.set`);
   }
 
   /**

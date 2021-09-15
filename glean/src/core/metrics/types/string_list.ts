@@ -10,6 +10,7 @@ import { isString, truncateStringAtBoundaryWithError } from "../../utils.js";
 import type { JSONValue } from "../../utils.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.StringListMetricType";
 export const MAX_LIST_LENGTH = 20;
 export const MAX_STRING_LENGTH = 50;
 
@@ -86,7 +87,7 @@ class StringListMetricType extends MetricType {
       }
       const metric = new StringListMetric(truncatedList);
       await Context.metricsDatabase.record(this, metric);
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.set`);
   }
 
   /**
@@ -138,7 +139,7 @@ class StringListMetricType extends MetricType {
           `String list length of ${currentLen+1} exceeds maximum of ${MAX_LIST_LENGTH}.`
         );
       }
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.add`);
   }
 
   /**

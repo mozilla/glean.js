@@ -10,6 +10,7 @@ import { getMonotonicNow, isString, truncateStringAtBoundaryWithError } from "..
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.EventMetricType";
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
 /**
@@ -87,7 +88,7 @@ class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends Metr
 
     Context.dispatcher.launch(async () => {
       await EventMetricType._private_recordUndispatched(this, extra, timestamp);
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.record`);
   }
 
   /**

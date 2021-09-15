@@ -9,6 +9,8 @@ import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { isNumber, isObject, isString } from "../../utils.js";
 
+const LOG_TAG = "core.metrics.DatetimeMetricType";
+
 /**
  * Builds the formatted timezone offset string frim a given timezone.
  *
@@ -224,7 +226,10 @@ class DatetimeMetricType extends MetricType {
    * @param value The Date value to set. If not provided, will record the current time.
    */
   set(value?: Date): void {
-    Context.dispatcher.launch(() => DatetimeMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(
+      () => DatetimeMetricType._private_setUndispatched(this, value),
+      `${LOG_TAG}.${this.baseIdentifier()}.set`
+    );
   }
 
   /**

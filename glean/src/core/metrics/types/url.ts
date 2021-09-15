@@ -9,6 +9,8 @@ import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.URLMetricType";
+
 // The maximum number of characters a URL Metric may have, before encoding.
 const URL_MAX_LENGTH = 2048;
 
@@ -109,7 +111,7 @@ class UrlMetricType extends MetricType {
           );
         }
       }
-    });
+    }, `${LOG_TAG}.${this.baseIdentifier()}.set`);
   }
 
   /**

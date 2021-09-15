@@ -9,6 +9,8 @@ import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.UUIDMetricType";
+
 // Loose UUID regex for checking if a string has a UUID _shape_. Does not contain version checks.
 //
 // This is necessary in order to accept non RFC compliant UUID values,
@@ -86,7 +88,10 @@ class UUIDMetricType extends MetricType {
    * @throws In case `value` is not a valid UUID.
    */
   set(value: string): void {
-    Context.dispatcher.launch(() => UUIDMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(
+      () => UUIDMetricType._private_setUndispatched(this, value),
+      `${LOG_TAG}.${this.baseIdentifier()}.set`
+    );
   }
 
   /**

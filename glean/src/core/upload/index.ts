@@ -38,7 +38,7 @@ export const MAX_PINGS_PER_INTERVAL = 15;
  */
 function createAndInitializeDispatcher(): Dispatcher {
   const dispatcher = new Dispatcher(100, `${LOG_TAG}.Dispatcher`);
-  dispatcher.flushInit();
+  dispatcher.flushInit(undefined, `${LOG_TAG}.createAndInitializeDispatcher`);
   return dispatcher;
 }
 
@@ -186,7 +186,7 @@ class PingUploader implements PingsDatabaseObserver {
         this.dispatcher.stop();
         ping.retries = 0;
       }
-    });
+    }, `${LOG_TAG}.${ping.identifier}.enqueuePing`);
   }
 
   /**

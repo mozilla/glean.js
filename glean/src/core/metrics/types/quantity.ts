@@ -9,6 +9,8 @@ import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.QuantityMetricType";
+
 export class QuantityMetric extends Metric<number, number> {
   constructor(v: unknown) {
     super(v);
@@ -83,7 +85,10 @@ class QuantityMetricType extends MetricType {
    * @param value the value to set. Must be non-negative
    */
   set(value: number): void {
-    Context.dispatcher.launch(() => QuantityMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(
+      () => QuantityMetricType._private_setUndispatched(this, value),
+      `${LOG_TAG}.${this.baseIdentifier()}.set`
+    );
   }
 
   /**

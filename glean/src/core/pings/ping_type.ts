@@ -135,7 +135,7 @@ class PingType implements CommonPingData {
   private static _private_internalSubmit(instance: PingType, reason?: string, testResolver?: PromiseCallback): void {
     Context.dispatcher.launch(async () => {
       await PingType._private_submitUndispatched(instance, reason, testResolver);
-    });
+    }, `${LOG_TAG}.${instance.name}._private_internalSubmit`);
   }
 
   /**

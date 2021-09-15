@@ -12,17 +12,17 @@ export const enum DispatcherState {
   //
   // When the dispatcher is in this state it will not enqueue
   // more than `maxPreInitQueueSize` tasks.
-  Uninitialized,
+  Uninitialized = "Uninitialized",
   // There are no commands queued and the dispatcher is idle.
-  Idle,
+  Idle = "Idle",
   // The dispatcher is currently processing queued tasks.
-  Processing,
+  Processing = "Processing",
   // The dispatcher is stopped, tasks queued will not be immediatelly processed.
-  Stopped,
+  Stopped = "Stopped",
   // The dispatcher is shutdown, attempting to queue tasks while in this state is a no-op.
   //
   // This state is irreversible.
-  Shutdown,
+  Shutdown = "Shutdown",
 }
 
 // The possible commands to be processed by the dispatcher.
@@ -53,17 +53,30 @@ const enum Commands {
 // A task the dispatcher knows how to execute.
 type Task = () => Promise<void>;
 
-// An executable command.
-type Command = {
+interface BaseCommand {
+  // The actual command to be executed.
+  command: Commands,
+  // A tag to use when logging the execution of the given command.
+  debugTag?: string,
+}
+
+interface TaskCommand extends BaseCommand {
   task: Task,
   command: Commands.Task | Commands.PersistentTask,
-} | {
+}
+
+interface TestTaskCommand extends BaseCommand {
   resolver: (value: void | PromiseLike<void>) => void,
   task: Task,
   command: Commands.TestTask,
-} | {
+}
+
+interface InternalCommand extends BaseCommand {
   command: Exclude<Commands, Commands.Task | Commands.TestTask | Commands.PersistentTask>,
-};
+}
+
+// An executable command.
+type Command = TaskCommand | TestTaskCommand | InternalCommand;
 
 /**
  * A task dispatcher for async tasks.
@@ -100,11 +113,19 @@ class Dispatcher {
   /**
    * Executes a task safely, catching any errors.
    *
-   * @param task The  task to execute.
+   * @param task The task to execute.
+   * @param debugTag A tag identifiying the current task for debugging purposes.
    */
-  private async executeTask(task: Task): Promise<void> {
+  private async executeTask(task: Task, debugTag?: string): Promise<void> {
     try {
       await task();
+      log(
+        this.logTag,
+        [
+          "Done executing task in Task command:",
+          debugTag ? `[${debugTag}]` : "[unidentified]"
+        ]
+      );
     } catch(e) {
       log(this.logTag, ["Error executing task:", JSON.stringify(e)], LoggingLevel.Error);
     }
@@ -129,6 +150,13 @@ class Dispatcher {
   private async execute(): Promise<void> {
     let nextCommand = this.getNextCommand();
     while(nextCommand) {
+      log(
+        this.logTag,
+        [
+          `Executing dispatched ${nextCommand.command} command:`,
+          nextCommand.debugTag ? `[${nextCommand.debugTag}]` : "[unidentified]"
+        ]
+      );
       switch(nextCommand.command) {
       case(Commands.Stop):
         this.state = DispatcherState.Stopped;
@@ -147,14 +175,18 @@ class Dispatcher {
         nextCommand = this.getNextCommand();
         continue;
       case (Commands.TestTask):
-        await this.executeTask(nextCommand.task);
+        await this.executeTask(nextCommand.task, nextCommand.debugTag);
         nextCommand.resolver();
         nextCommand = this.getNextCommand();
         continue;
       case(Commands.PersistentTask):
       case(Commands.Task):
-        await this.executeTask(nextCommand.task);
+        await this.executeTask(nextCommand.task, nextCommand.debugTag);
         nextCommand = this.getNextCommand();
+      }
+
+      if (nextCommand) {
+        log(this.logTag, ["Getting the next command...", nextCommand.command]);
       }
     }
   }
@@ -179,6 +211,7 @@ class Dispatcher {
           this.currentJob = undefined;
           if (this.state === DispatcherState.Processing) {
             this.state = DispatcherState.Idle;
+            log(this.logTag, "Done executing tasks, the dispatcher is now Idle.");
           }
         })
         .catch(error => {
@@ -251,10 +284,12 @@ class Dispatcher {
    * and the queues length exceeds `maxPreInitQueueSize`.
    *
    * @param task The task to enqueue.
+   * @param debugTag A tag identifiying the current task for debugging purposes.
    */
-  launch(task: Task): void {
+  launch(task: Task, debugTag?: string): void {
     this.launchInternal({
       task,
+      debugTag,
       command: Commands.Task
     });
   }
@@ -264,10 +299,12 @@ class Dispatcher {
    * but enqueues a persistent task which is not cleared by the Clear command.
    *
    * @param task The task to enqueue.
+   * @param debugTag A tag identifiying the current task for debugging purposes.
    */
-  launchPersistent(task: Task): void {
+  launchPersistent(task: Task, debugTag?: string): void {
     this.launchInternal({
       task,
+      debugTag,
       command: Commands.PersistentTask
     });
   }
@@ -278,8 +315,9 @@ class Dispatcher {
    * This is a no-op in case the dispatcher is not in an uninitialized state.
    *
    * @param task Optional task to execute before any of the tasks enqueued prior to init.
+   * @param debugTag A tag identifiying the current task for debugging purposes.
    */
-  flushInit(task?: Task): void {
+  flushInit(task?: Task, debugTag?: string): void {
     if (this.state !== DispatcherState.Uninitialized) {
       log(
         this.logTag,
@@ -292,6 +330,7 @@ class Dispatcher {
     if (task) {
       this.launchInternal({
         task,
+        debugTag,
         command: Commands.Task
       }, true);
     }
