@@ -79,9 +79,7 @@ class Dispatcher {
   // i.e. a Shutdown command is in the queue.
   private shuttingDown = false;
   // A promise containing the current execution promise.
-  //
-  // This is `undefined` in case there is no ongoing execution of tasks.
-  private currentJob?: Promise<void>;
+  private currentJob = Promise.resolve();
 
   constructor(readonly maxPreInitQueueSize = 100, readonly logTag = LOG_TAG) {
     this.queue = [];
@@ -180,6 +178,10 @@ class Dispatcher {
           if (this.state === DispatcherState.Processing) {
             this.state = DispatcherState.Idle;
           }
+          log(
+            this.logTag,
+            `Done executing tasks, the dispatcher is now in the ${this.state} state.`
+          );
         })
         .catch(error => {
           log(
@@ -374,7 +376,7 @@ class Dispatcher {
     this.shuttingDown = true;
     this.launchInternal({ command: Commands.Shutdown });
     this.resume();
-    return this.currentJob || Promise.resolve();
+    return this.currentJob;
   }
 
   /**
@@ -388,7 +390,7 @@ class Dispatcher {
    * @returns The promise.
    */
   async testBlockOnQueue(): Promise<void> {
-    return this.currentJob && await this.currentJob;
+    return await this.currentJob;
   }
 
   /**
