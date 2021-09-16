@@ -41,6 +41,7 @@ class NodeUploader extends Uploader {
 
       request.on("timeout", () => {
         log(LOG_TAG, "Timeout while attempting to upload ping.", LoggingLevel.Error);
+        request.destroy();
         resolve(new UploadResult(UploadResultStatus.RecoverableFailure));
       });
 
