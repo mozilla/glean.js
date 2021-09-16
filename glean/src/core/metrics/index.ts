@@ -4,7 +4,6 @@
 
 import type { JSONValue } from "../utils.js";
 import type { Lifetime } from "./lifetime.js";
-import type MetricsDatabase from "./database.js";
 import type { ErrorType } from "../error/error_type.js";
 import { isUndefined } from "../utils.js";
 import { getValidDynamicLabel } from "./types/labeled.js";
@@ -82,17 +81,16 @@ export abstract class MetricType implements CommonMetricData {
   /**
    * The metric's unique identifier, including the category, name and label.
    *
-   * @param metricsDatabase The metrics database.
    * @returns The generated identifier. If `category` is empty, it's ommitted. Otherwise,
    *          it's the combination of the metric's `category`, `name` and `label`.
    */
-  async identifier(metricsDatabase: MetricsDatabase): Promise<string> {
+  async identifier(): Promise<string> {
     const baseIdentifier = this.baseIdentifier();
 
     // We need to use `isUndefined` and cannot use `(this.dynamicLabel)` because we want
     // empty strings to propagate as dynamic labels, so that erros are potentially recorded.
     if (!isUndefined(this.dynamicLabel)) {
-      return await getValidDynamicLabel(metricsDatabase, this);
+      return await getValidDynamicLabel(this);
     } else {
       return baseIdentifier;
     }

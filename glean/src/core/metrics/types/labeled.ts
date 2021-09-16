@@ -6,7 +6,6 @@ import type { CommonMetricData, MetricType } from "../index.js";
 import type CounterMetricType from "./counter.js";
 import type BooleanMetricType from "./boolean.js";
 import type StringMetricType from "./string.js";
-import type MetricsDatabase from "../database.js";
 import type { JSONValue } from "../../utils.js";
 import { Metric } from "../metric.js";
 import { Context } from "../../context.js";
@@ -93,11 +92,10 @@ export function stripLabel(identifier: string): string {
  * valid. If not, record an error and store data in the "__other__"
  * label.
  *
- * @param metricsDatabase the metrics database.
  * @param metric the metric to record to.
  * @returns a valid label that can be used to store data.
  */
-export async function getValidDynamicLabel(metricsDatabase: MetricsDatabase, metric: MetricType): Promise<string> {
+export async function getValidDynamicLabel(metric: MetricType): Promise<string> {
   // Note that we assume `metric.dynamicLabel` to always be available within this function.
   // This is a safe assumptions because we should only call `getValidDynamicLabel` if we have
   // a dynamic label.
@@ -108,14 +106,14 @@ export async function getValidDynamicLabel(metricsDatabase: MetricsDatabase, met
   const key = combineIdentifierAndLabel(metric.baseIdentifier(), metric.dynamicLabel);
 
   for (const ping of metric.sendInPings) {
-    if (await metricsDatabase.hasMetric(metric.lifetime, ping, metric.type, key)) {
+    if (await Context.metricsDatabase.hasMetric(metric.lifetime, ping, metric.type, key)) {
       return key;
     }
   }
 
   let numUsedKeys = 0;
   for (const ping of metric.sendInPings) {
-    numUsedKeys += await metricsDatabase.countByBaseIdentifier(
+    numUsedKeys += await Context.metricsDatabase.countByBaseIdentifier(
       metric.lifetime,
       ping,
       metric.type,

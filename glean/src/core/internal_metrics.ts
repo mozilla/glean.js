@@ -11,9 +11,9 @@ import TimeUnit from "./metrics/time_unit.js";
 import { generateUUIDv4 } from "./utils.js";
 import type { ConfigurationInterface } from "./config.js";
 import type Platform from "../platform/index.js";
-import type MetricsDatabase from "./metrics/database.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import log, { LoggingLevel } from "./log.js";
+import { Context } from "./context.js";
 
 const LOG_TAG = "core.InternalMetrics";
 
@@ -100,9 +100,9 @@ export class CoreMetrics {
     });
   }
 
-  async initialize(config: ConfigurationInterface, platform: Platform, metricsDatabase: MetricsDatabase): Promise<void> {
-    await this.initializeClientId(metricsDatabase);
-    await this.initializeFirstRunDate(metricsDatabase);
+  async initialize(config: ConfigurationInterface, platform: Platform): Promise<void> {
+    await this.initializeClientId();
+    await this.initializeFirstRunDate();
     await StringMetricType._private_setUndispatched(this.os, await platform.info.os());
     await StringMetricType._private_setUndispatched(this.osVersion, await platform.info.osVersion());
     await StringMetricType._private_setUndispatched(this.architecture, await platform.info.arch());
@@ -114,12 +114,10 @@ export class CoreMetrics {
   /**
    * Generates and sets the client_id if it is not set,
    * or if the current value is currepted.
-   *
-   * @param metricsDatabase The metrics database.
    */
-  private async initializeClientId(metricsDatabase: MetricsDatabase): Promise<void> {
+  private async initializeClientId(): Promise<void> {
     let needNewClientId = false;
-    const clientIdData = await metricsDatabase.getMetric(CLIENT_INFO_STORAGE, this.clientId);
+    const clientIdData = await Context.metricsDatabase.getMetric(CLIENT_INFO_STORAGE, this.clientId);
     if (clientIdData) {
       try {
         const currentClientId = createMetric("uuid", clientIdData);
@@ -141,11 +139,9 @@ export class CoreMetrics {
 
   /**
    * Generates and sets the first_run_date if it is not set.
-   *
-   * @param metricsDatabase The metrics database.
    */
-  private async initializeFirstRunDate(metricsDatabase: MetricsDatabase): Promise<void> {
-    const firstRunDate = await metricsDatabase.getMetric(
+  private async initializeFirstRunDate(): Promise<void> {
+    const firstRunDate = await Context.metricsDatabase.getMetric(
       CLIENT_INFO_STORAGE,
       this.firstRunDate
     );
