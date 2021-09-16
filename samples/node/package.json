@@ -5,7 +5,9 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-    "link:glean": "cd ../../glean && npm i && npm run build && npm link && cd ../samples/node && npm link @mozilla/glean"
+    "link:glean": "cd ../../glean && npm i && npm run build && npm link && cd ../samples/node && npm link @mozilla/glean",
+    "glean": "glean translate metrics.yaml pings.yaml -f javascript -o generated --option platform=node",
+    "exec": "node index.js"
   },
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0"

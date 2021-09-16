@@ -4,7 +4,9 @@
 
 "use strict";
 
-import Glean from "@mozilla/glean/node";
+import main from "./main.js";
 
-Glean.initialize("glean-sample-cli", true);
-console.log("Hey! Glean initialize succesfully!");
+main();
+// Wait for Glean to finish up before exiting the app.
+await Glean.shutdown();
+
