@@ -78,11 +78,11 @@ jobs:
             npm --prefix ./samples/web-extension/javascript install
             npm --prefix ./samples/web-extension/javascript run link:glean
       - run:
-          name: Build the JS sample
+          name: Build the JS web extension sample
           command: |
             npm --prefix ./samples/web-extension/javascript run build
       - run:
-          name: Run JS sample test
+          name: Run JS web extension sample test
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
       # TS webext sample related jobs
@@ -92,11 +92,11 @@ jobs:
             npm --prefix ./samples/web-extension/typescript install
             npm --prefix ./samples/web-extension/typescript run link:glean
       - run:
-          name: Build the TS sample
+          name: Build the TS web extension sample
           command: |
             npm --prefix ./samples/web-extension/typescript run build
       - run:
-          name: Run TS sample test
+          name: Run TS web extension sample test
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
       # Node.js sample related jobs
@@ -105,6 +105,10 @@ jobs:
           command: |
             npm --prefix ./samples/node install
             npm --prefix ./samples/node run link:glean
+      - run:
+          name: Build the Node.js Glean generated files sample
+          command: |
+            npm --prefix ./samples/node run glean
       - run:
           name: Run Node.js sample test
           command: |
