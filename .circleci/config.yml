@@ -71,9 +71,9 @@ jobs:
       - run:
           name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
-      # JS sample related jobs
+      # JS webext sample related jobs
       - run:
-          name: Install JavaScript dependencies for the JS sample
+          name: Install JavaScript dependencies for the JS web extension sample
           command: |
             npm --prefix ./samples/web-extension/javascript install
             npm --prefix ./samples/web-extension/javascript run link:glean
@@ -85,9 +85,9 @@ jobs:
           name: Run JS sample test
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
-      # TS sample related jobs
+      # TS webext sample related jobs
       - run:
-          name: Install Typescript dependencies for the TS sample
+          name: Install Typescript dependencies for the TS web extension sample
           command: |
             npm --prefix ./samples/web-extension/typescript install
             npm --prefix ./samples/web-extension/typescript run link:glean
@@ -99,6 +99,16 @@ jobs:
           name: Run TS sample test
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
+      # Node.js sample related jobs
+      - run:
+          name: Install JavaScript dependencies for the Node.js sample
+          command: |
+            npm --prefix ./samples/node install
+            npm --prefix ./samples/node run link:glean
+      - run:
+          name: Run Node.js sample test
+          command: |
+            export PATH=.:$PATH && npm --prefix ./samples/node run test
 
   check-size:
     docker:

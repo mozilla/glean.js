@@ -7,8 +7,12 @@
   "scripts": {
     "link:glean": "cd ../../glean && npm i && npm run build && npm link && cd ../samples/node && npm link @mozilla/glean",
     "glean": "glean translate metrics.yaml pings.yaml -f javascript -o generated --option platform=node",
-    "exec": "node index.js"
+    "exec": "node index.js",
+    "test": "mocha --unhandled-rejections=strict \"./*.test.js\""
   },
   "author": "The Glean Team <glean-team@mozilla.com>",
-  "license": "MPL-2.0"
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "mocha": "^9.1.1"
+  }
 }
