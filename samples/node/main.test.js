@@ -31,7 +31,7 @@ describe("node-sample", function () {
 
       // Call the sample script.
       // This will record the metric and send the ping we are expecting.
-      void main();
+      main();
 
       // Check that the ping validator does not throw.
       assert.doesNotThrow(async () => await pingWasSent);

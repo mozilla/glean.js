@@ -4,6 +4,8 @@
 
 "use strict";
 
+import Glean from "@mozilla/glean/node";
+
 import main from "./main.js";
 
 main();

@@ -9,9 +9,12 @@ import { custom } from "./generated/pings.js";
 import { appStarted } from "./generated/sample.js";
 
 export default () => {
+  const { GLEAN_DEBUG_VIEW_TAG } = process.env;
+  if (GLEAN_DEBUG_VIEW_TAG) {
+    Glean.setDebugViewTag(GLEAN_DEBUG_VIEW_TAG);
+  }
+
   Glean.setLogPings(true);
-  // Uncomment when you need to inspect the pings sent in the Glean Debug Ping Viewer.
-  // Glean.setDebugViewTag("gleanjs-node-sample");
   Glean.initialize("gleanjs-node-sample", true);
 
   appStarted.set();
