@@ -99,6 +99,7 @@ const productionConfig = {
     usedExports: true,
     providedExports: true,
     sideEffects: true,
+    minimize: false,
   },
 };
 
