@@ -71,34 +71,48 @@ jobs:
       - run:
           name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
-      # JS sample related jobs
+      # JS webext sample related jobs
       - run:
-          name: Install JavaScript dependencies for the JS sample
+          name: Install JavaScript dependencies for the JS web extension sample
           command: |
             npm --prefix ./samples/web-extension/javascript install
             npm --prefix ./samples/web-extension/javascript run link:glean
       - run:
-          name: Build the JS sample
+          name: Build the JS web extension sample
           command: |
             npm --prefix ./samples/web-extension/javascript run build
       - run:
-          name: Run JS sample test
+          name: Run JS web extension sample test
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
-      # TS sample related jobs
+      # TS webext sample related jobs
       - run:
-          name: Install Typescript dependencies for the TS sample
+          name: Install Typescript dependencies for the TS web extension sample
           command: |
             npm --prefix ./samples/web-extension/typescript install
             npm --prefix ./samples/web-extension/typescript run link:glean
       - run:
-          name: Build the TS sample
+          name: Build the TS web extension sample
           command: |
             npm --prefix ./samples/web-extension/typescript run build
       - run:
-          name: Run TS sample test
+          name: Run TS web extension sample test
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
+      # Node.js sample related jobs
+      - run:
+          name: Install JavaScript dependencies for the Node.js sample
+          command: |
+            npm --prefix ./samples/node install
+            npm --prefix ./samples/node run link:glean
+      - run:
+          name: Build the Node.js Glean generated files sample
+          command: |
+            npm --prefix ./samples/node run glean
+      - run:
+          name: Run Node.js sample test
+          command: |
+            export PATH=.:$PATH && npm --prefix ./samples/node run test
 
   check-size:
     docker:
@@ -138,7 +152,7 @@ jobs:
             source venv/bin/activate
             pip install -r requirements.txt
             glean_parser translate metrics.yaml pings.yaml -f javascript -o generated \
-            --option platform=qt --option version="0.19"
+            --option platform=qt --option version="0.20"
 
             sudo apt-get install xvfb
             xvfb-run python main.py &> qml.log &

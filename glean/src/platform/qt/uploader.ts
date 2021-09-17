@@ -26,7 +26,7 @@ class QtUploader extends Uploader {
       };
 
       xhr.onerror = function(e) {
-        log(LOG_TAG, ["Network rror while attempting to upload ping.\n", e.type], LoggingLevel.Error);
+        log(LOG_TAG, ["Network error while attempting to upload ping.\n", e.type], LoggingLevel.Error);
         resolve(new UploadResult(UploadResultStatus.RecoverableFailure));
       };
 

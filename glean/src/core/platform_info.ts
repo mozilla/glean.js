@@ -13,14 +13,19 @@ export const enum KnownOperatingSystems {
   NetBSD = "NetBSD",
   OpenBSD = "OpenBSD",
   Solaris = "Solaris",
+  Unknown = "Unknown",
+
   // ChromeOS is not listed in the Glean SDK because it is not a possibility there.
   ChromeOS = "ChromeOS",
+
   // The following additions might be reported by Qt.
   TvOS = "tvOS", // https://developer.apple.com/tvos/
   Qnx = "QNX", // BlackBerry QNX
   Wasm = "Wasm",
-  // The Qt-specific additions end here.
-  Unknown = "Unknown",
+
+  // The following additions might be reported by Node.js
+  SunOS = "sunOS",
+  AIX = "IBM_AIX",
 }
 
 interface PlatformInfo {
