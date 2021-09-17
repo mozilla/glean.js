@@ -11,20 +11,13 @@ Whenever this web extensions popup is opened it will trigger Glean.js events.
 ## How to run this sample
 Running the example requires Python 3.
 
-1. Link the `@mozilla/glean` package. On the glean/ folder run:
+1. Link the `@mozilla/glean` package. There is a convenience script for that:
 
 ```bash
-npm link
+npm run link:glean
 ```
 
-2. Link the `@mozilla/glean` package to this sample web extension. On this `web-extension/javascript` folder run:
-
-```bash
-npm install
-npm link @mozilla/glean
-```
-
-3. Build this sample. On this `web-extension/javascript` folder run:
+2. Build this sample. On this `web-extension/javascript` folder run:
 
 ```bash
 npm run build
@@ -32,7 +25,7 @@ npm run build
 
 > **Note** This operation will take some time on the first run, because it will create a virtual environment for running the glean-parser.
 
-4. Load the web extension on your browser of choice.
+3. Load the web extension on your browser of choice.
 
   - **Firefox**
     1. Go to [about:debugging#/runtime/this-firefox](about:debugging#/runtime/this-firefox);
