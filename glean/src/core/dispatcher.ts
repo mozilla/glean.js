@@ -174,9 +174,10 @@ class Dispatcher {
       // that was launched inside another task.
       this.currentJob
         .then(() => {
-          this.currentJob = undefined;
+          // eslint-disable-next-line @typescript-eslint/no-this-alias
+          const that = this;
           if (this.state === DispatcherState.Processing) {
-            this.state = DispatcherState.Idle;
+            that.state = DispatcherState.Idle;
           }
           log(
             this.logTag,
