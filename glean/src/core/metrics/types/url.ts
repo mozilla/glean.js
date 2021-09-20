@@ -9,7 +9,7 @@ import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 
-// The maximum number of characters a URL Metric may have, before encoding.
+// The maximum number of characters a URL Metric may have.
 const URL_MAX_LENGTH = 2048;
 
 // This regex only validates that the `scheme` part of the URL is spec compliant
@@ -37,7 +37,7 @@ export class UrlMetric extends Metric<string, string> {
    * Validates that a given value is a valid URL metric value.
    *
    * 1. The URL must be a string.
-   * 2. The URL must have a maximum length of URL_MAX_LENGTH characters before the encoding.
+   * 2. The URL must have a maximum length of URL_MAX_LENGTH characters.
    * 3. The URL must not be a data URL.
    * 4. Every URL must start with a valid scheme.
    *
@@ -74,7 +74,7 @@ export class UrlMetric extends Metric<string, string> {
   }
 
   payload(): string {
-    return encodeURI(this._inner);
+    return this._inner;
   }
 }
 
@@ -128,7 +128,6 @@ class UrlMetricType extends MetricType {
    *
    * # Note
    *
-   * Although URL metrics are URI encoded in the ping payload,
    * this function will return the unencoded URL for convenience.
    *
    * This doesn't clear the stored value.
