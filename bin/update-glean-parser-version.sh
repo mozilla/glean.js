@@ -45,8 +45,13 @@ run $SED -i.bak -E \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
-# Update the version in samples/qt-qml-app/requirements.txt
-FILE=samples/qt-qml-app/requirements.txt
+FILE=samples/qt/python/requirements.txt
+run $SED -i.bak -E \
+    -e "s/glean_parser==[0-9.]+/glean_parser==${NEW_VERSION}/" \
+    "${WORKSPACE_ROOT}/${FILE}"
+run rm "${WORKSPACE_ROOT}/${FILE}.bak"
+
+FILE=samples/qt/cpp/requirements.txt
 run $SED -i.bak -E \
     -e "s/glean_parser==[0-9.]+/glean_parser==${NEW_VERSION}/" \
     "${WORKSPACE_ROOT}/${FILE}"

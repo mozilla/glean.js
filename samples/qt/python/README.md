@@ -1,4 +1,4 @@
-# Glean.js - Qt/QML app sample
+# Glean.js - Python Qt/QML app sample
 
 This sample contains a Qt/QML app that will initialize Glean.js when opened.
 
@@ -7,7 +7,7 @@ The app will display a button that when clicked should trigger Glean.js events.
 ## How to run this sample
 
 
-1. Build Glean.js for Qt.
+1. Build Glean.js for Qt. Inside the `glean/` folder, run:
 
 ```bash
 npm run build:qt
