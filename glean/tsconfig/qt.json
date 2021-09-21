@@ -1,7 +1,8 @@
 {
   "extends": "./base.json",
   "compilerOptions": {
-    "target": "ES2016"
+    "target": "ES2016",
+    "importHelpers": true
   },
   "include": ["../src/index/qt.ts" ]
 }
