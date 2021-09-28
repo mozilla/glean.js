@@ -6,7 +6,7 @@ import { strict as assert } from "assert";
 import Glean, { ErrorType } from "@mozilla/glean/node";
 
 import main from "./main.js";
-import { custom } from "./generated/pings.js";
+import { execution } from "./generated/pings.js";
 import { appStarted } from "./generated/sample.js";
 
 describe("node-sample", function () {
@@ -18,8 +18,8 @@ describe("node-sample", function () {
 
   describe("sample test", function () {
     it("appStarted metric is recorded and ping is sent", async function () {
-      // Setup validator for sending of the custom ping.
-      const pingWasSent = custom.testBeforeNextSubmit(async () => {
+      // Setup validator for sending of the execution ping.
+      const pingWasSent = execution.testBeforeNextSubmit(async () => {
         // Check there is some value in the app started metric.
         assert.ok(await appStarted.testGetValue() !== undefined);
         // Check no errors were recorded on that metric either.

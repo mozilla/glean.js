@@ -40,7 +40,7 @@ Rectangle {
     font.bold: true
     onClicked: () => {
       screen.displayText = 1;
-      Pings.custom.submit();
+      Pings.submission.submit();
     }
   }
 

@@ -10,7 +10,7 @@ sample:
     type: datetime
     lifetime: ping
     send_in_pings:
-      - custom
+      - submission
     description: |
       The time the sample web extension was started.
     bugs:
@@ -26,7 +26,7 @@ sample:
     type: counter
     lifetime: ping
     send_in_pings:
-      - custom
+      - submission
     description: |
       The number of time the sample extension popup was openend.
     bugs:
