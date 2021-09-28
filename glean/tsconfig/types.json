@@ -1,0 +1,15 @@
+{
+  "extends": "./base.json",
+  "include": [
+    "../src/core/metrics/types/*.ts",
+    "../src/plugins/*.ts",
+    "../src/index/node.ts",
+    "../src/index/webext.ts"
+  ],
+  "compilerOptions": {
+    "outDir": "../dist/types",
+    "removeComments": false,
+    "declaration": true,
+    "emitDeclarationOnly": true
+  }
+}
