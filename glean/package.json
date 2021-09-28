@@ -6,48 +6,32 @@
   "sideEffects": "false",
   "exports": {
     "./package.json": "./package.json",
-    "./webext": "./dist/webext/index/webext.js",
-    "./webext/private/metrics/*": "./dist/webext/core/metrics/types/*.js",
-    "./webext/private/ping": "./dist/webext/core/pings/ping_type.js",
-    "./webext/plugins/*": "./dist/webext/plugins/*.js",
-    "./webext/uploader": "./dist/webext/core/upload/uploader.js",
-    "./node": "./dist/node/index/node.js",
-    "./node/private/metrics/*": "./dist/node/core/metrics/types/*.js",
-    "./node/private/ping": "./dist/node/core/pings/ping_type.js",
-    "./node/plugins/*": "./dist/node/plugins/*.js",
-    "./node/uploader": "./dist/node/core/upload/uploader.js"
+    "./private/metrics/*": "./dist/core/metrics/types/*.js",
+    "./private/ping": "./dist/core/pings/ping_type.js",
+    "./plugins/*": "./dist/plugins/*.js",
+    "./uploader": "./dist/core/upload/uploader.js",
+    "./node": "./dist/index/node.js",
+    "./webext": "./dist/index/webext.js"
   },
   "typesVersions": {
     "*": {
       "webext": [
-        "./dist/webext/types/index/webext.d.ts"
-      ],
-      "webext/private/ping": [
-        "./dist/webext/types/core/pings/ping_type.d.ts"
-      ],
-      "webext/private/metrics/*": [
-        "./dist/webext/types/core/metrics/types/*"
-      ],
-      "webext/plugins/*": [
-        "./dist/webext/types/plugins/*"
-      ],
-      "webext/uploader": [
-        "./dist/webext/types/core/upload/uploader.d.ts"
+        "./dist/types/index/webext.d.ts"
       ],
       "node": [
-        "./dist/node/types/index/node.d.ts"
+        "./dist/types/index/node.d.ts"
       ],
-      "node/private/ping": [
-        "./dist/node/types/core/pings/ping_type.d.ts"
+      "private/ping": [
+        "./dist/types/core/pings/ping_type.d.ts"
       ],
-      "node/private/metrics/*": [
-        "./dist/node/types/core/metrics/types/*"
+      "private/metrics/*": [
+        "./dist/types/core/metrics/types/*"
       ],
-      "node/plugins/*": [
-        "./dist/node/types/plugins/*"
+      "plugins/*": [
+        "./dist/types/plugins/*"
       ],
-      "node/uploader": [
-        "./dist/node/types/core/upload/uploader.d.ts"
+      "uploader": [
+        "./dist/types/core/upload/uploader.d.ts"
       ]
     }
   },
@@ -74,14 +58,10 @@
     "lint:circular-deps": "madge --circular src/ --extensions ts",
     "lint:glinter": "npm run cli -- glinter src/metrics.yaml src/pings.yaml --allow-reserved",
     "fix": "eslint . --ext .ts,.js,.json --fix",
-    "build": "run-s build:cli build:webext build:node build:qt",
+    "build": "rm -rf dist && run-s build:cli build:lib build:types build:qt",
     "build:cli": "tsc -p ./tsconfig/cli.json",
-    "build:webext:lib": "tsc -p ./tsconfig/webext/index.json",
-    "build:webext:types": "tsc -p ./tsconfig/webext/types.json",
-    "build:webext": "rm -rf dist/webext && run-s build:webext:lib build:webext:types",
-    "build:node:lib": "tsc -p ./tsconfig/node/index.json",
-    "build:node:types": "tsc -p ./tsconfig/node/types.json",
-    "build:node": "rm -rf dist/node && run-s build:node:lib build:node:types",
+    "build:lib": "tsc -p ./tsconfig/lib.json",
+    "build:types": "tsc -p ./tsconfig/types.json",
     "build:qt": "rm -rf dist/qt && webpack --config webpack.config.qt.js && ../bin/prepare-qml-module.sh",
     "build:docs": "rm -rf dist/docs && typedoc src/ --out dist/docs --tsconfig tsconfig/docs.json --theme minimal",
     "build:metrics-docs": "npm run cli -- translate src/metrics.yaml src/pings.yaml -o ../docs/reference/ --format markdown --allow-reserved",

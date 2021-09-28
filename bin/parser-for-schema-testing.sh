@@ -26,14 +26,14 @@ npm run cli -- \
 # Update metrics import path
 FILE=glean/tests/integration/schema/generated/forTesting.ts
 run $SED -i.bak -E \
-  -e 's#@mozilla/glean/webext/private/metrics#../../../../src/core/metrics/types#g' \
+  -e 's#@mozilla/glean/private/metrics#../../../../src/core/metrics/types#g' \
   "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
 # Update ping import path
 FILE=glean/tests/integration/schema/generated/pings.ts
 run $SED -i.bak -E \
- -e 's#@mozilla/glean/webext/private/ping#../../../../src/core/pings/ping_type.js#g' \
+ -e 's#@mozilla/glean/private/ping#../../../../src/core/pings/ping_type.js#g' \
  "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
