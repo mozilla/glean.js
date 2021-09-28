@@ -5,7 +5,7 @@
 "use strict";
 
 import Glean from "@mozilla/glean/node";
-import { custom } from "./generated/pings.js";
+import { execution } from "./generated/pings.js";
 import { appStarted } from "./generated/sample.js";
 
 export default () => {
@@ -18,5 +18,5 @@ export default () => {
   Glean.initialize("gleanjs-node-sample", true);
 
   appStarted.set();
-  custom.submit();
+  execution.submit();
 }
