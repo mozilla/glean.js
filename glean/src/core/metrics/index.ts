@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { JSONValue } from "../utils.js";
+import type { JSONValue} from "../utils.js";
 import type { Lifetime } from "./lifetime.js";
 import type MetricsDatabase from "./database.js";
 import type { ErrorType } from "../error/error_type.js";
-import { isUndefined } from "../utils.js";
+import { isUndefined, testOnly } from "../utils.js";
 import { getValidDynamicLabel } from "./types/labeled.js";
 import { Context } from "../context.js";
 
@@ -117,6 +117,7 @@ export abstract class MetricType implements CommonMetricData {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
+  @testOnly()
   async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
     return Context.errorManager.testGetNumRecordedErrors(this, errorType as ErrorType, ping);
   }

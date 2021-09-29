@@ -6,10 +6,11 @@ import type { CommonMetricData } from "../index.js";
 import type { ExtraMap } from "../events_database/recorded_event.js";
 import { MetricType } from "../index.js";
 import { RecordedEvent } from "../events_database/recorded_event.js";
-import { getMonotonicNow, isString, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { getMonotonicNow, isString, testOnly, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.EventMetricType";
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
 /**
@@ -97,12 +98,11 @@ class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends Metr
    *
    * This doesn't clear the stored value.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
+  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
     let events: RecordedEvent[] | undefined;
     await Context.dispatcher.testLaunch(async () => {

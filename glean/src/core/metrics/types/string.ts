@@ -6,8 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
-import { isString, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { isString, testOnly, truncateStringAtBoundaryWithError } from "../../utils.js";
 
+const LOG_TAG = "core.metrics.StringMetricType";
 export const MAX_LENGTH_VALUE = 100;
 
 export class StringMetric extends Metric<string, string> {
@@ -86,12 +87,11 @@ class StringMetricType extends MetricType {
    *
    * This doesn't clear the stored value.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
+  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     let metric: string | undefined;
     await Context.dispatcher.testLaunch(async () => {

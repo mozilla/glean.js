@@ -120,8 +120,6 @@ export default (platform: Platform): {
      *
      * Resets the Glean singleton to its initial state and re-initializes it.
      *
-     * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-     *
      * @param applicationId The application ID (will be sanitized during initialization).
      * @param uploadEnabled Determines whether telemetry is enabled.
      *        If disabled, all persisted metrics, events and queued pings (except

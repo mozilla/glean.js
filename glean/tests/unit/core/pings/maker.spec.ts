@@ -258,7 +258,7 @@ describe("PingMaker", function() {
     // This will generate incoherent timestamps in events at collection time
     // and record an `InvalidValue` error for the `glean.restarted` event.
     Context.startTime.setTime(Context.startTime.getTime() - 1000 * 60 * 60);
-    Glean.initialize(testAppId, true);
+    await Glean.testInitialize(testAppId, true);
 
     event.record();
     // Wait for recording action to complete.

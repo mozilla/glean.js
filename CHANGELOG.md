@@ -2,6 +2,9 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.20.0...main)
 
+* [#775](https://github.com/mozilla/glean.js/pull/775): Disallow calling test only methods outside of test mode.
+  * NOTE: Test mode is set once the API `Glean.testResetGlean` is called.
+
 # v0.20.0 (2021-09-17)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.19.0...v0.20.0)

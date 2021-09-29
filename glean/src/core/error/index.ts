@@ -59,7 +59,7 @@ export default class ErrorManager {
    *        prepended to the message.
    * @param numErrors The number of errors of the same type to report.
    */
-  async record (
+  async record(
     metric: MetricType,
     error: ErrorType,
     message: string,
@@ -69,8 +69,6 @@ export default class ErrorManager {
     log(createLogTag(metric), `${metric.baseIdentifier()}: ${message}`);
     if (numErrors > 0) {
       await CounterMetricType._private_addUndispatched(errorMetric, numErrors);
-    } else {
-      // TODO: Throw error only when in test mode. Depends on Bug 1682771.
     }
   }
 

@@ -6,7 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
-import { isBoolean } from "../../utils.js";
+import { isBoolean, testOnly } from "../../utils.js";
+
+const LOG_TAG = "core.metrics.BooleanMetricType";
 
 export class BooleanMetric extends Metric<boolean, boolean> {
   constructor(v: unknown) {
@@ -20,7 +22,6 @@ export class BooleanMetric extends Metric<boolean, boolean> {
     return this._inner;
   }
 }
-
 
 /**
  *  A boolean metric.
@@ -55,12 +56,11 @@ class BooleanMetricType extends MetricType {
    *
    * This doesn't clear the stored value.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
+  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
     let metric: boolean | undefined;
     await Context.dispatcher.testLaunch(async () => {

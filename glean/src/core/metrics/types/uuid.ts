@@ -4,11 +4,12 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { generateUUIDv4, isString } from "../../utils.js";
+import { generateUUIDv4, isString, testOnly } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.UUIDMetricType";
 // Loose UUID regex for checking if a string has a UUID _shape_. Does not contain version checks.
 //
 // This is necessary in order to accept non RFC compliant UUID values,
@@ -112,12 +113,11 @@ class UUIDMetricType extends MetricType {
    *
    * This doesn't clear the stored value.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
+  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     let metric: string | undefined;
     await Context.dispatcher.testLaunch(async () => {
