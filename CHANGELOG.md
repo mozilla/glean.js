@@ -1,6 +1,12 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.21.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.21.1...main)
+
+# v0.21.1 (2021-09-30)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.21.0...v0.21.1)
+
+* [#780](https://github.com/mozilla/glean.js/pull/780): Fix the publishing step for releases. The Qt-specific build should now publish correctly.
 
 # v0.21.0 (2021-09-30)
 
