@@ -64,7 +64,9 @@ Rectangle {
 
   Component.onCompleted: {
     // Initialize Glean.
-    Glean.initialize("qt-qml-app", true, { debug: { logPings: true }});
+    Glean.setLogPings(true);
+    // Glean.setDebugViewTag("pyside-qml-sample");
+    Glean.initialize("qt-qml-app", true);
     Sample.appStarted.set();
     // !IMPORTANT!
     // If this message is changed the check in bin/qt-js-check **must** be updated.
