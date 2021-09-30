@@ -18,7 +18,6 @@ import Uploader from "../../../src/core/upload/uploader";
 import { UploadResultStatus, UploadResult } from "../../../src/core/upload/uploader";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
-import { Context } from "../../../src/core/context";
 import { unzipPingPayload } from "../../utils";
 
 const sandbox = sinon.createSandbox();
@@ -42,7 +41,7 @@ describe("PingEncryptionPlugin", function() {
       sendIfEmpty: true,
     });
 
-    const path = makePath(Context.applicationId, pingId, ping);
+    const path = makePath(pingId, ping);
     const mockUploader = new WaitableUploader();
     const pingBody = mockUploader.waitForPingSubmission("test", path);
 

@@ -5,7 +5,7 @@
 "use strict";
 
 import Glean from "@mozilla/glean/webext";
-import { custom } from "./generated/pings.js";
+import { submission } from "./generated/pings.js";
 import { webextStarted, popupOpened } from "./generated/sample.js";
 
 Glean.initialize("web-extension", true, { debug: { logPings: true }});
@@ -20,7 +20,7 @@ browser.runtime.onMessage.addListener(msg => {
   }
 
   if (msg === "send-ping") {
-    custom.submit();
+    submission.submit();
   }
 });
 

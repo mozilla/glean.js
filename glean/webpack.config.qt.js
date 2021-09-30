@@ -5,6 +5,7 @@
 import path, { dirname } from "path";
 import { fileURLToPath } from "url";
 
+import TerserPlugin from "terser-webpack-plugin";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -99,6 +100,8 @@ const productionConfig = {
     usedExports: true,
     providedExports: true,
     sideEffects: true,
+    minimize: true,
+    minimizer: [ new TerserPlugin() ],
   },
 };
 

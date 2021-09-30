@@ -86,7 +86,7 @@ class Glean {
    */
   private static async onUploadEnabled(): Promise<void> {
     Context.uploadEnabled = true;
-    await Glean.coreMetrics.initialize(Glean.instance._config, Glean.platform, Context.metricsDatabase);
+    await Glean.coreMetrics.initialize(Glean.instance._config, Glean.platform);
   }
 
   /**

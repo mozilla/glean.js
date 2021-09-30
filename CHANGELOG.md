@@ -1,6 +1,13 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.20.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.21.0...main)
+
+# v0.21.0 (2021-09-30)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.20.0...v0.21.0)
+
+* [#754](https://github.com/mozilla/glean.js/pull/754): Change target ECMAScript target from 2015 to 2016 when building for Qt.
+* [#779](https://github.com/mozilla/glean.js/pull/779): Add a number of workarounds for the Qt Javascript engine.
 
 # v0.20.0 (2021-09-17)
 
@@ -9,7 +16,6 @@
 * [#696](https://github.com/mozilla/glean.js/pull/696): Expose Node.js entry point `@mozilla/glean/node`.
 * [#695](https://github.com/mozilla/glean.js/pull/695): Implement PlatformInfo module for the Node.js platform.
 * [#695](https://github.com/mozilla/glean.js/pull/730): Implement Uploader module for the Node.js platform.
-
 
 # v0.19.0 (2021-09-03)
 

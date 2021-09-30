@@ -6,8 +6,8 @@ import QtQuick 2.0
 import QtQuick.Controls 2.0
 import QtGraphicalEffects 1.15
 
-import org.mozilla.Glean 0.20;
-import generated 0.20;
+import org.mozilla.Glean 0.21;
+import generated 0.21;
 
 Rectangle {
   id: screen
@@ -40,7 +40,7 @@ Rectangle {
     font.bold: true
     onClicked: () => {
       screen.displayText = 1;
-      Pings.custom.submit();
+      Pings.submission.submit();
     }
   }
 
@@ -64,7 +64,9 @@ Rectangle {
 
   Component.onCompleted: {
     // Initialize Glean.
-    Glean.initialize("qt-qml-app", true, { debug: { logPings: true }});
+    Glean.setLogPings(true);
+    // Glean.setDebugViewTag("pyside-qml-sample");
+    Glean.initialize("qt-qml-app", true);
     Sample.appStarted.set();
     // !IMPORTANT!
     // If this message is changed the check in bin/qt-js-check **must** be updated.

@@ -9,10 +9,10 @@
 ---
 $schema: moz://mozilla.org/schemas/glean/pings/2-0-0
 
-custom:
+execution:
   description: |
     A custom ping to help showcase Glean.js.
-    It is sent everytime everytime the `index.js` script is run.
+    It is sent everytime the `index.js` script is run.
   include_client_id: true
   send_if_empty: false
   bugs:
@@ -21,5 +21,3 @@ custom:
     - https://bugzilla.mozilla.org/show_bug.cgi?id=1587095#c6
   notification_emails:
     - glean-team@mozilla.com
-  no_lint:
-    - REDUNDANT_PING

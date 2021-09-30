@@ -39,15 +39,15 @@ class RateLimiter {
     }
 
     const now = getMonotonicNow();
-    const elapsed = now - this.started;
+    const result = now - this.started;
 
     // It's very unlikely elapsed will be a negative number since we are using a monotonic timer
     // here, but just to be extra sure, we account for it.
-    if (elapsed < 0) {
+    if (result < 0) {
       return NaN;
     }
 
-    return elapsed;
+    return result;
   }
 
   private reset(): void {
