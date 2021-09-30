@@ -18,7 +18,6 @@ import Uploader from "../../../src/core/upload/uploader";
 import { UploadResultStatus, UploadResult } from "../../../src/core/upload/uploader";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
-import { Context } from "../../../src/core/context";
 import { unzipPingPayload } from "../../utils";
 
 const sandbox = sinon.createSandbox();
