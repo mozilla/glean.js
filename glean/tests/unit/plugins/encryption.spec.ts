@@ -42,7 +42,7 @@ describe("PingEncryptionPlugin", function() {
       sendIfEmpty: true,
     });
 
-    const path = makePath(Context.applicationId, pingId, ping);
+    const path = makePath(pingId, ping);
     const mockUploader = new WaitableUploader();
     const pingBody = mockUploader.waitForPingSubmission("test", path);
 

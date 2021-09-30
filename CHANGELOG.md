@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.20.0...main)
 
+* [#754](https://github.com/mozilla/glean.js/pull/754): Change target ECMAScript target from 2015 to 2016 when building for Qt.
+
 # v0.20.0 (2021-09-17)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.19.0...v0.20.0)

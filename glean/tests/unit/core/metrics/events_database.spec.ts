@@ -585,11 +585,7 @@ describe("EventsDatabase", function() {
     await db.record(event, new RecordedEvent(event.category, event.name, 40));
 
     // Fake submit ping and perform checks on the ping payload.
-    const payload = await collectPing(
-      Context.metricsDatabase,
-      Context.eventsDatabase,
-      ping
-    );
+    const payload = await collectPing(ping);
 
     assert.ok(payload);
     assert.strictEqual(payload.events?.length, 5);
@@ -653,11 +649,7 @@ describe("EventsDatabase", function() {
     await db.record(event, new RecordedEvent(event.category, event.name, 30));
 
     // Fake submit ping and perform checks on the ping payload.
-    const payload = await collectPing(
-      Context.metricsDatabase,
-      Context.eventsDatabase,
-      ping
-    );
+    const payload = await collectPing(ping);
 
     assert.ok(payload);
     assert.strictEqual(payload.events?.length, 8);
@@ -711,11 +703,7 @@ describe("EventsDatabase", function() {
       });
 
       // Fake submit ping and perform checks on the ping payload.
-      const payload = await collectPing(
-        Context.metricsDatabase,
-        Context.eventsDatabase,
-        ping
-      );
+      const payload = await collectPing(ping);
 
       assert.ok(payload);
       assert.strictEqual(payload.events?.length, 2);
