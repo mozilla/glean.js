@@ -179,10 +179,6 @@ class Dispatcher {
           if (this.state === DispatcherState.Processing) {
             that.state = DispatcherState.Idle;
           }
-          log(
-            this.logTag,
-            `Done executing tasks, the dispatcher is now in the ${this.state} state.`
-          );
         })
         .catch(error => {
           log(

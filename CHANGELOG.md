@@ -10,7 +10,6 @@
 * [#695](https://github.com/mozilla/glean.js/pull/695): Implement PlatformInfo module for the Node.js platform.
 * [#695](https://github.com/mozilla/glean.js/pull/730): Implement Uploader module for the Node.js platform.
 
-
 # v0.19.0 (2021-09-03)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.18.1...v0.19.0)
