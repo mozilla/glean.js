@@ -1,6 +1,6 @@
 {
   "name": "@mozilla/glean",
-  "version": "0.21.0",
+  "version": "0.21.1",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for JavaScript environments.",
   "type": "module",
   "sideEffects": "false",
@@ -66,7 +66,7 @@
     "build:docs": "rm -rf dist/docs && typedoc src/ --out dist/docs --tsconfig tsconfig/docs.json --theme minimal",
     "build:metrics-docs": "npm run cli -- translate src/metrics.yaml src/pings.yaml -o ../docs/reference/ --format markdown --allow-reserved",
     "publish:docs": "NODE_DEBUG=gh-pages gh-pages --dotfiles --message \"[skip ci] Updates\" --dist dist/docs",
-    "prepublishOnly": "cp ../README.md ./README.md && run-s build:cli build:webext",
+    "prepublishOnly": "cp ../README.md ./README.md && run-s build:cli build:lib build:types",
     "postpublish": "rm ./README.md",
     "cli": "node --loader=ts-node/esm src/cli.ts"
   },
