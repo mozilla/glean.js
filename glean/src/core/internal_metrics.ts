@@ -31,8 +31,10 @@ export class CoreMetrics {
   readonly architecture: StringMetricType;
   readonly locale: StringMetricType;
   // Provided by the user
+  readonly appChannel: StringMetricType;
   readonly appBuild: StringMetricType;
   readonly appDisplayVersion: StringMetricType;
+
 
   constructor() {
     this.clientId = new UUIDMetricType({
@@ -83,6 +85,14 @@ export class CoreMetrics {
       disabled: false,
     });
 
+    this.appChannel = new StringMetricType({
+      name: "app_channel",
+      category: "",
+      sendInPings: ["glean_client_info"],
+      lifetime: Lifetime.Application,
+      disabled: false,
+    });
+
     this.appBuild = new StringMetricType({
       name: "app_build",
       category: "",
@@ -109,6 +119,9 @@ export class CoreMetrics {
     await StringMetricType._private_setUndispatched(this.locale, await platform.info.locale());
     await StringMetricType._private_setUndispatched(this.appBuild, config.appBuild || "Unknown");
     await StringMetricType._private_setUndispatched(this.appDisplayVersion, config.appDisplayVersion || "Unknown");
+    if (config.channel) {
+      await StringMetricType._private_setUndispatched(this.appChannel, config.channel);
+    }
   }
 
   /**
