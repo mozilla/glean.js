@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.21.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.22.0...main)
+
+# v0.22.0 (2021-10-06)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.21.1...v0.22.0)
 
 * [#796](https://github.com/mozilla/glean.js/pull/796): Support setting the `app_channel` metric.
   - As described in ["Release channels"](https://mozilla.github.io/glean/book/reference/general/initializing.html?highlight=channel#release-channels).
