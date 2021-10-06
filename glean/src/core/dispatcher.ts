@@ -113,7 +113,7 @@ class Dispatcher {
       await task();
       return true;
     } catch(e) {
-      log(this.logTag, ["Error executing task:", JSON.stringify(e)], LoggingLevel.Error);
+      log(this.logTag, ["Error executing task:", e], LoggingLevel.Error);
       return false;
     }
   }

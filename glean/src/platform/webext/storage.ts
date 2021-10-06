@@ -155,7 +155,11 @@ class WebExtStore implements Store {
       );
       return this.store.set(query);
     } catch(e) {
-      log(this.logTag, ["Ignoring key", JSON.stringify(e)], LoggingLevel.Warn);
+      log(
+        this.logTag,
+        [`Error attempting to delete key ${index.toString()} from storage. Ignoring.`, e],
+        LoggingLevel.Warn
+      );
     }
   }
 }

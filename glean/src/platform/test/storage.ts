@@ -52,7 +52,11 @@ class MockStore implements Store {
     try {
       globalStore = deleteKeyFromNestedObject(globalStore, [ this.rootKey, ...index ]);
     } catch (e) {
-      log(LOG_TAG, [(e as Error).message, "Ignoring."], LoggingLevel.Warn);
+      log(
+        LOG_TAG,
+        [`Error attempting to delete key ${index.toString()} from storage. Ignoring.`, e],
+        LoggingLevel.Warn
+      );
     }
     return Promise.resolve();
   }

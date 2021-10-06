@@ -29,13 +29,13 @@ export enum LoggingLevel {
  */
 export default function log(
   modulePath: string,
-  message: string | string[],
+  message: unknown | unknown[],
   level = LoggingLevel.Debug
 ): void {
   const prefix = `(Glean.${modulePath})`;
-  if (typeof message === "string") {
-    console[level](prefix, message);
-  } else {
+  if (Array.isArray(message)) {
     console[level](prefix, ...message);
+  } else {
+    console[level](prefix, message);
   }
 }
