@@ -43,7 +43,7 @@ jobs:
           command: npm --prefix ./glean run lint
       - run:
           name: Audit dependency tree
-          command: npm audit
+          command: npm --prefix ./glean audit
 
   test:
     docker:
