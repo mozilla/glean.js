@@ -34,6 +34,7 @@ function fetchSchema(): Promise<JSONObject> {
           resolve(JSON.parse(data));
         } catch(e) {
           console.error("Data received from the GLEAN_SCHEMA_URL is not valid JSON.\n\n", data);
+          reject();
         }
       });
     }).on("error", (err) => {
