@@ -12,17 +12,17 @@ export const enum DispatcherState {
   //
   // When the dispatcher is in this state it will not enqueue
   // more than `maxPreInitQueueSize` tasks.
-  Uninitialized,
+  Uninitialized = "Uninitialized",
   // There are no commands queued and the dispatcher is idle.
-  Idle,
+  Idle = "Idle",
   // The dispatcher is currently processing queued tasks.
-  Processing,
+  Processing = "Processing",
   // The dispatcher is stopped, tasks queued will not be immediatelly processed.
-  Stopped,
+  Stopped = "Stopped",
   // The dispatcher is shutdown, attempting to queue tasks while in this state is a no-op.
   //
   // This state is irreversible.
-  Shutdown,
+  Shutdown = "Shutdown",
 }
 
 // The possible commands to be processed by the dispatcher.
