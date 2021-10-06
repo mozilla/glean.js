@@ -81,6 +81,7 @@ describe("PingMaker", function() {
 
     // Initialize will also initialize core metrics that are part of the client info.
     await Glean.testResetGlean(testAppId, true, {
+      channel: "channel",
       appBuild:"build",
       appDisplayVersion: "display version",
       serverEndpoint: "http://localhost:8080"
@@ -94,8 +95,9 @@ describe("PingMaker", function() {
     assert.ok("os_version" in clientInfo2);
     assert.ok("architecture" in clientInfo2);
     assert.ok("locale" in clientInfo2);
-    assert.ok("app_build" in clientInfo2);
-    assert.ok("app_display_version" in clientInfo2);
+    assert.strictEqual(clientInfo2["app_channel"], "channel");
+    assert.strictEqual(clientInfo2["app_build"], "build");
+    assert.strictEqual(clientInfo2["app_display_version"], "display version");
   });
 
   it("collectPing must return `undefined` if ping that must not be sent if empty, is empty", async function() {
