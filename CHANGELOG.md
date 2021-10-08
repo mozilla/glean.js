@@ -2,6 +2,12 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.22.0...main)
 
+* [#811](https://github.com/mozilla/glean.js/pull/811): Apply various fixes to the Qt entry point file.
+  * Expose `ErrorType`. This is only useful for testing purposes;
+  * Fix version of `QtQuick.LocalStorage` plugin;
+  * Fix the way to access the lib from inside the `shutdown` method. Previous to this fix, it is not possible to use the `shutdown` method;
+  * Expose the `Glean.testRestGlean` API.
+
 # v0.22.0 (2021-10-06)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.21.1...v0.22.0)
