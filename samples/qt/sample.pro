@@ -1,4 +1,5 @@
 TEMPLATE = subdirs
 
 SUBDIRS = \
-  src/App
+  src/App \
+  src/Tests
