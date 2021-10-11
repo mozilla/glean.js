@@ -161,7 +161,6 @@ jobs:
           name: Run Qt sample tests
           command: |
             cd samples/qt
-            ls src
             qmake -r
             QML_IMPORT_TRACE=1 xvfb-run make check
 
