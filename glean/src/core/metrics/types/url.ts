@@ -102,11 +102,7 @@ class UrlMetricType extends MetricType {
         await Context.metricsDatabase.record(this, metric);
       } catch (e) {
         if (e instanceof UrlMetricError) {
-          await Context.errorManager.record(
-            this,
-            e.type,
-            e.message
-          );
+          await Context.errorManager.record(this, e.type, e);
         }
       }
     });

@@ -529,4 +529,28 @@ describe("Dispatcher", function() {
     assert.strictEqual(preShutdownStub.callCount, 10);
     assert.strictEqual(postShutdownStub.callCount, 0);
   });
+
+  it("if init task fails, no other tasks are executed and dispatcher is shutdown", async function () {
+    dispatcher = new Dispatcher();
+
+    const preInitStub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 5; i++) {
+      dispatcher.launch(preInitStub);
+    }
+
+    dispatcher.flushInit(() => {
+      throw new Error("Oops.");
+    });
+
+    const postInitStub = sandbox.stub().callsFake(sampleTask);
+    for (let i = 0; i < 5; i++) {
+      dispatcher.launch(postInitStub);
+    }
+
+    await dispatcher.testBlockOnQueue();
+
+    // Check tasks before and after init were not executed, because init task failed.
+    assert.strictEqual(preInitStub.callCount, 0);
+    assert.strictEqual(postInitStub.callCount, 0);
+  });
 });

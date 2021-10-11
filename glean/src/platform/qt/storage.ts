@@ -132,7 +132,7 @@ class QMLStore implements Store {
     } catch(e) {
       log(
         this.logTag,
-        ["Error while attempting to access LocalStorage.\n", JSON.stringify(e)],
+        ["Error while attempting to access LocalStorage.\n", e],
         LoggingLevel.Debug
       );
     } finally {
@@ -155,7 +155,7 @@ class QMLStore implements Store {
       } catch (e) {
         log(
           this.logTag,
-          [`Error executing LocalStorage query: ${query}.\n`, JSON.stringify(e)],
+          [`Error executing LocalStorage query: ${query}.\n`, e],
           LoggingLevel.Debug
         );
         reject();
@@ -190,10 +190,7 @@ class QMLStore implements Store {
     try {
       return getValueFromNestedObject(obj, index);
     } catch(e) {
-      log(this.logTag, [
-        "Error getting value from database.",
-        JSON.stringify((e as Error).message)
-      ]);
+      log(this.logTag, ["Error getting value from database.", e]);
     }
   }
 

@@ -8,6 +8,9 @@
 
 * [#796](https://github.com/mozilla/glean.js/pull/796): Support setting the `app_channel` metric.
   - As described in ["Release channels"](https://mozilla.github.io/glean/book/reference/general/initializing.html?highlight=channel#release-channels).
+* [#799](https://github.com/mozilla/glean.js/pull/799): Make sure Glean does not do anything else in case initialization errors.
+  - This may happen in case there is an error creating the databases. Mostly an issue on Qt/QML where we use a SQLite database which can throw errors on initialization.
+* [#799](https://github.com/mozilla/glean.js/pull/799): Provide stack traces when logging errors.
 
 # v0.21.1 (2021-09-30)
 
