@@ -63,7 +63,7 @@
     "build:lib": "tsc -p ./tsconfig/lib.json",
     "build:types": "tsc -p ./tsconfig/types.json",
     "build:qt": "rm -rf dist/qt && webpack --config webpack.config.qt.js && ../bin/prepare-qml-module.sh",
-    "build:docs": "rm -rf dist/docs && typedoc src/ --out dist/docs --tsconfig tsconfig/docs.json --theme minimal",
+    "build:docs": "rm -rf dist/docs && typedoc src/**/*.ts src/**/**/*.ts src/**/**/**/*.ts --out dist/docs --tsconfig tsconfig/docs.json",
     "build:metrics-docs": "npm run cli -- translate src/metrics.yaml src/pings.yaml -o ../docs/reference/ --format markdown --allow-reserved",
     "publish:docs": "NODE_DEBUG=gh-pages gh-pages --dotfiles --message \"[skip ci] Updates\" --dist dist/docs",
     "prepublishOnly": "cp ../README.md ./README.md && run-s build:cli build:lib build:types",
