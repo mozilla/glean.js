@@ -66,7 +66,7 @@ jobs:
           name: Run integration tests
           command: export PATH=.:$PATH && npm --prefix ./glean run test:integration
 
-  samples-tests:
+  webext-sample-tests:
     docker:
       - image: cimg/python:3.8.8-node
     steps:
@@ -74,7 +74,7 @@ jobs:
       - run:
           name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
-      # JS webext sample related jobs
+      # JS sample related jobs
       - run:
           name: Install JavaScript dependencies for the JS web extension sample
           command: |
@@ -88,7 +88,7 @@ jobs:
           name: Run JS web extension sample test
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
-      # TS webext sample related jobs
+      # TS sample related jobs
       - run:
           name: Install Typescript dependencies for the TS web extension sample
           command: |
@@ -102,7 +102,15 @@ jobs:
           name: Run TS web extension sample test
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
-      # Node.js sample related jobs
+
+  node-sample-tests:
+    docker:
+      - image: cimg/python:3.8.8-node
+    steps:
+      - checkout
+      - run:
+          name: Install JavaScript dependencies for Glean
+          command: npm --prefix ./glean install
       - run:
           name: Install JavaScript dependencies for the Node.js sample
           command: |
@@ -117,6 +125,45 @@ jobs:
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/node run test
 
+  qt-sample-tests:
+    docker:
+      - image: cimg/python:3.8.8-node
+    steps:
+      - checkout
+      - run:
+          name: Install JavaScript dependencies for Glean
+          command: npm --prefix ./glean install
+      - run:
+          name: Install Qt dependencies
+          command: |
+            sudo apt-get update
+            sudo apt-get install -y gcc g++ make cmake \
+              qtbase5-dev qt5-default qt5-qmake qttools5-dev-tools qtdeclarative5-dev \
+              qtdeclarative5-dev-tools qml-module-qttest qml-module-qtquick2 \
+              qml-module-qtquick-localstorage qml-module-qtquick-controls2
+            sudo apt-get install xvfb
+      - run:
+          name: Build and install Qt Glean.js library
+          command: |
+            npm --prefix ./glean run build:qt
+            cp -r glean/dist/qt/org/ samples/qt/src/App/org/
+      - run:
+          name: Build the Node.js Glean generated files sample
+          command: |
+            cd samples/qt
+            python3 -m venv venv
+            source venv/bin/activate
+            pip install -r requirements.txt
+            glean_parser translate src/App/metrics.yaml src/App/pings.yaml \
+              -f javascript -o src/App/generated \
+              --option platform=qt --option version="0.22"
+      - run:
+          name: Run Qt sample tests
+          command: |
+            cd samples/qt
+            qmake -r
+            QML_IMPORT_TRACE=1 xvfb-run make check
+
   check-size:
     docker:
       - image: cimg/node:16.1.0
@@ -126,46 +173,6 @@ jobs:
           name: Get and post build sizes to GitHub PR
           command: |
             ./benchmarks/run.sh
-
-  check-qt-js:
-    docker:
-      - image: cimg/python:3.9.4-node
-    steps:
-      - checkout
-      - run:
-          name: Install JavaScript dependencies and build Glean.js for Qt
-          command: |
-            npm --prefix ./glean install
-            npm --prefix ./glean run build:qt
-      - run:
-          name: Setup Qt dependency
-          command: |
-            # The following commands are copied from the VPN Qt setup for Linux
-            # See: https://github.com/mozilla-mobile/mozilla-vpn-client/blob/main/.github/workflows/linux.yaml#L18-L21
-            #
-            # Add external PPA, latest version of QT is 5.12.x for Ubuntu 20.04
-            sudo add-apt-repository ppa:beineri/opt-qt-5.15.2-focal -y
-            sudo apt update
-            sudo apt install git qt515tools qt515svg qt515networkauth-no-lgpl qt515charts-no-lgpl libgl-dev libpolkit-gobject-1-dev devscripts debhelper cdbs quilt qt515graphicaleffects qt515imageformats  qt515quickcontrols2   libxcb-image0-dev libxcb-shape0-dev libxcb-sync0-dev libxcb-render-util0-dev libxcb-xfixes0-dev libxcb-icccm4-dev libx11-xcb-dev libxcb-keysyms1-dev libasound2-dev libaudio-dev libcups2-dev libdbus-1-dev libglu1-mesa-dev  libmng-dev libtiff5-dev libxcursor-dev libxi-dev libxinerama-dev libxmu-dev libxrandr-dev libxv-dev libedit-dev libvulkan-dev qt515websockets -y
-      - run:
-          name: Run the Qt sample app and check for errors
-          command: |
-            cd samples/qt-qml-app
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
-            glean_parser translate metrics.yaml pings.yaml -f javascript -o generated \
-            --option platform=qt --option version="0.22"
-
-            sudo apt-get install xvfb
-            xvfb-run python main.py &> qml.log &
-            # Wait for app to start
-            sleep 10
-            if ! grep -q "Initialized Glean succesfully." "qml.log"; then
-              echo "\n\n\033[1;91m** Failed to initialize Glean in Qt! See more logs below. **\033[0m\n\n"
-              cat qml.log
-              exit 1
-            fi
 
   # via https://circleci.com/blog/deploying-documentation-to-github-pages-with-continuous-integration/
   docs-deploy:
@@ -194,7 +201,6 @@ jobs:
             git config user.email "brizental+moz-glean@mozilla.com"
             git config user.name "moz-glean"
             npm --prefix ./glean run publish:docs
-
 
   publish:
     docker:
@@ -233,15 +239,17 @@ workflows:
     jobs:
       - lint
       - test
-      - check-qt-js
-      - samples-tests
+      - webext-sample-tests
+      - node-sample-tests
+      - qt-sample-tests
       - hold:
           type: approval
           requires:
             - lint
             - test
-            - check-qt-js
-            - samples-tests
+            - webext-sample-tests
+            - node-sample-tests
+            - qt-sample-tests
           filters:
             branches:
               ignore:
