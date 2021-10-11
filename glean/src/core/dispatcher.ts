@@ -41,7 +41,7 @@ const enum Commands {
   // Unless unavoidable, prefer using the normal `Task`.
   PersistentTask = "PersistentTask",
   // Same as the `Task` command, but only tasks passed to `flushInit` to be perfomed
-  // as the first task ever are are considered `InitTask`. This task is special because if
+  // as the first task ever are considered `InitTask`. This task is special because if
   // it fails, the dispatcher will not proceed executing any other tasks and will shutdown.
   //
   // This command is always followed by a concrete task for the dispatcher to execute.
