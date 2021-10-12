@@ -120,10 +120,17 @@ run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 # This gets the version string without the patch version.
 GLEAN_VERSION_FOR_QML=$(node -p -e "'${NEW_VERSION}'.split('.').reverse().slice(1).reverse().join('.')")
 
-FILE=samples/qt-qml-app/main.qml
+FILE=samples/qt/src/Tests/tst_maintests.qml
 run $SED -i.bak -E \
-    -e "s/import org.mozilla.Glean [0-9a-z.-]+;/import org.mozilla.Glean ${GLEAN_VERSION_FOR_QML};/" \
-    -e "s/import generated [0-9a-z.-]+;/import generated ${GLEAN_VERSION_FOR_QML};/" \
+    -e "s/import org.mozilla.Glean [0-9a-z.-]+/import org.mozilla.Glean ${GLEAN_VERSION_FOR_QML}/" \
+    -e "s/import generated [0-9a-z.-]+/import generated ${GLEAN_VERSION_FOR_QML}/" \
+    "${WORKSPACE_ROOT}/${FILE}"
+run rm "${WORKSPACE_ROOT}/${FILE}.bak"
+
+FILE=samples/qt/src/App/App.qml
+run $SED -i.bak -E \
+    -e "s/import org.mozilla.Glean [0-9a-z.-]+/import org.mozilla.Glean ${GLEAN_VERSION_FOR_QML}/" \
+    -e "s/import generated [0-9a-z.-]+/import generated ${GLEAN_VERSION_FOR_QML}/" \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
@@ -133,15 +140,15 @@ run $SED -i.bak -E \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
-FILE=samples/qt-qml-app/README.md
+FILE=samples/qt/README.md
 run $SED -i.bak -E \
-    -e "s/--option platform=qt --option version=[0-9a-z.-]+/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\";/" \
+    -e "s/--option platform=qt --option version=[0-9a-z.-]+/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\"/" \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
 FILE=.circleci/config.yml
 run $SED -i.bak -E \
-    -e "s/--option platform=qt --option version=[0-9a-z.-]+/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\";/" \
+    -e "s/--option platform=qt --option version=[0-9a-z.-]+/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\"/" \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
