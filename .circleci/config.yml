@@ -66,6 +66,21 @@ jobs:
           name: Run integration tests
           command: export PATH=.:$PATH && npm --prefix ./glean run test:integration
 
+  build:
+    docker:
+      - image: cimg/python:3.9.4-node
+    steps:
+      - checkout
+      - run:
+          name: Install JavaScript dependencies
+          command: npm --prefix ./glean install
+      - run:
+          name: Build library
+          command: npm --prefix ./glean run build
+      - run:
+          name: Build docs
+          command: npm --prefix ./glean run build:docs
+
   webext-sample-tests:
     docker:
       - image: cimg/python:3.8.8-node
@@ -239,6 +254,7 @@ workflows:
     jobs:
       - lint
       - test
+      - build
       - webext-sample-tests
       - node-sample-tests
       - qt-sample-tests
@@ -247,6 +263,7 @@ workflows:
           requires:
             - lint
             - test
+            - build
             - webext-sample-tests
             - node-sample-tests
             - qt-sample-tests
