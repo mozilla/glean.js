@@ -39,13 +39,15 @@ export class Context {
   private _applicationId!: string;
   private _debugOptions!: DebugOptions;
 
-  private _initialized: boolean;
+  // Whether or not Glean is initialized.
+  private _initialized = false;
+  // Whether or not Glean is in testing mode.
+  private _testing = false;
 
   // The moment the current Glean.js session started.
   private _startTime: Date;
 
   private constructor() {
-    this._initialized = false;
     this._startTime = new Date();
     this._dispatcher = new Dispatcher();
   }
@@ -207,5 +209,13 @@ export class Context {
 
   static get startTime(): Date {
     return Context.instance._startTime;
+  }
+
+  static get testing(): boolean {
+    return Context.instance._testing;
+  }
+
+  static set testing(flag: boolean) {
+    Context.instance._testing = flag;
   }
 }

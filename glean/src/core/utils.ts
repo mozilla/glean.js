@@ -6,6 +6,9 @@ import type { MetricType } from "./metrics/index.js";
 import { v4 as UUIDv4 } from "uuid";
 import { Context } from "./context.js";
 import { ErrorType } from "./error/error_type.js";
+import log, { LoggingLevel } from "./log.js";
+
+const LOG_TAG = "core.utils";
 
 // We will intentionaly leave `null` out even though it is a valid JSON primitive.
 export type JSONPrimitive = string | number | boolean;
@@ -208,3 +211,41 @@ export async function truncateStringAtBoundaryWithError(metric: MetricType, valu
   }
   return truncated;
 }
+
+/**
+ * Decorator factory that will only allow a function to be called when Glean is in testing mode.
+ *
+ * @param logTag The log tag of the current module.
+ * @returns A decorator function.
+ */
+export function testOnly(logTag = LOG_TAG) {
+  return (
+    _target: unknown,
+    propertyKey: string,
+    descriptor: TypedPropertyDescriptor<TestFunction>
+  ): TypedPropertyDescriptor<TestFunction> => {
+    const originalMethod = descriptor.value;
+    descriptor.value = function (...args: never[]) {
+      if (!Context.testing) {
+        log(
+          logTag,
+          [
+            `Attempted to access test only method \`${propertyKey || "unknown"}\`,`,
+            "but Glean is not in testing mode. Ignoring. Make sure to put Glean in testing mode",
+            "before accessing such methods, by calling `Glean.testResetGlean`."
+          ],
+          LoggingLevel.Error
+        );
+      } else {
+        return originalMethod ? originalMethod.apply(this, args) : Promise.resolve();
+      }
+
+      return Promise.resolve();
+    };
+
+    return descriptor;
+  };
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type TestFunction = (...args: never[]) => Promise<any>;

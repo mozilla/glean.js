@@ -69,8 +69,6 @@ export default class ErrorManager {
     log(createLogTag(metric), [`${metric.baseIdentifier()}:`, message]);
     if (numErrors > 0) {
       await CounterMetricType._private_addUndispatched(errorMetric, numErrors);
-    } else {
-      // TODO: Throw error only when in test mode. Depends on Bug 1682771.
     }
   }
 

@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { DELETION_REQUEST_PING_NAME } from "../constants.js";
-import { generateUUIDv4 } from "../utils.js";
+import { generateUUIDv4, testOnly } from "../utils.js";
 import collectAndStorePing from "../pings/maker.js";
 import type CommonPingData from "./common_ping_data.js";
 import { Context } from "../context.js";
@@ -143,13 +143,12 @@ class PingType implements CommonPingData {
    *
    * Runs a validation function before the ping is collected.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-   *
    * @param callbackFn The asynchronous validation function to run in order to validate
    *        the ping content.
    * @returns A `Promise` resolved when the ping is collected and the validation function
    *          is executed.
    */
+  @testOnly(LOG_TAG)
   async testBeforeNextSubmit(callbackFn: ValidatorFunction): Promise<void> {
     if (this.testCallback) {
       log(

@@ -470,13 +470,14 @@ class Glean {
       return;
     }
 
-    // In case the platform is being swapped in the test scenario described above,
-    // we log a debug message about the change.
-    if (Glean.instance._platform && Glean.instance._platform.name !== platform.name) {
-      // TODO: Only show this message outside of test mode, and rephrase it as an error (depends on Bug 1682771).
+    if (Glean.instance._platform && Glean.instance._platform.name !== platform.name && !Context.testing) {
       log(
         LOG_TAG,
-        `Changing Glean platform from "${Glean.platform.name}" to "${platform.name}".`,
+        [
+          `IMPOSSIBLE: Attempted to change Glean's targeted platform",
+          "from "${Glean.platform.name}" to "${platform.name}". Ignoring.`,
+        ],
+        LoggingLevel.Error
       );
     }
 
@@ -501,6 +502,8 @@ class Glean {
     uploadEnabled = true,
     config?: ConfigurationInterface
   ): Promise<void> {
+    Context.testing = true;
+
     Glean.setPlatform(TestPlatform);
     Glean.initialize(applicationId, uploadEnabled, config);
 
@@ -512,8 +515,6 @@ class Glean {
    *
    * Resets Glean to an uninitialized state.
    * This is a no-op in case Glean has not been initialized.
-   *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
    *
    * @param clearStores Whether or not to clear the events, metrics and pings databases on uninitialize.
    */
@@ -540,7 +541,8 @@ class Glean {
    *
    * Resets the Glean singleton to its initial state and re-initializes it.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
+   * Note: There is no way to only allow this function to be called in test mode,
+   * because this is the function that puts Glean in test mode by setting Context.testing to true.
    *
    * @param applicationId The application ID (will be sanitized during initialization).
    * @param uploadEnabled Determines whether telemetry is enabled.
