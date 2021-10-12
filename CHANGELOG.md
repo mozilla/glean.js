@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.22.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.23.0...main)
+
+# v0.23.0 (2021-10-12)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.22.0...v0.23.0)
 
 * [#755](https://github.com/mozilla/glean.js/pull/755): Only allow calling of `test*` functions in "test mode".
   * Glean is put in "test mode" once the `Glean.testResetGlean` API called.

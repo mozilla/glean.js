@@ -171,7 +171,7 @@ jobs:
             pip install -r requirements.txt
             glean_parser translate src/App/metrics.yaml src/App/pings.yaml \
               -f javascript -o src/App/generated \
-              --option platform=qt --option version="0.22"
+              --option platform=qt --option version="0.23"
       - run:
           name: Run Qt sample tests
           command: |
