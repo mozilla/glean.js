@@ -1,12 +1,20 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.22.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.23.0...main)
 
+# v0.23.0 (2021-10-12)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.22.0...v0.23.0)
+
+* [#755](https://github.com/mozilla/glean.js/pull/755): Only allow calling of `test*` functions in "test mode".
+  * Glean is put in "test mode" once the `Glean.testResetGlean` API called.
 * [#811](https://github.com/mozilla/glean.js/pull/811): Apply various fixes to the Qt entry point file.
   * Expose `ErrorType`. This is only useful for testing purposes;
   * Fix version of `QtQuick.LocalStorage` plugin;
   * Fix the way to access the lib from inside the `shutdown` method. Previous to this fix, it is not possible to use the `shutdown` method;
   * Expose the `Glean.testRestGlean` API.
+* [#822](https://github.com/mozilla/glean.js/pull/822): Fix API reference docs build step.
+* [#825](https://github.com/mozilla/glean.js/pull/825): Accept `architecture` and `osVersion` as initialization parameters in Qt. In Qt these values are not easily available from the environment.
 
 # v0.22.0 (2021-10-06)
 
