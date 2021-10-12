@@ -37,7 +37,6 @@ export interface ConfigurationInterface {
   // The architecture of the device (e.g. "arm", "x86").
   readonly architecture?: string,
   // The user-visible version of the operating system (e.g. "1.2.3").
-  // If the version detection fails, this metric gets set to Unknown.
   readonly osVersion?: string,
 }
 
@@ -54,7 +53,6 @@ export class Configuration implements ConfigurationInterface {
   // The architecture of the device (e.g. "arm", "x86").
   readonly architecture?: string;
   // The user-visible version of the operating system (e.g. "1.2.3").
-  // If the version detection fails, this metric gets set to Unknown.
   readonly osVersion?: string;
 
   // Debug configuration.
