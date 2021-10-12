@@ -7,7 +7,9 @@ import { MetricType } from "../index.js";
 import TimeUnit from "../../metrics/time_unit.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
-import { isNumber, isObject, isString } from "../../utils.js";
+import { isNumber, isObject, isString, testOnly } from "../../utils.js";
+
+const LOG_TAG = "core.metrics.DatetimeMetricType";
 
 /**
  * Builds the formatted timezone offset string frim a given timezone.
@@ -234,11 +236,10 @@ class DatetimeMetricType extends MetricType {
    *
    * This doesn't clear the stored value.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
+  @testOnly(LOG_TAG)
   private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
     let value: DatetimeInternalRepresentation | undefined;
     await Context.dispatcher.testLaunch(async () => {
@@ -256,12 +257,11 @@ class DatetimeMetricType extends MetricType {
    *
    * This doesn't clear the stored value.
    *
-   * TODO: Only allow this function to be called on   test mode (depends on Bug 1682771).
-   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
+  @testOnly(LOG_TAG)
   async testGetValueAsString(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     const metric = await this.testGetValueAsDatetimeMetric(ping);
     return metric ? metric.payload() : undefined;
@@ -281,12 +281,11 @@ class DatetimeMetricType extends MetricType {
    * If the currently stored datetime is in a different timezone than local,
    * the resulting Date object will contain the relative local date to the recorded value.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
+  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<Date | undefined> {
     const metric = await this.testGetValueAsDatetimeMetric(ping);
     return metric ? metric.date : undefined;

@@ -3,12 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { isString } from "../../utils.js";
+import { isString, testOnly } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 
+const LOG_TAG = "core.metrics.URLMetricType";
 // The maximum number of characters a URL Metric may have.
 const URL_MAX_LENGTH = 2048;
 
@@ -102,11 +103,7 @@ class UrlMetricType extends MetricType {
         await Context.metricsDatabase.record(this, metric);
       } catch (e) {
         if (e instanceof UrlMetricError) {
-          await Context.errorManager.record(
-            this,
-            e.type,
-            e.message
-          );
+          await Context.errorManager.record(this, e.type, e);
         }
       }
     });
@@ -132,12 +129,11 @@ class UrlMetricType extends MetricType {
    *
    * This doesn't clear the stored value.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
+  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     let metric: string | undefined;
     await Context.dispatcher.testLaunch(async () => {

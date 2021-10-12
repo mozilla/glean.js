@@ -6,6 +6,12 @@ import Glean from "../core/glean.js";
 import type { ConfigurationInterface } from "../core/config.js";
 import type Platform from "../platform/index.js";
 
+// Strip the configuration interface of the Qt-only fields.
+type RestictedConfigurationInterface = Omit<
+  ConfigurationInterface,
+  "architecture" | "osVersion"
+>;
+
 export default (platform: Platform): {
   initialize(
     applicationId: string,
@@ -36,7 +42,7 @@ export default (platform: Platform): {
     initialize(
       applicationId: string,
       uploadEnabled: boolean,
-      config?: ConfigurationInterface
+      config?: RestictedConfigurationInterface
     ): void {
       Glean.setPlatform(platform);
       Glean.initialize(applicationId, uploadEnabled, config);
@@ -120,8 +126,6 @@ export default (platform: Platform): {
      *
      * Resets the Glean singleton to its initial state and re-initializes it.
      *
-     * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-     *
      * @param applicationId The application ID (will be sanitized during initialization).
      * @param uploadEnabled Determines whether telemetry is enabled.
      *        If disabled, all persisted metrics, events and queued pings (except
@@ -132,7 +136,7 @@ export default (platform: Platform): {
     async testResetGlean(
       applicationId: string,
       uploadEnabled = true,
-      config?: ConfigurationInterface
+      config?: RestictedConfigurationInterface
     ): Promise<void> {
       return Glean.testResetGlean(applicationId, uploadEnabled, config);
     }

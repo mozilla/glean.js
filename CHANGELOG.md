@@ -1,6 +1,20 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.22.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.23.0...main)
+
+# v0.23.0 (2021-10-12)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.22.0...v0.23.0)
+
+* [#755](https://github.com/mozilla/glean.js/pull/755): Only allow calling of `test*` functions in "test mode".
+  * Glean is put in "test mode" once the `Glean.testResetGlean` API called.
+* [#811](https://github.com/mozilla/glean.js/pull/811): Apply various fixes to the Qt entry point file.
+  * Expose `ErrorType`. This is only useful for testing purposes;
+  * Fix version of `QtQuick.LocalStorage` plugin;
+  * Fix the way to access the lib from inside the `shutdown` method. Previous to this fix, it is not possible to use the `shutdown` method;
+  * Expose the `Glean.testRestGlean` API.
+* [#822](https://github.com/mozilla/glean.js/pull/822): Fix API reference docs build step.
+* [#825](https://github.com/mozilla/glean.js/pull/825): Accept `architecture` and `osVersion` as initialization parameters in Qt. In Qt these values are not easily available from the environment.
 
 # v0.22.0 (2021-10-06)
 
@@ -8,6 +22,9 @@
 
 * [#796](https://github.com/mozilla/glean.js/pull/796): Support setting the `app_channel` metric.
   - As described in ["Release channels"](https://mozilla.github.io/glean/book/reference/general/initializing.html?highlight=channel#release-channels).
+* [#799](https://github.com/mozilla/glean.js/pull/799): Make sure Glean does not do anything else in case initialization errors.
+  - This may happen in case there is an error creating the databases. Mostly an issue on Qt/QML where we use a SQLite database which can throw errors on initialization.
+* [#799](https://github.com/mozilla/glean.js/pull/799): Provide stack traces when logging errors.
 
 # v0.21.1 (2021-09-30)
 
@@ -21,6 +38,9 @@
 
 * [#754](https://github.com/mozilla/glean.js/pull/754): Change target ECMAScript target from 2015 to 2016 when building for Qt.
 * [#779](https://github.com/mozilla/glean.js/pull/779): Add a number of workarounds for the Qt Javascript engine.
+
+* [#775](https://github.com/mozilla/glean.js/pull/775): Disallow calling test only methods outside of test mode.
+  * NOTE: Test mode is set once the API `Glean.testResetGlean` is called.
 
 # v0.20.0 (2021-09-17)
 

@@ -29,7 +29,7 @@ class BrowserUploader extends Uploader {
       // If we time out and call controller.abort,
       // the fetch API will throw a DOMException with name "AbortError".
       if (e instanceof DOMException) {
-        log(LOG_TAG, ["Timeout while attempting to upload ping.\n", e.message], LoggingLevel.Error);
+        log(LOG_TAG, ["Timeout while attempting to upload ping.\n", e], LoggingLevel.Error);
       } else if (e instanceof TypeError) {
         // From MDN: "A fetch() promise will reject with a TypeError
         // when a network error is encountered or CORS is misconfigured on the server-side,
@@ -37,9 +37,9 @@ class BrowserUploader extends Uploader {
         // See: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch#checking_that_the_fetch_was_successful
         //
         // We will treat this as we treat server / network errors in this case.
-        log(LOG_TAG, ["Network error while attempting to upload ping.\n", e.message], LoggingLevel.Error);
+        log(LOG_TAG, ["Network error while attempting to upload ping.\n", e], LoggingLevel.Error);
       } else {
-        log(LOG_TAG, ["Unknown error while attempting to upload ping.\n", JSON.stringify(e)], LoggingLevel.Error);
+        log(LOG_TAG, ["Unknown error while attempting to upload ping.\n", e], LoggingLevel.Error);
       }
 
       clearTimeout(timeout);

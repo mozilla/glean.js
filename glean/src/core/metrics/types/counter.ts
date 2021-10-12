@@ -4,11 +4,14 @@
 
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
+import { testOnly } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { isUndefined, isInteger } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
+
+const LOG_TAG = "core.metrics.CounterMetricType";
 
 export class CounterMetric extends Metric<number, number> {
   constructor(v: unknown) {
@@ -120,12 +123,11 @@ class CounterMetricType extends MetricType {
    *
    * This doesn't clear the stored value.
    *
-   * TODO: Only allow this function to be called on test mode (depends on Bug 1682771).
-   *
    * @param ping the ping from which we want to retrieve this metrics value from.
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
+  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
     let metric: number | undefined;
     await Context.dispatcher.testLaunch(async () => {

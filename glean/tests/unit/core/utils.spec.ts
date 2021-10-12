@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
+import { Context } from "../../../src/core/context";
 
 import * as utils from "../../../src/core/utils";
 
@@ -133,5 +134,22 @@ describe("utils", function() {
     // Valid values
     assert.strictEqual(utils.validateHeader("valid-value"), true);
     assert.strictEqual(utils.validateHeader("-also-valid-value"), true);
+  });
+
+  it("methods decorated with testOnly decorator are no-op outside of test mode", async function () {
+    class Greeter {
+      @utils.testOnly()
+      testOnlyGreet(): Promise<string | undefined> {
+        return Promise.resolve("Greetings!");
+      }
+    }
+
+    const greeter = new Greeter();
+
+    Context.testing = false;
+    assert.strictEqual(await greeter.testOnlyGreet(), undefined);
+
+    Context.testing = true;
+    assert.strictEqual(await greeter.testOnlyGreet(), "Greetings!");
   });
 });

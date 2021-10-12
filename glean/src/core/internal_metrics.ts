@@ -114,8 +114,8 @@ export class CoreMetrics {
     await this.initializeClientId();
     await this.initializeFirstRunDate();
     await StringMetricType._private_setUndispatched(this.os, await platform.info.os());
-    await StringMetricType._private_setUndispatched(this.osVersion, await platform.info.osVersion());
-    await StringMetricType._private_setUndispatched(this.architecture, await platform.info.arch());
+    await StringMetricType._private_setUndispatched(this.osVersion, await platform.info.osVersion(config.osVersion));
+    await StringMetricType._private_setUndispatched(this.architecture, await platform.info.arch(config.architecture));
     await StringMetricType._private_setUndispatched(this.locale, await platform.info.locale());
     await StringMetricType._private_setUndispatched(this.appBuild, config.appBuild || "Unknown");
     await StringMetricType._private_setUndispatched(this.appDisplayVersion, config.appDisplayVersion || "Unknown");

@@ -39,16 +39,18 @@ interface PlatformInfo {
   /**
    * Gets and returns the current OS system version.
    *
+   * @param fallback A fallback value in case Glean is unable to retrive this value from the environment.
    * @returns The current OS version.
    */
-  osVersion(): Promise<string>;
+  osVersion(fallback?: string): Promise<string>;
 
   /**
    * Gets and returnst the current system architecture.
    *
+   * @param fallback A fallback value in case Glean is unable to retrive this value from the environment.
    * @returns The current system architecture.
    */
-  arch(): Promise<string>;
+  arch(fallback?: string): Promise<string>;
 
   /**
    * Gets and returnst the current system / browser locale.

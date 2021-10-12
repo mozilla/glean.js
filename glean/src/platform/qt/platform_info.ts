@@ -36,14 +36,14 @@ const QtPlatformInfo: PlatformInfo = {
     }
   },
 
-  async osVersion(): Promise<string> {
+  async osVersion(fallback?: string): Promise<string> {
     // This data point is not available in Qt QML.
-    return Promise.resolve("Unknown");
+    return Promise.resolve(fallback || "Unknown");
   },
 
-  async arch(): Promise<string> {
+  async arch(fallback?: string): Promise<string> {
     // This data point is not available in Qt QML.
-    return Promise.resolve("Unknown");
+    return Promise.resolve(fallback || "Unknown");
   },
 
   async locale(): Promise<string> {

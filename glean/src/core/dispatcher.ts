@@ -12,17 +12,17 @@ export const enum DispatcherState {
   //
   // When the dispatcher is in this state it will not enqueue
   // more than `maxPreInitQueueSize` tasks.
-  Uninitialized,
+  Uninitialized = "Uninitialized",
   // There are no commands queued and the dispatcher is idle.
-  Idle,
+  Idle = "Idle",
   // The dispatcher is currently processing queued tasks.
-  Processing,
+  Processing = "Processing",
   // The dispatcher is stopped, tasks queued will not be immediatelly processed.
-  Stopped,
+  Stopped = "Stopped",
   // The dispatcher is shutdown, attempting to queue tasks while in this state is a no-op.
   //
   // This state is irreversible.
-  Shutdown,
+  Shutdown = "Shutdown",
 }
 
 // The possible commands to be processed by the dispatcher.
@@ -40,6 +40,12 @@ const enum Commands {
   //
   // Unless unavoidable, prefer using the normal `Task`.
   PersistentTask = "PersistentTask",
+  // Same as the `Task` command, but only tasks passed to `flushInit` to be perfomed
+  // as the first task ever are considered `InitTask`. This task is special because if
+  // it fails, the dispatcher will not proceed executing any other tasks and will shutdown.
+  //
+  // This command is always followed by a concrete task for the dispatcher to execute.
+  InitTask = "InitTask",
   // The dispatcher should stop executing the queued tasks.
   Stop = "Stop",
   // The dispatcher should stop executing the queued tasks and clear the queue.
@@ -52,17 +58,18 @@ const enum Commands {
 
 // A task the dispatcher knows how to execute.
 type Task = () => Promise<void>;
+type TaskCommands = Commands.Task | Commands.TestTask | Commands.PersistentTask | Commands.InitTask;
 
 // An executable command.
 type Command = {
   task: Task,
-  command: Commands.Task | Commands.PersistentTask,
+  command: Exclude<TaskCommands, Commands.TestTask>,
 } | {
   resolver: (value: void | PromiseLike<void>) => void,
   task: Task,
   command: Commands.TestTask,
 } | {
-  command: Exclude<Commands, Commands.Task | Commands.TestTask | Commands.PersistentTask>,
+  command: Exclude<Commands, TaskCommands>,
 };
 
 /**
@@ -99,12 +106,15 @@ class Dispatcher {
    * Executes a task safely, catching any errors.
    *
    * @param task The  task to execute.
+   * @returns Whether or not the task was executed successfully.
    */
-  private async executeTask(task: Task): Promise<void> {
+  private async executeTask(task: Task): Promise<boolean> {
     try {
       await task();
+      return true;
     } catch(e) {
-      log(this.logTag, ["Error executing task:", JSON.stringify(e)], LoggingLevel.Error);
+      log(this.logTag, ["Error executing task:", e], LoggingLevel.Error);
+      return false;
     }
   }
 
@@ -142,18 +152,32 @@ class Dispatcher {
         this.queue = this.queue.filter(c =>
           [Commands.PersistentTask, Commands.Shutdown].includes(c.command)
         );
-        nextCommand = this.getNextCommand();
-        continue;
+        break;
       case (Commands.TestTask):
         await this.executeTask(nextCommand.task);
         nextCommand.resolver();
-        nextCommand = this.getNextCommand();
-        continue;
+        break;
+      case(Commands.InitTask):
+        const result = await this.executeTask(nextCommand.task);
+        if (!result) {
+          log(
+            this.logTag,
+            [
+              "Error initializing dispatcher, won't execute anything further.",
+              "There might be more error logs above."
+            ],
+            LoggingLevel.Error
+          );
+          this.clear();
+          void this.shutdown();
+        }
+        break;
       case(Commands.PersistentTask):
       case(Commands.Task):
         await this.executeTask(nextCommand.task);
-        nextCommand = this.getNextCommand();
+        break;
       }
+      nextCommand = this.getNextCommand();
     }
   }
 
@@ -277,6 +301,7 @@ class Dispatcher {
    * This is a no-op in case the dispatcher is not in an uninitialized state.
    *
    * @param task Optional task to execute before any of the tasks enqueued prior to init.
+   *        Note: if this task throws, the dispatcher will be shutdown and no other tasks will be executed.
    */
   flushInit(task?: Task): void {
     if (this.state !== DispatcherState.Uninitialized) {
@@ -291,7 +316,7 @@ class Dispatcher {
     if (task) {
       this.launchInternal({
         task,
-        command: Commands.Task
+        command: Commands.InitTask
       }, true);
     }
 

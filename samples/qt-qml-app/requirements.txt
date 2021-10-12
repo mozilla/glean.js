@@ -1,3 +1,0 @@
-PySide2==5.15.2
-shiboken2==5.15.2
-glean_parser==4.1.1

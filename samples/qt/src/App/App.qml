@@ -4,20 +4,18 @@
 
 import QtQuick 2.0
 import QtQuick.Controls 2.0
-import QtGraphicalEffects 1.15
 
-import org.mozilla.Glean 0.22;
-import generated 0.22;
+import org.mozilla.Glean 0.23
+import generated 0.23
 
 Rectangle {
   id: screen
-  width: 490
-  height: 490
 
   property int displayText: 0
 
   Button {
     id: record
+    objectName: "record"
     text: "Record"
     anchors.horizontalCenter: ping.horizontalCenter
     anchors.bottom: ping.bottom
@@ -26,13 +24,13 @@ Rectangle {
     palette.button: "#f1f1f1"
     font.bold: true
     onClicked: () => {
-      console.log("Adding to the `button_clicked` metric.");
       Sample.buttonClicked.add();
     }
   }
 
   Button {
     id: ping
+    objectName: "ping"
     text: "Submit ping"
     anchors.centerIn: parent
     palette.buttonText: "white"
@@ -42,15 +40,6 @@ Rectangle {
       screen.displayText = 1;
       Pings.submission.submit();
     }
-  }
-
-  DropShadow {
-    anchors.fill: ping
-    horizontalOffset: 7
-    verticalOffset: -7
-    radius: 0
-    color: "#0059ab"
-    source: ping
   }
 
   Text {
@@ -63,13 +52,9 @@ Rectangle {
   }
 
   Component.onCompleted: {
-    // Initialize Glean.
+    // Glean.setDebugViewTag("");
     Glean.setLogPings(true);
-    // Glean.setDebugViewTag("pyside-qml-sample");
     Glean.initialize("qt-qml-app", true);
     Sample.appStarted.set();
-    // !IMPORTANT!
-    // If this message is changed the check in bin/qt-js-check **must** be updated.
-    console.log("Initialized Glean succesfully.");
   }
 }
