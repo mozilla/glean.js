@@ -29,6 +29,15 @@ export interface ConfigurationInterface {
   plugins?: Plugin[],
   // The HTTP client implementation to use for uploading pings.
   httpClient?: Uploader,
+  // Qt-only fields
+  //
+  // These values are not easily accessible from QML,
+  // so we expose them as init fields for the caller to fill them out.
+  //
+  // The architecture of the device (e.g. "arm", "x86").
+  readonly architecture?: string,
+  // The user-visible version of the operating system (e.g. "1.2.3").
+  readonly osVersion?: string,
 }
 
 // Important: the `Configuration` should only be used internally by the Glean singleton.
@@ -41,6 +50,11 @@ export class Configuration implements ConfigurationInterface {
   readonly appDisplayVersion?: string;
   // The server pings are sent to.
   readonly serverEndpoint: string;
+  // The architecture of the device (e.g. "arm", "x86").
+  readonly architecture?: string;
+  // The user-visible version of the operating system (e.g. "1.2.3").
+  readonly osVersion?: string;
+
   // Debug configuration.
   debug: DebugOptions;
   // The HTTP client implementation to use for uploading pings.
@@ -50,6 +64,8 @@ export class Configuration implements ConfigurationInterface {
     this.channel = config?.channel;
     this.appBuild = config?.appBuild;
     this.appDisplayVersion = config?.appDisplayVersion;
+    this.architecture = config?.architecture;
+    this.osVersion = config?.osVersion;
 
     this.debug = Configuration.sanitizeDebugOptions(config?.debug);
 
