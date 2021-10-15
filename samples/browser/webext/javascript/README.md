@@ -17,7 +17,7 @@ Running the example requires Python 3.
 npm run link:glean
 ```
 
-2. Build this sample. On this `web-extension/typescript` folder run:
+2. Build this sample. On this `webext/javascript` folder run:
 
 ```bash
 npm run build
@@ -25,7 +25,7 @@ npm run build
 
 > **Note** This operation will take some time on the first run, because it will create a virtual environment for running the glean-parser.
 
-4. Load the web extension on your browser of choice.
+3. Load the web extension on your browser of choice.
 
   - **Firefox**
     1. Go to [about:debugging#/runtime/this-firefox](about:debugging#/runtime/this-firefox);
@@ -37,6 +37,6 @@ npm run build
   - **Chromium-based browsers**
     1. Go to [chrome://extensions](chrome://extensions);
     2. Click on `Load unpacked`;
-    3. Choose this `web-extension/typescript` folder;
+    3. Choose this `webext/javascript` folder;
     4. Click on `background page`;
     5. Try clicking on the little Glean logo that should have been added to your browsers toolbar.

@@ -3,10 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Storage from "./storage.js";
-import uploader from "./uploader.js";
+import uploader from "../uploader.js";
 import info from "./platform_info.js";
 
-import type Platform from "../index.js";
+import type Platform from "../../index.js";
 
 const WebExtPlatform: Platform = {
   Storage,
