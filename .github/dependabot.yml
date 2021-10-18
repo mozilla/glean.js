@@ -5,11 +5,11 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
-    directory: "/samples/web-extension/typescript"
+    directory: "/samples/browser/webext/typescript"
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
-    directory: "/samples/web-extension/javascript"
+    directory: "/samples/browser/webext/javascript"
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"

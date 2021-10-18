@@ -5,7 +5,7 @@
   "main": "dist/bundle.js",
   "type": "module",
   "scripts": {
-    "link:glean": "cd ../../../glean && npm i && npm run build && npm link && cd ../samples/web-extension/typescript && npm link @mozilla/glean",
+    "link:glean": "cd ../../../../glean && npm i && npm run build && npm link && cd ../samples/browser/webext/typescript && npm link @mozilla/glean",
     "glean": "glean translate src/metrics.yaml src/pings.yaml -f typescript -o src/generated",
     "build": "npm run glean && webpack --config webpack.config.js --mode production",
     "dev": "npm run glean && webpack --watch --config webpack.config.js --mode development",

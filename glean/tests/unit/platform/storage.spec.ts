@@ -10,7 +10,7 @@ import type Store from "../../../src/core/storage";
 
 import TestStore from "../../../src/platform/test/storage";
 import QMLStore from "../../../src/platform/qt/storage";
-import WebExtStore from "../../../src/platform/webext/storage";
+import WebExtStore from "../../../src/platform/browser/webext/storage";
 import type { JSONValue } from "../../../src/core/utils";
 import { isUndefined } from "../../../src/core/utils";
 

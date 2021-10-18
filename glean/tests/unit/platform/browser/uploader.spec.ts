@@ -6,7 +6,7 @@ import "jsdom-global/register";
 import assert from "assert";
 import sinon from "sinon";
 
-import BrowserUploader from "../../../../src/platform/webext/uploader";
+import BrowserUploader from "../../../../src/platform/browser/uploader";
 import type { JSONObject } from "../../../../src/core/utils";
 import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 

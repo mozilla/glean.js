@@ -11,7 +11,8 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./uploader": "./dist/core/upload/uploader.js",
     "./node": "./dist/index/node.js",
-    "./webext": "./dist/index/webext.js"
+    "./webext": "./dist/index/webext.js",
+    "./web": "./dist/index/web.js"
   },
   "typesVersions": {
     "*": {
@@ -20,6 +21,9 @@
       ],
       "node": [
         "./dist/types/index/node.d.ts"
+      ],
+      "web": [
+        "./dist/types/index/web.d.ts"
       ],
       "private/ping": [
         "./dist/types/core/pings/ping_type.d.ts"
