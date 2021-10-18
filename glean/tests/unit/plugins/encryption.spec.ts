@@ -4,9 +4,7 @@
 
 import assert from "assert";
 import sinon from "sinon";
-import generateKeyPair from "jose/util/generate_key_pair";
-import fromKeyLike from "jose/jwk/from_key_like";
-import compactDecrypt from "jose/jwe/compact/decrypt";
+import { generateKeyPair, exportJWK, compactDecrypt } from "jose";
 
 import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings/ping_type";
@@ -93,7 +91,7 @@ describe("PingEncryptionPlugin", function() {
       true,
       {
         plugins: [
-          new PingEncryptionPlugin(await fromKeyLike(publicKey))
+          new PingEncryptionPlugin(await exportJWK(publicKey))
         ],
         debug: {
           logPings: true
