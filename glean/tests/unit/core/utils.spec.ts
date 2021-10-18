@@ -97,8 +97,9 @@ describe("utils", function() {
     assert.strictEqual(utils.isInteger(-10), true);
     assert.strictEqual(utils.isInteger(0), true);
     assert.strictEqual(utils.isInteger(-100000), true);
-    assert.strictEqual(utils.isInteger(99999999999999999999999), true);
+    assert.strictEqual(utils.isInteger(999999999999999), true);
     assert.strictEqual(utils.isInteger(5.0), true);
+    // eslint-disable-next-line @typescript-eslint/no-loss-of-precision
     assert.strictEqual(utils.isInteger(5.0000000000000001), true);
   });
 

@@ -143,6 +143,8 @@ describe("StringListMetric", function() {
     const testString = "test";
     const testStringList = Array(MAX_LIST_LENGTH - 1).fill(testString);
 
+    // We create the array on the above line, this is fine. We know it is a string array.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     metric.set(testStringList);
     metric.add(testString);
     assert.strictEqual(

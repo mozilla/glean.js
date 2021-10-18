@@ -193,6 +193,7 @@ describe("PingMaker", function() {
 
     // Need to get the second argument of the console.info call,
     // because the first one contains the log tag.
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const loggedPayload = JSON.parse(consoleSpy.lastCall.args[1]) as JSONObject;
 
     const recordedPing = Object.fromEntries(
