@@ -81,7 +81,7 @@ jobs:
           name: Build docs
           command: npm --prefix ./glean run build:docs
 
-  webext-sample-tests:
+  sample-webext-test:
     docker:
       - image: cimg/python:3.8.8-node
     steps:
@@ -103,7 +103,7 @@ jobs:
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/browser/webext run test
 
-  node-sample-tests:
+  sample-node-test:
     docker:
       - image: cimg/python:3.8.8-node
     steps:
@@ -125,7 +125,7 @@ jobs:
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/node run test
 
-  qt-sample-tests:
+  sample-qt-test:
     docker:
       - image: cimg/python:3.8.8-node
     steps:
@@ -238,20 +238,30 @@ workflows:
   ci:
     jobs:
       - lint
-      - test
-      - build
-      - webext-sample-tests
-      - node-sample-tests
-      - qt-sample-tests
+      - build:
+          requires:
+            - lint
+      - test:
+          requires:
+            - build
+      - sample-webext-test:
+          requires:
+            - test
+      - sample-node-test:
+          requires:
+            - test
+      - sample-qt-test:
+          requires:
+            - test
       - hold:
           type: approval
           requires:
             - lint
-            - test
             - build
-            - webext-sample-tests
-            - node-sample-tests
-            - qt-sample-tests
+            - test
+            - sample-webext-test
+            - sample-node-test
+            - sample-qt-test
           filters:
             branches:
               ignore:
