@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.23.0...main)
 
+* [#856](https://github.com/mozilla/glean.js/pull/856): Expose the `@mozilla/glean/web` entry point for using Glean.js in websites.
+
 # v0.23.0 (2021-10-12)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.22.0...v0.23.0)
