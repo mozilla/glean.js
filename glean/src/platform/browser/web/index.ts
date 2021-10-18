@@ -4,6 +4,7 @@
 
 import type Platform from "../../index.js";
 import uploader from "../uploader.js";
+import info from "./platform_info.js";
 
 // We will still use the TestPlatform as a placeholder
 // for the other web modules that have not been implemented yet.
@@ -13,6 +14,7 @@ import TestPlatform from "../../test/index.js";
 const WebPlaftorm: Platform = {
   ...TestPlatform,
   uploader,
+  info,
   name: "web"
 };
 
