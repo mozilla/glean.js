@@ -89,34 +89,19 @@ jobs:
       - run:
           name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
-      # JS sample related jobs
-      - run:
-          name: Install JavaScript dependencies for the JS web extension sample
-          command: |
-            npm --prefix ./samples/browser/webext/javascript install
-            npm --prefix ./samples/browser/webext/javascript run link:glean
-      - run:
-          name: Build the JS web extension sample
-          command: |
-            npm --prefix ./samples/browser/webext/javascript run build
-      - run:
-          name: Run JS web extension sample test
-          command: |
-            export PATH=.:$PATH && npm --prefix ./samples/browser/webext/javascript run test
-      # TS sample related jobs
       - run:
           name: Install Typescript dependencies for the TS web extension sample
           command: |
-            npm --prefix ./samples/browser/webext/typescript install
-            npm --prefix ./samples/browser/webext/typescript run link:glean
+            npm --prefix ./samples/browser/webext install
+            npm --prefix ./samples/browser/webext run link:glean
       - run:
           name: Build the TS web extension sample
           command: |
-            npm --prefix ./samples/browser/webext/typescript run build
+            npm --prefix ./samples/browser/webext run build
       - run:
           name: Run TS web extension sample test
           command: |
-            export PATH=.:$PATH && npm --prefix ./samples/browser/webext/typescript run test
+            export PATH=.:$PATH && npm --prefix ./samples/browser/webext run test
 
   node-sample-tests:
     docker:
