@@ -179,7 +179,7 @@ class PingUploader implements PingsDatabaseObserver {
       if (ping.retries >= this.policy.maxRecoverableFailures) {
         log(
           LOG_TAG,
-          `Reached maximum recoverable failures for ping "${JSON.stringify(ping.name)}". You are done.`,
+          `Reached maximum recoverable failures for ping "${ping.identifier}". You are done.`,
           LoggingLevel.Info
         );
         this.rateLimiter.stop();
