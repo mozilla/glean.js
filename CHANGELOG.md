@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.23.0...main)
 
+* [#856](https://github.com/mozilla/glean.js/pull/860): Implement the `PlatformInfo` module for the web platform.
+  * Out of `os`, `os_version`, `architecture` and `locale`, on the web platform, we can only retrive `os` and `locale` information. The other information will default to the known value `Unknown` for all pings coming from this platform.
 * [#856](https://github.com/mozilla/glean.js/pull/856): Expose the `@mozilla/glean/web` entry point for using Glean.js in websites.
 
 # v0.23.0 (2021-10-12)
