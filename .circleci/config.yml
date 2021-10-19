@@ -244,24 +244,24 @@ workflows:
       - test:
           requires:
             - build
-      - sample-webext-test:
-          requires:
-            - test
-      - sample-node-test:
-          requires:
-            - test
-      - sample-qt-test:
-          requires:
-            - test
+      # - sample-webext-test:
+      #     requires:
+      #       - test
+      # - sample-node-test:
+      #     requires:
+      #       - test
+      # - sample-qt-test:
+      #     requires:
+      #       - test
       - hold:
           type: approval
           requires:
             - lint
             - build
             - test
-            - sample-webext-test
-            - sample-node-test
-            - sample-qt-test
+            # - sample-webext-test
+            # - sample-node-test
+            # - sample-qt-test
           filters:
             branches:
               ignore:

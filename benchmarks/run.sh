@@ -35,7 +35,7 @@ build_benchmarks false
 #############################
 
 tmpdir=$(mktemp -d)
-git worktree add --force "${tmpdir}" main
+git worktree add --force "${tmpdir}" 1732350-benchmarks-update
 
 WORKSPACE_ROOT=${tmpdir}
 pushd "${tmpdir}"

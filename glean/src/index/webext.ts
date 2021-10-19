@@ -5,5 +5,11 @@
 import platform from "../platform/browser/webext/index.js";
 import base from "./base.js";
 
+// Import a random package to change the size.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import * as fflate from "fflate";
+console.log(JSON.stringify(fflate));
+
 export { ErrorType } from "../core/error/error_type.js";
 export default base(platform);

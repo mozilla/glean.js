@@ -5,5 +5,11 @@
 import platform from "../platform/browser/web/index.js";
 import base from "./base.js";
 
+// Import a random package to change the size.
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import * as jose from "jose";
+console.log(JSON.stringify(jose));
+
 export { ErrorType } from "../core/error/error_type.js";
 export default base(platform);
