@@ -2,6 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+// GLEAN will be conditoned on the PLATFORM environment variable.
+// Check `./webpack.config.js` for more info.
+import Glean from "GLEAN";
 // Metrics
 import BooleanMetricType from "@mozilla/glean/private/metrics/boolean";
 import CounterMetricType from "@mozilla/glean/private/metrics/counter";
