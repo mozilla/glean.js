@@ -16,7 +16,7 @@ const target = process.env.PLATFORM === "node" ? "node"
 
 if (target === null) {
   throw new Error(
-    `Attempted to build benchmars script for unknown platform: ${process.env.PLATFORM}`
+    `Attempted to build benchmarks script for unknown platform: ${process.env.PLATFORM}`
   );
 }
 
