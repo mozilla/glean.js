@@ -6,7 +6,7 @@ import log, { LoggingLevel } from "../../core/log.js";
 import Uploader from "../../core/upload/uploader.js";
 import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus, UploadResult } from "../../core/upload/uploader.js";
 
-const LOG_TAG = "platform.webext.Uploader";
+const LOG_TAG = "platform.browser.Uploader";
 
 class BrowserUploader extends Uploader {
   async post(url: string, body: string | Uint8Array, headers: Record<string, string> = {}): Promise<UploadResult> {
