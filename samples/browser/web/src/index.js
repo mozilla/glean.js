@@ -10,7 +10,7 @@ import * as metrics from "./generated/sample.js";
 
 Glean.setLogPings(true);
 Glean.setDebugViewTag("glean-from-website");
-Glean.initialize("glean-sample-website", true, { serverEndpoint: "https://cors-anywhere.herokuapp.com/corsdemo/https://incoming.telemetry.mozilla.org"});
+Glean.initialize("glean-sample-website", true);
 
 metrics.pageLoaded.set();
 
