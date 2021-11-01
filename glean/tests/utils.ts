@@ -73,7 +73,7 @@ export class WaitableUploader extends Uploader {
         resolve(result);
       };
 
-      setTimeout(() => reject(), 2000);
+      setTimeout(() => reject(), 1000);
     });
   }
 
@@ -95,7 +95,7 @@ export class WaitableUploader extends Uploader {
         resolve(pingBody as JSONObject);
       };
 
-      setTimeout(() => reject(), 2000);
+      setTimeout(() => reject(), 1000);
     });
   }
 
