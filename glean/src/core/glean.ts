@@ -271,6 +271,7 @@ class Glean {
       // Clear application lifetime metrics.
       await Context.metricsDatabase.clear(Lifetime.Application);
 
+      Context.uploadEnabled = uploadEnabled;
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
       if (uploadEnabled) {
