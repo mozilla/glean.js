@@ -569,6 +569,22 @@ describe("Glean", function() {
     // We expect two events. One that was recorded when we recorded an event on the custom ping
     // for the first time and another once we re-initialized.
     assert.strictEqual((await restartedEvent.testGetValue("custom"))?.length, 2);
+  });
 
+  it("glean is not initialized if uploadEnabled or applicationId are not the right type", async function() {
+    await Glean.testUninitialize();
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    await Glean.testResetGlean(["not", "string"], true);
+    assert.strictEqual(Context.initialized, false);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    await Glean.testResetGlean(testAppId, "not boolean");
+    assert.strictEqual(Context.initialized, false);
+
+    await Glean.testResetGlean(testAppId, true);
+    assert.strictEqual(Context.initialized, true);
   });
 });
