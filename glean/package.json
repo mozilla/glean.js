@@ -106,7 +106,7 @@
     "eslint-plugin-notice": "^0.9.10",
     "geckodriver": "^2.0.1",
     "gh-pages": "^3.2.3",
-    "jsdom": "18.0.0",
+    "jsdom": "18.0.1",
     "jsdom-global": "3.0.2",
     "jsonschema": "^1.4.0",
     "madge": "^5.0.1",
