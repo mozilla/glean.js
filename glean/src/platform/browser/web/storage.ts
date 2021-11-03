@@ -32,35 +32,36 @@ class IDBWrapper {
   }
 
   private static async withDatabase(fn: () => Promise<void>) {
-    if (!IDBWrapper.instance.db) {
-      return new Promise<void>((resolve, reject) => {
-        // `self` will work in Node.js and in the browser.
-        // We want this to work in Node.js **only** for testing purposes.
-        const openRequest = self.indexedDB.open(DATABASE_NAME);
-
-        // If opening the database errors, Glean.initialize will throw and nothing else will happen.
-        // TODO: Figure out if we should actually retry here (Bug 1737595).
-        openRequest.onerror = () => {
-          log(LOG_TAG, ["Unable to open Glean database.", openRequest.error]);
-          reject(openRequest.error);
-        };
-
-        openRequest.onsuccess = () => {
-          IDBWrapper.instance.db = openRequest.result;
-
-          fn()
-            .then(() => resolve())
-            .catch(e => reject(e));
-        };
-
-        // When first creating the Database create also our object store.
-        openRequest.onupgradeneeded = () => {
-          openRequest.result.createObjectStore(STORE_NAME);
-        };
-      });
-    } else {
-      await fn();
+    if (IDBWrapper.instance.db) {
+      return fn();
     }
+
+    return new Promise<void>((resolve, reject) => {
+      // `self` will work in Node.js and in the browser.
+      // In the browser it is the same as `window`, in Node.js it is the same as `global`.
+      // We want this to work in Node.js **only** for testing purposes.
+      const openRequest = self.indexedDB.open(DATABASE_NAME);
+
+      // If opening the database errors, Glean.initialize will throw and nothing else will happen.
+      // TODO: Figure out if we should actually retry here (Bug 1737595).
+      openRequest.onerror = () => {
+        log(LOG_TAG, ["Unable to open Glean database.", openRequest.error]);
+        reject(openRequest.error);
+      };
+
+      openRequest.onsuccess = () => {
+        IDBWrapper.instance.db = openRequest.result;
+
+        fn()
+          .then(() => resolve())
+          .catch(e => reject(e));
+      };
+
+      // When first creating the Database create also our object store.
+      openRequest.onupgradeneeded = () => {
+        openRequest.result.createObjectStore(STORE_NAME);
+      };
+    });
   }
 
   static async withStoredValue(
@@ -82,7 +83,7 @@ class IDBWrapper {
           transaction.onerror = transaction.onabort = e => reject(e);
         });
 
-        const store = transaction?.objectStore(STORE_NAME);
+        const store = transaction.objectStore(STORE_NAME);
 
         const storedValue = await new Promise((resolve, reject) => {
           const req = store.get(key);
