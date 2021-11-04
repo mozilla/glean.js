@@ -4,12 +4,14 @@
 
 import assert from "assert";
 import sqlite3 from "sqlite3";
+import "fake-indexeddb/auto";
 
 import { firefoxDriver, setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
 import type Store from "../../../src/core/storage";
 
 import TestStore from "../../../src/platform/test/storage";
 import QMLStore from "../../../src/platform/qt/storage";
+import WebStore from "../../../src/platform/browser/web/storage";
 import WebExtStore from "../../../src/platform/browser/webext/storage";
 import type { JSONValue } from "../../../src/core/utils";
 import { isUndefined } from "../../../src/core/utils";
@@ -52,7 +54,7 @@ class MockQMLStore extends QMLStore {
 // a function that will initialize and return the store when done.
 const stores: {
   [store: string]: {
-    initializeStore: () => Store,
+    initializeStore: () => Store | Promise<Store>,
     before?: () => Promise<void>,
     afterAll?: () => Promise<void>
   }
@@ -66,6 +68,14 @@ const stores: {
       QMLMockDB.close();
       return Promise.resolve();
     }
+  },
+  "WebStore": {
+    initializeStore: async (): Promise<WebStore> => {
+      const store = new WebStore("test");
+      // Clear the store before starting.
+      await store.delete([]);
+      return store;
+    },
   },
   "WebExtStore": {
     initializeStore: (): WebExtStore => new WebExtStore("test"),
@@ -132,7 +142,7 @@ for (const store in stores) {
 
       before(async function () {
         !isUndefined(currentStore.before) && await currentStore.before();
-        store = currentStore.initializeStore();
+        store = await currentStore.initializeStore();
         await store.update(["bip", "bling"], () => false);
         await store.update(["bip", "bop", "blip"], () => "something, something!");
         await store.update(["bip", "bop", "blergh"], () => "don't panic!");
@@ -181,7 +191,7 @@ for (const store in stores) {
 
       before(async function() {
         !isUndefined(currentStore.before) && await currentStore.before();
-        store = currentStore.initializeStore();
+        store = await currentStore.initializeStore();
       });
 
       it("Attempting to update a non-existent entry works", async function () {
@@ -221,7 +231,7 @@ for (const store in stores) {
 
       before(async function() {
         !isUndefined(currentStore.before) && await currentStore.before();
-        store = currentStore.initializeStore();
+        store = await currentStore.initializeStore();
       });
 
       it("Attempting to delete an existing index works", async function () {

@@ -5,14 +5,10 @@
 import type Platform from "../../index.js";
 import uploader from "../uploader.js";
 import info from "./platform_info.js";
-
-// We will still use the TestPlatform as a placeholder
-// for the other web modules that have not been implemented yet.
-// See Bug 1726726 (Storage).
-import TestPlatform from "../../test/index.js";
+import Storage from "./storage.js";
 
 const WebPlaftorm: Platform = {
-  ...TestPlatform,
+  Storage,
   uploader,
   info,
   name: "web"
