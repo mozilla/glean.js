@@ -116,7 +116,7 @@
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
     "selenium-webdriver": "^4.0.0-alpha.8",
-    "sinon": "^11.0.0",
+    "sinon": "^12.0.0",
     "sqlite3": "^5.0.2",
     "terser-webpack-plugin": "^5.2.4",
     "ts-loader": "^9.0.1",
