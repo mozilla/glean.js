@@ -8,7 +8,7 @@ import { Configuration } from "./config.js";
 import MetricsDatabase from "./metrics/database.js";
 import PingsDatabase from "./pings/database.js";
 import PingUploader from "./upload/index.js";
-import { isUndefined, sanitizeApplicationId } from "./utils.js";
+import { isBoolean, isString, isUndefined, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
 import EventsDatabase from "./metrics/events_database/index.js";
 import UUIDMetricType from "./metrics/types/uuid.js";
@@ -193,6 +193,24 @@ class Glean {
       return;
     }
 
+    if (!isString(applicationId)) {
+      log(
+        LOG_TAG,
+        "Unable to initialize Glean, applicationId must be a string.",
+        LoggingLevel.Error
+      );
+      return;
+    }
+
+    if (!isBoolean(uploadEnabled)) {
+      log(
+        LOG_TAG,
+        "Unable to initialize Glean, uploadEnabled must be a boolean.",
+        LoggingLevel.Error
+      );
+      return;
+    }
+
     if (applicationId.length === 0) {
       log(
         LOG_TAG,
@@ -205,7 +223,7 @@ class Glean {
     if (!Glean.instance._platform) {
       log(
         LOG_TAG,
-        "Unable to initialize Glean, environment has not been set.",
+        "Unable to initialize Glean, platform has not been set.",
         LoggingLevel.Error
       );
       return;
@@ -253,6 +271,7 @@ class Glean {
       // Clear application lifetime metrics.
       await Context.metricsDatabase.clear(Lifetime.Application);
 
+      Context.uploadEnabled = uploadEnabled;
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
       if (uploadEnabled) {
