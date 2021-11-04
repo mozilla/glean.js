@@ -19,13 +19,17 @@ export const enum KnownOperatingSystems {
   ChromeOS = "ChromeOS",
 
   // The following additions might be reported by Qt.
-  TvOS = "tvOS", // https://developer.apple.com/tvos/
+  TvOS = "TvOS", // https://developer.apple.com/tvos/
   Qnx = "QNX", // BlackBerry QNX
   Wasm = "Wasm",
 
   // The following additions might be reported by Node.js
-  SunOS = "sunOS",
+  SunOS = "SunOS",
   AIX = "IBM_AIX",
+
+  // Known reported values in the browser User-Agent
+  WatchOS = "WatchOS",
+  WebOS = "WebOS"
 }
 
 interface PlatformInfo {

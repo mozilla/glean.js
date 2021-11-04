@@ -272,11 +272,13 @@ describe("Glean", function() {
 
     assert.strictEqual(postSpy.callCount, 1);
     assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+    assert.strictEqual(Context.uploadEnabled, false);
 
     postSpy.resetHistory();
     Glean.setUploadEnabled(true);
     await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(postSpy.callCount, 0);
+    assert.strictEqual(Context.uploadEnabled, true);
   });
 
   it("deletion request is sent when toggling upload from on to off and the pings queue is full", async function() {
@@ -299,6 +301,7 @@ describe("Glean", function() {
 
     // This throws in case the ping is not sent.
     await waitForDeletionRequestPing;
+    assert.strictEqual(Context.uploadEnabled, false);
   });
 
   it("deletion request ping is sent when toggling upload status between runs", async function() {
@@ -317,35 +320,50 @@ describe("Glean", function() {
       }
     );
 
+    // If ping was not sent this promise will reject.
     await pingBody;
+    assert.strictEqual(Context.uploadEnabled, false);
   });
 
   it("deletion request ping is not sent if upload status does not change between runs", async function () {
-    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+    const mockUploader = new WaitableUploader();
+    let pingBody = mockUploader.waitForPingSubmission("deletion-request");
+    await Glean.testResetGlean(
+      testAppId,
+      true,
+      {
+        httpClient: mockUploader,
+      }
+    );
 
     Glean.setUploadEnabled(false);
-    await Context.dispatcher.testBlockOnQueue();
+    // If ping was not sent this promise will reject.
+    await pingBody;
+    assert.strictEqual(Context.uploadEnabled, false);
 
-    // A deletion request is sent
-    assert.strictEqual(postSpy.callCount, 1);
-    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+    // Can't clear stores here,
+    // otherwise Glean won't know upload has been disabled in a previous run.
+    await Glean.testUninitialize(false);
 
-    // Can't use testResetGlean here because it clears all stores
-    // and when there is no client_id at all stored, a deletion ping is also not set.
-    await Glean.testUninitialize();
-    await Glean.testInitialize(testAppId, false);
-    await Context.dispatcher.testBlockOnQueue();
-    // TODO: Make this nicer once we resolve Bug 1691033 is resolved.
-    await Glean["pingUploader"].testBlockOnPingsQueue();
+    pingBody = mockUploader.waitForPingSubmission("deletion-request");
+    await Glean.testInitialize(
+      testAppId,
+      false,
+      {
+        httpClient: mockUploader,
+      }
+    );
 
-    postSpy.resetHistory();
-    assert.strictEqual(postSpy.callCount, 0);
+    // If ping was not sent this promise will reject.
+    await assert.rejects(pingBody);
+    assert.strictEqual(Context.uploadEnabled, false);
   });
 
   it("deletion request ping is not sent when user starts Glean for the first time with upload disabled", async function () {
     const postSpy = sandbox.spy(Glean.platform.uploader, "post");
     await Glean.testResetGlean(testAppId, false);
     assert.strictEqual(postSpy.callCount, 0);
+    assert.strictEqual(Context.uploadEnabled, false);
   });
 
   it("setting log pings works before and after and on initialize", async function () {
@@ -569,6 +587,22 @@ describe("Glean", function() {
     // We expect two events. One that was recorded when we recorded an event on the custom ping
     // for the first time and another once we re-initialized.
     assert.strictEqual((await restartedEvent.testGetValue("custom"))?.length, 2);
+  });
 
+  it("glean is not initialized if uploadEnabled or applicationId are not the right type", async function() {
+    await Glean.testUninitialize();
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    await Glean.testResetGlean(["not", "string"], true);
+    assert.strictEqual(Context.initialized, false);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    await Glean.testResetGlean(testAppId, "not boolean");
+    assert.strictEqual(Context.initialized, false);
+
+    await Glean.testResetGlean(testAppId, true);
+    assert.strictEqual(Context.initialized, true);
   });
 });

@@ -2,10 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import CompactEncrypt from "jose/jwe/compact/encrypt";
-import parseJwk from "jose/jwk/parse";
-import calculateThumbprint from "jose/jwk/thumbprint";
-import type { JWK } from "jose/types";
+import type { JWK } from "jose";
+import { CompactEncrypt, importJWK, calculateJwkThumbprint } from "jose";
 
 import Plugin from "./index.js";
 import type { PingPayload } from "../core/pings/ping_payload.js";
@@ -43,11 +41,11 @@ class PingEncryptionPlugin extends Plugin<typeof CoreEvents["afterPingCollection
   }
 
   async action(payload: PingPayload): Promise<JSONObject> {
-    const key = await parseJwk(this.jwk, JWE_ALGORITHM);
+    const key = await importJWK(this.jwk, JWE_ALGORITHM);
     const encoder = new TextEncoder();
     const encodedPayload = await new CompactEncrypt(encoder.encode(JSON.stringify(payload)))
       .setProtectedHeader({
-        kid: await calculateThumbprint(this.jwk),
+        kid: await calculateJwkThumbprint(this.jwk),
         alg: JWE_ALGORITHM,
         enc: JWE_CONTENT_ENCODING,
         typ: "JWE",

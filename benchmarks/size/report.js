@@ -11,8 +11,15 @@ import { request } from "@octokit/request";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
+// @mozilla/glean/webext
 import webextStats from "../dist/size/webext/report.json";
 import mainWebextStats from "../dist/size/webext/main/report.json";
+// @mozilla/glean/web
+import webStats from "../dist/size/web/report.json";
+import mainWebStats from "../dist/size/web/main/report.json";
+// @mozilla/glean/node
+import nodeStats from "../dist/size/node/report.json";
+import mainNodeStats from "../dist/size/node/main/report.json";
 
 // The Qt bundle size is special, because the Qt build is not part of the @mozilla/glean npm package.
 // It is already bundled and distributed with each new release on the Github releases page.
@@ -20,7 +27,7 @@ import mainWebextStats from "../dist/size/webext/main/report.json";
 //
 // In Qt the bundle always contains all metric types and plugins, so there is no min/max.
 const qtBundleStats = statSync(path.resolve(__dirname, "../dist/size/qt/glean.lib.js"));
-const mainQtBundleStats = statSync(path.resolve(__dirname, "../dist/size/qt/glean.main.lib.js"));
+const mainQtBundleStats = statSync(path.resolve(__dirname, "../dist/size/qt/main/glean.lib.js"));
 
 // Function shamelessly copied from
 // https://stackoverflow.com/questions/15900485/correct-way-to-convert-size-in-bytes-to-kb-mb-gb-in-javascript
@@ -41,6 +48,24 @@ const stats = [
     main: {
       max: mainWebextStats[0].parsedSize,
       min: mainWebextStats[1].parsedSize,
+    }
+  },
+  {
+    name: "Website",
+    max: webStats[0].parsedSize,
+    min: webStats[1].parsedSize,
+    main: {
+      max: mainWebStats[0].parsedSize,
+      min: mainWebStats[1].parsedSize,
+    }
+  },
+  {
+    name: "Node.js",
+    max: nodeStats[0].parsedSize,
+    min: nodeStats[1].parsedSize,
+    main: {
+      max: mainNodeStats[0].parsedSize,
+      min: mainNodeStats[1].parsedSize,
     }
   },
   {

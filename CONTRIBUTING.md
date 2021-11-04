@@ -13,7 +13,7 @@ is expected to follow this code of conduct, so that all can enjoy working on Gle
 Glean.js' developer document lives in the [`docs/`](https://github.com/mozilla/glean.js/tree/main/docs/index.md)
 folder in this repository and Glean.js' user documentation lives in [The Glean Book](https://mozilla.github.io/glean/book/index.html).
 
-Here's the [guide](https://github.com/mozilla/glean.js/tree/main/docs/getting_started.md) to get you started!
+Here's the [guide](https://github.com/mozilla/glean.js/blob/main/docs/guides/getting_started.md) to get you started!
 
 ## Bug reports / Feature Requests
 

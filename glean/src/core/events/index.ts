@@ -14,7 +14,7 @@ export class CoreEvent<
    // An array of arguments that the event will provide as context to the plugin action.
    Context extends unknown[] = unknown[],
    // The expected type of the action result. To be returned by the plugin.
-   Result extends unknown = unknown
+   Result = unknown
 > {
   // The plugin to be triggered eveytime this even occurs.
   private plugin?: Plugin<CoreEvent<Context, Result>>;

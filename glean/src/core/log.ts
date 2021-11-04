@@ -34,7 +34,7 @@ export default function log(
 ): void {
   const prefix = `(Glean.${modulePath})`;
   if (Array.isArray(message)) {
-    console[level](prefix, ...message);
+    console[level](prefix, ...(message as unknown[]));
   } else {
     console[level](prefix, message);
   }

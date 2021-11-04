@@ -4,7 +4,8 @@
     "../src/core/metrics/types/*.ts",
     "../src/plugins/*.ts",
     "../src/index/node.ts",
-    "../src/index/webext.ts"
+    "../src/index/webext.ts",
+    "../src/index/web.ts"
   ],
   "compilerOptions": {
     "target": "ES2018",

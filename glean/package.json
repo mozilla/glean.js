@@ -1,6 +1,6 @@
 {
   "name": "@mozilla/glean",
-  "version": "0.23.0",
+  "version": "0.24.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for JavaScript environments.",
   "type": "module",
   "sideEffects": "false",
@@ -11,7 +11,8 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./uploader": "./dist/core/upload/uploader.js",
     "./node": "./dist/index/node.js",
-    "./webext": "./dist/index/webext.js"
+    "./webext": "./dist/index/webext.js",
+    "./web": "./dist/index/web.js"
   },
   "typesVersions": {
     "*": {
@@ -20,6 +21,9 @@
       ],
       "node": [
         "./dist/types/index/node.d.ts"
+      ],
+      "web": [
+        "./dist/types/index/web.d.ts"
       ],
       "private/ping": [
         "./dist/types/core/pings/ping_type.d.ts"
@@ -92,17 +96,18 @@
     "@types/sinon": "^10.0.0",
     "@types/sqlite3": "^3.1.7",
     "@types/uuid": "^8.3.1",
-    "@typescript-eslint/eslint-plugin": "^4.28.2",
-    "@typescript-eslint/parser": "^4.28.2",
-    "eslint": "^7.32.0",
-    "eslint-plugin-import": "2.24.2",
-    "eslint-plugin-jsdoc": "^36.0.2",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "eslint": "^8.0.1",
+    "eslint-plugin-import": "2.25.2",
+    "eslint-plugin-jsdoc": "^37.0.0",
     "eslint-plugin-json": "^3.0.0",
     "eslint-plugin-mocha": "^9.0.0",
     "eslint-plugin-notice": "^0.9.10",
+    "fake-indexeddb": "^3.1.7",
     "geckodriver": "^2.0.1",
     "gh-pages": "^3.2.3",
-    "jsdom": "18.0.0",
+    "jsdom": "18.0.1",
     "jsdom-global": "3.0.2",
     "jsonschema": "^1.4.0",
     "madge": "^5.0.1",
@@ -112,7 +117,7 @@
     "request": "^2.88.2",
     "request-promise-native": "^1.0.9",
     "selenium-webdriver": "^4.0.0-alpha.8",
-    "sinon": "^11.0.0",
+    "sinon": "^12.0.0",
     "sqlite3": "^5.0.2",
     "terser-webpack-plugin": "^5.2.4",
     "ts-loader": "^9.0.1",
@@ -125,7 +130,7 @@
   },
   "dependencies": {
     "fflate": "^0.7.1",
-    "jose": "^3.14.0",
+    "jose": "^4.0.4",
     "tslib": "^2.3.1",
     "uuid": "^8.3.2"
   },

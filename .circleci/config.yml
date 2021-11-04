@@ -81,7 +81,7 @@ jobs:
           name: Build docs
           command: npm --prefix ./glean run build:docs
 
-  webext-sample-tests:
+  sample-webext-test:
     docker:
       - image: cimg/python:3.8.8-node
     steps:
@@ -89,36 +89,21 @@ jobs:
       - run:
           name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
-      # JS sample related jobs
-      - run:
-          name: Install JavaScript dependencies for the JS web extension sample
-          command: |
-            npm --prefix ./samples/web-extension/javascript install
-            npm --prefix ./samples/web-extension/javascript run link:glean
-      - run:
-          name: Build the JS web extension sample
-          command: |
-            npm --prefix ./samples/web-extension/javascript run build
-      - run:
-          name: Run JS web extension sample test
-          command: |
-            export PATH=.:$PATH && npm --prefix ./samples/web-extension/javascript run test
-      # TS sample related jobs
       - run:
           name: Install Typescript dependencies for the TS web extension sample
           command: |
-            npm --prefix ./samples/web-extension/typescript install
-            npm --prefix ./samples/web-extension/typescript run link:glean
+            npm --prefix ./samples/browser/webext install
+            npm --prefix ./samples/browser/webext run link:glean
       - run:
           name: Build the TS web extension sample
           command: |
-            npm --prefix ./samples/web-extension/typescript run build
+            npm --prefix ./samples/browser/webext run build
       - run:
           name: Run TS web extension sample test
           command: |
-            export PATH=.:$PATH && npm --prefix ./samples/web-extension/typescript run test
+            export PATH=.:$PATH && npm --prefix ./samples/browser/webext run test
 
-  node-sample-tests:
+  sample-node-test:
     docker:
       - image: cimg/python:3.8.8-node
     steps:
@@ -140,7 +125,7 @@ jobs:
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/node run test
 
-  qt-sample-tests:
+  sample-qt-test:
     docker:
       - image: cimg/python:3.8.8-node
     steps:
@@ -171,7 +156,7 @@ jobs:
             pip install -r requirements.txt
             glean_parser translate src/App/metrics.yaml src/App/pings.yaml \
               -f javascript -o src/App/generated \
-              --option platform=qt --option version="0.23"
+              --option platform=qt --option version="0.24"
       - run:
           name: Run Qt sample tests
           command: |
@@ -253,20 +238,30 @@ workflows:
   ci:
     jobs:
       - lint
-      - test
-      - build
-      - webext-sample-tests
-      - node-sample-tests
-      - qt-sample-tests
+      - build:
+          requires:
+            - lint
+      - test:
+          requires:
+            - build
+      - sample-webext-test:
+          requires:
+            - test
+      - sample-node-test:
+          requires:
+            - test
+      - sample-qt-test:
+          requires:
+            - test
       - hold:
           type: approval
           requires:
             - lint
-            - test
             - build
-            - webext-sample-tests
-            - node-sample-tests
-            - qt-sample-tests
+            - test
+            - sample-webext-test
+            - sample-node-test
+            - sample-qt-test
           filters:
             branches:
               ignore:

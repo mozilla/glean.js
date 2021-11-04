@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
+
 import type { WebDriver } from "selenium-webdriver";
 import { Builder, Capabilities } from "selenium-webdriver";
 import firefox from "selenium-webdriver/firefox";

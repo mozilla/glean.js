@@ -5,18 +5,22 @@ updates:
     schedule:
       interval: "daily"
   - package-ecosystem: "npm"
-    directory: "/samples/web-extension/typescript"
+    directory: "/benchmarks"
     schedule:
-      interval: "daily"
+      interval: "weekly"
   - package-ecosystem: "npm"
-    directory: "/samples/web-extension/javascript"
+    directory: "/samples/browser/webext"
     schedule:
-      interval: "daily"
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/samples/browser/web"
+    schedule:
+      interval: "weekly"
+  - package-ecosystem: "npm"
+    directory: "/samples/node"
+    schedule:
+      interval: "weekly"
   - package-ecosystem: "npm"
     directory: "/glean/tests/unit/platform/utils/webext/sample"
     schedule:
-      interval: "daily"
-  - package-ecosystem: "pip"
-    directory: "/samples/qt-qml-app"
-    schedule:
-      interval: "daily"
+      interval: "weekly"
