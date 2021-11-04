@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.23.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.24.0...main)
+
+# v0.24.0 (2021-11-04)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.23.0...v0.24.0)
 
 * [#856](https://github.com/mozilla/glean.js/pull/856): Expose the `@mozilla/glean/web` entry point for using Glean.js in websites.
 * [#856](https://github.com/mozilla/glean.js/pull/860): Implement the `PlatformInfo` module for the web platform.
