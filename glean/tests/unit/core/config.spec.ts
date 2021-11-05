@@ -6,12 +6,29 @@ import assert from "assert";
 import sinon from "sinon";
 
 import { Configuration } from "../../../src/core/config";
+import { Context } from "../../../src/core/context";
 
 const sandbox = sinon.createSandbox();
 
 describe("config", function() {
   afterEach(function () {
     sandbox.restore();
+  });
+
+  it("serverEndpoint protocol is validated correctly", function () {
+    const testingEndpoint = "http://mytest.com";
+    const prodEndpoint = "https://mytest.com";
+    const wrongEndpoint = "wrong://mytest.com";
+
+    Context.testing = true;
+    assert.doesNotThrow(() => new Configuration({ serverEndpoint: prodEndpoint }));
+    assert.doesNotThrow(() => new Configuration({ serverEndpoint: testingEndpoint }));
+    assert.throws(() => new Configuration({ serverEndpoint: wrongEndpoint }));
+
+    Context.testing = false;
+    assert.doesNotThrow(() => new Configuration({ serverEndpoint: prodEndpoint }));
+    assert.throws(() => new Configuration({ serverEndpoint: testingEndpoint }));
+    assert.throws(() => new Configuration({ serverEndpoint: wrongEndpoint }));
   });
 
   it("validateSourceTags works correctly", function () {
