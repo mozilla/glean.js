@@ -8,6 +8,7 @@ import { validateHeader, validateURL } from "./utils.js";
 import type Uploader from "./upload/uploader.js";
 import type { DebugOptions } from "./debug_options.js";
 import log, { LoggingLevel } from "./log.js";
+import { Context } from "./context.js";
 
 const LOG_TAG = "core.Config";
 
@@ -73,6 +74,12 @@ export class Configuration implements ConfigurationInterface {
       throw new Error(
         `Unable to initialize Glean, serverEndpoint ${config.serverEndpoint} is an invalid URL.`);
     }
+
+    if (!Context.testing && config?.serverEndpoint?.startsWith("http:")) {
+      throw new Error(
+        `Unable to initialize Glean, serverEndpoint ${config.serverEndpoint} must use the HTTPS protocol.`);
+    }
+
     this.serverEndpoint = (config && config.serverEndpoint)
       ? config.serverEndpoint : DEFAULT_TELEMETRY_ENDPOINT;
 
