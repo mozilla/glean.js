@@ -4,6 +4,8 @@
 
 * [#924](https://github.com/mozilla/glean.js/pull/924): Only HTTPS server endpoints outside of testing mode.
   * In testing mode HTTP may be used. No other protocols are allowed.
+* [#951](https://github.com/mozilla/glean.js/pull/951): Expose Uploader, UploadResult and UploadResultStatus.
+  * These are necessary for creating custom uploaders. Especially from TypeScript.
 
 # v0.24.0 (2021-11-04)
 
