@@ -1,6 +1,15 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.24.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.25.0...main)
+
+# v0.25.0 (2021-11-15)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.24.0...v0.25.0)
+
+* [#924](https://github.com/mozilla/glean.js/pull/924): Only HTTPS server endpoints outside of testing mode.
+  * In testing mode HTTP may be used. No other protocols are allowed.
+* [#951](https://github.com/mozilla/glean.js/pull/951): Expose Uploader, UploadResult and UploadResultStatus.
+  * These are necessary for creating custom uploaders. Especially from TypeScript.
 
 # v0.24.0 (2021-11-04)
 
