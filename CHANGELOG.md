@@ -2,6 +2,9 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.26.0...main)
 
+* [#967](https://github.com/mozilla/glean.js/pull/967): **BREAKING CHANGE**: Remove `debug` option from Glean configuration option.
+  * The `Glean.setDebugViewTag`, `Glean.setSourceTags` and `Glean.setLogPings` should be used instead. Note that these APIs can safely be called prior to initialization.
+
 # v0.26.0 (2021-11-19)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.25.0...v0.26.0)
