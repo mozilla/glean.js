@@ -5,6 +5,7 @@
 * [#965](https://github.com/mozilla/glean.js/pull/965): Attempt to infer the Python virtualenv folder from the environment before falling back to the default `.venv`.
   * Users may provide a folder name through the `VIRTUAL_ENV` environment variable.
   * If the user is inside an active virtualenv the `VIRTUAL_ENV` environment variable is already set by Python. See: https://docs.python.org/3/library/venv.html.
+* [#968](https://github.com/mozilla/glean.js/pull/968): Add runtime arguments type checking to `Glean.setUploadEnabled` API.
 
 # v0.25.0 (2021-11-15)
 
