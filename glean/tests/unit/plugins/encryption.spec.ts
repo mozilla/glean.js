@@ -12,11 +12,8 @@ import type { JSONObject } from "../../../src/core/utils";
 import { WaitableUploader } from "../../utils";
 import PingEncryptionPlugin from "../../../src/plugins/encryption";
 import collectAndStorePing, { makePath } from "../../../src/core/pings/maker";
-import Uploader from "../../../src/core/upload/uploader";
-import { UploadResultStatus, UploadResult } from "../../../src/core/upload/uploader";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
-import { unzipPingPayload } from "../../utils";
 
 const sandbox = sinon.createSandbox();
 
@@ -69,37 +66,6 @@ describe("PingEncryptionPlugin", function() {
   it("decrypting encrypted ping returns expected payload and protected headers", async function () {
     const { publicKey, privateKey } = await generateKeyPair("ECDH-ES");
 
-    // If we could use `Promise.defer()` (not cross-browser and deprecated), the following
-    // block of code would not be needed. We're basically replicating the deferred promise
-    // because we need to wait for the `post` method to be called in order to evaluate
-    // the arguments. Doing this with `sinon` alone would require us to use the `Glean.dispatcher`
-    // internals, which would defeat the point of having a custom uploader.
-    type UploadSignature = {url: string, body: string, headers?: Record<string, string>};
-    let uploadPromiseResolve: (value: UploadSignature) => void;
-    const uploadPromise = new Promise<UploadSignature>(r => uploadPromiseResolve = r);
-
-    class MockUploader extends Uploader {
-      post(url: string, body: string, headers?: Record<string, string>): Promise<UploadResult> {
-        uploadPromiseResolve({url, body, headers});
-        const result = new UploadResult(UploadResultStatus.Success, 200);
-        return Promise.resolve(result);
-      }
-    }
-
-    await Glean.testResetGlean(
-      testAppId,
-      true,
-      {
-        plugins: [
-          new PingEncryptionPlugin(await exportJWK(publicKey))
-        ],
-        debug: {
-          logPings: true
-        },
-        httpClient: new MockUploader(),
-      },
-    );
-
     const ping = new PingType({
       name: "encryptedping",
       includeClientId: true,
@@ -114,23 +80,33 @@ describe("PingEncryptionPlugin", function() {
       disabled: false
     });
 
+    const httpClient = new WaitableUploader();
+    const pingBody = httpClient.waitForPingSubmission("encryptedping");
+    await Glean.testResetGlean(
+      testAppId,
+      true,
+      {
+        plugins: [
+          new PingEncryptionPlugin(await exportJWK(publicKey))
+        ],
+        debug: {
+          logPings: true
+        },
+        httpClient,
+      },
+    );
+
     counter.add(37);
     ping.submit();
 
-    const { url, body } = await uploadPromise;
-
-    const parsedBody = unzipPingPayload(body);
     const { plaintext, protectedHeader } = await compactDecrypt(
-      parsedBody?.payload as string,
+      (await pingBody).payload as string,
       privateKey
     );
 
     const decoder = new TextDecoder();
     const decodedPayload = decoder.decode(plaintext);
     const decodedPayloadObject = JSON.parse(decodedPayload) as JSONObject;
-
-    // Check that this is the ping we were looking for.
-    assert.ok(url.includes("encryptedping"));
 
     // Do basic sanity checking on the ping payload.
     assert.notStrictEqual(decodedPayloadObject["client_info"], undefined);
