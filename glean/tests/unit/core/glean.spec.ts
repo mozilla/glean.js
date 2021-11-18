@@ -605,4 +605,18 @@ describe("Glean", function() {
     await Glean.testResetGlean(testAppId, true);
     assert.strictEqual(Context.initialized, true);
   });
+
+  it("setUploadEnabled does nothing in case a non-boolean value is passed to it", async function() {
+    // Set the current upload value to false,
+    // strings are "truthy", this way we can be sure calling with the wrong type dod not work.
+    Glean.setUploadEnabled(false);
+    await Context.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Context.uploadEnabled, false);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    Glean.setUploadEnabled("not a boolean");
+    await Context.dispatcher.testBlockOnQueue();
+    assert.strictEqual(Context.uploadEnabled, false);
+  });
 });

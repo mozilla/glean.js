@@ -356,6 +356,15 @@ class Glean {
    * @param flag When true, enable metric collection.
    */
   static setUploadEnabled(flag: boolean): void {
+    if (!isBoolean(flag)) {
+      log(
+        LOG_TAG,
+        "Unable to change upload state, new value must be a boolean. Ignoring.",
+        LoggingLevel.Error
+      );
+      return;
+    }
+
     Context.dispatcher.launch(async () => {
       if (!Context.initialized) {
         log(
