@@ -369,13 +369,6 @@ describe("Glean", function() {
   it("setting log pings works before and after and on initialize", async function () {
     await Glean.testUninitialize();
 
-    // Setting on initialize.
-    await Glean.testInitialize(testAppId, true, { debug: { logPings: true } });
-    await Context.dispatcher.testBlockOnQueue();
-    assert.ok(Glean.logPings);
-
-    await Glean.testUninitialize();
-
     // Setting before initialize.
     Glean.setLogPings(true);
     await Glean.testInitialize(testAppId, true);
@@ -392,11 +385,6 @@ describe("Glean", function() {
 
     const testTag = "test";
 
-    // Setting on initialize.
-    await Glean.testInitialize(testAppId, true, { debug: { debugViewTag: testTag } });
-    await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(Glean.debugViewTag, testTag);
-
     await Glean.testUninitialize();
 
     // Setting before initialize.
@@ -411,29 +399,26 @@ describe("Glean", function() {
     assert.strictEqual(Glean.debugViewTag, anotherTestTag);
   });
 
-  it("attempting to set an invalid debug view tag is ignored and no task is dispatched", function () {
-    const dispatchSpy = sandbox.spy(Context.dispatcher, "launch");
-
+  it("attempting to set an invalid debug view tag is ignored", async function () {
     const invaligTag = "inv@l!d_t*g";
     Glean.setDebugViewTag(invaligTag);
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.debugViewTag, undefined);
-    assert.ok(dispatchSpy.notCalled);
   });
 
   it("setting source tags on initialize works", async function () {
     await Glean.testUninitialize();
-    await Glean.testInitialize(testAppId, true, { debug: { sourceTags: ["1", "2", "3", "4", "5"] } });
+    await Glean.testInitialize(testAppId, true);
+    Glean.setSourceTags(["1", "2", "3", "4", "5"]);
     await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.sourceTags, "1,2,3,4,5");
   });
 
-  it("attempting to set invalid source tags is ignored and no task is dispatched", function () {
-    const dispatchSpy = sandbox.spy(Context.dispatcher, "launch");
-
+  it("attempting to set invalid source tags is ignored", async function () {
     const invaligTags = ["inv@l!d_t*g"];
     Glean.setSourceTags(invaligTags);
+    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Glean.sourceTags, undefined);
-    assert.ok(dispatchSpy.notCalled);
   });
 
   it("testResetGlean correctly resets", async function () {

@@ -326,11 +326,15 @@ class Glean {
   }
 
   static get debugViewTag(): string | undefined {
-    return Glean.instance._config?.debug.debugViewTag;
+    if (Glean.instance._config?.debugViewTag) {
+      return Glean.instance._config?.debugViewTag;
+    }
   }
 
   static get sourceTags(): string | undefined {
-    return Glean.instance._config?.debug.sourceTags?.toString();
+    if (Glean.instance._config?.debug.sourceTags) {
+      return Glean.instance._config?.debug.sourceTags?.toString();
+    }
   }
 
   static get platform(): Platform {
@@ -416,13 +420,8 @@ class Glean {
    *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
    */
   static setDebugViewTag(value: string): void {
-    if (!Configuration.validateDebugViewTag(value)) {
-      log(LOG_TAG, `Invalid \`debugViewTag\` ${value}. Ignoring.`, LoggingLevel.Error);
-      return;
-    }
-
     Context.dispatcher.launch(() => {
-      Glean.instance._config.debug.debugViewTag = value;
+      Glean.instance._config.debugViewTag = value;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -442,13 +441,8 @@ class Glean {
    *        Individual tags must match the regex: "[a-zA-Z0-9-]{1,20}".
    */
   static setSourceTags(value: string[]): void {
-    if (!Configuration.validateSourceTags(value)) {
-      log(LOG_TAG, `Invalid \`sourceTags\` ${value.toString()}. Ignoring.`, LoggingLevel.Error);
-      return;
-    }
-
     Context.dispatcher.launch(() => {
-      Glean.instance._config.debug.sourceTags = value;
+      Glean.instance._config.sourceTags = value;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();

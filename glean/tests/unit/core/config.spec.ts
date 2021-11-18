@@ -31,58 +31,23 @@ describe("config", function() {
     assert.throws(() => new Configuration({ serverEndpoint: wrongEndpoint }));
   });
 
-  it("validateSourceTags works correctly", function () {
+  it("validation of sourceTags works correctly", function () {
+    const config = new Configuration();
+
     // Invalid values
-    assert.ok(!Configuration.validateSourceTags([]));
-    assert.ok(!Configuration.validateSourceTags([""]));
-    assert.ok(!Configuration.validateSourceTags(["1", "2", "3", "4", "5", "6"]));
-    assert.ok(!Configuration.validateSourceTags(["!nv@lid-val*e"]));
-    assert.ok(!Configuration.validateSourceTags(["glean-test1", "test2"]));
+    config.sourceTags = [];
+    assert.deepStrictEqual([], config.sourceTags);
+    config.sourceTags = [""];
+    assert.deepStrictEqual([], config.sourceTags);
+    config.sourceTags = ["1", "2", "3", "4", "5", "6"];
+    assert.deepStrictEqual([], config.sourceTags);
+    config.sourceTags = ["!nv@lid-val*e"];
+    assert.deepStrictEqual([], config.sourceTags);
+    config.sourceTags = ["glean-test1", "test2"];
+    assert.deepStrictEqual([], config.sourceTags);
 
     // Valid values
-    assert.ok(Configuration.validateSourceTags(["5"]));
-  });
-
-  it("sanitizeDebugOptions works correctly", function() {
-    // Invalid values
-    assert.deepStrictEqual(Configuration.sanitizeDebugOptions({
-      debugViewTag: ""
-    }), {});
-    assert.deepStrictEqual(Configuration.sanitizeDebugOptions({
-      sourceTags: []
-    }), {});
-    assert.deepStrictEqual(Configuration.sanitizeDebugOptions({
-      debugViewTag: "",
-      sourceTags: ["ok"]
-    }), { sourceTags: ["ok"] });
-    assert.deepStrictEqual(Configuration.sanitizeDebugOptions({
-      debugViewTag: "",
-      logPings: true,
-      sourceTags: ["ok"]
-    }), { sourceTags: ["ok"], logPings: true });
-
-    // Valid values
-    assert.deepStrictEqual(Configuration.sanitizeDebugOptions({}), {});
-    assert.deepStrictEqual(
-      Configuration.sanitizeDebugOptions({ logPings: true }),
-      { logPings: true }
-    );
-    assert.deepStrictEqual(
-      Configuration.sanitizeDebugOptions({ debugViewTag: "ok" }),
-      { debugViewTag: "ok" }
-    );
-    assert.deepStrictEqual(
-      Configuration.sanitizeDebugOptions({ sourceTags: ["ok"] }),
-      { sourceTags: ["ok"] }
-    );
-  });
-
-  it("validation functions are not called when debug view and source tags are not present", function () {
-    const sourceTagsSpy = sandbox.spy(Configuration, "validateSourceTags");
-    const debugViewTagSpy = sandbox.spy(Configuration, "validateDebugViewTag");
-
-    Configuration.sanitizeDebugOptions({});
-    assert.strictEqual(sourceTagsSpy.callCount, 0);
-    assert.strictEqual(debugViewTagSpy.callCount, 0);
+    config.sourceTags = ["5"];
+    assert.deepStrictEqual(["5"], config.sourceTags);
   });
 });

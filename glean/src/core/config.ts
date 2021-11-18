@@ -24,8 +24,6 @@ export interface ConfigurationInterface {
   readonly appDisplayVersion?: string,
   // The server pings are sent to.
   readonly serverEndpoint?: string,
-  // Debug configuration.
-  debug?: DebugOptions,
   // Optional list of plugins to include in current Glean instance.
   plugins?: Plugin[],
   // The HTTP client implementation to use for uploading pings.
@@ -68,7 +66,7 @@ export class Configuration implements ConfigurationInterface {
     this.architecture = config?.architecture;
     this.osVersion = config?.osVersion;
 
-    this.debug = Configuration.sanitizeDebugOptions(config?.debug);
+    this.debug = {};
 
     if (config?.serverEndpoint && !validateURL(config.serverEndpoint)) {
       throw new Error(
@@ -86,20 +84,12 @@ export class Configuration implements ConfigurationInterface {
     this.httpClient = config?.httpClient;
   }
 
-  static sanitizeDebugOptions(debug?: DebugOptions): DebugOptions {
-    const correctedDebugOptions: DebugOptions = debug || {};
-    if (debug?.debugViewTag !== undefined && !Configuration.validateDebugViewTag(debug?.debugViewTag)) {
-      delete correctedDebugOptions["debugViewTag"];
-    }
-    if (debug?.sourceTags !== undefined && !Configuration.validateSourceTags(debug?.sourceTags)) {
-      delete correctedDebugOptions["sourceTags"];
-    }
-    return correctedDebugOptions;
+  get debugViewTag(): string {
+    return this.debug.debugViewTag || "";
   }
 
-  static validateDebugViewTag(tag: string): boolean {
-    const validation = validateHeader(tag);
-    if (!validation) {
+  set debugViewTag(tag: string) {
+    if (!validateHeader(tag)) {
       log(
         LOG_TAG,
         [
@@ -108,18 +98,25 @@ export class Configuration implements ConfigurationInterface {
         ],
         LoggingLevel.Error
       );
+
+      return;
     }
-    return validation;
+
+    this.debug.debugViewTag = tag;
   }
 
-  static validateSourceTags(tags: string[]): boolean {
+  get sourceTags(): string[] {
+    return this.debug.sourceTags || [];
+  }
+
+  set sourceTags(tags: string[]) {
     if (tags.length < 1 || tags.length > GLEAN_MAX_SOURCE_TAGS) {
       log(
         LOG_TAG,
         `A list of tags cannot contain more than ${GLEAN_MAX_SOURCE_TAGS} elements.`,
         LoggingLevel.Error
       );
-      return false;
+      return;
     }
 
     for (const tag of tags) {
@@ -129,14 +126,14 @@ export class Configuration implements ConfigurationInterface {
           "Tags starting with `glean` are reserved and must not be used.",
           LoggingLevel.Error
         );
-        return false;
+        return;
       }
 
       if (!validateHeader(tag)) {
-        return false;
+        return;
       }
     }
 
-    return true;
+    this.debug.sourceTags = tags;
   }
 }
