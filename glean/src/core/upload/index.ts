@@ -148,7 +148,7 @@ class PingUploader implements PingsDatabaseObserver {
           LOG_TAG,
           [
             "Succesfully submitted a ping, but Glean is currently throttled.",
-            `Pending pings will be processed in ${(remainingTime || 0) / 1000}s.`
+            `Pending pings may be uploaded in ${(remainingTime || 0) / 1000}s.`
           ],
           LoggingLevel.Debug
         );
@@ -157,9 +157,9 @@ class PingUploader implements PingsDatabaseObserver {
         log(
           LOG_TAG,
           [
-            "Succesfully submitted a ping, but Glean has reached maximum recoverable upload failures",
-            "for the current uploading window.",
-            `Will retry in ${(remainingTime || 0) / 1000}s.`
+            "Succesfully submitted a ping,",
+            "but Glean has reached maximum recoverable upload failures for the current uploading window.",
+            `May retry in ${(remainingTime || 0) / 1000}s.`
           ],
           LoggingLevel.Debug
         );
