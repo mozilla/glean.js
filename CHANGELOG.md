@@ -6,6 +6,7 @@
   * Users may provide a folder name through the `VIRTUAL_ENV` environment variable.
   * If the user is inside an active virtualenv the `VIRTUAL_ENV` environment variable is already set by Python. See: https://docs.python.org/3/library/venv.html.
 * [#968](https://github.com/mozilla/glean.js/pull/968): Add runtime arguments type checking to `Glean.setUploadEnabled` API.
+* [#970](https://github.com/mozilla/glean.js/pull/970): BUGFIX: Guarantee uploading is immediatelly resumed if the uploader has been stopped due to any of the uploading limits being hit.
 
 # v0.25.0 (2021-11-15)
 

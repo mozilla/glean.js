@@ -250,9 +250,21 @@ describe("PingUploader", function() {
     assert.ok("X-Telemetry-Agent" in headers);
   });
 
-  it("dispatcher is only once stopped if upload limits are hit", async function () {
+  it("dispatcher is only once stopped if upload limits are hit and is immediatelly restarted after", async function () {
+    const httpClient = new CounterUploader();
+    await Glean.testResetGlean(testAppId, true, { httpClient });
+
     const stopSpy = sandbox.spy(Glean["pingUploader"]["dispatcher"], "stop");
-    await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL * 2);
+    await fillUpPingsDatabase((MAX_PINGS_PER_INTERVAL * 2) - 1);
+    await Glean["pingUploader"].testBlockOnPingsQueue();
     assert.strictEqual(1, stopSpy.callCount);
+
+    // Reset the rate limiter so that we are not throttled anymore.
+    Glean["pingUploader"]["rateLimiter"]["reset"]();
+
+    // Add one more ping to the queue so that uploading is resumed.
+    await fillUpPingsDatabase(1);
+    await Glean["pingUploader"].testBlockOnPingsQueue();
+    assert.strictEqual(httpClient.count, MAX_PINGS_PER_INTERVAL * 2);
   });
 });
