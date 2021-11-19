@@ -93,6 +93,8 @@ class PingUploader implements PingsDatabaseObserver {
   private readonly platformInfo: PlatformInfo;
   // The server address we are sending pings to.
   private readonly serverEndpoint: string;
+  // Whether or not uploading is currently stopped due to limits having been hit.
+  private stopped = false;
 
   constructor(
     config: Configuration,
@@ -132,17 +134,21 @@ class PingUploader implements PingsDatabaseObserver {
     const { state: rateLimiterState, remainingTime } = this.rateLimiter.getState();
     if (rateLimiterState === RateLimiterState.Incrementing) {
       this.dispatcher.resume();
+      this.stopped = false;
     } else {
-      // Stop the dispatcher respecting the order of the dispatcher queue,
-      // to make sure the Stop command is enqueued _after_ previously enqueued requests.
-      this.dispatcher.stop(false);
+      if(!this.stopped) {
+        // Stop the dispatcher respecting the order of the dispatcher queue,
+        // to make sure the Stop command is enqueued _after_ previously enqueued requests.
+        this.dispatcher.stop(false);
+        this.stopped = true;
+      }
 
       if (rateLimiterState === RateLimiterState.Throttled) {
         log(
           LOG_TAG,
           [
-            "Attempted to upload a ping, but Glean is currently throttled.",
-            `Pending pings will be processed in ${(remainingTime || 0) / 1000}s.`
+            "Succesfully submitted a ping, but Glean is currently throttled.",
+            `Pending pings may be uploaded in ${(remainingTime || 0) / 1000}s.`
           ],
           LoggingLevel.Debug
         );
@@ -151,9 +157,9 @@ class PingUploader implements PingsDatabaseObserver {
         log(
           LOG_TAG,
           [
-            "Attempted to upload a ping, but Glean has reached maximum recoverable upload failures",
-            "for the current uploading window.",
-            `Will retry in ${(remainingTime || 0) / 1000}s.`
+            "Succesfully submitted a ping,",
+            "but Glean has reached maximum recoverable upload failures for the current uploading window.",
+            `May retry in ${(remainingTime || 0) / 1000}s.`
           ],
           LoggingLevel.Debug
         );

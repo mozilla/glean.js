@@ -14,9 +14,16 @@ import log, { LoggingLevel } from "./core/log.js";
 
 const LOG_TAG = "CLI";
 
-// The name of the directory which will contain the Python virtual environment
+// The name of the directory which contains / will contain the Python virtual environment
 // used to run the glean-parser.
-const VIRTUAL_ENVIRONMENT_DIR = ".venv";
+//
+// > When a virtual environment is active, the VIRTUAL_ENV environment variable
+// > is set to the path of the virtual environment. This can be used to check if
+// > one is running inside a virtual environment.
+//
+// See: https://docs.python.org/3/library/venv.html
+// (Also applies to envs created using virtualenv though)
+const VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV?.split("/").slice(-1)[0] || ".venv";
 
 // The version of glean_parser to install from PyPI.
 const GLEAN_PARSER_VERSION = "4.1.1";
