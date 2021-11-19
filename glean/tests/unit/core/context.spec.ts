@@ -51,13 +51,6 @@ describe("Context", function() {
     assert.strictEqual(Context.initialized, false);
   });
 
-  it("debugOptions contain the expected value", async function () {
-    assert.deepStrictEqual(Context.debugOptions, {});
-
-    await Glean.testResetGlean("new-id", true, { debug: { logPings: true }});
-    assert.deepStrictEqual(Context.debugOptions, { logPings: true });
-  });
-
   it("databases contain the expected values", function () {
     assert.notStrictEqual(Context.metricsDatabase, undefined);
     assert.ok(Context.metricsDatabase instanceof MetricsDatabase);

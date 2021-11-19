@@ -175,12 +175,8 @@ describe("PingMaker", function() {
     // Disable ping uploading for it not to interfere with this tests.
     await stopGleanUploader();
 
-    await Glean.testResetGlean(testAppId, true, {
-      debug: {
-        logPings: true
-      },
-      plugins: [ new MockPlugin() ]
-    });
+    await Glean.testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ] });
+    Glean.setLogPings(true);
 
     const ping = new PingType({
       name: "ping",
@@ -216,12 +212,8 @@ describe("PingMaker", function() {
       }
     }
 
-    await Glean.testResetGlean(testAppId, true, {
-      debug: {
-        logPings: true
-      },
-      plugins: [ new ThrowingPlugin() ]
-    });
+    await Glean.testResetGlean(testAppId, true, { plugins: [ new ThrowingPlugin() ] });
+    Glean.setLogPings(true);
 
     const ping = new PingType({
       name: "ping",

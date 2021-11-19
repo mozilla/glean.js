@@ -89,9 +89,6 @@ describe("PingEncryptionPlugin", function() {
         plugins: [
           new PingEncryptionPlugin(await exportJWK(publicKey))
         ],
-        debug: {
-          logPings: true
-        },
         httpClient,
       },
     );
