@@ -25,7 +25,10 @@ const sandbox = sinon.createSandbox();
  * @param pingName the name of the ping to fill the database with, defaults to "ping".
  * @returns The array of identifiers of the pings added to the database.
  */
-async function fillUpPingsDatabase(numPings: number, pingName = "ping"): Promise<string[]> {
+async function fillUpPingsDatabase(
+  numPings: number,
+  pingName = "ping"
+): Promise<string[]> {
   const ping = new PingType({
     name: pingName,
     includeClientId: true,
@@ -245,5 +248,11 @@ describe("PingUploader", function() {
     assert.ok("X-Client-Type" in headers);
     assert.ok("X-Client-Version" in headers);
     assert.ok("X-Telemetry-Agent" in headers);
+  });
+
+  it("dispatcher is only once stopped if upload limits are hit", async function () {
+    const stopSpy = sandbox.spy(Glean["pingUploader"]["dispatcher"], "stop");
+    await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL * 2);
+    assert.strictEqual(1, stopSpy.callCount);
   });
 });
