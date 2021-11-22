@@ -1,6 +1,14 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.26.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.27.0...main)
+
+# v0.27.0 (2021-11-22)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.26.0...v0.27.0)
+
+* [#981](https://github.com/mozilla/glean.js/pull/981): Update rate limits for ping submission from 15 pings/minute to 40 pings/minute.
+* [#967](https://github.com/mozilla/glean.js/pull/967): **BREAKING CHANGE**: Remove `debug` option from Glean configuration option.
+  * The `Glean.setDebugViewTag`, `Glean.setSourceTags` and `Glean.setLogPings` should be used instead. Note that these APIs can safely be called prior to initialization.
 
 # v0.26.0 (2021-11-19)
 

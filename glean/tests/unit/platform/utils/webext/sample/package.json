@@ -12,7 +12,7 @@
   "license": "MPL-2.0",
   "devDependencies": {
     "web-ext": "^6.5.0",
-    "webpack": "^5.64.0",
+    "webpack": "^5.64.2",
     "webpack-cli": "^4.9.1"
   }
 }
