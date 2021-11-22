@@ -4,7 +4,6 @@
 
 import { gzipSync, strToU8 } from "fflate";
 
-import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
 import { GLEAN_VERSION } from "../constants.js";
 import { Context } from "../context.js";
@@ -98,7 +97,6 @@ class PingUploader implements PingsDatabaseObserver {
 
   constructor(
     config: Configuration,
-    platform: Platform,
     private readonly pingsDatabase: PingsDatabase,
     private readonly policy = new Policy(),
     private readonly rateLimiter = new RateLimiter(RATE_LIMITER_INTERVAL_MS, MAX_PINGS_PER_INTERVAL)
@@ -106,8 +104,8 @@ class PingUploader implements PingsDatabaseObserver {
     this.processing = [];
     // Initialize the ping uploader with either the platform defaults or a custom
     // provided uploader from the configuration object.
-    this.uploader = config.httpClient ? config.httpClient : platform.uploader;
-    this.platformInfo = platform.info;
+    this.uploader = config.httpClient ? config.httpClient : Context.platform.uploader;
+    this.platformInfo = Context.platform.info;
     this.serverEndpoint = config.serverEndpoint;
 
     // Initialize the dispatcher immediatelly.

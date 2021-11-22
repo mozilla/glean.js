@@ -93,7 +93,7 @@ describe("EventsDatabase", function() {
   // reduce coupling across the components.
 
   it("getPingMetrics returns undefined if nothing is recorded", async function () {
-    const db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase();
     await db.initialize();
 
     const data = await db.getPingEvents("test-unknown-ping", true);
@@ -102,7 +102,7 @@ describe("EventsDatabase", function() {
   });
 
   it("getPingMetrics correctly clears the store", async function () {
-    const db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase();
     await db.initialize();
 
     const metric = new EventMetricType({
@@ -144,7 +144,7 @@ describe("EventsDatabase", function() {
   });
 
   it("getPingMetrics sorts by timestamp", async function () {
-    const db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase();
     await db.initialize();
 
     const metric = new EventMetricType({
@@ -182,7 +182,7 @@ describe("EventsDatabase", function() {
   });
 
   it("every recorded event gets an execution counter extra key", async function () {
-    const db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase();
     await db.initialize();
 
     const pings = ["aPing", "twoPing", "threePing"];
@@ -216,7 +216,7 @@ describe("EventsDatabase", function() {
   });
 
   it("execution counters are incremented when the database is initialized", async function () {
-    const db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase();
     await db.initialize();
 
     const pings = ["aPing", "twoPing", "threePing"];
@@ -246,13 +246,13 @@ describe("EventsDatabase", function() {
       for (const ping of pings) {
         assert.strictEqual(await executionCounter.testGetValue(ping), i);
       }
-      const restartedDb = new EventsDatabase(Glean.platform.Storage);
+      const restartedDb = new EventsDatabase();
       await restartedDb.initialize();
     }
   });
 
   it("execution counters are re-created if ping storage has been cleared", async function () {
-    const db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase();
     await db.initialize();
 
     const pings = ["aPing"];
@@ -287,7 +287,7 @@ describe("EventsDatabase", function() {
     assert.strictEqual(rawRecordedEvents1[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
 
     // Fake restart Glean and record a new event.
-    const restartedDb = new EventsDatabase(Glean.platform.Storage);
+    const restartedDb = new EventsDatabase();
     await restartedDb.initialize();
     await db.record(metric, new RecordedEvent(
       metric.category,
@@ -329,12 +329,12 @@ describe("EventsDatabase", function() {
 
   it("reserved extra properties are removed from the recorded events", async function () {
     // Clear any events from previous tests.
-    const rawStorage = new Glean.platform.Storage("events");
+    const rawStorage = new Context.platform.Storage("events");
     await rawStorage.delete([]);
     assert.deepStrictEqual(await rawStorage.get(), undefined);
 
     // Initialize the database and inject some events.
-    const db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase();
     await db.initialize();
 
     const metric = new EventMetricType({
@@ -356,7 +356,7 @@ describe("EventsDatabase", function() {
   });
 
   it("glean.restarted events are properly injected when initializing", async function () {
-    const db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase();
     await db.initialize();
 
     const stores = ["store1", "store2"];
@@ -379,7 +379,7 @@ describe("EventsDatabase", function() {
     // Move the clock forward by one minute to look like Glean was really restarted.
     Context.startTime.setTime(Context.startTime.getTime() + 1000 * 60);
     // Fake a re-start.
-    const db2 = new EventsDatabase(Glean.platform.Storage);
+    const db2 = new EventsDatabase();
     await db2.initialize();
 
     for (const store of stores) {
@@ -399,7 +399,7 @@ describe("EventsDatabase", function() {
 
   it("events are correctly sorted by execution counter and timestamp throughout restarts", async function() {
     // Initialize the database and inject some events.
-    let db = new EventsDatabase(Glean.platform.Storage);
+    let db = new EventsDatabase();
     await db.initialize();
 
     for (let i = 0; i < 10; i++) {
@@ -416,7 +416,7 @@ describe("EventsDatabase", function() {
       // Move the clock forward by one minute.
       Context.startTime.setTime(Context.startTime.getTime() + 1000 * 60);
       // Fake a re-start.
-      db = new EventsDatabase(Glean.platform.Storage);
+      db = new EventsDatabase();
       await db.initialize();
     }
 
@@ -450,7 +450,7 @@ describe("EventsDatabase", function() {
 
   it("events are correctly sorted if time decides to go backwards throughout restarts", async function() {
     // Initialize the database and inject some events.
-    let db = new EventsDatabase(Glean.platform.Storage);
+    let db = new EventsDatabase();
     await db.initialize();
 
     for (let i = 0; i < 10; i++) {
@@ -467,7 +467,7 @@ describe("EventsDatabase", function() {
       // Move the clock backwards by one hour.
       Context.startTime.setTime(Context.startTime.getTime() - 1000 * 60 * 60);
       // Fake a re-start.
-      db = new EventsDatabase(Glean.platform.Storage);
+      db = new EventsDatabase();
       await db.initialize();
     }
 
@@ -501,7 +501,7 @@ describe("EventsDatabase", function() {
 
   it("events are correctly sorted if time decides to stand still throughout restarts", async function() {
     // Initialize the database and inject some events.
-    let db = new EventsDatabase(Glean.platform.Storage);
+    let db = new EventsDatabase();
     await db.initialize();
 
     for (let i = 0; i < 10; i++) {
@@ -517,7 +517,7 @@ describe("EventsDatabase", function() {
 
       // Do not move the clock forward, time stands still.
       // Fake a re-start.
-      db = new EventsDatabase(Glean.platform.Storage);
+      db = new EventsDatabase();
       await db.initialize();
     }
 
@@ -553,7 +553,7 @@ describe("EventsDatabase", function() {
     // Product starts.
     const firstStartTime = new Date();
     Context.startTime.setTime(firstStartTime.getTime());
-    let db = new EventsDatabase(Glean.platform.Storage);
+    let db = new EventsDatabase();
     await db.initialize();
 
     const ping = new PingType({
@@ -577,7 +577,7 @@ describe("EventsDatabase", function() {
     const restartedTimeOffset = 1000 * 60 * 60;
     Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset);
     // Product is rebooted.
-    db = new EventsDatabase(Glean.platform.Storage);
+    db = new EventsDatabase();
     await db.initialize();
 
     // New events are recorded.
@@ -607,7 +607,7 @@ describe("EventsDatabase", function() {
     // Product starts.
     const firstStartTime = new Date();
     Context.startTime.setTime(firstStartTime.getTime());
-    let db = new EventsDatabase(Glean.platform.Storage);
+    let db = new EventsDatabase();
     await db.initialize();
 
     const ping = new PingType({
@@ -631,7 +631,7 @@ describe("EventsDatabase", function() {
     const restartedTimeOffset = 1000 * 60 * 60;
     Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset);
     // Product is rebooted.
-    db = new EventsDatabase(Glean.platform.Storage);
+    db = new EventsDatabase();
     await db.initialize();
 
     // New set of events are recorded
@@ -641,7 +641,7 @@ describe("EventsDatabase", function() {
     // Move the clock forward by one more hour.
     Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset * 2);
     // Product is rebooted.
-    db = new EventsDatabase(Glean.platform.Storage);
+    db = new EventsDatabase();
     await db.initialize();
 
     // New set of events are recorded
@@ -674,7 +674,7 @@ describe("EventsDatabase", function() {
   });
 
   it("event timestamps are correct when there are multiple ping submission with no restart", async function () {
-    const db = new EventsDatabase(Glean.platform.Storage);
+    const db = new EventsDatabase();
     await db.initialize();
 
     const timestamps = [[0, 10], [10, 40]];

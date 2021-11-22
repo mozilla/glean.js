@@ -7,6 +7,7 @@ import type MetricsDatabase from "./metrics/database.js";
 import type EventsDatabase from "./metrics/events_database/index.js";
 import type PingsDatabase from "./pings/database.js";
 import type ErrorManager from "./error/index.js";
+import type Platform from "../platform/index.js";
 import Dispatcher from "./dispatcher.js";
 import log, { LoggingLevel } from "./log.js";
 
@@ -28,6 +29,7 @@ export class Context {
   private static _instance?: Context;
 
   private _dispatcher: Dispatcher;
+  private _platform!: Platform;
 
   // The following group of properties are all set on Glean.initialize
   // Attempting to get them before they are set will log an error.
@@ -217,5 +219,23 @@ export class Context {
 
   static set testing(flag: boolean) {
     Context.instance._testing = flag;
+  }
+
+  static set platform(platform: Platform) {
+    Context.instance._platform = platform;
+  }
+
+  static get platform(): Platform {
+    if (typeof Context.instance._platform === "undefined") {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.platform before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
+    return Context.instance._platform;
   }
 }

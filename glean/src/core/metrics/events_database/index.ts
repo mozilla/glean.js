@@ -5,7 +5,6 @@
 import type Store from "../../storage/index.js";
 import type { JSONArray, JSONObject, JSONValue } from "../../utils.js";
 import { isString } from "../../utils.js";
-import type { StorageBuilder } from "../../../platform/index.js";
 import { isUndefined } from "../../utils.js";
 import EventMetricType from "../types/event.js";
 import log, { LoggingLevel } from "../../log.js";
@@ -123,8 +122,8 @@ class EventsDatabase {
   private eventsStore: Store;
   private initialized = false;
 
-  constructor(storage: StorageBuilder) {
-    this.eventsStore = new storage("events");
+  constructor() {
+    this.eventsStore = new Context.platform.Storage("events");
   }
 
   private async getAvailableStoreNames(): Promise<string[]> {
