@@ -265,7 +265,7 @@ describe("Glean", function() {
   });
 
   it("deletion request is sent when toggling upload from on to off", async function() {
-    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+    const postSpy = sandbox.spy(Context.platform.uploader, "post");
 
     Glean.setUploadEnabled(false);
     await Context.dispatcher.testBlockOnQueue();
@@ -360,7 +360,7 @@ describe("Glean", function() {
   });
 
   it("deletion request ping is not sent when user starts Glean for the first time with upload disabled", async function () {
-    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+    const postSpy = sandbox.spy(Context.platform.uploader, "post");
     await Glean.testResetGlean(testAppId, false);
     assert.strictEqual(postSpy.callCount, 0);
     assert.strictEqual(Context.uploadEnabled, false);
@@ -528,7 +528,7 @@ describe("Glean", function() {
 
     Glean.setPlatform(MockPlatform);
 
-    assert.strictEqual(TestPlatform.name, Glean.platform.name);
+    assert.strictEqual(TestPlatform.name, Context.platform.name);
   });
 
   it("shutdown correctly shutsdown dispatcher and ping uploader", async function () {
@@ -538,7 +538,7 @@ describe("Glean", function() {
   });
 
   it("shutdown allows all pending pings to be sent before shutting down uploader", async function() {
-    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+    const postSpy = sandbox.spy(Context.platform.uploader, "post");
 
     // `setUploadEnabled` is a task dispatched on the main dispatcher,
     // this task will dispatch an upload task to the upload dispatcher.

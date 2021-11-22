@@ -127,7 +127,7 @@ describe("PingUploader", function() {
 
   it("correctly deletes pings when upload is unrecoverably unsuccesfull", async function() {
     // Always return unrecoverable failure response from upload attempt.
-    sandbox.stub(Glean.platform.uploader, "post").callsFake(() => Promise.resolve({
+    sandbox.stub(Context.platform.uploader, "post").callsFake(() => Promise.resolve({
       status: 400,
       result: UploadResultStatus.Success
     }));
@@ -138,7 +138,7 @@ describe("PingUploader", function() {
 
   it("correctly re-enqueues pings when upload is recoverably unsuccesfull", async function() {
     // Always return recoverable failure response from upload attempt.
-    sandbox.stub(Glean.platform.uploader, "post").callsFake(() => Promise.resolve({
+    sandbox.stub(Context.platform.uploader, "post").callsFake(() => Promise.resolve({
       status: 500,
       result: UploadResultStatus.Success
     }));
@@ -179,7 +179,7 @@ describe("PingUploader", function() {
 
   it("maximum of recoverable errors is enforced", async function () {
     // Always return recoverable failure response from upload attempt.
-    const stub = sandbox.stub(Glean.platform.uploader, "post").callsFake(() => Promise.resolve({
+    const stub = sandbox.stub(Context.platform.uploader, "post").callsFake(() => Promise.resolve({
       status: 500,
       result: UploadResultStatus.Success
     }));
@@ -187,7 +187,6 @@ describe("PingUploader", function() {
     // Create a new ping uploader with a fixed max recoverable failures limit.
     const uploader = new PingUploader(
       new Configuration(),
-      Glean.platform,
       Context.pingsDatabase,
       new Policy(
         3, // maxRecoverableFailures
@@ -208,7 +207,6 @@ describe("PingUploader", function() {
     // so that virtually any ping body will throw an error.
     const uploader = new PingUploader(
       new Configuration(),
-      Glean.platform,
       Context.pingsDatabase,
       new Policy(
         3, // maxRecoverableFailures
@@ -219,7 +217,7 @@ describe("PingUploader", function() {
     // Overwrite the Glean ping uploader with the test one.
     Context.pingsDatabase.attachObserver(uploader);
 
-    const spy = sandbox.spy(Glean.platform.uploader, "post");
+    const spy = sandbox.spy(Context.platform.uploader, "post");
     // Add a bunch of pings to the database, in order to trigger upload attempts on the uploader.
     await fillUpPingsDatabase(10);
     await uploader.testBlockOnPingsQueue();
@@ -232,7 +230,7 @@ describe("PingUploader", function() {
   });
 
   it("correctly build ping request", async function () {
-    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+    const postSpy = sandbox.spy(Context.platform.uploader, "post");
 
     const expectedDocumentId = (await fillUpPingsDatabase(1))[0];
     await Glean["pingUploader"].testBlockOnPingsQueue();

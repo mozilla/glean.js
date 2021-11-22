@@ -34,9 +34,6 @@ class Glean {
   // Instances of Glean's core pings.
   private _corePings: CorePings;
 
-  // The environment must be set before initialize.
-  private _platform?: Platform;
-
   // Properties that will only be set on `initialize`.
 
   // The ping uploader. Note that we need to use the definite assignment assertion
@@ -86,7 +83,7 @@ class Glean {
    */
   private static async onUploadEnabled(): Promise<void> {
     Context.uploadEnabled = true;
-    await Glean.coreMetrics.initialize(Glean.instance._config, Glean.platform);
+    await Glean.coreMetrics.initialize(Glean.instance._config, Context.platform);
   }
 
   /**
@@ -220,7 +217,7 @@ class Glean {
       return;
     }
 
-    if (!Glean.instance._platform) {
+    if (!Context.platform) {
       log(
         LOG_TAG,
         "Unable to initialize Glean, platform has not been set.",
@@ -236,12 +233,12 @@ class Glean {
     Context.debugOptions = correctConfig.debug;
     Glean.instance._config = correctConfig;
 
-    Context.metricsDatabase = new MetricsDatabase(Glean.platform.Storage);
-    Context.eventsDatabase = new EventsDatabase(Glean.platform.Storage);
-    Context.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
+    Context.metricsDatabase = new MetricsDatabase();
+    Context.eventsDatabase = new EventsDatabase();
+    Context.pingsDatabase = new PingsDatabase();
     Context.errorManager = new ErrorManager();
 
-    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Context.pingsDatabase);
+    Glean.instance._pingUploader = new PingUploader(correctConfig, Context.pingsDatabase);
 
     Context.pingsDatabase.attachObserver(Glean.pingUploader);
 
@@ -338,11 +335,11 @@ class Glean {
   }
 
   static get platform(): Platform {
-    if (!Glean.instance._platform) {
+    if (!Context.platform) {
       throw new Error("IMPOSSIBLE: Attempted to access environment specific APIs before Glean was initialized.");
     }
 
-    return Glean.instance._platform;
+    return Context.platform;
   }
 
   /**
@@ -492,18 +489,18 @@ class Glean {
       return;
     }
 
-    if (Glean.instance._platform && Glean.instance._platform.name !== platform.name && !Context.testing) {
+    if (Context.platform && Context.platform.name !== platform.name && !Context.testing) {
       log(
         LOG_TAG,
         [
           `IMPOSSIBLE: Attempted to change Glean's targeted platform",
-          "from "${Glean.platform.name}" to "${platform.name}". Ignoring.`,
+          "from "${Context.platform.name}" to "${platform.name}". Ignoring.`,
         ],
         LoggingLevel.Error
       );
     }
 
-    Glean.instance._platform = platform;
+    Context.platform = platform;
   }
 
   /**
