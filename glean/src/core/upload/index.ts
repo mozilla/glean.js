@@ -4,7 +4,6 @@
 
 import { gzipSync, strToU8 } from "fflate";
 
-import type Platform from "../../platform/index.js";
 import type { Configuration } from "../config.js";
 import { GLEAN_VERSION } from "../constants.js";
 import { Context } from "../context.js";

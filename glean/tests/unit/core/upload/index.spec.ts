@@ -50,7 +50,7 @@ describe("PingUploader", function() {
         identifier,
         { name: pingName, includeClientId: true, sendIfEmpty: true }
       );
-      await pingsDatabase.recordPing(path, identifier, payload)
+      await pingsDatabase.recordPing(path, identifier, payload);
     }
 
     return identifiers;

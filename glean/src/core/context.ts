@@ -226,6 +226,16 @@ export class Context {
   }
 
   static get platform(): Platform {
+    if (typeof Context.instance._platform === "undefined") {
+      log(
+        LOG_TAG,
+        [
+          "Attempted to access Context.platform before it was set. This may cause unexpected behaviour.",
+        ],
+        LoggingLevel.Error
+      );
+    }
+
     return Context.instance._platform;
   }
 }
