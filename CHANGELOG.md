@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.27.0...main)
 
+* [#984](https://github.com/mozilla/glean.js/pull/984): BUGFIX: Return correct upload result in case an error happens while building a ping request.
+
 # v0.27.0 (2021-11-22)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.26.0...v0.27.0)
