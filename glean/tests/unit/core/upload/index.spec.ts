@@ -226,6 +226,9 @@ describe("PingUploader", function() {
 
     // Check that none of those pings were actually sent.
     assert.strictEqual(spy.callCount, 0);
+
+    // Check that queue is empty and all large pings were discarded.
+    assert.strictEqual(uploader["processing"].length, 0);
   });
 
   it("correctly build ping request", async function () {

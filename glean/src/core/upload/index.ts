@@ -281,7 +281,7 @@ class PingUploader implements PingsDatabaseObserver {
       log(LOG_TAG, [ "Error trying to build ping request:", e ], LoggingLevel.Warn);
       // An unrecoverable failure will make sure the offending ping is removed from the queue and
       // deleted from the database, which is what we want here.
-      return new UploadResult(UploadResultStatus.RecoverableFailure);
+      return new UploadResult(UploadResultStatus.UnrecoverableFailure);
     }
   }
 
