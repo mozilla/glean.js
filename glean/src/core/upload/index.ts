@@ -29,7 +29,7 @@ const LOG_TAG = "core.Upload";
 // Default rate limiter interval, in milliseconds.
 export const RATE_LIMITER_INTERVAL_MS = 60 * 1000;
 // Default max pings per internal.
-export const MAX_PINGS_PER_INTERVAL = 15;
+export const MAX_PINGS_PER_INTERVAL = 40;
 
 /**
  * Create and initialize a dispatcher for the PingUplaoder.
