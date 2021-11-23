@@ -67,7 +67,7 @@ class PingBodyOverflowError extends Error {
  * If three retriable upload failures are hit in a row,
  * we bail out before uploading all enqued pings.
  */
-class PingUploader implements PingsDatabaseObserver {
+class PingUploadManager implements PingsDatabaseObserver {
   // A list of pings currently being processed.
   private processing: QueuedPing[];
   // Local dispathcer instance to handle execution of ping requests.
@@ -401,4 +401,4 @@ class PingUploader implements PingsDatabaseObserver {
   }
 }
 
-export default PingUploader;
+export default PingUploadManager;

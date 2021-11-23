@@ -9,7 +9,7 @@ import { v4 as UUIDv4 } from "uuid";
 import { Configuration } from "../../../../src/core/config";
 import { Context } from "../../../../src/core/context";
 import Glean from "../../../../src/core/glean";
-import PingUploader, { MAX_PINGS_PER_INTERVAL } from "../../../../src/core/upload";
+import PingUploadManager, { MAX_PINGS_PER_INTERVAL } from "../../../../src/core/upload/manager";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 import { CounterUploader, WaitableUploader } from "../../../utils";
 import { DELETION_REQUEST_PING_NAME } from "../../../../src/core/constants";
@@ -19,7 +19,7 @@ import Policy from "../../../../src/core/upload/policy";
 
 const sandbox = sinon.createSandbox();
 
-describe("PingUploader", function() {
+describe("PingUploadManager", function() {
   const testAppId = `gleanjs.test.${this.title}`;
   let pingsDatabase: PingsDatabase;
 
@@ -71,7 +71,7 @@ describe("PingUploader", function() {
 
   it("whenever the pings database records a new ping, upload is triggered", async function() {
     const httpClient = new WaitableUploader();
-    const uploader = new PingUploader(new Configuration({ httpClient }), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration({ httpClient }), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     const uploadedPings = httpClient.waitForBatchPingSubmission("ping", 10);
@@ -82,7 +82,7 @@ describe("PingUploader", function() {
 
   it("clearing succesfully stops ongoing upload work", async function () {
     const httpClient = new CounterUploader();
-    const uploader = new PingUploader(new Configuration({ httpClient }), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration({ httpClient }), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     await fillUpPingsDatabase(10);
@@ -96,7 +96,7 @@ describe("PingUploader", function() {
   it("clearing does not clear deletion-request ping job", async function () {
     const httpClient = new WaitableUploader();
     const postSpy = sandbox.spy(httpClient, "post");
-    const uploader = new PingUploader(new Configuration({ httpClient }), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration({ httpClient }), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     await fillUpPingsDatabase(10);
@@ -115,7 +115,7 @@ describe("PingUploader", function() {
 
   it("shutdown finishes executing requests before stopping", async function () {
     const httpClient = new CounterUploader();
-    const uploader = new PingUploader(new Configuration({ httpClient }), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration({ httpClient }), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     await fillUpPingsDatabase(10);
@@ -126,7 +126,7 @@ describe("PingUploader", function() {
 
   it("shutdown only executes a fraction of the requests if rate limit is hit", async function () {
     const httpClient = new CounterUploader();
-    const uploader = new PingUploader(new Configuration({ httpClient }), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration({ httpClient }), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL + 5);
@@ -136,7 +136,7 @@ describe("PingUploader", function() {
   });
 
   it("correctly deletes pings when upload is successfull", async function() {
-    const uploader = new PingUploader(new Configuration(), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     // There is no need to stub the upload adapter here,
@@ -154,7 +154,7 @@ describe("PingUploader", function() {
       result: UploadResultStatus.Success
     }));
 
-    const uploader = new PingUploader(new Configuration(), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     await fillUpPingsDatabase(10);
@@ -169,7 +169,7 @@ describe("PingUploader", function() {
       result: UploadResultStatus.Success
     }));
 
-    const uploader = new PingUploader(new Configuration(), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     await fillUpPingsDatabase(1);
@@ -181,7 +181,7 @@ describe("PingUploader", function() {
 
   it("duplicates are not enqueued", async function() {
     const httpClient = new CounterUploader();
-    const uploader = new PingUploader(new Configuration({ httpClient }), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration({ httpClient }), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     for (let i = 0; i < 10; i++) {
@@ -215,7 +215,7 @@ describe("PingUploader", function() {
     }));
 
     // Create a new ping uploader with a fixed max recoverable failures limit.
-    const uploader = new PingUploader(
+    const uploader = new PingUploadManager(
       new Configuration(),
       pingsDatabase,
       new Policy(
@@ -234,7 +234,7 @@ describe("PingUploader", function() {
     const httpClient = new CounterUploader();
     // Create a new ping uploader with a very low max ping body size,
     // so that virtually any ping body will throw an error.
-    const uploader = new PingUploader(
+    const uploader = new PingUploadManager(
       new Configuration({ httpClient }),
       pingsDatabase,
       new Policy(
@@ -258,7 +258,7 @@ describe("PingUploader", function() {
   it("correctly build ping request", async function () {
     const postSpy = sandbox.spy(Context.platform.uploader, "post");
 
-    const uploader = new PingUploader(new Configuration(), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     const expectedDocumentId = (await fillUpPingsDatabase(1))[0];
@@ -282,7 +282,7 @@ describe("PingUploader", function() {
 
   it("dispatcher is only once stopped if upload limits are hit and is immediatelly restarted after", async function () {
     const httpClient = new CounterUploader();
-    const uploader = new PingUploader(new Configuration({ httpClient }), pingsDatabase);
+    const uploader = new PingUploadManager(new Configuration({ httpClient }), pingsDatabase);
     pingsDatabase.attachObserver(uploader);
 
     const stopSpy = sandbox.spy(uploader["dispatcher"], "stop");
