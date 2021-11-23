@@ -4,6 +4,11 @@
 
 import { isUndefined, getMonotonicNow } from "../utils.js";
 
+// Default rate limiter interval, in milliseconds.
+export const RATE_LIMITER_INTERVAL_MS = 60 * 1000;
+// Default max pings per internal.
+export const MAX_PINGS_PER_INTERVAL = 40;
+
 /**
  * An enum to represent the current state of the RateLimiter.
  */
@@ -24,9 +29,9 @@ class RateLimiter {
 
   constructor(
     // The duration of each interval, in millisecods.
-    private interval: number,
+    private interval: number = RATE_LIMITER_INTERVAL_MS,
     // The maximum count per interval.
-    private maxCount: number,
+    private maxCount: number = MAX_PINGS_PER_INTERVAL,
     // The count for the current interval.
     private count: number = 0,
     // The instant the current interval has started, in milliseconds.

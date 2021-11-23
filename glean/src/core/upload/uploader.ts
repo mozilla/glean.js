@@ -48,7 +48,7 @@ export abstract class Uploader {
    * @param body The body of this post request. The body may be a stringified JSON or, most likely,
    *        a Uint8Array containing the gzipped version of said stringified JSON. We need to accept
    *        both in case the compression fails.
-   * @param headers Optional header to include in the request
+   * @param headers Optional headers to include in the request
    * @returns The status code of the response.
    */
   abstract post(url: string, body: string | Uint8Array, headers?: Record<string, string>): Promise<UploadResult>;

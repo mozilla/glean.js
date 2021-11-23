@@ -9,12 +9,13 @@ import { v4 as UUIDv4 } from "uuid";
 import { Configuration } from "../../../../src/core/config";
 import { Context } from "../../../../src/core/context";
 import Glean from "../../../../src/core/glean";
-import PingUploader, { MAX_PINGS_PER_INTERVAL, Policy } from "../../../../src/core/upload";
+import PingUploader, { MAX_PINGS_PER_INTERVAL } from "../../../../src/core/upload";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 import { CounterUploader, WaitableUploader } from "../../../utils";
 import { DELETION_REQUEST_PING_NAME } from "../../../../src/core/constants";
 import PingsDatabase from "../../../../src/core/pings/database";
 import { makePath } from "../../../../src/core/pings/maker";
+import Policy from "../../../../src/core/upload/policy";
 
 const sandbox = sinon.createSandbox();
 

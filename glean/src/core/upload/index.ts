@@ -18,10 +18,10 @@ import {
   isDeletionRequest
 } from "../pings/database.js";
 import type PlatformInfo from "../platform_info.js";
-import { UploadResult } from "./uploader.js";
 import type Uploader from "./uploader.js";
-import { UploadResultStatus } from "./uploader.js";
+import { UploadResult, UploadResultStatus } from "./uploader.js";
 import RateLimiter, { RateLimiterState } from "./rate_limiter.js";
+import Policy from "./policy.js";
 
 const LOG_TAG = "core.Upload";
 
@@ -39,20 +39,6 @@ function createAndInitializeDispatcher(): Dispatcher {
   const dispatcher = new Dispatcher(100, `${LOG_TAG}.Dispatcher`);
   dispatcher.flushInit();
   return dispatcher;
-}
-
-/**
- * Policies for ping storage, uploading and requests.
- */
-export class Policy {
-  constructor (
-    // The maximum recoverable failures allowed per uploading window.
-    //
-    // Limiting this is necessary to avoid infinite loops on requesting upload tasks.
-    readonly maxRecoverableFailures: number = 3,
-    // The maximum size in bytes a ping body may have to be eligible for upload.
-    readonly maxPingBodySize: number = 1024 * 1024 // 1MB
-  ) {}
 }
 
 interface QueuedPing extends PingInternalRepresentation {
@@ -268,9 +254,6 @@ class PingUploader implements PingsDatabaseObserver {
     try {
       const finalPing = await this.preparePingForUpload(ping);
       return await this.uploader.post(
-        // We are sure that the applicationId is not `undefined` at this point,
-        // this function is only called when submitting a ping
-        // and that function return early when Glean is not initialized.
         `${this.serverEndpoint}${ping.path}`,
         finalPing.payload,
         finalPing.headers
