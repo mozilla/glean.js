@@ -7,6 +7,9 @@
  */
 export default class Policy {
   constructor (
+    // The maximum times a ping upload worker may get Wait_UploadTask responses
+    // when getting upload tasks.
+    readonly maxWaitAttempts: number = 3,
     // The maximum recoverable failures allowed per uploading window.
     //
     // Limiting this is necessary to avoid infinite loops on requesting upload tasks.

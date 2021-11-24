@@ -240,8 +240,6 @@ class Glean {
 
     Glean.instance._pingUploader = new PingUploadManager(correctConfig, Context.pingsDatabase);
 
-    Context.pingsDatabase.attachObserver(Glean.pingUploader);
-
     if (config?.plugins) {
       for (const plugin of config.plugins) {
         registerPluginToEvent(plugin);
@@ -460,11 +458,11 @@ class Glean {
   static async shutdown(): Promise<void> {
     // Order here matters!
     //
-    // The main dispatcher needs to be shut down first,
-    // because some of its tasks may enqueue new tasks on the ping uploader dispatcher
+    // The dispatcher needs to be shutdown first,
+    // because some of its tasks may enqueue new pings to upload
     // and we want these uploading tasks to also be executed prior to complete shutdown.
     await Context.dispatcher.shutdown();
-    await Glean.pingUploader.shutdown();
+    await Glean.pingUploader.blockOnOngoingUploads();
   }
 
   /**
