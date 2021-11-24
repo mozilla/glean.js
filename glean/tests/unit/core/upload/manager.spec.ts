@@ -16,6 +16,8 @@ import { DELETION_REQUEST_PING_NAME } from "../../../../src/core/constants";
 import PingsDatabase from "../../../../src/core/pings/database";
 import { makePath } from "../../../../src/core/pings/maker";
 import Policy from "../../../../src/core/upload/policy";
+import { UploadTaskTypes } from "../../../../src/core/upload/task";
+import { MAX_PINGS_PER_INTERVAL } from "../../../../src/core/upload/rate_limiter";
 
 const sandbox = sinon.createSandbox();
 
@@ -67,6 +69,102 @@ describe("PingUploadManager", function() {
   afterEach(async function () {
     await pingsDatabase.clearAll();
     sandbox.restore();
+  });
+
+  it("attempting to get an upload task when the queue is empty doesn't cause errors", function () {
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
+    assert.doesNotThrow(() => uploader.getUploadTask());
+  });
+
+  it("attempting to get an upload task returns a upload type task when there are queued pings", async function () {
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
+    // Disable worker so that it is not calling `getUploadTask` in parallel.
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    uploader["worker"]["work"] = () => {};
+
+    await fillUpPingsDatabase(1);
+
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Upload);
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
+  });
+
+  it("attempting to get an upload task returns as many upload type tasks as there are", async function () {
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
+    // Disable worker so that it is not calling `getUploadTask` in parallel.
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    uploader["worker"]["work"] = () => {};
+
+    await fillUpPingsDatabase(10);
+
+    for (let i = 0; i < 10; i++) {
+      assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Upload);
+    }
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
+  });
+
+  it("rate limits the amount of upload type tasks allowed", async function () {
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
+    // Disable worker so that it is not calling `getUploadTask` in parallel.
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    uploader["worker"]["work"] = () => {};
+
+    await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL * 2);
+
+    for (let i = 0; i < MAX_PINGS_PER_INTERVAL; i++) {
+      assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Upload);
+    }
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Wait);
+  });
+
+  it("when throttled window is complete uploading jobs can be resumed", async function () {
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
+    // Disable worker so that it is not calling `getUploadTask` in parallel.
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    uploader["worker"]["work"] = () => {};
+
+    await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL + 5);
+
+    for (let i = 0; i < MAX_PINGS_PER_INTERVAL; i++) {
+      assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Upload);
+    }
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Wait);
+
+    // Manually reset the rate limiter to mock throttling period being over.
+    uploader["rateLimiter"]["reset"]();
+
+    for (let i = 0; i < 5; i++) {
+      assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Upload);
+    }
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
+  });
+
+  it("new pings are added to the queue and processed while upload is in process", async function () {
+    const httpClient = new CounterUploader();
+    const uploader = new PingUploadManager(new Configuration({ httpClient }), pingsDatabase);
+
+    await fillUpPingsDatabase(10);
+
+    // Use `enqueuePing` directly to avoid calling `worker.work` again.
+    // We want to check that the ping can be enqueued and processed on the same job.
+    uploader["enqueuePing"]({
+      collectionDate: (new Date()).toISOString(),
+      identifier: "id",
+      retries: 0,
+      payload: {
+        ping_info: {
+          seq: 1,
+          start_time: "2020-01-11+01:00",
+          end_time: "2020-01-12+01:00",
+        },
+        client_info: {
+          telemetry_sdk_build: "32.0.0"
+        }
+      },
+      path: "some/path"
+    });
+
+    await uploader.blockOnOngoingUploads();
+    assert.strictEqual(httpClient.count, 11);
   });
 
   it("whenever the pings database records a new ping, upload is triggered", async function() {
@@ -191,6 +289,7 @@ describe("PingUploadManager", function() {
       new Configuration(),
       pingsDatabase,
       new Policy(
+        3, // maxWaitAttempts
         3, // maxRecoverableFailures
       )
     );
@@ -199,5 +298,26 @@ describe("PingUploadManager", function() {
     await uploader.blockOnOngoingUploads();
 
     assert.strictEqual(stub.callCount, 3);
+  });
+
+  it("maximum of wait attempts is enforced", async function () {
+    // Create a new ping uploader with a fixed max wait attempts limit.
+    const uploader = new PingUploadManager(
+      new Configuration(),
+      pingsDatabase,
+      new Policy(
+        3, // maxWaitAttempts
+      )
+    );
+
+    // Fill up the pings database and exceed the rate limit.
+    await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL + 5);
+    // Wait for the worker to finish processing the ping requests.
+    // It should stop when it receives a `Wait_UploadTask`.
+    await uploader.blockOnOngoingUploads();
+
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Wait);
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Wait);
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
   });
 });

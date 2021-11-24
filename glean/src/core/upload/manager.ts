@@ -107,7 +107,7 @@ class PingUploadManager implements PingsDatabaseObserver {
       }
 
       this.waitAttemptCount++;
-      if (this.waitAttemptCount >= this.policy.maxWaitAttempts) {
+      if (this.waitAttemptCount > this.policy.maxWaitAttempts) {
         return uploadTaskFactory.done();
       }
 
