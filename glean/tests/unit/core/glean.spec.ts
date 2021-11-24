@@ -18,7 +18,6 @@ import TestPlatform from "../../../src/platform/test";
 import Plugin from "../../../src/plugins";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
-import { DispatcherState } from "../../../src/core/dispatcher";
 import EventMetricType from "../../../src/core/metrics/types/event";
 import { getGleanRestartedEventMetric } from "../../../src/core/metrics/events_database";
 
@@ -461,7 +460,7 @@ describe("Glean", function() {
     //
     // This disables the uploading and deletion of pings from the pings database,
     // this allows us to query the database to check that our pings are as expected.
-    await stopGleanUploader();
+    stopGleanUploader();
 
     const custom = new PingType({
       name: "custom",
@@ -529,12 +528,6 @@ describe("Glean", function() {
     Glean.setPlatform(MockPlatform);
 
     assert.strictEqual(TestPlatform.name, Context.platform.name);
-  });
-
-  it("shutdown correctly shutsdown dispatcher and ping uploader", async function () {
-    await Glean.shutdown();
-    assert.strictEqual(Context.dispatcher["state"], DispatcherState.Shutdown);
-    assert.strictEqual(Glean["pingUploader"]["dispatcher"]["state"], DispatcherState.Shutdown);
   });
 
   it("shutdown allows all pending pings to be sent before shutting down uploader", async function() {
