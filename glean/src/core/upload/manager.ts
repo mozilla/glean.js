@@ -81,30 +81,24 @@ class PingUploadManager implements PingsDatabaseObserver {
 
   private getUploadTaskInternal(): UploadTask {
     if (this.recoverableFailureCount >= this.policy.maxRecoverableFailures) {
+      log(
+        LOG_TAG,
+        "Glean has reached maximum recoverable upload failures for the current uploading window.",
+        LoggingLevel.Debug
+      );
       return uploadTaskFactory.done();
     }
 
     const { state, remainingTime } = this.rateLimiter.getState();
-    if (state !== RateLimiterState.Incrementing) {
-      if (state === RateLimiterState.Throttled) {
-        log(
-          LOG_TAG,
-          [
-            "Glean is currently throttled.",
-            `Pending pings may be uploaded in ${(remainingTime || 0) / 1000}s.`
-          ],
-          LoggingLevel.Debug
-        );
-      } else if (state === RateLimiterState.Stopped) {
-        log(
-          LOG_TAG,
-          [
-            "Glean has reached maximum recoverable upload failures for the current uploading window.",
-            `May retry in ${(remainingTime || 0) / 1000}s.`
-          ],
-          LoggingLevel.Debug
-        );
-      }
+    if (state === RateLimiterState.Throttled) {
+      log(
+        LOG_TAG,
+        [
+          "Glean is currently throttled.",
+          `Pending pings may be uploaded in ${(remainingTime || 0) / 1000}s.`
+        ],
+        LoggingLevel.Debug
+      );
 
       this.waitAttemptCount++;
       if (this.waitAttemptCount > this.policy.maxWaitAttempts) {

@@ -21,7 +21,7 @@ export const enum UploadTaskTypes {
 //
 // An "uploading window" starts when a requester gets a new
 // `Upload_UploadTask` response and finishes when they
-// finally get a `Done_UploadTask` or `Wai_UploadTask` response.
+// finally get a `Done_UploadTask` or `Wait_UploadTask` response.
 type Done_UploadTask = {
   type: UploadTaskTypes.Done
 };
