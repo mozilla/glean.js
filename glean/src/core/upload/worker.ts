@@ -104,7 +104,7 @@ class PingUploadWorker {
         finalPing.headers
       );
     } catch(e) {
-      log(LOG_TAG, [ "Error trying to build ping request:", e ], LoggingLevel.Warn);
+      log(LOG_TAG, [ "Error trying to build or post ping request:", e ], LoggingLevel.Warn);
       // An unrecoverable failure will make sure the offending ping is removed from the queue and
       // deleted from the database, which is what we want here.
       return new UploadResult(UploadResultStatus.UnrecoverableFailure);

@@ -10,7 +10,7 @@ export const enum UploadTaskTypes {
   Upload = "upload",
 }
 
-// A flag signaling that worker doesn't need to request any more upload tasks at this moment.
+// A flag signaling that the worker doesn't need to request any more upload tasks at this moment.
 //
 // There are three possibilities for this scenario:
 // * Pending pings queue is empty, no more pings to request;

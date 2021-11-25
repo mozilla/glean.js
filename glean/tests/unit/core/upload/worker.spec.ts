@@ -215,7 +215,7 @@ describe("PingUploadWorker", function() {
     assert.strictEqual(resultInternalServerError.status, 500);
   });
 
-  it("pings which exceed max ping body size are not sent and an correct result is returned", async function () {
+  it("pings which exceed max ping body size are not sent and a correct result is returned", async function () {
     const uploader = new CounterUploader();
     // Create a new worker with a very low max ping body size,
     // so that virtually any ping body will throw an error.
