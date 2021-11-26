@@ -238,4 +238,8 @@ export class Context {
 
     return Context.instance._platform;
   }
+
+  static isPlatformSet(): boolean {
+    return !!Context.instance._platform;
+  }
 }

@@ -487,7 +487,7 @@ class Glean {
       return;
     }
 
-    if (Context.platform && Context.platform.name !== platform.name && !Context.testing) {
+    if (Context.isPlatformSet() && Context.platform.name !== platform.name && !Context.testing) {
       log(
         LOG_TAG,
         [
