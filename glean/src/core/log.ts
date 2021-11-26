@@ -11,7 +11,9 @@ export enum LoggingLevel {
   // Will result in calling the `console.warn` API.
   Warn = "warn",
   // Will result in calling the `console.error` API.
-  Error = "error"
+  Error = "error",
+  // Will result in calling the `console.trace` API.
+  Trace = "trace",
 }
 
 /**

@@ -82,7 +82,7 @@ export class Context {
         [
           "Attempted to access Context.uploadEnabled before it was set. This may cause unexpected behaviour.",
         ],
-        LoggingLevel.Error
+        LoggingLevel.Trace
       );
     }
 
@@ -100,7 +100,7 @@ export class Context {
         [
           "Attempted to access Context.metricsDatabase before it was set. This may cause unexpected behaviour.",
         ],
-        LoggingLevel.Error
+        LoggingLevel.Trace
       );
     }
 
@@ -118,7 +118,7 @@ export class Context {
         [
           "Attempted to access Context.eventsDatabase before it was set. This may cause unexpected behaviour.",
         ],
-        LoggingLevel.Error
+        LoggingLevel.Trace
       );
     }
 
@@ -136,7 +136,7 @@ export class Context {
         [
           "Attempted to access Context.pingsDatabase before it was set. This may cause unexpected behaviour.",
         ],
-        LoggingLevel.Error
+        LoggingLevel.Trace
       );
     }
 
@@ -154,7 +154,7 @@ export class Context {
         [
           "Attempted to access Context.errorManager before it was set. This may cause unexpected behaviour.",
         ],
-        LoggingLevel.Error
+        LoggingLevel.Trace
       );
     }
 
@@ -172,7 +172,7 @@ export class Context {
         [
           "Attempted to access Context.applicationId before it was set. This may cause unexpected behaviour.",
         ],
-        LoggingLevel.Error
+        LoggingLevel.Trace
       );
     }
 
@@ -198,7 +198,7 @@ export class Context {
         [
           "Attempted to access Context.debugOptions before it was set. This may cause unexpected behaviour.",
         ],
-        LoggingLevel.Error
+        LoggingLevel.Trace
       );
     }
 
@@ -232,10 +232,14 @@ export class Context {
         [
           "Attempted to access Context.platform before it was set. This may cause unexpected behaviour.",
         ],
-        LoggingLevel.Error
+        LoggingLevel.Trace
       );
     }
 
     return Context.instance._platform;
+  }
+
+  static isPlatformSet(): boolean {
+    return !!Context.instance._platform;
   }
 }
