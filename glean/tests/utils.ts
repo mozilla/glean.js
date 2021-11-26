@@ -28,11 +28,12 @@ export function unzipPingPayload(payload: Uint8Array | string): JSONObject {
 }
 
 /**
- * Disables the uploader on the Glean singleton,
+ * Disables the uploading on the Glean singleton,
  * so that it doesn't interefe with tests.
  */
-export async function stopGleanUploader(): Promise<void> {
-  await Glean["pingUploader"]["dispatcher"].shutdown();
+export function stopGleanUploader(): void {
+  // eslint-disable-next-line @typescript-eslint/no-empty-function
+  Glean["pingUploader"]["worker"]["work"] = () => {};
 }
 
 /**

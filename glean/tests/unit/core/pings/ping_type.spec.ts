@@ -40,7 +40,7 @@ describe("PingType", function() {
 
   it("collects and stores ping on submit", async function () {
     // Disable ping uploading for it not to interfere with this tests.
-    await stopGleanUploader();
+    stopGleanUploader();
 
     const ping = new PingType({
       name: "custom",
@@ -63,7 +63,7 @@ describe("PingType", function() {
 
   it("empty pings with send if empty flag are submitted", async function () {
     // Disable ping uploading for it not to interfere with this tests.
-    await stopGleanUploader();
+    stopGleanUploader();
 
     const ping1 = new PingType({
       name: "ping1",

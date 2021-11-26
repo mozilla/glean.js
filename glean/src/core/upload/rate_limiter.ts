@@ -4,29 +4,27 @@
 
 import { isUndefined, getMonotonicNow } from "../utils.js";
 
+// Default rate limiter interval, in milliseconds.
+export const RATE_LIMITER_INTERVAL_MS = 60 * 1000;
+// Default max pings per internal.
+export const MAX_PINGS_PER_INTERVAL = 40;
+
 /**
  * An enum to represent the current state of the RateLimiter.
  */
 export const enum RateLimiterState {
   // The RateLimiter has not reached the maximum count and is still incrementing.
   Incrementing,
-  // The RateLimiter has not reached the maximum count, but it is also not incrementing.
-  Stopped,
   // The RateLimiter has reached the maximum count for the current interval.
   Throttled,
 }
 
 class RateLimiter {
-  // Whether or not the RateLimiter is not counting any further for the current interval.
-  // This is different from the RateLimiter being throttled, because it may happen
-  // even if max count for the current interval has not been reached.
-  private stopped = false;
-
   constructor(
     // The duration of each interval, in millisecods.
-    private interval: number,
+    private interval: number = RATE_LIMITER_INTERVAL_MS,
     // The maximum count per interval.
-    private maxCount: number,
+    private maxCount: number = MAX_PINGS_PER_INTERVAL,
     // The count for the current interval.
     private count: number = 0,
     // The instant the current interval has started, in milliseconds.
@@ -53,7 +51,6 @@ class RateLimiter {
   private reset(): void {
     this.started = getMonotonicNow();
     this.count = 0;
-    this.stopped = false;
   }
 
   /**
@@ -92,13 +89,6 @@ class RateLimiter {
     }
 
     const remainingTime = this.interval - this.elapsed;
-    if (this.stopped) {
-      return {
-        state: RateLimiterState.Stopped,
-        remainingTime,
-      };
-    }
-
     if (this.count >= this.maxCount) {
       return {
         state: RateLimiterState.Throttled,
@@ -110,15 +100,6 @@ class RateLimiter {
     return {
       state: RateLimiterState.Incrementing
     };
-  }
-
-  /**
-   * Stops counting for the current interval, regardless of the max count being reached.
-   *
-   * The RateLimiter will still be reset when time interval is over.
-   */
-  stop(): void {
-    this.stopped = true;
   }
 }
 

@@ -7,7 +7,7 @@ import type { ConfigurationInterface } from "./config.js";
 import { Configuration } from "./config.js";
 import MetricsDatabase from "./metrics/database.js";
 import PingsDatabase from "./pings/database.js";
-import PingUploader from "./upload/index.js";
+import PingUploadManager from "./upload/manager.js";
 import { isBoolean, isString, isUndefined, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
 import EventsDatabase from "./metrics/events_database/index.js";
@@ -39,7 +39,7 @@ class Glean {
   // The ping uploader. Note that we need to use the definite assignment assertion
   // because initialization will not happen in the constructor, but in the `initialize`
   // method.
-  private _pingUploader!: PingUploader;
+  private _pingUploader!: PingUploadManager;
   // The Glean configuration object.
   private _config!: Configuration;
 
@@ -62,7 +62,7 @@ class Glean {
     return Glean._instance;
   }
 
-  private static get pingUploader(): PingUploader {
+  private static get pingUploader(): PingUploadManager {
     return Glean.instance._pingUploader;
   }
 
@@ -238,9 +238,7 @@ class Glean {
     Context.pingsDatabase = new PingsDatabase();
     Context.errorManager = new ErrorManager();
 
-    Glean.instance._pingUploader = new PingUploader(correctConfig, Context.pingsDatabase);
-
-    Context.pingsDatabase.attachObserver(Glean.pingUploader);
+    Glean.instance._pingUploader = new PingUploadManager(correctConfig, Context.pingsDatabase);
 
     if (config?.plugins) {
       for (const plugin of config.plugins) {
@@ -460,11 +458,11 @@ class Glean {
   static async shutdown(): Promise<void> {
     // Order here matters!
     //
-    // The main dispatcher needs to be shut down first,
-    // because some of its tasks may enqueue new tasks on the ping uploader dispatcher
+    // The dispatcher needs to be shutdown first,
+    // because some of its tasks may enqueue new pings to upload
     // and we want these uploading tasks to also be executed prior to complete shutdown.
     await Context.dispatcher.shutdown();
-    await Glean.pingUploader.shutdown();
+    await Glean.pingUploader.blockOnOngoingUploads();
   }
 
   /**
