@@ -89,27 +89,29 @@ class PingUploadManager implements PingsDatabaseObserver {
       return uploadTaskFactory.done();
     }
 
-    const { state, remainingTime } = this.rateLimiter.getState();
-    if (state === RateLimiterState.Throttled) {
-      log(
-        LOG_TAG,
-        [
-          "Glean is currently throttled.",
-          `Pending pings may be uploaded in ${(remainingTime || 0) / 1000}s.`
-        ],
-        LoggingLevel.Debug
-      );
+    if (this.queue.length > 0) {
+      const { state, remainingTime } = this.rateLimiter.getState();
+      if (state === RateLimiterState.Throttled) {
+        log(
+          LOG_TAG,
+          [
+            "Glean is currently throttled.",
+            `Pending pings may be uploaded in ${(remainingTime || 0) / 1000}s.`
+          ],
+          LoggingLevel.Debug
+        );
 
-      this.waitAttemptCount++;
-      if (this.waitAttemptCount > this.policy.maxWaitAttempts) {
-        return uploadTaskFactory.done();
+        this.waitAttemptCount++;
+        if (this.waitAttemptCount > this.policy.maxWaitAttempts) {
+          return uploadTaskFactory.done();
+        }
+
+        return uploadTaskFactory.wait(remainingTime || 0);
       }
 
-      return uploadTaskFactory.wait(remainingTime || 0);
-    }
-
-    const nextPing = this.queue.shift();
-    if (nextPing) {
+      // We are sure this array is not empty, so `shift` will never return an `undefined` value.
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      const nextPing = this.queue.shift()!;
       return uploadTaskFactory.upload(nextPing);
     }
 

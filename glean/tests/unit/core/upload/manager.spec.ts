@@ -320,4 +320,15 @@ describe("PingUploadManager", function() {
     assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Wait);
     assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
   });
+
+  it("throttling doesn't kick in if we are right on the limit of allowed pings per interval", async function () {
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
+
+    // Fill up the pings database right at the limit of allowed pings per interval.
+    await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL);
+    // Wait for the worker to finish processing the ping requests.
+    await uploader.blockOnOngoingUploads();
+
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
+  });
 });
