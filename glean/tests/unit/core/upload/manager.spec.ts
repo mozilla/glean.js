@@ -327,7 +327,6 @@ describe("PingUploadManager", function() {
     // Fill up the pings database right at the limit of allowed pings per interval.
     await fillUpPingsDatabase(MAX_PINGS_PER_INTERVAL);
     // Wait for the worker to finish processing the ping requests.
-    // It should stop when it receives a `Wait_UploadTask`.
     await uploader.blockOnOngoingUploads();
 
     assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
