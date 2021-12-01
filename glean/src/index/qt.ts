@@ -15,6 +15,7 @@ import DatetimeMetricType from "../core/metrics/types/datetime.js";
 import EventMetricType from "../core/metrics/types/event.js";
 import LabeledMetricType from "../core/metrics/types/labeled.js";
 import QuantityMetricType from "../core/metrics/types/quantity.js";
+import RateMetricType from "../core/metrics/types/rate.js";
 import StringMetricType from "../core/metrics/types/string.js";
 import StringListMetricType from "../core/metrics/types/string_list.js";
 import TextMetricType from "../core/metrics/types/text.js";
@@ -35,6 +36,7 @@ export default {
     EventMetricType,
     LabeledMetricType,
     QuantityMetricType,
+    RateMetricType,
     StringMetricType,
     StringListMetricType,
     TimespanMetricType,
