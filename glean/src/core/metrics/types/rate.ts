@@ -7,7 +7,8 @@ import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { testOnly } from "../../utils.js";
-import { isNumber, isObject, JSONValue } from "../../utils.js";
+import { isNumber, isObject } from "../../utils.js";
+import type { JSONValue } from "../../utils.js";
 import { ErrorType } from "../../error/error_type.js";
 
 const LOG_TAG = "core.metrics.RateMetricType";

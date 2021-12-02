@@ -12,11 +12,8 @@ import RateMetricType from "../../../../src/core/metrics/types/rate";
 describe("RateMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
-  });
-
   it("smoke test for rate metric", async function() {
+    await Glean.testResetGlean(testAppId);
     Glean.setUploadEnabled(true);
 
     const metric = new RateMetricType({
@@ -43,5 +40,5 @@ describe("RateMetric", function() {
     metric.add_to_denominator(7);
 
     assert.deepStrictEqual(await metric.testGetValue("aPing"), {numerator: 22, denominator: 7});
- });
+  });
 });
