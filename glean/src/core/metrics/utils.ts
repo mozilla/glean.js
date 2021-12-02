@@ -11,6 +11,7 @@ import { BooleanMetric } from "./types/boolean.js";
 import { CounterMetric } from "./types/counter.js";
 import { DatetimeMetric } from "./types/datetime.js";
 import { QuantityMetric } from "./types/quantity.js";
+import { RateMetric } from "./types/rate.js";
 import { StringMetric } from "./types/string.js";
 import { StringListMetric } from "./types/string_list.js";
 import { TextMetric } from "./types/text.js";
@@ -31,6 +32,7 @@ const METRIC_MAP: {
   "labeled_counter": LabeledMetric,
   "labeled_string": LabeledMetric,
   "quantity": QuantityMetric,
+  "rate": RateMetric,
   "string": StringMetric,
   "string_list": StringListMetric,
   "text": TextMetric,

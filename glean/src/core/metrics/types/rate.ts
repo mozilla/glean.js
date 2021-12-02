@@ -7,9 +7,8 @@ import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { testOnly } from "../../utils.js";
-import type { JSONValue } from "../../utils.js";
+import { isNumber, isObject, JSONValue } from "../../utils.js";
 import { ErrorType } from "../../error/error_type.js";
-import { isMap } from "util/types";
 
 const LOG_TAG = "core.metrics.RateMetricType";
 
@@ -18,26 +17,36 @@ export type RateInternalRepresentation = {
   numerator: number,
   // The denominator
   denominator: number
-}
+};
 
 export type RatePayloadRepresentation = {
   // numerator
   numerator: number,
   // The denominator
   denominator: number
-}
+};
 
 export class RateMetric extends Metric<RateInternalRepresentation, RatePayloadRepresentation> {
   constructor(v: unknown) {
     super(v);
   }
 
+  get numerator(): number {
+    return this._inner.numerator;
+  }
+
+  get denominator(): number {
+    return this._inner.denominator;
+  }
+
   validate(v: unknown): v is RateInternalRepresentation {
-    if (!isMap(v)) {
+    if (!isObject(v) || Object.keys(v).length !== 2) {
       return false;
     }
 
-    return ("numerator" in v && "denominator" in v && Object.keys(v).length == 2);
+    const numeratorVerification = "numerator" in v && isNumber(v.numerator) && v.numerator >= 0;
+    const denominatorVerification = "denominator" in v && isNumber(v.denominator) && v.denominator >= 0;
+    return numeratorVerification && denominatorVerification;
   }
 
   payload(): RatePayloadRepresentation {
@@ -92,11 +101,11 @@ class RateMetricType extends MetricType {
           let result: number;
           try {
             metric = new RateMetric(v);
-            result = metric.get().numerator + amount;
+            result = metric.numerator + amount;
           } catch {
             metric = new RateMetric({
               numerator: amount,
-              denominator: 1
+              denominator: 0
             });
             result = amount;
           }
@@ -107,7 +116,7 @@ class RateMetricType extends MetricType {
 
           metric.set({
             numerator: result,
-            denominator: metric.get().denominator
+            denominator: metric.denominator
           });
           return metric;
         };
@@ -146,10 +155,10 @@ class RateMetricType extends MetricType {
           let result: number;
           try {
             metric = new RateMetric(v);
-            result = metric.get().denominator + amount;
+            result = metric.denominator + amount;
           } catch {
             metric = new RateMetric({
-              numerator: 1,
+              numerator: 0,
               denominator: amount
             });
             result = amount;
@@ -160,7 +169,7 @@ class RateMetricType extends MetricType {
           }
 
           metric.set({
-            numerator: metric.get().numerator,
+            numerator: metric.numerator,
             denominator: result
           });
           return metric;

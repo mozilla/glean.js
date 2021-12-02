@@ -3,12 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import { Context } from "../../../../src/core/context";
 import { ErrorType } from "../../../../src/core/error/error_type";
 
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import QuantityMetricType from "../../../../src/core/metrics/types/quantity";
+import RateMetricType from "../../../../src/core/metrics/types/rate";
 
 describe("RateMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -17,93 +16,32 @@ describe("RateMetric", function() {
     await Glean.testResetGlean(testAppId);
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
-    const metric = new QuantityMetricType({
+  it("smoke test for rate metric", async function() {
+    Glean.setUploadEnabled(true);
+
+    const metric = new RateMetricType({
       category: "aCategory",
-      name: "aQuantityMetric",
-      sendInPings: ["aPing", "twoPing", "threePing"],
-      lifetime: Lifetime.Ping,
-      disabled: false
-    });
-
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
-  });
-
-  it("attempting to set when glean upload is disabled is a no-op", async function() {
-    Glean.setUploadEnabled(false);
-
-    const metric = new QuantityMetricType({
-      category: "aCategory",
-      name: "aQuantityMetric",
-      sendInPings: ["aPing", "twoPing", "threePing"],
-      lifetime: Lifetime.Ping,
-      disabled: false
-    });
-
-    metric.set(10);
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
-  });
-
-  it("ping payload is correct", async function() {
-    const metric = new QuantityMetricType({
-      category: "aCategory",
-      name: "aQuantityMetric",
+      name: "aRate",
       sendInPings: ["aPing"],
       lifetime: Lifetime.Ping,
       disabled: false
     });
 
-    metric.set(10);
-    assert.strictEqual(await metric.testGetValue("aPing"), 10);
+    metric.add_to_numerator(0);
+    metric.add_to_denominator(0);
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
-    assert.deepStrictEqual(snapshot, {
-      "quantity": {
-        "aCategory.aQuantityMetric": 10
-      }
-    });
-  });
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0);
 
-  it("set properly sets the value in all pings", async function() {
-    const metric = new QuantityMetricType({
-      category: "aCategory",
-      name: "aQuantityMetric",
-      sendInPings: ["aPing", "twoPing", "threePing"],
-      lifetime: Lifetime.Ping,
-      disabled: false
-    });
+    metric.add_to_numerator(-1);
+    metric.add_to_denominator(-1);
 
-    metric.set(0);
-    assert.strictEqual(await metric.testGetValue("aPing"), 0);
-    assert.strictEqual(await metric.testGetValue("twoPing"), 0);
-    assert.strictEqual(await metric.testGetValue("threePing"), 0);
-  });
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 2);
 
-  it("must not set when passed negative", async function() {
-    const metric = new QuantityMetricType({
-      category: "aCategory",
-      name: "aQuantityMetric",
-      sendInPings: ["aPing"],
-      lifetime: Lifetime.Ping,
-      disabled: false
-    });
+    assert.deepStrictEqual(await metric.testGetValue("aPing"), {numerator: 0, denominator: 0});
 
-    metric.set(-1);
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    metric.add_to_numerator(22);
+    metric.add_to_denominator(7);
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue, "aPing"), 1);
-  });
-
-  it("saturates at boundary", async function() {
-    const metric = new QuantityMetricType({
-      category: "aCategory",
-      name: "aQuantityMetric",
-      sendInPings: ["aPing"],
-      lifetime: Lifetime.Ping,
-      disabled: false
-    });
-
-    metric.set(Number.MAX_SAFE_INTEGER+1);
-    assert.strictEqual(await metric.testGetValue("aPing"), Number.MAX_SAFE_INTEGER);
-  });
+    assert.deepStrictEqual(await metric.testGetValue("aPing"), {numerator: 22, denominator: 7});
+ });
 });
