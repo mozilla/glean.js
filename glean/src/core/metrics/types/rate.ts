@@ -14,9 +14,7 @@ import { ErrorType } from "../../error/error_type.js";
 const LOG_TAG = "core.metrics.RateMetricType";
 
 export type RateInternalRepresentation = {
-  // numerator
   numerator: number,
-  // The denominator
   denominator: number
 };
 
@@ -82,7 +80,7 @@ class RateMetricType extends MetricType {
    *
    * @param amount The amount to increase by. Should be non-negative.
    */
-  add_to_numerator(amount: number): void {
+  addToNumerator(amount: number): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
@@ -136,7 +134,7 @@ class RateMetricType extends MetricType {
    *
    * @param amount The amount to increase by. Should be non-negative.
    */
-  add_to_denominator(amount: number): void {
+  addToDenominator(amount: number): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
@@ -184,11 +182,11 @@ class RateMetricType extends MetricType {
   /**
    * Test-only API.**
    *
-   * Gets the currently stored value as a string.
+   * Gets the currently stored value as a RateInternalPresentation.
    *
    * # Note
    *
-   * this function will return the unencoded URL for convenience.
+   * this function will return the RateInternalPresentation for convenience.
    *
    * This doesn't clear the stored value.
    *
