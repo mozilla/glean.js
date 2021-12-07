@@ -133,7 +133,6 @@ class PingUploadWorker {
       // Note that the timer must be cleared in case an abort signal is issued.
       case UploadTaskTypes.Wait:
       case UploadTaskTypes.Done:
-        this.currentJob = undefined;
         return;
       }
     }
@@ -152,7 +151,17 @@ class PingUploadWorker {
     processUploadResponse: (ping: QueuedPing, result: UploadResult) => Promise<void>,
   ): void {
     if (!this.currentJob) {
-      this.currentJob = this.workInternal(getUploadTask, processUploadResponse);
+      this.currentJob = this.workInternal(getUploadTask, processUploadResponse)
+        .then(() => {
+          this.currentJob = undefined;
+        })
+        .catch(error => {
+          log(
+            LOG_TAG,
+            [ "IMPOSSIBLE: Something went wrong while processing ping upload tasks.", error ],
+            LoggingLevel.Error
+          );
+        });
     }
   }
 

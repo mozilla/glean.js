@@ -88,18 +88,39 @@ describe("PingUploadWorker", function() {
   });
 
   it("whenever a Done task is received the currentJob is ended", async function() {
-    const worker = new PingUploadWorker(TestPlatform.uploader, "https://my-glean-test.com");
-    const tasksGenerator = mockGetUploadTasks([ UploadTaskTypes.Done, UploadTaskTypes.Upload ]);
+    const uploader = new CounterUploader();
+    const worker = new PingUploadWorker(uploader, "https://my-glean-test.com");
+    const tasksGenerator = mockGetUploadTasks([
+      UploadTaskTypes.Done,
+      UploadTaskTypes.Upload,
+      // Always end with a Done task to make sure the worker stops asking for more tasks.
+      UploadTaskTypes.Done
+    ]);
 
     worker.work(
       () => tasksGenerator.next().value,
       () => Promise.resolve()
     );
+    const firstJob = worker["currentJob"];
 
     await worker.blockOnCurrentJob();
     // Check that we never got to the Upload task enqueued,
     // due to bailing out when we found a Done task.
-    assert.strictEqual(tasksGenerator.next().value.type, UploadTaskTypes.Upload);
+    assert.strictEqual(uploader.count, 0);
+
+    // Check worker can be resumed after.
+    worker.work(
+      () => tasksGenerator.next().value,
+      () => Promise.resolve()
+    );
+    const secondJob = worker["currentJob"];
+
+    await worker.blockOnCurrentJob();
+    assert.strictEqual(uploader.count, 1);
+
+    // The first job is different from the second job.
+    // Meaning: the first job was finished when we blocked.
+    assert.notStrictEqual(firstJob, secondJob);
   });
 
   it("whenever a Wait task is received the currentJob is ended", async function() {
