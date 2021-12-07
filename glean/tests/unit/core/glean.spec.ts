@@ -553,6 +553,14 @@ describe("Glean", function() {
     assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
   });
 
+  it("attempting to shutdown Glean prior to initialize is a no-op", async function() {
+    await Glean.testUninitialize();
+
+    const launchSpy = sandbox.spy(Context.dispatcher, "launch");
+    await Glean.shutdown();
+    assert.strictEqual(launchSpy.callCount, 0);
+  });
+
   it("events database is initialized at a time when metrics can already be recorded", async function() {
     const event = new EventMetricType({
       category: "test",

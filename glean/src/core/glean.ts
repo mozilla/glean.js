@@ -448,6 +448,8 @@ class Glean {
    * Finishes executing all pending tasks
    * and shuts down both Glean's dispatcher and the ping uploader.
    *
+   * If Glean is not initialized this is a no-op.
+   *
    * # Important
    *
    * This is irreversible.
@@ -456,6 +458,11 @@ class Glean {
    * @returns A promise which resolves once the shutdown is complete.
    */
   static async shutdown(): Promise<void> {
+    if (!Context.initialized) {
+      log(LOG_TAG, "Attempted to shutdown Glean, but Glean is not initialized. Ignoring.");
+      return;
+    }
+
     // Order here matters!
     //
     // The dispatcher needs to be shutdown first,
