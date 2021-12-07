@@ -11,17 +11,24 @@ import uploadTaskFactory from "../../../../src/core/upload/task";
 import PingUploadWorker from "../../../../src/core/upload/worker";
 import TestPlatform from "../../../../src/platform/test";
 import Glean from "../../../../src/core/glean";
-import { CounterUploader } from "../../../utils";
+import { CounterUploader, WaitableUploader } from "../../../utils";
 import { makePath } from "../../../../src/core/pings/maker";
 import { Context } from "../../../../src/core/context";
 import Policy from "../../../../src/core/upload/policy";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 import type { UploadResult } from "../../../../src/core/upload/uploader";
+import { isUndefined } from "../../../../src/core/utils";
 
 const sandbox = sinon.createSandbox();
 
 const MOCK_PING_NAME = "ping";
 const MOCK_PING_IDENTIFIER = "identifier";
+
+// (brizental):
+// I decided against using sinon's fake timers here,
+// because they interfere with the WaitableUpload setTimeout usage as well and that makes things harder.
+// Instead I opted to have a fast enough wait time that it would not slow test too much.
+const MOCK_WAIT_TIME = 100;
 
 /**
  * Build mock upload task of a given type.
@@ -34,7 +41,7 @@ function buildMockTask(type: UploadTaskTypes): UploadTask {
   case UploadTaskTypes.Done:
     return uploadTaskFactory.done();
   case UploadTaskTypes.Wait:
-    return uploadTaskFactory.wait(10);
+    return uploadTaskFactory.wait(MOCK_WAIT_TIME);
   case UploadTaskTypes.Upload:
     return uploadTaskFactory.upload({
       identifier: MOCK_PING_IDENTIFIER,
@@ -123,19 +130,44 @@ describe("PingUploadWorker", function() {
     assert.notStrictEqual(firstJob, secondJob);
   });
 
-  it("whenever a Wait task is received the currentJob is ended", async function() {
-    const worker = new PingUploadWorker(TestPlatform.uploader, "https://my-glean-test.com");
-    const tasksGenerator = mockGetUploadTasks([ UploadTaskTypes.Wait, UploadTaskTypes.Upload ]);
+  it("whenever a Wait task is received the currentJob hangs until the provided time is elapsed", async function() {
+    const uploader = new WaitableUploader();
+    const waitForFirstPingBatch = uploader.waitForBatchPingSubmission(MOCK_PING_NAME, 5);
+
+    const worker = new PingUploadWorker(uploader, "https://my-glean-test.com");
+    const tasksGenerator = mockGetUploadTasks([
+      ...Array(5).fill(UploadTaskTypes.Upload) as UploadTaskTypes.Upload[],
+      UploadTaskTypes.Wait,
+      ...Array(5).fill(UploadTaskTypes.Upload) as UploadTaskTypes.Upload[],
+      // Always end with a Done task to make sure the worker stops asking for more tasks.
+      UploadTaskTypes.Done
+    ]);
 
     worker.work(
       () => tasksGenerator.next().value,
       () => Promise.resolve()
     );
 
-    await worker.blockOnCurrentJob();
-    // Check that we never got to the Upload task enqueued,
-    // due to bailing out when we found a Wait task.
-    assert.strictEqual(tasksGenerator.next().value.type, UploadTaskTypes.Upload);
+    // Wait for the first five pings to be submitted.
+    await assert.doesNotReject(() => waitForFirstPingBatch);
+
+    // !BIG HACK! Wait just a tiny bit so that the worker has time to process the wait request.
+    // Make sure we at least don't wait too much so that we are not in "wait mode" anymore.
+    await new Promise(resolve => setTimeout(resolve, 10));
+
+    // Check that the worker is put in "wait mode".
+    assert.ok(!isUndefined(worker["waitPromiseResolver"]));
+    assert.ok(!isUndefined(worker["waitTimeoutId"]));
+
+    // Verify remaining pings are sent after a while.
+    const waitForNextPingBatch = uploader.waitForBatchPingSubmission(MOCK_PING_NAME, 5);
+    // Wait for the job to complete, the next five pings should now be uploaded.
+    // This will throw in case we never get these pings.
+    await assert.doesNotReject(() => waitForNextPingBatch);
+
+    // Check that the worker is not in "wait mode" anymore.
+    assert.ok(isUndefined(worker["waitPromiseResolver"]));
+    assert.ok(isUndefined(worker["waitTimeoutId"]));
   });
 
   it("whenever an Upload task is received upload attempts are made", async function() {
@@ -293,5 +325,116 @@ describe("PingUploadWorker", function() {
 
     // Wait for the queue to be processed before exiting the test.
     await worker.blockOnCurrentJob();
+  });
+
+  it("attempting to block on ongoing tasks returns when a Wait timeout is found", async function () {
+    const uploader = new CounterUploader();
+    const worker = new PingUploadWorker(uploader, "https://my-glean-test.com");
+    const tasksGenerator = mockGetUploadTasks([
+      ...Array(5).fill(UploadTaskTypes.Upload) as UploadTaskTypes.Upload[],
+      UploadTaskTypes.Wait,
+      ...Array(5).fill(UploadTaskTypes.Upload) as UploadTaskTypes.Upload[],
+      // Always end with a Done task to make sure the worker stops asking for more tasks.
+      UploadTaskTypes.Done
+    ]);
+
+    worker.work(
+      () => tasksGenerator.next().value,
+      () => Promise.resolve()
+    );
+
+    const beforeBlock = Date.now();
+    await worker.blockOnCurrentJob();
+    const afterBlock = Date.now();
+
+    // For how long were we blocked.
+    const blockedTime = afterBlock - beforeBlock;
+    // Check that we were blocked for less time than the Wait interval.
+    assert.ok(blockedTime < MOCK_WAIT_TIME);
+    // Half the pings were uploaded.
+    assert.strictEqual(uploader.count, 5);
+
+    // Check that worker can be resumed without problems after blocking on a Wait task.
+    worker.work(
+      () => tasksGenerator.next().value,
+      () => Promise.resolve()
+    );
+    await worker.blockOnCurrentJob();
+    // All pings were uploaded.
+    assert.strictEqual(uploader.count, 10);
+    // We got to the end of the iterator.
+    assert.strictEqual(tasksGenerator.next().done, true);
+  });
+
+  it("attempting to block on ongoing tasks clears an ongoing Wait timeout", async function () {
+    const uploader = new CounterUploader();
+    const worker = new PingUploadWorker(uploader, "https://my-glean-test.com");
+    const tasksGenerator = mockGetUploadTasks([
+      UploadTaskTypes.Wait,
+      ...Array(5).fill(UploadTaskTypes.Upload) as UploadTaskTypes.Upload[],
+      // Always end with a Done task to make sure the worker stops asking for more tasks.
+      UploadTaskTypes.Done
+    ]);
+
+    worker.work(
+      () => tasksGenerator.next().value,
+      () => Promise.resolve()
+    );
+    const firstJob = worker["currentJob"];
+    await worker.blockOnCurrentJob();
+
+    // Check that worker can be resumed without problems after blocking on a Wait task.
+    worker.work(
+      () => tasksGenerator.next().value,
+      () => Promise.resolve()
+    );
+    const secondJob = worker["currentJob"];
+
+    await worker.blockOnCurrentJob();
+    // All pings were uploaded.
+    assert.strictEqual(uploader.count, 5);
+    // We got to the end of the iterator.
+    assert.strictEqual(tasksGenerator.next().done, true);
+
+    // The first job is different from the second job.
+    // Meaning: the first job was finished when we blocked.
+    assert.notStrictEqual(firstJob, secondJob);
+  });
+
+  it("when timer function throws errors the currentJob is ended", async function () {
+    Context.platform.timer.setTimeout = () => { throw "unimplemented!"; };
+
+    const uploader = new CounterUploader();
+    const worker = new PingUploadWorker(uploader, "https://my-glean-test.com");
+    const tasksGenerator = mockGetUploadTasks([
+      UploadTaskTypes.Wait,
+      UploadTaskTypes.Upload,
+      // Always end with a Done task to make sure the worker stops asking for more tasks.
+      UploadTaskTypes.Done
+    ]);
+
+    worker.work(
+      () => tasksGenerator.next().value,
+      () => Promise.resolve()
+    );
+    const firstJob = worker["currentJob"];
+
+    await worker.blockOnCurrentJob();
+    // Check that we never got to the Upload task enqueued,
+    // due to bailing out when we found a Wait task.
+    assert.strictEqual(uploader.count, 0);
+
+    // Check worker can be resumed after.
+    worker.work(
+      () => tasksGenerator.next().value,
+      () => Promise.resolve()
+    );
+    const secondJob = worker["currentJob"];
+    await worker.blockOnCurrentJob();
+    assert.strictEqual(uploader.count, 1);
+
+    // The first job is different from the second job.
+    // Meaning: the first job was finished when we blocked.
+    assert.notStrictEqual(firstJob, secondJob);
   });
 });

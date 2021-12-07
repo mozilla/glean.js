@@ -6,7 +6,7 @@ import { gzipSync, strToU8 } from "fflate";
 
 import type { QueuedPing } from "./manager";
 import type Uploader from "./uploader.js";
-import type { UploadTask} from "./task.js";
+import type { UploadTask } from "./task.js";
 import { GLEAN_VERSION } from "../constants.js";
 import { Context } from "../context.js";
 import log, { LoggingLevel } from "../log.js";
@@ -26,6 +26,21 @@ class PingBodyOverflowError extends Error {
 
 class PingUploadWorker {
   private currentJob?: Promise<void>;
+
+  // Whether or not someone is blocking on the currentJob.
+  private isBlocking = false;
+
+  // The id of the current timer running due to a Wait signal.
+  // If `undefined` no timer is currently running.
+  //
+  // This is necessary in case we need to clear the timeout due to aborting the worker.
+  private waitTimeoutId?: number;
+  // A resolver for the waiting promise created due to a Wait signal.
+  //
+  // This is necessary for the case when the worker is aborted and the timeout cleared.
+  // In that case the timeout will not resolve the promise itself
+  // and it will need to be resolved from the outside.
+  private waitPromiseResolver?: (aborted: boolean) => void;
 
   constructor (
     private readonly uploader: Uploader,
@@ -129,9 +144,32 @@ class PingUploadWorker {
         const result = await this.attemptPingUpload(nextTask.ping);
         await processUploadResponse(nextTask.ping, result);
         continue;
-      // TODO(bug1727076): Actually set a timer to continue once timeout is complete.
-      // Note that the timer must be cleared in case an abort signal is issued.
       case UploadTaskTypes.Wait:
+        if (this.isBlocking) {
+          return;
+        }
+
+        try {
+          const wasAborted = await new Promise<boolean>(resolve => {
+            this.waitPromiseResolver = resolve;
+            this.waitTimeoutId = Context.platform.timer
+              .setTimeout(() => {
+                this.waitPromiseResolver = undefined;
+                this.waitTimeoutId = undefined;
+                resolve(false);
+              }, nextTask.remainingTime);
+          });
+
+          if (wasAborted) {
+            return;
+          }
+        } catch(_) {
+          this.waitPromiseResolver = undefined;
+          this.waitTimeoutId = undefined;
+          return;
+        }
+
+        continue;
       case UploadTaskTypes.Done:
         return;
       }
@@ -178,7 +216,20 @@ class PingUploadWorker {
    */
   async blockOnCurrentJob() {
     if (this.currentJob) {
-      return this.currentJob;
+      // If we are currently waiting, just cut the timeout short
+      // and stop the current job.
+      if (this.waitTimeoutId && this.waitPromiseResolver) {
+        Context.platform.timer.clearTimeout(this.waitTimeoutId);
+        this.waitPromiseResolver(true);
+        this.waitPromiseResolver = undefined;
+        this.waitTimeoutId = undefined;
+      }
+
+      this.isBlocking = true;
+      await this.currentJob;
+      this.isBlocking = false;
+
+      return;
     }
 
     return Promise.resolve();
