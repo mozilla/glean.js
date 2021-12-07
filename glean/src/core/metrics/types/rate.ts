@@ -13,19 +13,12 @@ import { ErrorType } from "../../error/error_type.js";
 
 const LOG_TAG = "core.metrics.RateMetricType";
 
-export type RateInternalRepresentation = {
+export type Rate = {
   numerator: number,
   denominator: number
 };
 
-export type RatePayloadRepresentation = {
-  // numerator
-  numerator: number,
-  // The denominator
-  denominator: number
-};
-
-export class RateMetric extends Metric<RateInternalRepresentation, RatePayloadRepresentation> {
+export class RateMetric extends Metric<Rate, Rate> {
   constructor(v: unknown) {
     super(v);
   }
@@ -38,7 +31,7 @@ export class RateMetric extends Metric<RateInternalRepresentation, RatePayloadRe
     return this._inner.denominator;
   }
 
-  validate(v: unknown): v is RateInternalRepresentation {
+  validate(v: unknown): v is Rate {
     if (!isObject(v) || Object.keys(v).length !== 2) {
       return false;
     }
@@ -48,7 +41,7 @@ export class RateMetric extends Metric<RateInternalRepresentation, RatePayloadRe
     return numeratorVerification && denominatorVerification;
   }
 
-  payload(): RatePayloadRepresentation {
+  payload(): Rate {
     return {
       numerator: this._inner.numerator,
       denominator: this._inner.denominator
@@ -76,7 +69,7 @@ class RateMetricType extends MetricType {
    *
    * # Note
    *
-   * Logs an error if the `amount` is negative.
+   * Records an `InvalidValue` error if the `amount` is negative.
    *
    * @param amount The amount to increase by. Should be non-negative.
    */
@@ -92,6 +85,7 @@ class RateMetricType extends MetricType {
           ErrorType.InvalidValue,
           `Added negative value ${amount} to numerator.`
         );
+        return;
       }
 
       const transformFn = ((amount) => {
@@ -130,7 +124,7 @@ class RateMetricType extends MetricType {
    *
    * # Note
    *
-   * Logs an error if the `amount` is negative.
+   * Records an `InvalidValue` error if the `amount` is negative.
    *
    * @param amount The amount to increase by. Should be non-negative.
    */
@@ -146,6 +140,7 @@ class RateMetricType extends MetricType {
           ErrorType.InvalidValue,
           `Added negative value ${amount} to numerator.`
         );
+        return;
       }
 
       const transformFn = ((amount) => {
@@ -182,7 +177,7 @@ class RateMetricType extends MetricType {
   /**
    * Test-only API.**
    *
-   * Gets the currently stored value as a RateInternalPresentation.
+   * Gets the currently stored value as an object.
    *
    * # Note
    *
@@ -195,10 +190,10 @@ class RateMetricType extends MetricType {
    * @returns The value found in storage or `undefined` if nothing was found.
    */
   @testOnly(LOG_TAG)
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<RateInternalRepresentation | undefined> {
-    let metric: RateInternalRepresentation | undefined;
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<Rate | undefined> {
+    let metric: Rate | undefined;
     await Context.dispatcher.testLaunch(async () => {
-      metric = await Context.metricsDatabase.getMetric<RateInternalRepresentation>(ping, this);
+      metric = await Context.metricsDatabase.getMetric<Rate>(ping, this);
     });
     return metric;
   }

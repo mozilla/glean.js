@@ -40,6 +40,8 @@ describe("RateMetric", function() {
       disabled: false
     });
 
+    metric.addToNumerator(10);
+    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
     metric.addToDenominator(10);
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
@@ -56,12 +58,25 @@ describe("RateMetric", function() {
     metric.addToNumerator(10);
     assert.deepStrictEqual(await metric.testGetValue("aPing"), { numerator: 10, denominator: 0 });
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
-    assert.deepStrictEqual(snapshot, {
+    const snapshotOne = await Context.metricsDatabase.getPingMetrics("aPing", false);
+    assert.deepStrictEqual(snapshotOne, {
       "rate": {
         "aCategory.aRateMetric": {
           "numerator": 10,
           "denominator": 0
+        }
+      }
+    });
+
+    metric.addToDenominator(10);
+    assert.deepStrictEqual(await metric.testGetValue("aPing"), { numerator: 10, denominator: 10 });
+
+    const snapshotTwo = await Context.metricsDatabase.getPingMetrics("aPing", false);
+    assert.deepStrictEqual(snapshotTwo, {
+      "rate": {
+        "aCategory.aRateMetric": {
+          "numerator": 10,
+          "denominator": 10
         }
       }
     });
@@ -77,7 +92,14 @@ describe("RateMetric", function() {
     });
 
     metric.addToNumerator(10);
-    const expectedValue = { numerator: 10, denominator: 0 };
+    let expectedValue = { numerator: 10, denominator: 0 };
+
+    assert.deepStrictEqual(await metric.testGetValue("aPing"), expectedValue);
+    assert.deepStrictEqual(await metric.testGetValue("twoPing"), expectedValue);
+    assert.deepStrictEqual(await metric.testGetValue("threePing"), expectedValue);
+
+    metric.addToDenominator(10);
+    expectedValue = { numerator: 10, denominator: 10 };
 
     assert.deepStrictEqual(await metric.testGetValue("aPing"), expectedValue);
     assert.deepStrictEqual(await metric.testGetValue("twoPing"), expectedValue);
@@ -93,17 +115,11 @@ describe("RateMetric", function() {
       disabled: false
     });
 
-    metric.addToNumerator(0);
-    metric.addToDenominator(0);
-
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0);
-    assert.deepStrictEqual(await metric.testGetValue("aPing"), { numerator: 0, denominator: 0 });
-
     metric.addToNumerator(-1);
     metric.addToDenominator(-1);
 
     assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 2);
-    assert.deepStrictEqual(await metric.testGetValue("aPing"), {numerator: 0, denominator: 0});
+    assert.deepStrictEqual(await metric.testGetValue("aPing"), undefined);
 
     metric.addToNumerator(22);
     metric.addToDenominator(7);
@@ -128,6 +144,18 @@ describe("RateMetric", function() {
 
     metric.addToDenominator(2);
     expectedValue = { numerator: 2, denominator: 2 };
+    assert.deepStrictEqual(await metric.testGetValue("aPing"), expectedValue);
+    assert.deepStrictEqual(await metric.testGetValue("twoPing"), expectedValue);
+    assert.deepStrictEqual(await metric.testGetValue("threePing"), expectedValue);
+
+    metric.addToNumerator(2);
+    expectedValue = { numerator: 4, denominator: 2 };
+    assert.deepStrictEqual(await metric.testGetValue("aPing"), expectedValue);
+    assert.deepStrictEqual(await metric.testGetValue("twoPing"), expectedValue);
+    assert.deepStrictEqual(await metric.testGetValue("threePing"), expectedValue);
+
+    metric.addToDenominator(2);
+    expectedValue = { numerator: 4, denominator: 4 };
     assert.deepStrictEqual(await metric.testGetValue("aPing"), expectedValue);
     assert.deepStrictEqual(await metric.testGetValue("twoPing"), expectedValue);
     assert.deepStrictEqual(await metric.testGetValue("threePing"), expectedValue);
