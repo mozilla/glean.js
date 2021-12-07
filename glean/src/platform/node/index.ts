@@ -15,6 +15,7 @@ const NodePlatform: Platform = {
   ...TestPlatform,
   uploader: Uploader,
   info: PlatformInfo,
+  timer: { setTimeout, clearTimeout },
   name: "node"
 };
 
