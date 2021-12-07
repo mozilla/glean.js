@@ -164,6 +164,14 @@ describe("Glean", function() {
     assert.strictEqual(spy.callCount, 1);
   });
 
+  it("attempting to change upload status prior to initialize is a no-op", async function() {
+    await Glean.testUninitialize();
+
+    const launchSpy = sandbox.spy(Context.dispatcher, "launch");
+    Glean.setUploadEnabled(false);
+    assert.strictEqual(launchSpy.callCount, 0);
+  });
+
   it("initialization throws if applicationId is an empty string", async function() {
     await Glean.testUninitialize();
     try {
