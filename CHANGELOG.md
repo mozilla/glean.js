@@ -5,6 +5,7 @@
 * [#984](https://github.com/mozilla/glean.js/pull/984): BUGFIX: Return correct upload result in case an error happens while building a ping request.
 * [#988](https://github.com/mozilla/glean.js/pull/988): BUGFIX: Enforce rate limitation at upload time, not at ping submission time.
   * Note: This change required a big refactoring of the internal uploading logic.
+* [#1015](https://github.com/mozilla/glean.js/pull/1015): BUGFIX: Make attempting to call the `setUploadEnabled` API before initializing Glean a no-op.
 
 # v0.27.0 (2021-11-22)
 
