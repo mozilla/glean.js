@@ -355,6 +355,19 @@ class Glean {
    * @param flag When true, enable metric collection.
    */
   static setUploadEnabled(flag: boolean): void {
+    if (!Context.initialized) {
+      log(
+        LOG_TAG,
+        [
+          "Changing upload enabled before Glean is initialized is not supported.\n",
+          "Pass the correct state into `Glean.initialize`.\n",
+          "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
+        ],
+        LoggingLevel.Error
+      );
+      return;
+    }
+
     if (!isBoolean(flag)) {
       log(
         LOG_TAG,
@@ -365,19 +378,6 @@ class Glean {
     }
 
     Context.dispatcher.launch(async () => {
-      if (!Context.initialized) {
-        log(
-          LOG_TAG,
-          [
-            "Changing upload enabled before Glean is initialized is not supported.\n",
-            "Pass the correct state into `Glean.initialize\n`.",
-            "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
-          ],
-          LoggingLevel.Error
-        );
-        return;
-      }
-
       if (Context.uploadEnabled !== flag) {
         if (flag) {
           await Glean.onUploadEnabled();
