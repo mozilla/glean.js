@@ -18,9 +18,14 @@ interface Platform {
   Storage: StorageBuilder,
   // The environment specific uploader implementation
   uploader: Uploader,
-  // The environment specifici implemtation of platform information getters
+  // The environment specific implementation of platform information getters
   info: PlatformInfo,
-  // The name of the platform, useful for logging and debugging purposes.
+  // The timer functions available on the current platform
+  timer: {
+    setTimeout: (cb: () => void, timeout: number) => number,
+    clearTimeout: (id: number) => void,
+  },
+  // The name of the platform, useful for logging and debugging purposes
   name: string,
 }
 

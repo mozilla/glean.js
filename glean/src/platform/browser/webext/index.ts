@@ -12,6 +12,7 @@ const WebExtPlatform: Platform = {
   Storage,
   uploader,
   info,
+  timer: { setTimeout, clearTimeout },
   name: "webext"
 };
 

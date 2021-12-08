@@ -11,6 +11,7 @@ const WebPlaftorm: Platform = {
   Storage,
   uploader,
   info,
+  timer: { setTimeout, clearTimeout },
   name: "web"
 };
 
