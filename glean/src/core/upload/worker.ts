@@ -35,6 +35,7 @@ class PingUploadWorker {
   //
   // This is necessary in case we need to clear the timeout due to aborting the worker.
   private waitTimeoutId?: number;
+  
   // A resolver for the waiting promise created due to a Wait signal.
   //
   // This is necessary for the case when the worker is aborted and the timeout cleared.

@@ -153,7 +153,7 @@ describe("PingUploadWorker", function() {
 
     // !BIG HACK! Wait just a tiny bit so that the worker has time to process the wait request.
     // Make sure we at least don't wait too much so that we are not in "wait mode" anymore.
-    await new Promise(resolve => setTimeout(resolve, 10));
+    await new Promise(resolve => setTimeout(resolve, MOCK_WAIT_TIME * 0.1));
 
     // Check that the worker is put in "wait mode".
     assert.ok(!isUndefined(worker["waitPromiseResolver"]));
