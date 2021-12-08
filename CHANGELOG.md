@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.27.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.28.0...main)
+
+# v0.28.0 (2021-12-08)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.27.0...v0.28.0)
 
 * [#984](https://github.com/mozilla/glean.js/pull/984): BUGFIX: Return correct upload result in case an error happens while building a ping request.
 * [#988](https://github.com/mozilla/glean.js/pull/988): BUGFIX: Enforce rate limitation at upload time, not at ping submission time.
