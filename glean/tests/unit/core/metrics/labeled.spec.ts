@@ -25,7 +25,7 @@ describe("LabeledMetric", function() {
   beforeEach(async function() {
     await Glean.testResetGlean(testAppId);
     // Disable ping uploading for it not to interfere with this tests.
-    await stopGleanUploader();
+    stopGleanUploader();
   });
 
   afterEach(function () {

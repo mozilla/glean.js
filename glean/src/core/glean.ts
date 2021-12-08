@@ -7,7 +7,7 @@ import type { ConfigurationInterface } from "./config.js";
 import { Configuration } from "./config.js";
 import MetricsDatabase from "./metrics/database.js";
 import PingsDatabase from "./pings/database.js";
-import PingUploader from "./upload/index.js";
+import PingUploadManager from "./upload/manager.js";
 import { isBoolean, isString, isUndefined, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
 import EventsDatabase from "./metrics/events_database/index.js";
@@ -34,15 +34,12 @@ class Glean {
   // Instances of Glean's core pings.
   private _corePings: CorePings;
 
-  // The environment must be set before initialize.
-  private _platform?: Platform;
-
   // Properties that will only be set on `initialize`.
 
   // The ping uploader. Note that we need to use the definite assignment assertion
   // because initialization will not happen in the constructor, but in the `initialize`
   // method.
-  private _pingUploader!: PingUploader;
+  private _pingUploader!: PingUploadManager;
   // The Glean configuration object.
   private _config!: Configuration;
 
@@ -65,7 +62,7 @@ class Glean {
     return Glean._instance;
   }
 
-  private static get pingUploader(): PingUploader {
+  private static get pingUploader(): PingUploadManager {
     return Glean.instance._pingUploader;
   }
 
@@ -86,7 +83,7 @@ class Glean {
    */
   private static async onUploadEnabled(): Promise<void> {
     Context.uploadEnabled = true;
-    await Glean.coreMetrics.initialize(Glean.instance._config, Glean.platform);
+    await Glean.coreMetrics.initialize(Glean.instance._config, Context.platform);
   }
 
   /**
@@ -220,7 +217,7 @@ class Glean {
       return;
     }
 
-    if (!Glean.instance._platform) {
+    if (!Context.platform) {
       log(
         LOG_TAG,
         "Unable to initialize Glean, platform has not been set.",
@@ -236,14 +233,12 @@ class Glean {
     Context.debugOptions = correctConfig.debug;
     Glean.instance._config = correctConfig;
 
-    Context.metricsDatabase = new MetricsDatabase(Glean.platform.Storage);
-    Context.eventsDatabase = new EventsDatabase(Glean.platform.Storage);
-    Context.pingsDatabase = new PingsDatabase(Glean.platform.Storage);
+    Context.metricsDatabase = new MetricsDatabase();
+    Context.eventsDatabase = new EventsDatabase();
+    Context.pingsDatabase = new PingsDatabase();
     Context.errorManager = new ErrorManager();
 
-    Glean.instance._pingUploader = new PingUploader(correctConfig, Glean.platform, Context.pingsDatabase);
-
-    Context.pingsDatabase.attachObserver(Glean.pingUploader);
+    Glean.instance._pingUploader = new PingUploadManager(correctConfig, Context.pingsDatabase);
 
     if (config?.plugins) {
       for (const plugin of config.plugins) {
@@ -338,11 +333,11 @@ class Glean {
   }
 
   static get platform(): Platform {
-    if (!Glean.instance._platform) {
+    if (!Context.platform) {
       throw new Error("IMPOSSIBLE: Attempted to access environment specific APIs before Glean was initialized.");
     }
 
-    return Glean.instance._platform;
+    return Context.platform;
   }
 
   /**
@@ -360,6 +355,19 @@ class Glean {
    * @param flag When true, enable metric collection.
    */
   static setUploadEnabled(flag: boolean): void {
+    if (!Context.initialized) {
+      log(
+        LOG_TAG,
+        [
+          "Changing upload enabled before Glean is initialized is not supported.\n",
+          "Pass the correct state into `Glean.initialize`.\n",
+          "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
+        ],
+        LoggingLevel.Error
+      );
+      return;
+    }
+
     if (!isBoolean(flag)) {
       log(
         LOG_TAG,
@@ -370,19 +378,6 @@ class Glean {
     }
 
     Context.dispatcher.launch(async () => {
-      if (!Context.initialized) {
-        log(
-          LOG_TAG,
-          [
-            "Changing upload enabled before Glean is initialized is not supported.\n",
-            "Pass the correct state into `Glean.initialize\n`.",
-            "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
-          ],
-          LoggingLevel.Error
-        );
-        return;
-      }
-
       if (Context.uploadEnabled !== flag) {
         if (flag) {
           await Glean.onUploadEnabled();
@@ -453,6 +448,8 @@ class Glean {
    * Finishes executing all pending tasks
    * and shuts down both Glean's dispatcher and the ping uploader.
    *
+   * If Glean is not initialized this is a no-op.
+   *
    * # Important
    *
    * This is irreversible.
@@ -461,13 +458,18 @@ class Glean {
    * @returns A promise which resolves once the shutdown is complete.
    */
   static async shutdown(): Promise<void> {
+    if (!Context.initialized) {
+      log(LOG_TAG, "Attempted to shutdown Glean, but Glean is not initialized. Ignoring.");
+      return;
+    }
+
     // Order here matters!
     //
-    // The main dispatcher needs to be shut down first,
-    // because some of its tasks may enqueue new tasks on the ping uploader dispatcher
+    // The dispatcher needs to be shutdown first,
+    // because some of its tasks may enqueue new pings to upload
     // and we want these uploading tasks to also be executed prior to complete shutdown.
     await Context.dispatcher.shutdown();
-    await Glean.pingUploader.shutdown();
+    await Glean.pingUploader.blockOnOngoingUploads();
   }
 
   /**
@@ -492,18 +494,18 @@ class Glean {
       return;
     }
 
-    if (Glean.instance._platform && Glean.instance._platform.name !== platform.name && !Context.testing) {
+    if (Context.isPlatformSet() && Context.platform.name !== platform.name && !Context.testing) {
       log(
         LOG_TAG,
         [
           `IMPOSSIBLE: Attempted to change Glean's targeted platform",
-          "from "${Glean.platform.name}" to "${platform.name}". Ignoring.`,
+          "from "${Context.platform.name}" to "${platform.name}". Ignoring.`,
         ],
         LoggingLevel.Error
       );
     }
 
-    Glean.instance._platform = platform;
+    Context.platform = platform;
   }
 
   /**

@@ -5,13 +5,13 @@
 import type Store from "../storage/index.js";
 import type { MetricType , Metrics } from "./index.js";
 import type { Metric } from "./metric.js";
-import type { StorageBuilder } from "../../platform/index.js";
 
 import type { JSONObject, JSONValue } from "../utils.js";
 import { createMetric, validateMetricInternalRepresentation } from "./utils.js";
 import { isObject, isUndefined } from "../utils.js";
 import { Lifetime } from "./lifetime.js";
 import log, { LoggingLevel } from "../log.js";
+import { Context } from "../context.js";
 
 const LOG_TAG = "core.Metrics.Database";
 
@@ -114,10 +114,10 @@ class MetricsDatabase {
   private pingStore: Store;
   private appStore: Store;
 
-  constructor(storage: StorageBuilder) {
-    this.userStore = new storage("userLifetimeMetrics");
-    this.pingStore = new storage("pingLifetimeMetrics");
-    this.appStore = new storage("appLifetimeMetrics");
+  constructor() {
+    this.userStore = new Context.platform.Storage("userLifetimeMetrics");
+    this.pingStore = new Context.platform.Storage("pingLifetimeMetrics");
+    this.appStore = new Context.platform.Storage("appLifetimeMetrics");
   }
 
   /**

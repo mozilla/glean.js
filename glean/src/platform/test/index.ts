@@ -35,10 +35,15 @@ const MockPlatformInfo: PlatformInfo = {
   },
 };
 
+const safeSetTimeout = typeof setTimeout !== "undefined" ? setTimeout : () => { throw new Error(); };
+// eslint-disable-next-line @typescript-eslint/no-empty-function
+const safeClearTimeout = typeof clearTimeout !== "undefined" ? clearTimeout : () => {};
+
 const TestPlatform: Platform = {
   Storage: MockStorage,
   uploader: new MockUploader(),
   info: MockPlatformInfo,
+  timer: { setTimeout: safeSetTimeout, clearTimeout: safeClearTimeout },
   name: "test"
 };
 

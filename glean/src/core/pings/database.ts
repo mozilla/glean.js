@@ -5,10 +5,10 @@
 import type Store from "../storage/index.js";
 import type { JSONObject} from "../utils.js";
 import { isObject, isJSONValue, isString } from "../utils.js";
-import type { StorageBuilder } from "../../platform/index.js";
 import log, { LoggingLevel } from "../log.js";
 import { DELETION_REQUEST_PING_NAME } from "../constants.js";
 import { strToU8 } from "fflate";
+import { Context } from "../context.js";
 
 const LOG_TAG = "core.Pings.Database";
 
@@ -90,8 +90,8 @@ class PingsDatabase {
   private store: Store;
   private observer?: Observer;
 
-  constructor(store: StorageBuilder) {
-    this.store = new store("pings");
+  constructor() {
+    this.store = new Context.platform.Storage("pings");
   }
 
   /**

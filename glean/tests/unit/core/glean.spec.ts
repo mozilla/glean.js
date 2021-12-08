@@ -18,7 +18,6 @@ import TestPlatform from "../../../src/platform/test";
 import Plugin from "../../../src/plugins";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
-import { DispatcherState } from "../../../src/core/dispatcher";
 import EventMetricType from "../../../src/core/metrics/types/event";
 import { getGleanRestartedEventMetric } from "../../../src/core/metrics/events_database";
 
@@ -165,6 +164,14 @@ describe("Glean", function() {
     assert.strictEqual(spy.callCount, 1);
   });
 
+  it("attempting to change upload status prior to initialize is a no-op", async function() {
+    await Glean.testUninitialize();
+
+    const launchSpy = sandbox.spy(Context.dispatcher, "launch");
+    Glean.setUploadEnabled(false);
+    assert.strictEqual(launchSpy.callCount, 0);
+  });
+
   it("initialization throws if applicationId is an empty string", async function() {
     await Glean.testUninitialize();
     try {
@@ -265,7 +272,7 @@ describe("Glean", function() {
   });
 
   it("deletion request is sent when toggling upload from on to off", async function() {
-    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+    const postSpy = sandbox.spy(Context.platform.uploader, "post");
 
     Glean.setUploadEnabled(false);
     await Context.dispatcher.testBlockOnQueue();
@@ -360,7 +367,7 @@ describe("Glean", function() {
   });
 
   it("deletion request ping is not sent when user starts Glean for the first time with upload disabled", async function () {
-    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+    const postSpy = sandbox.spy(Context.platform.uploader, "post");
     await Glean.testResetGlean(testAppId, false);
     assert.strictEqual(postSpy.callCount, 0);
     assert.strictEqual(Context.uploadEnabled, false);
@@ -461,7 +468,7 @@ describe("Glean", function() {
     //
     // This disables the uploading and deletion of pings from the pings database,
     // this allows us to query the database to check that our pings are as expected.
-    await stopGleanUploader();
+    stopGleanUploader();
 
     const custom = new PingType({
       name: "custom",
@@ -528,17 +535,11 @@ describe("Glean", function() {
 
     Glean.setPlatform(MockPlatform);
 
-    assert.strictEqual(TestPlatform.name, Glean.platform.name);
-  });
-
-  it("shutdown correctly shutsdown dispatcher and ping uploader", async function () {
-    await Glean.shutdown();
-    assert.strictEqual(Context.dispatcher["state"], DispatcherState.Shutdown);
-    assert.strictEqual(Glean["pingUploader"]["dispatcher"]["state"], DispatcherState.Shutdown);
+    assert.strictEqual(TestPlatform.name, Context.platform.name);
   });
 
   it("shutdown allows all pending pings to be sent before shutting down uploader", async function() {
-    const postSpy = sandbox.spy(Glean.platform.uploader, "post");
+    const postSpy = sandbox.spy(Context.platform.uploader, "post");
 
     // `setUploadEnabled` is a task dispatched on the main dispatcher,
     // this task will dispatch an upload task to the upload dispatcher.
@@ -550,6 +551,14 @@ describe("Glean", function() {
 
     assert.strictEqual(postSpy.callCount, 1);
     assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+  });
+
+  it("attempting to shutdown Glean prior to initialize is a no-op", async function() {
+    await Glean.testUninitialize();
+
+    const launchSpy = sandbox.spy(Context.dispatcher, "launch");
+    await Glean.shutdown();
+    assert.strictEqual(launchSpy.callCount, 0);
   });
 
   it("events database is initialized at a time when metrics can already be recorded", async function() {
