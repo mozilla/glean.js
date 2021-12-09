@@ -228,6 +228,8 @@ class PingUploadManager implements PingsDatabaseObserver {
    *
    * This does not interfere in the jobs themselves.
    *
+   * It the rate limit is hit, this will resolve without finishing to process everything.
+   *
    * @returns A promise which resolves once current ongoing upload worker job is complete.
    *         This should not hang for too long because of the upload limitations.
    */

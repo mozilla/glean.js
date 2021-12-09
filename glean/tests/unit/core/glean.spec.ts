@@ -164,6 +164,14 @@ describe("Glean", function() {
     assert.strictEqual(spy.callCount, 1);
   });
 
+  it("attempting to change upload status prior to initialize is a no-op", async function() {
+    await Glean.testUninitialize();
+
+    const launchSpy = sandbox.spy(Context.dispatcher, "launch");
+    Glean.setUploadEnabled(false);
+    assert.strictEqual(launchSpy.callCount, 0);
+  });
+
   it("initialization throws if applicationId is an empty string", async function() {
     await Glean.testUninitialize();
     try {
@@ -543,6 +551,14 @@ describe("Glean", function() {
 
     assert.strictEqual(postSpy.callCount, 1);
     assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+  });
+
+  it("attempting to shutdown Glean prior to initialize is a no-op", async function() {
+    await Glean.testUninitialize();
+
+    const launchSpy = sandbox.spy(Context.dispatcher, "launch");
+    await Glean.shutdown();
+    assert.strictEqual(launchSpy.callCount, 0);
   });
 
   it("events database is initialized at a time when metrics can already be recorded", async function() {

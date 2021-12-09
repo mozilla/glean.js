@@ -13,6 +13,12 @@ const QtPlatform: Platform = {
   Storage,
   uploader,
   info,
+  timer: {
+    // TODO(bug1743140): Actually implement these functions here.
+    setTimeout: () => { throw new Error(); },
+    // eslint-disable-next-line @typescript-eslint/no-empty-function
+    clearTimeout: () => {}
+  },
   name: "Qt"
 };
 

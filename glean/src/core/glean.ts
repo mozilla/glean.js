@@ -355,6 +355,19 @@ class Glean {
    * @param flag When true, enable metric collection.
    */
   static setUploadEnabled(flag: boolean): void {
+    if (!Context.initialized) {
+      log(
+        LOG_TAG,
+        [
+          "Changing upload enabled before Glean is initialized is not supported.\n",
+          "Pass the correct state into `Glean.initialize`.\n",
+          "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
+        ],
+        LoggingLevel.Error
+      );
+      return;
+    }
+
     if (!isBoolean(flag)) {
       log(
         LOG_TAG,
@@ -365,19 +378,6 @@ class Glean {
     }
 
     Context.dispatcher.launch(async () => {
-      if (!Context.initialized) {
-        log(
-          LOG_TAG,
-          [
-            "Changing upload enabled before Glean is initialized is not supported.\n",
-            "Pass the correct state into `Glean.initialize\n`.",
-            "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
-          ],
-          LoggingLevel.Error
-        );
-        return;
-      }
-
       if (Context.uploadEnabled !== flag) {
         if (flag) {
           await Glean.onUploadEnabled();
@@ -448,6 +448,8 @@ class Glean {
    * Finishes executing all pending tasks
    * and shuts down both Glean's dispatcher and the ping uploader.
    *
+   * If Glean is not initialized this is a no-op.
+   *
    * # Important
    *
    * This is irreversible.
@@ -456,6 +458,11 @@ class Glean {
    * @returns A promise which resolves once the shutdown is complete.
    */
   static async shutdown(): Promise<void> {
+    if (!Context.initialized) {
+      log(LOG_TAG, "Attempted to shutdown Glean, but Glean is not initialized. Ignoring.");
+      return;
+    }
+
     // Order here matters!
     //
     // The dispatcher needs to be shutdown first,

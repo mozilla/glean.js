@@ -66,15 +66,17 @@ export class WaitableUploader extends Uploader {
     this.waitingForName = name;
     this.waitingForCount = count;
     return new Promise<JSONObject[]>((resolve, reject) => {
+      const rejectTimeout = setTimeout(() => {console.log("YEAH BYE"); reject();}, 1500);
+
       this.waitResolver = () => {
+        clearTimeout(rejectTimeout);
+
         const result = this.batchResult;
         this.reset();
         // Uncomment for debugging the ping payload.
         // console.log(JSON.stringify(result, null, 2));
         resolve(result);
       };
-
-      setTimeout(() => reject(), 1000);
     });
   }
 
@@ -89,7 +91,11 @@ export class WaitableUploader extends Uploader {
     this.waitingForName = name;
     this.waitingForPath = path;
     return new Promise<JSONObject>((resolve, reject) => {
+      const rejectTimeout = setTimeout(() => reject(), 1500);
+
       this.waitResolver = (pingBody?: JSONObject) => {
+        clearTimeout(rejectTimeout);
+
         this.reset();
         // Uncomment for debugging the ping payload.
         console.log(JSON.stringify(pingBody, null, 2));
