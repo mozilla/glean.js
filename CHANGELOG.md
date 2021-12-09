@@ -8,10 +8,10 @@
 
 * [#984](https://github.com/mozilla/glean.js/pull/984): BUGFIX: Return correct upload result in case an error happens while building a ping request.
 * [#988](https://github.com/mozilla/glean.js/pull/988): BUGFIX: Enforce rate limitation at upload time, not at ping submission time.
-* [#1006](https://github.com/mozilla/glean.js/pull/1006): Implement the rate metric.
 
   * Note: This change required a big refactoring of the internal uploading logic.
 * [#994](https://github.com/mozilla/glean.js/pull/994): Automatically restart ping upload once the rate limit window is ended.
+* [#1006](https://github.com/mozilla/glean.js/pull/1006): Implement the rate metric.
   * Prior to this change, ping uploading would only be resumed once the `.submit()` API was called again, even if Glean was not throttled anymore.
   * **Note**: this change does not apply to QML. We used the `setTimeout`/`clearTimeout` APIs in this feature and those are not available on the QML platform. Follow [Bug 1743140](https://bugzilla.mozilla.org/show_bug.cgi?id=1743140) for updates.
 * [#1015](https://github.com/mozilla/glean.js/pull/1015): BUGFIX: Make attempting to call the `setUploadEnabled` API before initializing Glean a no-op.
