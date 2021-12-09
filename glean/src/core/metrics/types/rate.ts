@@ -58,7 +58,6 @@ export class RateMetric extends Metric<Rate, Rate> {
  *
  * Both numerator and denominator can only be incremented, not decremented.
  */
-
 class RateMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("rate", meta);
@@ -138,7 +137,7 @@ class RateMetricType extends MetricType {
         await Context.errorManager.record(
           this,
           ErrorType.InvalidValue,
-          `Added negative value ${amount} to numerator.`
+          `Added negative value ${amount} to denominator.`
         );
         return;
       }
@@ -181,7 +180,7 @@ class RateMetricType extends MetricType {
    *
    * # Note
    *
-   * this function will return the RateInternalPresentation for convenience.
+   * This function will return the Rate for convenience.
    *
    * This doesn't clear the stored value.
    *
