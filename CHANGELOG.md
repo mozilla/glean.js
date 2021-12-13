@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.28.0...main)
 
+* [#1006](https://github.com/mozilla/glean.js/pull/1006): Implement the rate metric.
+
 # v0.28.0 (2021-12-08)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.27.0...v0.28.0)
