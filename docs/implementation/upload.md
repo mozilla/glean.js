@@ -21,7 +21,7 @@ i.e. it contains full JSON ping payloads instead of isolated metric data.
 As soon as a new ping is [collected](https://mozilla.github.io/glean/book/appendix/glossary.html#submission)
 it is persisted on the `PingsDatabase`.
 
-The `PingsDatabase` is an observable class. Whenever a new ping is recorded observers are notified.
+The `PingsDatabase` is an observable class. Whenever a new ping is recorded, observers are notified.
 When this class is initialized it scans the underlying database for any pending pings
 from the previous run. Observers are also notified of each ping found while scanning.
 
@@ -48,7 +48,7 @@ The `getUploadTask` API will return three possible tasks:
 - The `Done_UploadTask`, which signals that worker is done and should stop asking for new tasks.
 This task is prompted either by the queue being emtpy or by upload limitations being hit.
 
-This function is applies the [ping rate limitations](https://mozilla.github.io/glean/book/user/pings/index.html?highlight=client_info#rate-limiting)
+This function applies the [ping rate limitations](https://mozilla.github.io/glean/book/user/pings/index.html?highlight=client_info#rate-limiting)
 and guards against upload worker infinite loops e.g. when upload attempts return too many recoverable
 failures in a row and pings are re-enqueued and retried in a row, which can happen in case of
 lack of internet connection for example.
