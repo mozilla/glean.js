@@ -7,6 +7,8 @@
   new behaviour only deletes the actually invalid data and leave the rest of the ping intact.
 * [#1065](https://github.com/mozilla/glean.js/pull/1065): Only import metric types into the library when they are used either by the user or Glean itself.
   * Previously the code required to deserialize metric data from the database was always imported by the library even if the metric type was never used by the client. This effort will decrease the size of the Glean.js bundles that don't import all the metric types.
+* [#1046](https://github.com/mozilla/glean.js/pull/1046): Remove legacy X-Client-Type X-Client-Version from Glean pings.
+
 # v0.30.0 (2022-01-10)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.29.0...v0.30.0)
