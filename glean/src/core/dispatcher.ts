@@ -115,7 +115,7 @@ class Dispatcher {
     } catch(e) {
       log(
         this.logTag,
-        `Error executing Glean task${e ? `: ${e}`: ". There might be more error logs above."}`,
+        `Error executing Glean task${e ? `: ${e as string}`: ". There might be more error logs above."}`,
         LoggingLevel.Error
       );
       return false;

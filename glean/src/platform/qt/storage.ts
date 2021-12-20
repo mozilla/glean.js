@@ -128,7 +128,6 @@ class QMLStore implements Store {
    *        Having this as an argument is necessary for the case when this
    *        function gets called before initialize. In that case `this` is `undefined`
    *        and attempting to call `this.logTag` will throw an error.
-   *
    * @returns The database handle or `undefined`.
    */
   private _dbHandle(logTag?: string): LocalStorage.DatabaseHandle | undefined {
@@ -156,7 +155,6 @@ class QMLStore implements Store {
    *        Having this as an argument is necessary for the case when this
    *        function gets called before initialize. In that case `this` is `undefined`
    *        and attempting to call `this.logTag` will throw an error.
-   *
    * @returns The query result if succesfull. A rejection otherwise.
    */
   protected _executeQuery(query: string, logTag?: string): Promise<LocalStorage.QueryResult | undefined> {
