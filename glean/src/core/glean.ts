@@ -30,18 +30,16 @@ class Glean {
   private static _instance?: Glean;
 
   // Instances of Glean's core metrics.
-  private _coreMetrics: CoreMetrics;
+  private coreMetrics: CoreMetrics;
   // Instances of Glean's core pings.
-  private _corePings: CorePings;
+  private corePings: CorePings;
 
   // Properties that will only be set on `initialize`.
 
   // The ping uploader. Note that we need to use the definite assignment assertion
   // because initialization will not happen in the constructor, but in the `initialize`
   // method.
-  private _pingUploader!: PingUploadManager;
-  // The Glean configuration object.
-  private _config!: Configuration;
+  private pingUploader!: PingUploadManager;
 
   private constructor() {
     if (!isUndefined(Glean._instance)) {
@@ -50,8 +48,8 @@ class Glean {
       Use Glean.instance instead to access the Glean singleton.`);
     }
 
-    this._coreMetrics = new CoreMetrics();
-    this._corePings = new CorePings();
+    this.coreMetrics = new CoreMetrics();
+    this.corePings = new CorePings();
   }
 
   private static get instance(): Glean {
@@ -60,18 +58,6 @@ class Glean {
     }
 
     return Glean._instance;
-  }
-
-  private static get pingUploader(): PingUploadManager {
-    return Glean.instance._pingUploader;
-  }
-
-  static get coreMetrics(): CoreMetrics {
-    return Glean.instance._coreMetrics;
-  }
-
-  private static get corePings(): CorePings {
-    return Glean.instance._corePings;
   }
 
   /**
@@ -83,7 +69,7 @@ class Glean {
    */
   private static async onUploadEnabled(): Promise<void> {
     Context.uploadEnabled = true;
-    await Glean.coreMetrics.initialize(Glean.instance._config, Context.platform);
+    await Glean.instance.coreMetrics.initialize();
   }
 
   /**
@@ -102,7 +88,7 @@ class Glean {
     // We need to use an undispatched submission to guarantee that the
     // ping is collected before metric are cleared, otherwise we end up
     // with malformed pings.
-    await PingType._private_submitUndispatched(Glean.corePings.deletionRequest);
+    await PingType._private_submitUndispatched(Glean.instance.corePings.deletionRequest);
     await Glean.clearMetrics();
   }
 
@@ -115,7 +101,7 @@ class Glean {
     // Clear enqueued upload jobs and clear pending pings queue.
     //
     // The only job that will still be sent is the deletion-request ping.
-    await Glean.pingUploader.clearPendingPingsQueue();
+    await Glean.instance.pingUploader.clearPendingPingsQueue();
 
     // There is only one metric that we want to survive after clearing all
     // metrics: first_run_date. Here, we store its value
@@ -129,7 +115,7 @@ class Glean {
       firstRunDate = new DatetimeMetric(
         await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
-          Glean.coreMetrics.firstRunDate
+          Glean.instance.coreMetrics.firstRunDate
         )
       ).date;
     } catch {
@@ -156,10 +142,10 @@ class Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    await UUIDMetricType._private_setUndispatched(Glean.coreMetrics.clientId, KNOWN_CLIENT_ID);
+    await UUIDMetricType._private_setUndispatched(Glean.instance.coreMetrics.clientId, KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await DatetimeMetricType._private_setUndispatched(Glean.coreMetrics.firstRunDate, firstRunDate);
+    await DatetimeMetricType._private_setUndispatched(Glean.instance.coreMetrics.firstRunDate, firstRunDate);
 
     Context.uploadEnabled = false;
   }
@@ -230,15 +216,14 @@ class Glean {
 
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
-    Context.debugOptions = correctConfig.debug;
-    Glean.instance._config = correctConfig;
+    Context.config = correctConfig;
 
     Context.metricsDatabase = new MetricsDatabase();
     Context.eventsDatabase = new EventsDatabase();
     Context.pingsDatabase = new PingsDatabase();
     Context.errorManager = new ErrorManager();
 
-    Glean.instance._pingUploader = new PingUploadManager(correctConfig, Context.pingsDatabase);
+    Glean.instance.pingUploader = new PingUploadManager(correctConfig, Context.pingsDatabase);
 
     if (config?.plugins) {
       for (const plugin of config.plugins) {
@@ -283,7 +268,7 @@ class Glean {
         // deletion request ping.
         const clientId = await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
-          Glean.coreMetrics.clientId
+          Glean.instance.coreMetrics.clientId
         );
 
         if (clientId) {
@@ -310,34 +295,6 @@ class Glean {
       // to ensure we don't enqueue pings before their files are deleted.
       await Context.pingsDatabase.scanPendingPings();
     });
-  }
-
-  static get serverEndpoint(): string | undefined {
-    return Glean.instance._config?.serverEndpoint;
-  }
-
-  static get logPings(): boolean {
-    return Glean.instance._config?.debug?.logPings || false;
-  }
-
-  static get debugViewTag(): string | undefined {
-    if (Glean.instance._config?.debugViewTag) {
-      return Glean.instance._config?.debugViewTag;
-    }
-  }
-
-  static get sourceTags(): string | undefined {
-    if (Glean.instance._config?.debug.sourceTags) {
-      return Glean.instance._config?.debug.sourceTags?.toString();
-    }
-  }
-
-  static get platform(): Platform {
-    if (!Context.platform) {
-      throw new Error("IMPOSSIBLE: Attempted to access environment specific APIs before Glean was initialized.");
-    }
-
-    return Context.platform;
   }
 
   /**
@@ -397,7 +354,7 @@ class Glean {
    */
   static setLogPings(flag: boolean): void {
     Context.dispatcher.launch(() => {
-      Glean.instance._config.debug.logPings = flag;
+      Context.config.logPings = flag;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -416,7 +373,7 @@ class Glean {
    */
   static setDebugViewTag(value: string): void {
     Context.dispatcher.launch(() => {
-      Glean.instance._config.debugViewTag = value;
+      Context.config.debugViewTag = value;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -437,7 +394,7 @@ class Glean {
    */
   static setSourceTags(value: string[]): void {
     Context.dispatcher.launch(() => {
-      Glean.instance._config.sourceTags = value;
+      Context.config.sourceTags = value;
 
       // The dispatcher requires that dispatched functions return promises.
       return Promise.resolve();
@@ -469,7 +426,7 @@ class Glean {
     // because some of its tasks may enqueue new pings to upload
     // and we want these uploading tasks to also be executed prior to complete shutdown.
     await Context.dispatcher.shutdown();
-    await Glean.pingUploader.blockOnOngoingUploads();
+    await Glean.instance.pingUploader.blockOnOngoingUploads();
   }
 
   /**

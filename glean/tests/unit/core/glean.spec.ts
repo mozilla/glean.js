@@ -47,14 +47,14 @@ describe("Glean", function() {
   it("client_id and first_run_date are regenerated if cleared", async function() {
     await Context.metricsDatabase.clearAll();
     assert.strictEqual(
-      await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE), undefined);
+      await Glean["instance"]["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE), undefined);
     assert.strictEqual(
-      await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
+      await Glean["instance"]["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
 
     await Glean.testUninitialize();
     await Glean.testInitialize(testAppId, true);
-    assert.ok(await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE));
-    assert.ok(await Glean["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
+    assert.ok(await Glean["instance"]["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE));
+    assert.ok(await Glean["instance"]["coreMetrics"]["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
   });
 
   it("basic metrics should be cleared when upload is disabled", async function() {
@@ -94,36 +94,36 @@ describe("Glean", function() {
   });
 
   it("first_run_date is managed correctly when toggling uploading", async function() {
-    const originalFirstRunDate = await Glean["coreMetrics"]["firstRunDate"]
+    const originalFirstRunDate = await Glean["instance"]["coreMetrics"]["firstRunDate"]
       .testGetValueAsString(CLIENT_INFO_STORAGE);
 
     Glean.setUploadEnabled(false);
     assert.strictEqual(
-      await Glean["coreMetrics"]["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
+      await Glean["instance"]["coreMetrics"]["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
       originalFirstRunDate
     );
 
     Glean.setUploadEnabled(true);
     assert.strictEqual(
-      await Glean["coreMetrics"]["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
+      await Glean["instance"]["coreMetrics"]["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
       originalFirstRunDate
     );
   });
 
   it("client_id is managed correctly when toggling uploading", async function() {
-    const originalClientId = await Glean["coreMetrics"]["clientId"]
+    const originalClientId = await Glean["instance"]["coreMetrics"]["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(originalClientId);
     assert.ok(originalClientId !== KNOWN_CLIENT_ID);
 
     Glean.setUploadEnabled(false);
     assert.strictEqual(
-      await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE),
+      await Glean["instance"]["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
     );
 
     Glean.setUploadEnabled(true);
-    const newClientId = await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE);
+    const newClientId = await Glean["instance"]["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(newClientId !== originalClientId);
     assert.ok(newClientId !== KNOWN_CLIENT_ID);
   });
@@ -132,7 +132,7 @@ describe("Glean", function() {
     await Glean.testUninitialize();
     await Glean.testInitialize(testAppId, false);
     assert.strictEqual(
-      await Glean["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE),
+      await Glean["instance"]["coreMetrics"]["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
     );
   });
@@ -141,14 +141,14 @@ describe("Glean", function() {
     Glean.setUploadEnabled(false);
     await Glean.testUninitialize();
     await Glean.testInitialize(testAppId, true);
-    const clientId = await Glean["coreMetrics"]["clientId"]
+    const clientId = await Glean["instance"]["coreMetrics"]["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(clientId);
     assert.ok(clientId !== KNOWN_CLIENT_ID);
   });
 
   it("enabling when already enabled is a no-op", async function() {
-    const spy = sandbox.spy(Glean["coreMetrics"], "initialize");
+    const spy = sandbox.spy(Glean["instance"]["coreMetrics"], "initialize");
     Glean.setUploadEnabled(true);
     // Wait for `setUploadEnabled` to be executed.
     await Context.dispatcher.testBlockOnQueue();
@@ -156,7 +156,7 @@ describe("Glean", function() {
   });
 
   it("disabling when already disabled is a no-op", async function() {
-    const spy = sandbox.spy(Glean["pingUploader"], "clearPendingPingsQueue");
+    const spy = sandbox.spy(Glean["instance"]["pingUploader"], "clearPendingPingsQueue");
     Glean.setUploadEnabled(false);
     Glean.setUploadEnabled(false);
     // Wait for `setUploadEnabled` to be executed both times.
@@ -380,11 +380,11 @@ describe("Glean", function() {
     Glean.setLogPings(true);
     await Glean.testInitialize(testAppId, true);
     await Context.dispatcher.testBlockOnQueue();
-    assert.ok(Glean.logPings);
+    assert.ok(Context.config.logPings);
 
     // Setting after initialize.
     Glean.setLogPings(false);
-    assert.ok(!Glean.logPings);
+    assert.ok(!Context.config.logPings);
   });
 
   it("setting debug view tag works before and after and on initialize", async function () {
@@ -398,19 +398,19 @@ describe("Glean", function() {
     Glean.setDebugViewTag(testTag);
     await Glean.testInitialize(testAppId, true);
     await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(Glean.debugViewTag, testTag);
+    assert.strictEqual(Context.config.debugViewTag, testTag);
 
     // Setting after initialize.
     const anotherTestTag = "another-test";
     Glean.setDebugViewTag(anotherTestTag);
-    assert.strictEqual(Glean.debugViewTag, anotherTestTag);
+    assert.strictEqual(Context.config.debugViewTag, anotherTestTag);
   });
 
   it("attempting to set an invalid debug view tag is ignored", async function () {
     const invaligTag = "inv@l!d_t*g";
     Glean.setDebugViewTag(invaligTag);
     await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(Glean.debugViewTag, undefined);
+    assert.strictEqual(Context.config.debugViewTag, undefined);
   });
 
   it("setting source tags on initialize works", async function () {
@@ -418,14 +418,14 @@ describe("Glean", function() {
     await Glean.testInitialize(testAppId, true);
     Glean.setSourceTags(["1", "2", "3", "4", "5"]);
     await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(Glean.sourceTags, "1,2,3,4,5");
+    assert.strictEqual(Context.config.sourceTags?.toString(), "1,2,3,4,5");
   });
 
   it("attempting to set invalid source tags is ignored", async function () {
     const invaligTags = ["inv@l!d_t*g"];
     Glean.setSourceTags(invaligTags);
     await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(Glean.sourceTags, undefined);
+    assert.strictEqual(Context.config.sourceTags, undefined);
   });
 
   it("testResetGlean correctly resets", async function () {
@@ -455,8 +455,8 @@ describe("Glean", function() {
     await Glean.testInitialize(testAppId, true, { appBuild: testBuild, appDisplayVersion: testDisplayVersion });
     await Context.dispatcher.testBlockOnQueue();
 
-    assert.strictEqual(await Glean.coreMetrics.appBuild.testGetValue(), testBuild);
-    assert.strictEqual(await Glean.coreMetrics.appDisplayVersion.testGetValue(), testDisplayVersion);
+    assert.strictEqual(await Glean["instance"]["coreMetrics"].appBuild.testGetValue(), testBuild);
+    assert.strictEqual(await Glean["instance"]["coreMetrics"].appDisplayVersion.testGetValue(), testDisplayVersion);
   });
 
   // Verification test, does not test anything the Dispatcher suite doesn't cover,

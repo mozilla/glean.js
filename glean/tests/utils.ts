@@ -33,7 +33,7 @@ export function unzipPingPayload(payload: Uint8Array | string): JSONObject {
  */
 export function stopGleanUploader(): void {
   // eslint-disable-next-line @typescript-eslint/no-empty-function
-  Glean["pingUploader"]["worker"]["work"] = () => {};
+  Glean["instance"]["pingUploader"]["worker"]["work"] = () => {};
 }
 
 /**

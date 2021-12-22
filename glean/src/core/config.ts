@@ -6,11 +6,22 @@ import { DEFAULT_TELEMETRY_ENDPOINT, GLEAN_MAX_SOURCE_TAGS } from "./constants.j
 import type Plugin from "../plugins/index.js";
 import { validateHeader, validateURL } from "./utils.js";
 import type Uploader from "./upload/uploader.js";
-import type { DebugOptions } from "./debug_options.js";
 import log, { LoggingLevel } from "./log.js";
 import { Context } from "./context.js";
 
 const LOG_TAG = "core.Config";
+
+/**
+ * Lists Glean's debug options.
+ */
+export interface DebugOptions {
+  // Whether or not lot log pings when they are collected.
+  logPings?: boolean;
+  // The value of the X-Debug-ID header to be included in every ping.
+  debugViewTag?: string;
+  // The value of the X-Source-Tags header to be included in every ping.
+  sourceTags?: string[];
+}
 
 /**
  * Describes how to configure Glean.
@@ -84,16 +95,24 @@ export class Configuration implements ConfigurationInterface {
     this.httpClient = config?.httpClient;
   }
 
-  get debugViewTag(): string {
-    return this.debug.debugViewTag || "";
+  get logPings(): boolean {
+    return this.debug.logPings || false;
   }
 
-  set debugViewTag(tag: string) {
-    if (!validateHeader(tag)) {
+  set logPings(flag: boolean) {
+    this.debug.logPings = flag;
+  }
+
+  get debugViewTag(): string | undefined {
+    return this.debug.debugViewTag;
+  }
+
+  set debugViewTag(tag: string | undefined) {
+    if (!validateHeader(tag || "")) {
       log(
         LOG_TAG,
         [
-          `"${tag}" is not a valid \`debugViewTag\` value.`,
+          `"${tag || ""}" is not a valid \`debugViewTag\` value.`,
           "Please make sure the value passed satisfies the regex `^[a-zA-Z0-9-]{1,20}$`."
         ],
         LoggingLevel.Error
@@ -105,15 +124,15 @@ export class Configuration implements ConfigurationInterface {
     this.debug.debugViewTag = tag;
   }
 
-  get sourceTags(): string[] {
-    return this.debug.sourceTags || [];
+  get sourceTags(): string[] | undefined {
+    return this.debug.sourceTags;
   }
 
-  set sourceTags(tags: string[]) {
-    if (tags.length < 1 || tags.length > GLEAN_MAX_SOURCE_TAGS) {
+  set sourceTags(tags: string[] | undefined) {
+    if (!tags || tags.length < 1 || tags.length > GLEAN_MAX_SOURCE_TAGS) {
       log(
         LOG_TAG,
-        `A list of tags cannot contain more than ${GLEAN_MAX_SOURCE_TAGS} elements.`,
+        `A list of tags cannot contain more than ${GLEAN_MAX_SOURCE_TAGS} elements or less than one.`,
         LoggingLevel.Error
       );
       return;
