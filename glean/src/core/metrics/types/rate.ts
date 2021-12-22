@@ -6,7 +6,7 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
-import { testOnly } from "../../utils.js";
+import { testOnlyCheck } from "../../utils.js";
 import { isNumber, isObject } from "../../utils.js";
 import type { JSONValue } from "../../utils.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -188,13 +188,14 @@ class RateMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<Rate | undefined> {
-    let metric: Rate | undefined;
-    await Context.dispatcher.testLaunch(async () => {
-      metric = await Context.metricsDatabase.getMetric<Rate>(ping, this);
-    });
-    return metric;
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: Rate | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<Rate>(ping, this);
+      });
+      return metric;
+    }
   }
 }
 

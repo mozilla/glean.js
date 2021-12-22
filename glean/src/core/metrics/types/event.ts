@@ -6,7 +6,7 @@ import type { CommonMetricData } from "../index.js";
 import type { ExtraMap } from "../events_database/recorded_event.js";
 import { MetricType } from "../index.js";
 import { RecordedEvent } from "../events_database/recorded_event.js";
-import { getMonotonicNow, isString, testOnly, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { getMonotonicNow, isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 
@@ -102,13 +102,14 @@ class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends Metr
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
-    let events: RecordedEvent[] | undefined;
-    await Context.dispatcher.testLaunch(async () => {
-      events = await Context.eventsDatabase.getEvents(ping, this);
-    });
-    return events;
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let events: RecordedEvent[] | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        events = await Context.eventsDatabase.getEvents(ping, this);
+      });
+      return events;
+    }
   }
 }
 
