@@ -3,7 +3,7 @@
   "version": "0.28.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for JavaScript environments.",
   "type": "module",
-  "sideEffects": "false",
+  "sideEffects": false,
   "exports": {
     "./package.json": "./package.json",
     "./private/metrics/*": "./dist/core/metrics/types/*.js",
