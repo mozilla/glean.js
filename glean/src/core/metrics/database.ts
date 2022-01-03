@@ -43,38 +43,6 @@ export function generateReservedMetricIdentifiers(name: string): {
 }
 
 /**
- * Verifies if a given value is a valid Metrics object.
- *
- * @param v The value to verify
- * @returns Whether or not `v` is a valid Metrics object.
- */
-export function isValidInternalMetricsRepresentation(v: unknown): v is Metrics {
-  if (isObject(v)) {
-    // The root keys should all be metric types.
-    for (const metricType in v) {
-      const metrics = v[metricType];
-      if (isObject(metrics)) {
-        for (const metricIdentifier in metrics) {
-          if (!validateMetricInternalRepresentation(metricType, metrics[metricIdentifier])) {
-            log(
-              LOG_TAG,
-              `Invalid metric representation found for metric "${metricIdentifier}"`,
-              LoggingLevel.Debug
-            );
-            return false;
-          }
-        }
-      } else {
-        return false;
-      }
-    }
-    return true;
-  } else {
-    return false;
-  }
-}
-
-/**
  * Creates the metrics payload from a metrics object with metrics in their internal representation.
  *
  * @param v The Metrics object to transform.
@@ -260,24 +228,60 @@ class MetricsDatabase {
    * @returns The ping payload found for the given parameters or an empty object
    *          in case no data was found or the data that was found, was invalid.
    */
-  private async getAndValidatePingData(ping: string, lifetime: Lifetime): Promise<Metrics> {
+  private async getCorrectedPingData(ping: string, lifetime: Lifetime): Promise<Metrics> {
     const store = this._chooseStore(lifetime);
     const data = await store.get([ping]);
     if (isUndefined(data)) {
       return {};
     }
 
-    if (!isValidInternalMetricsRepresentation(data)) {
+    if (!isObject(data)) {
       log(
         LOG_TAG,
-        `Unexpected value found for ping "${ping}" in "${lifetime}" store: ${JSON.stringify(data)}. Clearing.`,
+        `Invalid value found in storage for ping "${ping}". Deleting.`,
         LoggingLevel.Debug
       );
       await store.delete([ping]);
       return {};
     }
 
-    return data;
+    const correctedData: Metrics = {};
+    // All top keys should be metric types.
+    for (const metricType in data) {
+      const metrics = data[metricType];
+      if (!isObject(metrics)) {
+        log(
+          LOG_TAG,
+          `Unexpected data found in storage for metrics of type "${metricType}" in ping "${ping}". Deleting.`,
+          LoggingLevel.Debug
+        );
+        await store.delete([ping, metricType]);
+        continue;
+      }
+
+      for (const metricIdentifier in metrics) {
+        if (!validateMetricInternalRepresentation(metricType, metrics[metricIdentifier])) {
+          log(
+            LOG_TAG,
+            `Invalid value found in storage for metric "${metricIdentifier}". Deleting.`,
+            LoggingLevel.Debug
+          );
+
+          await store.delete([ping, metricType, metricIdentifier]);
+          continue;
+        }
+
+        if (!correctedData[metricType]) {
+          correctedData[metricType] = {};
+        }
+
+        // Coersion is fine here, `validateMetricInternalRepresentation`
+        // validated that this is of the correct type.
+        correctedData[metricType][metricIdentifier] = metrics[metricIdentifier] as JSONValue;
+      }
+    }
+
+    return correctedData;
   }
 
   private processLabeledMetric(snapshot: Metrics, metricType: string, metricId: string, metricData: JSONValue) {
@@ -313,9 +317,9 @@ class MetricsDatabase {
    *          `undefined` in case the ping doesn't contain any recorded metrics.
    */
   async getPingMetrics(ping: string, clearPingLifetimeData: boolean): Promise<Metrics | undefined> {
-    const userData = await this.getAndValidatePingData(ping, Lifetime.User);
-    const pingData = await this.getAndValidatePingData(ping, Lifetime.Ping);
-    const appData = await this.getAndValidatePingData(ping, Lifetime.Application);
+    const userData = await this.getCorrectedPingData(ping, Lifetime.User);
+    const pingData = await this.getCorrectedPingData(ping, Lifetime.Ping);
+    const appData = await this.getCorrectedPingData(ping, Lifetime.Application);
 
     if (clearPingLifetimeData && Object.keys(pingData).length > 0) {
       await this.clear(Lifetime.Ping, ping);
