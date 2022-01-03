@@ -7,39 +7,9 @@ import type { Metric } from "./metric.js";
 import type { JSONValue } from "../utils.js";
 
 import { LabeledMetric } from "./types/labeled.js";
-import { BooleanMetric } from "./types/boolean.js";
-import { CounterMetric } from "./types/counter.js";
-import { DatetimeMetric } from "./types/datetime.js";
-import { QuantityMetric } from "./types/quantity.js";
-import { RateMetric } from "./types/rate.js";
-import { StringMetric } from "./types/string.js";
-import { StringListMetric } from "./types/string_list.js";
-import { TextMetric } from "./types/text.js";
-import { TimespanMetric } from "./types/timespan.js";
-import { UrlMetric } from "./types/url.js";
-import { UUIDMetric } from "./types/uuid.js";
+import { Context } from "../context.js";
 
-/**
- * A map containing all supported internal metrics and its constructors.
- */
-const METRIC_MAP: {
-  readonly [type: string]: new (v: unknown) => Metric<JSONValue, JSONValue>
-} = Object.freeze({
-  "boolean": BooleanMetric,
-  "counter": CounterMetric,
-  "datetime": DatetimeMetric,
-  "labeled_boolean": LabeledMetric,
-  "labeled_counter": LabeledMetric,
-  "labeled_string": LabeledMetric,
-  "quantity": QuantityMetric,
-  "rate": RateMetric,
-  "string": StringMetric,
-  "string_list": StringListMetric,
-  "text": TextMetric,
-  "timespan": TimespanMetric,
-  "url": UrlMetric,
-  "uuid": UUIDMetric,
-});
+
 
 /**
  * A metric factory function.
@@ -48,15 +18,20 @@ const METRIC_MAP: {
  * @param v The value with which to instantiate the metric.
  * @returns A metric instance.
  * @throws
- * - In case type is not listed in the `METRIC_MAP`;
+ * - In case type is not listed in the `Context.supportedMetrics`;
  * - In case `v` is not in the correct representation for the wanted metric type.
  */
 export function createMetric(type: string, v: unknown): Metric<JSONValue, JSONValue> {
-  if (!(type in METRIC_MAP)) {
+  if (type.startsWith("labeled_")) {
+    Context.addSupportedMetric(type, LabeledMetric);
+  }
+
+  const ctn = Context.getSupportedMetric(type);
+  if (!ctn) {
     throw new Error(`Unable to create metric of unknown type ${type}`);
   }
 
-  return new METRIC_MAP[type](v);
+  return new ctn(v);
 }
 
 /**

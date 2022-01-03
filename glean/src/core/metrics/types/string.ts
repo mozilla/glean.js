@@ -41,7 +41,7 @@ export class StringMetric extends Metric<string, string> {
  */
 class StringMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("string", meta);
+    super("string", meta, StringMetric);
   }
 
   /**

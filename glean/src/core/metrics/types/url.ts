@@ -84,7 +84,7 @@ export class UrlMetric extends Metric<string, string> {
  */
 class UrlMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("url", meta);
+    super("url", meta, UrlMetric);
   }
 
   /**

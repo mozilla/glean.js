@@ -84,7 +84,7 @@ class TimespanMetricType extends MetricType {
   startTime?: number;
 
   constructor(meta: CommonMetricData, timeUnit: string) {
-    super("timespan", meta);
+    super("timespan", meta, TimespanMetric);
     this.timeUnit = timeUnit as TimeUnit;
   }
 

@@ -7,6 +7,8 @@ import type EventsDatabase from "./metrics/events_database/index.js";
 import type PingsDatabase from "./pings/database.js";
 import type ErrorManager from "./error/index.js";
 import type Platform from "../platform/index.js";
+import type { Metric } from "./metrics/metric.js";
+import type { JSONValue } from "./utils.js";
 import Dispatcher from "./dispatcher.js";
 import log, { LoggingLevel } from "./log.js";
 import type { Configuration } from "./config.js";
@@ -45,6 +47,13 @@ export class Context {
   private _initialized = false;
   // Whether or not Glean is in testing mode.
   private _testing = false;
+  // A map of metric types and their constructors.
+  // This map is dinamically filled everytime a metric type is constructed.
+  //
+  // If a metric is not on this map it cannot be serialized from the database.
+  private _supportedMetrics: {
+    [type: string]: new (v: unknown) => Metric<JSONValue, JSONValue>
+  } = {};
 
   // The moment the current Glean.js session started.
   private _startTime: Date;
@@ -241,5 +250,28 @@ export class Context {
 
   static isPlatformSet(): boolean {
     return !!Context.instance._platform;
+  }
+
+  static getSupportedMetric(type: string): (new (v: unknown) => Metric<JSONValue, JSONValue>) | undefined {
+    return Context.instance._supportedMetrics[type];
+  }
+
+  /**
+   * Adds a new constructor to the supported metrics map.
+   *
+   * If the metric map already contains this constructor, this is a no-op.
+   *
+   * @param type A string identifying the given metric type.
+   * @param ctn The metric constructor.
+   */
+  static addSupportedMetric(
+    type: string,
+    ctn: new (v: unknown) => Metric<JSONValue, JSONValue>
+  ): void {
+    if (type in Context.instance._supportedMetrics) {
+      return;
+    }
+
+    Context.instance._supportedMetrics[type] = ctn;
   }
 }

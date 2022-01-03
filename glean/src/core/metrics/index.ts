@@ -3,9 +3,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { JSONValue} from "../utils.js";
-import { isUndefined, testOnlyCheck} from "../utils.js";
+import { isUndefined, testOnlyCheck } from "../utils.js";
 import type { Lifetime } from "./lifetime.js";
 import type { ErrorType } from "../error/error_type.js";
+import type { Metric } from "./metric.js";
 import { getValidDynamicLabel } from "./types/labeled.js";
 import { Context } from "../context.js";
 
@@ -53,7 +54,14 @@ export abstract class MetricType implements CommonMetricData {
   readonly disabled: boolean;
   dynamicLabel?: string;
 
-  constructor(type: string, meta: CommonMetricData) {
+  constructor(
+    type: string,
+    meta: CommonMetricData,
+    metricCtn?: new (v: unknown) => Metric<JSONValue, JSONValue>
+  ) {
+    if (metricCtn) {
+      Context.addSupportedMetric(type, metricCtn);
+    }
     this.type = type;
 
     this.name = meta.name;

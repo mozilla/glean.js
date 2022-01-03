@@ -11,12 +11,21 @@ import type { JSONObject, JSONValue } from "../../../../src/core/utils";
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";
+import { BooleanMetric } from "../../../../src/core/metrics/types/boolean";
 
 describe("MetricsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
     await Glean.testResetGlean(testAppId);
+
+    // These metric types are used throughout tests,
+    // but is added directly on the database instead of creating it through new BooleanMetricType.
+    //
+    // In order for the database to be able to deserialize metrics of this type we need to
+    // add it to the supported metrics map.
+    Context.addSupportedMetric("boolean", BooleanMetric);
+    Context.addSupportedMetric("string", StringMetric);
   });
 
   describe("record", function() {

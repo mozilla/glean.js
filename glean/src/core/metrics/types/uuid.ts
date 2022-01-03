@@ -41,7 +41,7 @@ export class UUIDMetric extends Metric<string, string> {
  */
 class UUIDMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("uuid", meta);
+    super("uuid", meta, UUIDMetric);
   }
 
   /**

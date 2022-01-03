@@ -30,7 +30,7 @@ export class BooleanMetric extends Metric<boolean, boolean> {
  */
 class BooleanMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("boolean", meta);
+    super("boolean", meta, BooleanMetric);
   }
 
   /**
