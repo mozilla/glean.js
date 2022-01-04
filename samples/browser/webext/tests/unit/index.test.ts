@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { strict as assert } from "assert";
-import Glean, { ErrorType } from "@mozilla/glean/webext";
+import { ErrorType } from "@mozilla/glean/webext";
+import { testResetGlean } from "@mozilla/glean/testing";
 
 import * as sample from "../../src/generated/sample.js";
 
@@ -11,7 +12,7 @@ describe("webext", function () {
   const testAppId = `webext.js.test.${this.title}`;
 
   beforeEach(async function () {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   describe("sample test", function () {

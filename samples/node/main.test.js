@@ -3,7 +3,8 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { strict as assert } from "assert";
-import Glean, { ErrorType } from "@mozilla/glean/node";
+import { ErrorType } from "@mozilla/glean/node";
+import { testResetGlean } from "@mozilla/glean/testing";
 
 import main from "./main.js";
 import { execution } from "./generated/pings.js";
@@ -13,7 +14,7 @@ describe("node-sample", function () {
   const testAppId = `node.test.${this.title}`;
 
   beforeEach(async function () {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   describe("sample test", function () {
