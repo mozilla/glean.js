@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.29.0...main)
 
+* [#1045](https://github.com/mozilla/glean.js/pull/1045): BUGFIX: Provide informative error message when unable to access database in QML.
+
 # v0.29.0 (2022-01-04)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.28.0...v0.29.0)
