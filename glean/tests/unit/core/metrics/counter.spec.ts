@@ -9,12 +9,13 @@ import { ErrorType } from "../../../../src/core/error/error_type";
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
+import { testResetGlean } from "../../../../src/core/testing";
 
 describe("CounterMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {

@@ -8,8 +8,8 @@ import sinon from "sinon";
 
 import type { Observer} from "../../../../src/core/pings/database";
 import Database, { isValidPingInternalRepresentation } from "../../../../src/core/pings/database";
-import Glean from "../../../../src/core/glean";
 import type { JSONObject } from "../../../../src/core/utils";
+import { testResetGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 const now = new Date();
@@ -20,7 +20,7 @@ describe("PingsDatabase", function() {
 
   beforeEach(async function() {
     clock = sandbox.useFakeTimers(now.getTime());
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   afterEach(function () {

@@ -15,6 +15,8 @@ import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
 import EventMetricType from "../../../../src/core/metrics/types/event";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
+import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
+import { testResetGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 
@@ -32,7 +34,7 @@ describe("PingMaker", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   afterEach(function () {
@@ -80,7 +82,7 @@ describe("PingMaker", function() {
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
     // Initialize will also initialize core metrics that are part of the client info.
-    await Glean.testResetGlean(testAppId, true, {
+    await testResetGlean(testAppId, true, {
       channel: "channel",
       appBuild:"build",
       appDisplayVersion: "display version",
@@ -142,7 +144,7 @@ describe("PingMaker", function() {
       "X-Source-Tags": "tag1,tag2,tag3"
     }, PingMaker.getPingHeaders());
 
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
     assert.strictEqual(PingMaker.getPingHeaders(), undefined);
   });
 
@@ -150,7 +152,7 @@ describe("PingMaker", function() {
     // Disable ping uploading for it not to interfere with this tests.
     stopGleanUploader();
 
-    await Glean.testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ]});
+    await testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ]});
     const ping = new PingType({
       name: "ping",
       includeClientId: true,
@@ -163,7 +165,7 @@ describe("PingMaker", function() {
     )["ident"];
     assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
 
-    await Glean.testResetGlean(testAppId, true);
+    await testResetGlean(testAppId, true);
     await PingMaker.collectAndStorePing("ident", ping);
     const recordedPingNoPlugin = Object.fromEntries(
       (await Context.pingsDatabase.getAllPings())
@@ -175,7 +177,7 @@ describe("PingMaker", function() {
     // Disable ping uploading for it not to interfere with this tests.
     stopGleanUploader();
 
-    await Glean.testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ] });
+    await testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ] });
     Glean.setLogPings(true);
 
     const ping = new PingType({
@@ -212,7 +214,7 @@ describe("PingMaker", function() {
       }
     }
 
-    await Glean.testResetGlean(testAppId, true, { plugins: [ new ThrowingPlugin() ] });
+    await testResetGlean(testAppId, true, { plugins: [ new ThrowingPlugin() ] });
     Glean.setLogPings(true);
 
     const ping = new PingType({
@@ -247,13 +249,13 @@ describe("PingMaker", function() {
 
     // Un-initialize and re-initialize manually instead of using testResetGlean
     // in order to have control over the startTime at initialization.
-    await Glean.testUninitialize(false);
+    await testUninitializeGlean(false);
     // Move the clock backwards by one hour.
     //
     // This will generate incoherent timestamps in events at collection time
     // and record an `InvalidValue` error for the `glean.restarted` event.
     Context.startTime.setTime(Context.startTime.getTime() - 1000 * 60 * 60);
-    await Glean.testInitialize(testAppId, true);
+    await testInitializeGlean(testAppId, true);
 
     event.record();
     // Wait for recording action to complete.

@@ -10,20 +10,22 @@ import Glean from "../../../src/core/glean";
 import MetricsDatabase from "../../../src/core/metrics/database";
 import EventsDatabase from "../../../src/core/metrics/events_database";
 import PingsDatabase from "../../../src/core/pings/database";
+import { testResetGlean } from "../../../src/core/testing";
+import { testUninitializeGlean } from "../../../src/core/testing/utils";
 import { sanitizeApplicationId } from "../../../src/core/utils";
 
 describe("Context", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function () {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   it("dispatcher contains the expected value", async function () {
     assert.notStrictEqual(Context.dispatcher, undefined);
     assert.ok(Context.dispatcher instanceof Dispatcher);
 
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
     // Dispatcher should be available when Glean is uninitialized too.
     assert.notStrictEqual(Context.dispatcher, undefined);
     assert.ok((Context.dispatcher as unknown) instanceof Dispatcher);
@@ -40,14 +42,14 @@ describe("Context", function() {
   it("appId contains the expected value", async function () {
     assert.strictEqual(Context.applicationId, sanitizeApplicationId(testAppId));
 
-    await Glean.testResetGlean("new-id");
+    await testResetGlean("new-id");
     assert.strictEqual(Context.applicationId, sanitizeApplicationId("new-id"));
   });
 
   it("initialized contains the expected value", async function () {
     assert.strictEqual(Context.initialized, true);
 
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
     assert.strictEqual(Context.initialized, false);
   });
 

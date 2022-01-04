@@ -228,7 +228,7 @@ export function testOnlyCheck(name: string, logTag = LOG_TAG): boolean {
       [
         `Attempted to access test only method \`${name || "unknown"}\`,`,
         "but Glean is not in testing mode. Ignoring. Make sure to put Glean in testing mode",
-        "before accessing such methods, by calling `Glean.testResetGlean`."
+        "before accessing such methods, by calling `testResetGlean`."
       ],
       LoggingLevel.Error
     );

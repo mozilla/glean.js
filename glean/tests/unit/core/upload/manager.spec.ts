@@ -8,7 +8,6 @@ import { v4 as UUIDv4 } from "uuid";
 
 import { Configuration } from "../../../../src/core/config";
 import { Context } from "../../../../src/core/context";
-import Glean from "../../../../src/core/glean";
 import PingUploadManager from "../../../../src/core/upload/manager";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 import { CounterUploader, WaitableUploader } from "../../../utils";
@@ -18,6 +17,7 @@ import { makePath } from "../../../../src/core/pings/maker";
 import Policy from "../../../../src/core/upload/policy";
 import { UploadTaskTypes } from "../../../../src/core/upload/task";
 import { MAX_PINGS_PER_INTERVAL } from "../../../../src/core/upload/rate_limiter";
+import { testResetGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 
@@ -62,7 +62,7 @@ describe("PingUploadManager", function() {
   before(async function () {
     // We call this only once so that the platform is set
     // and we are able to create a pings database.
-    await Glean.testResetGlean(testAppId, true);
+    await testResetGlean(testAppId, true);
     pingsDatabase = new PingsDatabase();
   });
 
