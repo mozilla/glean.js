@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.28.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.29.0...main)
+
+# v0.29.0 (2022-01-04)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.28.0...v0.29.0)
 
 * [#1006](https://github.com/mozilla/glean.js/pull/1006): Implement the rate metric.
 * [#1066](https://github.com/mozilla/glean.js/pull/1066): BUGFIX: Guarantee reported timestamps are never floating point numbers.
