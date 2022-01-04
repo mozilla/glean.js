@@ -4,9 +4,8 @@
 
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
-import { testOnly } from "../../utils.js";
 import { MetricType } from "../index.js";
-import { isUndefined, isInteger } from "../../utils.js";
+import { isUndefined, isInteger, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -127,13 +126,14 @@ class CounterMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
-    let metric: number | undefined;
-    await Context.dispatcher.testLaunch(async () => {
-      metric = await Context.metricsDatabase.getMetric<number>(ping, this);
-    });
-    return metric;
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: number | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<number>(ping, this);
+      });
+      return metric;
+    }
   }
 }
 

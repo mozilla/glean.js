@@ -7,7 +7,7 @@ import { MetricType } from "../index.js";
 import TimeUnit from "../../metrics/time_unit.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
-import { isNumber, isObject, isString, testOnly } from "../../utils.js";
+import { isNumber, isObject, isString, testOnlyCheck } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.DatetimeMetricType";
 
@@ -236,17 +236,19 @@ class DatetimeMetricType extends MetricType {
    *
    * This doesn't clear the stored value.
    *
-   * @param ping the ping from which we want to retrieve this metrics value from.
+   * @param ping The ping from which we want to retrieve this metrics value from.
+   * @param fn The name of the function that is calling this function. Used for testing purposes.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  @testOnly(LOG_TAG)
-  private async testGetValueAsDatetimeMetric(ping: string): Promise<DatetimeMetric | undefined> {
-    let value: DatetimeInternalRepresentation | undefined;
-    await Context.dispatcher.testLaunch(async () => {
-      value = await Context.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
-    });
-    if (value) {
-      return new DatetimeMetric(value);
+  private async testGetValueAsDatetimeMetric(ping: string, fn: string): Promise<DatetimeMetric | undefined> {
+    if (testOnlyCheck(fn, LOG_TAG)) {
+      let value: DatetimeInternalRepresentation | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        value = await Context.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
+      });
+      if (value) {
+        return new DatetimeMetric(value);
+      }
     }
   }
 
@@ -261,9 +263,8 @@ class DatetimeMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  @testOnly(LOG_TAG)
   async testGetValueAsString(ping: string = this.sendInPings[0]): Promise<string | undefined> {
-    const metric = await this.testGetValueAsDatetimeMetric(ping);
+    const metric = await this.testGetValueAsDatetimeMetric(ping, "testGetValueAsString");
     return metric ? metric.payload() : undefined;
   }
 
@@ -285,9 +286,8 @@ class DatetimeMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<Date | undefined> {
-    const metric = await this.testGetValueAsDatetimeMetric(ping);
+    const metric = await this.testGetValueAsDatetimeMetric(ping, "testGetValue");
     return metric ? metric.date : undefined;
   }
 }

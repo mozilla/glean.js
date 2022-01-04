@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { DELETION_REQUEST_PING_NAME } from "../constants.js";
-import { generateUUIDv4, testOnly } from "../utils.js";
+import { generateUUIDv4, testOnlyCheck } from "../utils.js";
 import collectAndStorePing from "../pings/maker.js";
 import type CommonPingData from "./common_ping_data.js";
 import { Context } from "../context.js";
@@ -148,22 +148,23 @@ class PingType implements CommonPingData {
    * @returns A `Promise` resolved when the ping is collected and the validation function
    *          is executed.
    */
-  @testOnly(LOG_TAG)
   async testBeforeNextSubmit(callbackFn: ValidatorFunction): Promise<void> {
-    if (this.testCallback) {
-      log(
-        LOG_TAG,
-        `There is an existing test call for ping "${this.name}". Ignoring.`,
-        LoggingLevel.Error
-      );
-      return;
-    }
+    if (testOnlyCheck("testBeforeNextSubmit", LOG_TAG)) {
+      if (this.testCallback) {
+        log(
+          LOG_TAG,
+          `There is an existing test call for ping "${this.name}". Ignoring.`,
+          LoggingLevel.Error
+        );
+        return;
+      }
 
-    return new Promise((resolve, reject) => {
-      this.resolveTestPromiseFunction = resolve;
-      this.rejectTestPromiseFunction = reject;
-      this.testCallback = callbackFn;
-    });
+      return new Promise((resolve, reject) => {
+        this.resolveTestPromiseFunction = resolve;
+        this.rejectTestPromiseFunction = reject;
+        this.testCallback = callbackFn;
+      });
+    }
   }
 }
 

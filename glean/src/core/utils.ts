@@ -217,37 +217,24 @@ export async function truncateStringAtBoundaryWithError(metric: MetricType, valu
 /**
  * Decorator factory that will only allow a function to be called when Glean is in testing mode.
  *
+ * @param name The name of the function that is being called. Used for logging purposes only.
  * @param logTag The log tag of the current module.
- * @returns A decorator function.
+ * @returns Whether or not Glean is in testing mode.
  */
-export function testOnly(logTag = LOG_TAG) {
-  return (
-    _target: unknown,
-    propertyKey: string,
-    descriptor: TypedPropertyDescriptor<TestFunction>
-  ): TypedPropertyDescriptor<TestFunction> => {
-    const originalMethod = descriptor.value;
-    descriptor.value = function (...args: never[]) {
-      if (!Context.testing) {
-        log(
-          logTag,
-          [
-            `Attempted to access test only method \`${propertyKey || "unknown"}\`,`,
-            "but Glean is not in testing mode. Ignoring. Make sure to put Glean in testing mode",
-            "before accessing such methods, by calling `Glean.testResetGlean`."
-          ],
-          LoggingLevel.Error
-        );
-      } else {
-        return originalMethod ? originalMethod.apply(this, args) : Promise.resolve();
-      }
+export function testOnlyCheck(name: string, logTag = LOG_TAG): boolean {
+  if (!Context.testing) {
+    log(
+      logTag,
+      [
+        `Attempted to access test only method \`${name || "unknown"}\`,`,
+        "but Glean is not in testing mode. Ignoring. Make sure to put Glean in testing mode",
+        "before accessing such methods, by calling `Glean.testResetGlean`."
+      ],
+      LoggingLevel.Error
+    );
 
-      return Promise.resolve();
-    };
+    return false;
+  }
 
-    return descriptor;
-  };
+  return true;
 }
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type TestFunction = (...args: never[]) => Promise<any>;
