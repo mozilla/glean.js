@@ -3,6 +3,8 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.28.0...main)
 
 * [#1006](https://github.com/mozilla/glean.js/pull/1006): Implement the rate metric.
+* [#1066](https://github.com/mozilla/glean.js/pull/1066): BUGFIX: Guarantee eported timestamps are never floating point numbers.
+  * Floating point timestamps are rejected by the pipeline.
 
 # v0.28.0 (2021-12-08)
 
