@@ -1,7 +1,7 @@
 {
   "extends": "./base.json",
   "include": [
-    "../src/core/metrics/types/*.ts",
+    "../src/core/**/*.ts",
     "../src/plugins/*.ts",
     "../src/index/node.ts",
     "../src/index/webext.ts",

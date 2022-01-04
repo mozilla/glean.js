@@ -6,7 +6,6 @@ import assert from "assert";
 import sinon from "sinon";
 import { generateKeyPair, exportJWK, compactDecrypt } from "jose";
 
-import Glean from "../../../src/core/glean";
 import PingType from "../../../src/core/pings/ping_type";
 import type { JSONObject } from "../../../src/core/utils";
 import { WaitableUploader } from "../../utils";
@@ -14,6 +13,7 @@ import PingEncryptionPlugin from "../../../src/plugins/encryption";
 import collectAndStorePing, { makePath } from "../../../src/core/pings/maker";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
+import { testResetGlean } from "../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 
@@ -21,7 +21,7 @@ describe("PingEncryptionPlugin", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   afterEach(function () {
@@ -40,7 +40,7 @@ describe("PingEncryptionPlugin", function() {
     const mockUploader = new WaitableUploader();
     const pingBody = mockUploader.waitForPingSubmission("test", path);
 
-    await Glean.testResetGlean(
+    await testResetGlean(
       testAppId,
       true,
       {
@@ -82,7 +82,7 @@ describe("PingEncryptionPlugin", function() {
 
     const httpClient = new WaitableUploader();
     const pingBody = httpClient.waitForPingSubmission("encryptedping");
-    await Glean.testResetGlean(
+    await testResetGlean(
       testAppId,
       true,
       {

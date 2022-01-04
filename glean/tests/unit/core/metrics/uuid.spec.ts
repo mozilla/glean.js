@@ -10,12 +10,13 @@ import UUIDMetricType from "../../../../src/core/metrics/types/uuid";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";
 import { ErrorType } from "../../../../src/core/error/error_type";
+import { testResetGlean } from "../../../../src/core/testing";
 
 describe("UUIDMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {

@@ -20,6 +20,8 @@ import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
 import EventMetricType from "../../../src/core/metrics/types/event";
 import { getGleanRestartedEventMetric } from "../../../src/core/metrics/events_database";
+import { testInitializeGlean, testUninitializeGlean } from "../../../src/core/testing/utils";
+import { testResetGlean } from "../../../src/core/testing";
 
 class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
   constructor() {
@@ -37,7 +39,7 @@ describe("Glean", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   afterEach(function () {
@@ -51,8 +53,8 @@ describe("Glean", function() {
     assert.strictEqual(
       await Glean.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
 
-    await Glean.testUninitialize();
-    await Glean.testInitialize(testAppId, true);
+    await testUninitializeGlean();
+    await testInitializeGlean(testAppId, true);
     assert.ok(await Glean.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE));
     assert.ok(await Glean.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
   });
@@ -129,8 +131,8 @@ describe("Glean", function() {
   });
 
   it("client_id is set to known value when uploading disabled at start", async function() {
-    await Glean.testUninitialize();
-    await Glean.testInitialize(testAppId, false);
+    await testUninitializeGlean();
+    await testInitializeGlean(testAppId, false);
     assert.strictEqual(
       await Glean.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
@@ -139,8 +141,8 @@ describe("Glean", function() {
 
   it("client_id is set to random value when uploading enabled at start", async function() {
     Glean.setUploadEnabled(false);
-    await Glean.testUninitialize();
-    await Glean.testInitialize(testAppId, true);
+    await testUninitializeGlean();
+    await testInitializeGlean(testAppId, true);
     const clientId = await Glean.coreMetrics["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(clientId);
@@ -165,7 +167,7 @@ describe("Glean", function() {
   });
 
   it("attempting to change upload status prior to initialize is a no-op", async function() {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     const launchSpy = sandbox.spy(Context.dispatcher, "launch");
     Glean.setUploadEnabled(false);
@@ -173,9 +175,9 @@ describe("Glean", function() {
   });
 
   it("initialization throws if applicationId is an empty string", async function() {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
     try {
-      await Glean.testInitialize("", true);
+      await testInitializeGlean("", true);
       assert.ok(false);
     } catch {
       assert.ok(true);
@@ -183,9 +185,9 @@ describe("Glean", function() {
   });
 
   it("initialization throws if serverEndpoint is an invalida URL", async function() {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
     try {
-      await Glean.testInitialize(testAppId, true, { serverEndpoint: "" });
+      await testInitializeGlean(testAppId, true, { serverEndpoint: "" });
       assert.ok(false);
     } catch {
       assert.ok(true);
@@ -193,10 +195,10 @@ describe("Glean", function() {
   });
 
   it("initialization registers plugins when provided", async function() {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     const mockPlugin = new MockPlugin();
-    await Glean.testInitialize(testAppId, true, {
+    await testInitializeGlean(testAppId, true, {
       // We need to ignore TypeScript here,
       // otherwise it will error since mockEvent is not listed as a Glean event in core/events.ts
       //
@@ -207,8 +209,8 @@ describe("Glean", function() {
 
     assert.deepStrictEqual(CoreEvents["afterPingCollection"]["plugin"], mockPlugin);
 
-    await Glean.testUninitialize();
-    await Glean.testInitialize(testAppId, true);
+    await testUninitializeGlean();
+    await testInitializeGlean(testAppId, true);
     assert.strictEqual(CoreEvents["afterPingCollection"]["plugin"], undefined);
   });
 
@@ -235,18 +237,18 @@ describe("Glean", function() {
   });
 
   it("initializing twice is a no-op", async function() {
-    await Glean.testUninitialize();
-    await Glean.testInitialize(testAppId, true);
+    await testUninitializeGlean();
+    await testInitializeGlean(testAppId, true);
     // initialize is dispatched, we must await on the queue being completed to assert things.
     await Context.dispatcher.testBlockOnQueue();
 
     // This time it should not be called, which means upload should not be switched to `false`.
-    await Glean.testInitialize(testAppId, false);
+    await testInitializeGlean(testAppId, false);
     assert.ok(Context.uploadEnabled);
   });
 
   it("flipping upload enabled respects order of events", async function() {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     const ping = new PingType({
       name: "custom",
@@ -257,7 +259,7 @@ describe("Glean", function() {
     const pingBody = mockUploader.waitForPingSubmission(DELETION_REQUEST_PING_NAME);
 
     // Start Glean with upload enabled.
-    await Glean.testInitialize(
+    await testInitializeGlean(
       testAppId,
       true,
       {
@@ -290,7 +292,7 @@ describe("Glean", function() {
 
   it("deletion request is sent when toggling upload from on to off and the pings queue is full", async function() {
     const httpClient = new WaitableUploader();
-    await Glean.testResetGlean(testAppId, true, { httpClient });
+    await testResetGlean(testAppId, true, { httpClient });
 
     // Fill up the pending pings queue.
     const custom = new PingType({
@@ -315,11 +317,11 @@ describe("Glean", function() {
     Glean.setUploadEnabled(true);
 
     // Un-initialize, but don't clear the stores.
-    await Glean.testUninitialize(false);
+    await testUninitializeGlean(false);
 
     const mockUploader = new WaitableUploader();
     const pingBody = mockUploader.waitForPingSubmission("deletion-request");
-    await Glean.testInitialize(
+    await testInitializeGlean(
       testAppId,
       false,
       {
@@ -335,7 +337,7 @@ describe("Glean", function() {
   it("deletion request ping is not sent if upload status does not change between runs", async function () {
     const mockUploader = new WaitableUploader();
     let pingBody = mockUploader.waitForPingSubmission("deletion-request");
-    await Glean.testResetGlean(
+    await testResetGlean(
       testAppId,
       true,
       {
@@ -350,10 +352,10 @@ describe("Glean", function() {
 
     // Can't clear stores here,
     // otherwise Glean won't know upload has been disabled in a previous run.
-    await Glean.testUninitialize(false);
+    await testUninitializeGlean(false);
 
     pingBody = mockUploader.waitForPingSubmission("deletion-request");
-    await Glean.testInitialize(
+    await testInitializeGlean(
       testAppId,
       false,
       {
@@ -368,17 +370,17 @@ describe("Glean", function() {
 
   it("deletion request ping is not sent when user starts Glean for the first time with upload disabled", async function () {
     const postSpy = sandbox.spy(Context.platform.uploader, "post");
-    await Glean.testResetGlean(testAppId, false);
+    await testResetGlean(testAppId, false);
     assert.strictEqual(postSpy.callCount, 0);
     assert.strictEqual(Context.uploadEnabled, false);
   });
 
   it("setting log pings works before and after and on initialize", async function () {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     // Setting before initialize.
     Glean.setLogPings(true);
-    await Glean.testInitialize(testAppId, true);
+    await testInitializeGlean(testAppId, true);
     await Context.dispatcher.testBlockOnQueue();
     assert.ok(Context.config.logPings);
 
@@ -388,15 +390,15 @@ describe("Glean", function() {
   });
 
   it("setting debug view tag works before and after and on initialize", async function () {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     const testTag = "test";
 
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     // Setting before initialize.
     Glean.setDebugViewTag(testTag);
-    await Glean.testInitialize(testAppId, true);
+    await testInitializeGlean(testAppId, true);
     await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Context.config.debugViewTag, testTag);
 
@@ -414,8 +416,8 @@ describe("Glean", function() {
   });
 
   it("setting source tags on initialize works", async function () {
-    await Glean.testUninitialize();
-    await Glean.testInitialize(testAppId, true);
+    await testUninitializeGlean();
+    await testInitializeGlean(testAppId, true);
     Glean.setSourceTags(["1", "2", "3", "4", "5"]);
     await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Context.config.sourceTags?.toString(), "1,2,3,4,5");
@@ -441,18 +443,18 @@ describe("Glean", function() {
     metric.set(TEST_VALUE);
 
     assert.strictEqual(await metric.testGetValue(), TEST_VALUE);
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
 
     assert.strictEqual(await metric.testGetValue(), undefined);
   });
 
   it("appBuild and appDisplayVersion are correctly reported", async function () {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     const testBuild = "test";
     const testDisplayVersion = "1.2.3-stella";
 
-    await Glean.testInitialize(testAppId, true, { appBuild: testBuild, appDisplayVersion: testDisplayVersion });
+    await testInitializeGlean(testAppId, true, { appBuild: testBuild, appDisplayVersion: testDisplayVersion });
     await Context.dispatcher.testBlockOnQueue();
 
     assert.strictEqual(await Glean.coreMetrics.appBuild.testGetValue(), testBuild);
@@ -554,7 +556,7 @@ describe("Glean", function() {
   });
 
   it("attempting to shutdown Glean prior to initialize is a no-op", async function() {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     const launchSpy = sandbox.spy(Context.dispatcher, "launch");
     await Glean.shutdown();
@@ -574,7 +576,7 @@ describe("Glean", function() {
     // it will record a glean.restarted event on the `custom` ping events list.
     event.record();
 
-    await Glean.testResetGlean(testAppId, true, undefined, false);
+    await testResetGlean(testAppId, true, undefined, false);
 
     // Check that Glean was able to record the `glean.restarted` event on initialization.
     const restartedEvent = getGleanRestartedEventMetric(["custom"]);
@@ -584,19 +586,19 @@ describe("Glean", function() {
   });
 
   it("glean is not initialized if uploadEnabled or applicationId are not the right type", async function() {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    await Glean.testResetGlean(["not", "string"], true);
+    await testResetGlean(["not", "string"], true);
     assert.strictEqual(Context.initialized, false);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    await Glean.testResetGlean(testAppId, "not boolean");
+    await testResetGlean(testAppId, "not boolean");
     assert.strictEqual(Context.initialized, false);
 
-    await Glean.testResetGlean(testAppId, true);
+    await testResetGlean(testAppId, true);
     assert.strictEqual(Context.initialized, true);
   });
 

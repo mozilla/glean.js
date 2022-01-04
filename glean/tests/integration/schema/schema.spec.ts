@@ -12,6 +12,8 @@ import { WaitableUploader } from "../../utils";
 // Generated files.
 import * as metrics from "./generated/forTesting";
 import * as pings from "./generated/pings";
+import { testResetGlean } from "../../../src/core/testing";
+import { testInitializeGlean, testUninitializeGlean } from "../../../src/core/testing/utils";
 
 const GLEAN_SCHEMA_URL = "https://raw.githubusercontent.com/mozilla-services/mozilla-pipeline-schemas/main/schemas/glean/glean/glean.1.schema.json";
 
@@ -55,7 +57,7 @@ describe("schema", function() {
 
   it("validate generated ping is valid against glean schema", async function () {
     const httpClient = new WaitableUploader();
-    await Glean.testResetGlean(testAppId, true, { httpClient });
+    await testResetGlean(testAppId, true, { httpClient });
 
     // Record something for each metric type.
     //
@@ -96,7 +98,7 @@ describe("schema", function() {
 
   it("validate that the deletion-request is valid against glean schema", async function () {
     const httpClient = new WaitableUploader();
-    await Glean.testResetGlean(testAppId, true, { httpClient });
+    await testResetGlean(testAppId, true, { httpClient });
 
     const deletionPingBody = httpClient.waitForPingSubmission("deletion-request");
     Glean.setUploadEnabled(false);
@@ -109,12 +111,12 @@ describe("schema", function() {
     const deletionPingBody = httpClient.waitForPingSubmission("deletion-request");
 
     // Reset Glean and enable upload.
-    await Glean.testResetGlean(testAppId, true);
+    await testResetGlean(testAppId, true);
 
     // Re-start Glean with upload disabled, but don't clear stores.
     // We want to know that we were previously started with the upload enabled.
-    await Glean.testUninitialize(false);
-    await Glean.testInitialize(testAppId, false, { httpClient });
+    await testUninitializeGlean(false);
+    await testInitializeGlean(testAppId, false, { httpClient });
 
     validate(await deletionPingBody, pingSchema, { throwError: true });
   });
