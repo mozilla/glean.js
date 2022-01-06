@@ -463,7 +463,7 @@ namespace Glean {
     uploadEnabled = true,
     config?: ConfigurationInterface
   ): Promise<void> {
-    // Core metrics need tp be re-initialized so that
+    // Core metrics need to be re-initialized so that
     // the supportedMetrics map is re-created.
     coreMetrics = new CoreMetrics();
 

@@ -48,9 +48,9 @@ export class Context {
   // Whether or not Glean is in testing mode.
   private _testing = false;
   // A map of metric types and their constructors.
-  // This map is dinamically filled everytime a metric type is constructed.
+  // This map is dynamically filled everytime a metric type is constructed.
   //
-  // If a metric is not on this map it cannot be serialized from the database.
+  // If a metric is not in this map it cannot be deserialized from the database.
   private _supportedMetrics: {
     [type: string]: new (v: unknown) => Metric<JSONValue, JSONValue>
   } = {};
