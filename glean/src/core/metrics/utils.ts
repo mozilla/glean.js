@@ -26,12 +26,12 @@ export function createMetric(type: string, v: unknown): Metric<JSONValue, JSONVa
     Context.addSupportedMetric(type, LabeledMetric);
   }
 
-  const ctn = Context.getSupportedMetric(type);
-  if (!ctn) {
+  const ctor = Context.getSupportedMetric(type);
+  if (!ctor) {
     throw new Error(`Unable to create metric of unknown type ${type}`);
   }
 
-  return new ctn(v);
+  return new ctor(v);
 }
 
 /**

@@ -262,16 +262,16 @@ export class Context {
    * If the metric map already contains this constructor, this is a no-op.
    *
    * @param type A string identifying the given metric type.
-   * @param ctn The metric constructor.
+   * @param ctor The metric constructor.
    */
   static addSupportedMetric(
     type: string,
-    ctn: new (v: unknown) => Metric<JSONValue, JSONValue>
+    ctor: new (v: unknown) => Metric<JSONValue, JSONValue>
   ): void {
     if (type in Context.instance._supportedMetrics) {
       return;
     }
 
-    Context.instance._supportedMetrics[type] = ctn;
+    Context.instance._supportedMetrics[type] = ctor;
   }
 }

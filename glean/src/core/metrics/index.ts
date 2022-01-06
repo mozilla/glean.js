@@ -57,10 +57,10 @@ export abstract class MetricType implements CommonMetricData {
   constructor(
     type: string,
     meta: CommonMetricData,
-    metricCtn?: new (v: unknown) => Metric<JSONValue, JSONValue>
+    metricCtor?: new (v: unknown) => Metric<JSONValue, JSONValue>
   ) {
-    if (metricCtn) {
-      Context.addSupportedMetric(type, metricCtn);
+    if (metricCtor) {
+      Context.addSupportedMetric(type, metricCtor);
     }
     this.type = type;
 
