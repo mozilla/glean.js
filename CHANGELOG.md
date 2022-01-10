@@ -3,6 +3,8 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.29.0...main)
 
 * [#1045](https://github.com/mozilla/glean.js/pull/1045): BUGFIX: Provide informative error message when unable to access database in QML.
+* [#1077](https://github.com/mozilla/glean.js/pull/1077): BUGFIX: Do not clear lifetime metrics before submitting `deletion-request` ping on initialize.
+  - This bug causes malformed `deletion-request` pings in Glean is initialized with `uploadEnabled=false`.
 
 # v0.29.0 (2022-01-04)
 
