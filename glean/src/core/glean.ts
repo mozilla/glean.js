@@ -220,18 +220,23 @@ namespace Glean {
       // other task. No external API call will be executed before we leave this task.
       Context.initialized = true;
 
-      // IMPORTANT!
-      // Any pings we want to send upon initialization should happen before this line.
-      //
-      // Clear application lifetime metrics.
-      await Context.metricsDatabase.clear(Lifetime.Application);
-
       Context.uploadEnabled = uploadEnabled;
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
       if (uploadEnabled) {
-        // If upload is enabled, just follow the normal code path to
-        // instantiate the core metrics.
+        // IMPORTANT!
+        // Any pings we want to send upon initialization should happen before this line.
+        //
+        // Clear application lifetime metrics.
+        //
+        // If upload is disabled we don't need to do this,
+        // all metrics will be cleared anyways and we want
+        // application lifetime metrics intact in case
+        // we need to send a deletion-request ping.
+        await Context.metricsDatabase.clear(Lifetime.Application);
+
+        // If upload is enabled,
+        // just follow the normal code path to instantiate the core metrics.
         await onUploadEnabled();
       } else {
         // If upload is disabled, and we've never run before, only set the
