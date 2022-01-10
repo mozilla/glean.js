@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.29.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.30.0...main)
+
+# v0.30.0 (2022-01-10)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.29.0...v0.30.0)
 
 * [#1045](https://github.com/mozilla/glean.js/pull/1045): BUGFIX: Provide informative error message when unable to access database in QML.
 * [#1077](https://github.com/mozilla/glean.js/pull/1077): BUGFIX: Do not clear lifetime metrics before submitting `deletion-request` ping on initialize.
