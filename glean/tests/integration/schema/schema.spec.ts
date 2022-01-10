@@ -103,4 +103,19 @@ describe("schema", function() {
 
     validate(await deletionPingBody, pingSchema, { throwError: true });
   });
+
+  it("validate that the deletion-request ping sent upon init is valid against glean schema", async function () {
+    const httpClient = new WaitableUploader();
+    const deletionPingBody = httpClient.waitForPingSubmission("deletion-request");
+
+    // Reset Glean and enable upload.
+    await Glean.testResetGlean(testAppId, true);
+
+    // Re-start Glean with upload disabled, but don't clear stores.
+    // We want to know that we were previously started with the upload enabled.
+    await Glean.testUninitialize(false);
+    await Glean.testInitialize(testAppId, false, { httpClient });
+
+    validate(await deletionPingBody, pingSchema, { throwError: true });
+  });
 });

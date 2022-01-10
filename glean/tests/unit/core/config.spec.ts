@@ -36,15 +36,15 @@ describe("config", function() {
 
     // Invalid values
     config.sourceTags = [];
-    assert.deepStrictEqual([], config.sourceTags);
+    assert.strictEqual(undefined, config.sourceTags);
     config.sourceTags = [""];
-    assert.deepStrictEqual([], config.sourceTags);
+    assert.strictEqual(undefined, config.sourceTags);
     config.sourceTags = ["1", "2", "3", "4", "5", "6"];
-    assert.deepStrictEqual([], config.sourceTags);
+    assert.strictEqual(undefined, config.sourceTags);
     config.sourceTags = ["!nv@lid-val*e"];
-    assert.deepStrictEqual([], config.sourceTags);
+    assert.strictEqual(undefined, config.sourceTags);
     config.sourceTags = ["glean-test1", "test2"];
-    assert.deepStrictEqual([], config.sourceTags);
+    assert.strictEqual(undefined, config.sourceTags);
 
     // Valid values
     config.sourceTags = ["5"];

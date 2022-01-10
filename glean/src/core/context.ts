@@ -2,7 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { DebugOptions } from "./debug_options.js";
 import type MetricsDatabase from "./metrics/database.js";
 import type EventsDatabase from "./metrics/events_database/index.js";
 import type PingsDatabase from "./pings/database.js";
@@ -10,6 +9,7 @@ import type ErrorManager from "./error/index.js";
 import type Platform from "../platform/index.js";
 import Dispatcher from "./dispatcher.js";
 import log, { LoggingLevel } from "./log.js";
+import type { Configuration } from "./config.js";
 
 const LOG_TAG = "core.Context";
 
@@ -39,7 +39,7 @@ export class Context {
   private _pingsDatabase!: PingsDatabase;
   private _errorManager!: ErrorManager;
   private _applicationId!: string;
-  private _debugOptions!: DebugOptions;
+  private _config!: Configuration;
 
   // Whether or not Glean is initialized.
   private _initialized = false;
@@ -191,22 +191,22 @@ export class Context {
     Context.instance._initialized = init;
   }
 
-  static get debugOptions(): DebugOptions {
-    if (typeof Context.instance._debugOptions === "undefined") {
+  static get config(): Configuration {
+    if (typeof Context.instance._config === "undefined") {
       log(
         LOG_TAG,
         [
-          "Attempted to access Context.debugOptions before it was set. This may cause unexpected behaviour.",
+          "Attempted to access Context.config before it was set. This may cause unexpected behaviour.",
         ],
         LoggingLevel.Trace
       );
     }
 
-    return Context.instance._debugOptions;
+    return Context.instance._config;
   }
 
-  static set debugOptions(options: DebugOptions) {
-    Context.instance._debugOptions = options;
+  static set config(config: Configuration) {
+    Context.instance._config = config;
   }
 
   static get startTime(): Date {

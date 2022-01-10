@@ -15,6 +15,7 @@ import QuantityMetricType from "@mozilla/glean/private/metrics/quantity";
 import StringMetricType from "@mozilla/glean/private/metrics/string";
 import TextMetricType from "@mozilla/glean/private/metrics/text";
 import TimespanMetricType from "@mozilla/glean/private/metrics/timespan";
+import RateMetricType from "@mozilla/glean/private/metrics/rate";
 import UUIDMetricType from "@mozilla/glean/private/metrics/uuid";
 import URLMetricType from "@mozilla/glean/private/metrics/url";
 // Plugins
@@ -33,6 +34,7 @@ console.log(
   JSON.stringify(StringMetricType),
   JSON.stringify(TextMetricType),
   JSON.stringify(TimespanMetricType),
+  JSON.stringify(RateMetricType),
   JSON.stringify(UUIDMetricType),
   JSON.stringify(URLMetricType),
   JSON.stringify(PingEncryptionPlugin),

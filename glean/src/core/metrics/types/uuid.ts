@@ -4,7 +4,7 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { generateUUIDv4, isString, testOnly } from "../../utils.js";
+import { generateUUIDv4, isString, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -117,13 +117,14 @@ class UUIDMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
-    let metric: string | undefined;
-    await Context.dispatcher.testLaunch(async () => {
-      metric = await Context.metricsDatabase.getMetric<string>(ping, this);
-    });
-    return metric;
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: string | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
+      });
+      return metric;
+    }
   }
 }
 

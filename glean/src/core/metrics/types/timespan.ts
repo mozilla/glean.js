@@ -4,10 +4,9 @@
 
 import type { CommonMetricData} from "../index.js";
 import type { JSONValue} from "../../utils.js";
-import { testOnly } from "../../utils.js";
 import TimeUnit from "../time_unit.js";
 import { MetricType } from "../index.js";
-import { isString, isObject, isNumber, isUndefined, getMonotonicNow } from "../../utils.js";
+import { isString, isObject, isNumber, isUndefined, getMonotonicNow, testOnlyCheck } from "../../utils.js";
 import { Metric } from "../metric.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -265,15 +264,16 @@ class TimespanMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
-    let value: TimespanInternalRepresentation | undefined;
-    await Context.dispatcher.testLaunch(async () => {
-      value = await Context.metricsDatabase.getMetric<TimespanInternalRepresentation>(ping, this);
-    });
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let value: TimespanInternalRepresentation | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        value = await Context.metricsDatabase.getMetric<TimespanInternalRepresentation>(ping, this);
+      });
 
-    if (value) {
-      return (new TimespanMetric(value)).timespan;
+      if (value) {
+        return (new TimespanMetric(value)).timespan;
+      }
     }
   }
 }

@@ -108,10 +108,13 @@ class QMLStore implements Store {
     private tableName: string,
     private name: string = DATABASE_NAME
   ) {
+    const logTag = `${LOG_TAG}.${tableName}`;
     this.initialized = this._executeQuery(
-      `CREATE TABLE IF NOT EXISTS ${tableName}(key VARCHAR(255), value VARCHAR(255));`
+      `CREATE TABLE IF NOT EXISTS ${tableName}(key VARCHAR(255), value VARCHAR(255));`,
+      logTag
     );
-    this.logTag = `${LOG_TAG}.${tableName}`;
+
+    this.logTag = logTag;
   }
 
   private _createKeyFromIndex(index: StorageIndex) {
@@ -121,9 +124,13 @@ class QMLStore implements Store {
   /**
    * Best effort at getting the database handle.
    *
+   * @param logTag The logTag to add to log messages.
+   *        Having this as an argument is necessary for the case when this
+   *        function gets called before initialize. In that case `this` is `undefined`
+   *        and attempting to call `this.logTag` will throw an error.
    * @returns The database handle or `undefined`.
    */
-  private get _dbHandle(): LocalStorage.DatabaseHandle | undefined {
+  private _dbHandle(logTag?: string): LocalStorage.DatabaseHandle | undefined {
     try {
       const handle = LocalStorage.LocalStorage.openDatabaseSync(
         this.name, "1.0", `${this.name} Storage`, ESTIMATED_DATABASE_SIZE
@@ -131,7 +138,7 @@ class QMLStore implements Store {
       this.dbHandle = handle;
     } catch(e) {
       log(
-        this.logTag,
+        logTag || this.logTag,
         ["Error while attempting to access LocalStorage.\n", e],
         LoggingLevel.Debug
       );
@@ -140,21 +147,31 @@ class QMLStore implements Store {
     }
   }
 
-  protected _executeQuery(query: string): Promise<LocalStorage.QueryResult | undefined> {
-    const handle = this._dbHandle;
+  /**
+   * Executes an arbitrary query on the database.
+   *
+   * @param query The query to execute.
+   * @param logTag The logTag to add to log messages.
+   *        Having this as an argument is necessary for the case when this
+   *        function gets called before initialize. In that case `this` is `undefined`
+   *        and attempting to call `this.logTag` will throw an error.
+   * @returns The query result if succesfull. A rejection otherwise.
+   */
+  protected _executeQuery(query: string, logTag?: string): Promise<LocalStorage.QueryResult | undefined> {
+    const handle = this._dbHandle(logTag);
+    if (!handle) {
+      return Promise.reject();
+    }
 
     return new Promise((resolve, reject) => {
       try {
-        // In case the handle is undefined we want to throw and land
-        // in the `catch` block below.
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        handle!.transaction((tx: LocalStorage.DatabaseTransaction): void => {
+        handle.transaction((tx: LocalStorage.DatabaseTransaction): void => {
           const result = tx.executeSql(query);
           resolve(result);
         });
       } catch (e) {
         log(
-          this.logTag,
+          logTag || this.logTag,
           [`Error executing LocalStorage query: ${query}.\n`, e],
           LoggingLevel.Debug
         );

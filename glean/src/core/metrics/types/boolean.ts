@@ -6,7 +6,7 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric } from "../metric.js";
-import { isBoolean, testOnly } from "../../utils.js";
+import { isBoolean, testOnlyCheck } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.BooleanMetricType";
 
@@ -60,13 +60,14 @@ class BooleanMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  @testOnly(LOG_TAG)
   async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
-    let metric: boolean | undefined;
-    await Context.dispatcher.testLaunch(async () => {
-      metric = await Context.metricsDatabase.getMetric<boolean>(ping, this);
-    });
-    return metric;
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: boolean | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<boolean>(ping, this);
+      });
+      return metric;
+    }
   }
 }
 

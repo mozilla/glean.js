@@ -137,20 +137,11 @@ describe("utils", function() {
     assert.strictEqual(utils.validateHeader("-also-valid-value"), true);
   });
 
-  it("methods decorated with testOnly decorator are no-op outside of test mode", async function () {
-    class Greeter {
-      @utils.testOnly()
-      testOnlyGreet(): Promise<string | undefined> {
-        return Promise.resolve("Greetings!");
-      }
-    }
-
-    const greeter = new Greeter();
-
+  it("test only checks returns expected result", function () {
     Context.testing = false;
-    assert.strictEqual(await greeter.testOnlyGreet(), undefined);
+    assert.strictEqual(utils.testOnlyCheck("not used"), false);
 
     Context.testing = true;
-    assert.strictEqual(await greeter.testOnlyGreet(), "Greetings!");
+    assert.strictEqual(utils.testOnlyCheck("not used"), true);
   });
 });

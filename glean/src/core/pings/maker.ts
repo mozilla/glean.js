@@ -172,12 +172,12 @@ export async function buildClientInfoSection(ping: CommonPingData): Promise<Clie
 export function getPingHeaders(): Record<string, string> | undefined {
   const headers: Record<string, string> = {};
 
-  if (Context.debugOptions?.debugViewTag) {
-    headers["X-Debug-ID"] = Context.debugOptions.debugViewTag;
+  if (Context.config.debugViewTag) {
+    headers["X-Debug-ID"] = Context.config.debugViewTag;
   }
 
-  if (Context.debugOptions?.sourceTags) {
-    headers["X-Source-Tags"] = Context.debugOptions.sourceTags.toString();
+  if (Context.config.sourceTags) {
+    headers["X-Source-Tags"] = Context.config.sourceTags.toString();
   }
 
   if (Object.keys(headers).length > 0) {
@@ -268,7 +268,7 @@ export async function collectAndStorePing(identifier: string, ping: CommonPingDa
     return;
   }
 
-  if (Context.debugOptions.logPings) {
+  if (Context.config.logPings) {
     log(LOG_TAG, JSON.stringify(collectedPayload, null, 2), LoggingLevel.Info);
   }
   const finalPayload = modifiedPayload ? modifiedPayload : collectedPayload;

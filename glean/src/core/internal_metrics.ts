@@ -9,8 +9,6 @@ import StringMetricType from "./metrics/types/string.js";
 import { createMetric } from "./metrics/utils.js";
 import TimeUnit from "./metrics/time_unit.js";
 import { generateUUIDv4 } from "./utils.js";
-import type { ConfigurationInterface } from "./config.js";
-import type Platform from "../platform/index.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import log, { LoggingLevel } from "./log.js";
 import { Context } from "./context.js";
@@ -110,17 +108,17 @@ export class CoreMetrics {
     });
   }
 
-  async initialize(config: ConfigurationInterface, platform: Platform): Promise<void> {
+  async initialize(): Promise<void> {
     await this.initializeClientId();
     await this.initializeFirstRunDate();
-    await StringMetricType._private_setUndispatched(this.os, await platform.info.os());
-    await StringMetricType._private_setUndispatched(this.osVersion, await platform.info.osVersion(config.osVersion));
-    await StringMetricType._private_setUndispatched(this.architecture, await platform.info.arch(config.architecture));
-    await StringMetricType._private_setUndispatched(this.locale, await platform.info.locale());
-    await StringMetricType._private_setUndispatched(this.appBuild, config.appBuild || "Unknown");
-    await StringMetricType._private_setUndispatched(this.appDisplayVersion, config.appDisplayVersion || "Unknown");
-    if (config.channel) {
-      await StringMetricType._private_setUndispatched(this.appChannel, config.channel);
+    await StringMetricType._private_setUndispatched(this.os, await Context.platform.info.os());
+    await StringMetricType._private_setUndispatched(this.osVersion, await Context.platform.info.osVersion(Context.config.osVersion));
+    await StringMetricType._private_setUndispatched(this.architecture, await Context.platform.info.arch(Context.config.architecture));
+    await StringMetricType._private_setUndispatched(this.locale, await Context.platform.info.locale());
+    await StringMetricType._private_setUndispatched(this.appBuild, Context.config.appBuild || "Unknown");
+    await StringMetricType._private_setUndispatched(this.appDisplayVersion, Context.config.appDisplayVersion || "Unknown");
+    if (Context.config.channel) {
+      await StringMetricType._private_setUndispatched(this.appChannel, Context.config.channel);
     }
   }
 
