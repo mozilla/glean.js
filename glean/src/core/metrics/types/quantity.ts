@@ -41,7 +41,7 @@ export class QuantityMetric extends Metric<number, number> {
  */
 class QuantityMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("quantity", meta);
+    super("quantity", meta, QuantityMetric);
   }
 
   /**

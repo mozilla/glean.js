@@ -29,7 +29,7 @@ namespace Glean {
   // The below properties are exported for testing purposes.
   //
   // Instances of Glean's core metrics.
-  export const coreMetrics = new CoreMetrics();
+  export let coreMetrics = new CoreMetrics();
   // Instances of Glean's core pings.
   export const corePings = new CorePings();
   // An instance of the ping uploader.
@@ -463,6 +463,10 @@ namespace Glean {
     uploadEnabled = true,
     config?: ConfigurationInterface
   ): Promise<void> {
+    // Core metrics need to be re-initialized so that
+    // the supportedMetrics map is re-created.
+    coreMetrics = new CoreMetrics();
+
     Context.testing = true;
 
     setPlatform(TestPlatform);

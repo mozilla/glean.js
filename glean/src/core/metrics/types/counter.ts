@@ -42,7 +42,7 @@ export class CounterMetric extends Metric<number, number> {
  */
 class CounterMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("counter", meta);
+    super("counter", meta, CounterMetric);
   }
 
   /**

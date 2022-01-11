@@ -168,7 +168,7 @@ class DatetimeMetricType extends MetricType {
   timeUnit: TimeUnit;
 
   constructor(meta: CommonMetricData, timeUnit: string) {
-    super("datetime", meta);
+    super("datetime", meta, DatetimeMetric);
     this.timeUnit = timeUnit as TimeUnit;
   }
 
