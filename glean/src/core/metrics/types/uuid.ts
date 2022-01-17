@@ -107,7 +107,7 @@ class UUIDMetricType extends MetricType {
   }
 
   /**
-   * Test-only API**
+   * Test-only API
    *
    * Gets the currently stored value as a string.
    *

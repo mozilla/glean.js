@@ -10,7 +10,7 @@ import Glean from "../glean.js";
 import { CoreMetrics } from "../internal_metrics.js";
 
 /**
- * Test-only API**
+ * Test-only API
  *
  * Initializes Glean in testing mode.
  *
@@ -40,7 +40,7 @@ export async function testInitializeGlean(
 }
 
 /**
- * Test-only API**
+ * Test-only API
  *
  * Resets Glean to an uninitialized state.
  * This is a no-op in case Glean has not been initialized.

@@ -6,7 +6,7 @@ import type { ConfigurationInterface } from "../config";
 import { testInitializeGlean, testUninitializeGlean } from "./utils.js";
 
 /**
- * Test-only API**
+ * Test-only API
  *
  * Resets the Glean singleton to its initial state and re-initializes it.
  *

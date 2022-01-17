@@ -253,7 +253,7 @@ class DatetimeMetricType extends MetricType {
   }
 
   /**
-   * Test-only API**
+   * Test-only API
    *
    * Gets the currently stored value as an ISO date string.
    *
@@ -269,7 +269,7 @@ class DatetimeMetricType extends MetricType {
   }
 
   /**
-   * Test-only API**
+   * Test-only API
    *
    * Gets the currently stored value as a boolean.
    *

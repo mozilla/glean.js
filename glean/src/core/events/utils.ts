@@ -35,7 +35,7 @@ export function registerPluginToEvent<E extends CoreEvent>(plugin: Plugin<E>): v
 }
 
 /**
- * Test-only API**
+ * Test-only API
  *
  * Deregister plugins registered to all Glean events.
  */
