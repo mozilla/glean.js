@@ -216,8 +216,6 @@ describe("PingUploadWorker", function() {
     assert.ok("Date" in headers);
     assert.ok("Content-Length" in headers);
     assert.ok("Content-Type" in headers);
-    assert.ok("X-Client-Type" in headers);
-    assert.ok("X-Client-Version" in headers);
     assert.ok("X-Telemetry-Agent" in headers);
     assert.strictEqual(headers["Content-Encoding"], "gzip");
   });

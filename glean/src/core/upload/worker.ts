@@ -70,8 +70,6 @@ class PingUploadWorker {
       ...ping.headers,
       "Content-Type": "application/json; charset=utf-8",
       "Date": (new Date()).toISOString(),
-      "X-Client-Type": "Glean.js",
-      "X-Client-Version": GLEAN_VERSION,
       "X-Telemetry-Agent": `Glean/${GLEAN_VERSION} (JS on ${await Context.platform.info.os()})`
     };
 
