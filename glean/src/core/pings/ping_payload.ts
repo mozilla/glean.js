@@ -2,14 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { Metrics } from "../metrics/index.js";
+import type { Metrics } from "../metrics";
 import type { JSONObject, JSONArray } from "../utils.js";
+import {ExperimentData} from "../metrics/types/experiment";
 
 export interface PingInfo extends JSONObject {
   seq: number,
   start_time: string,
   end_time: string,
   reason?: string,
+  experiment_data?: ExperimentData
 }
 
 export interface ClientInfo extends JSONObject {

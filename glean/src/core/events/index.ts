@@ -5,8 +5,9 @@
 import type Plugin from "../../plugins/index.js";
 import log, { LoggingLevel } from "../log.js";
 
-import type { PingPayload } from "../pings/ping_payload.js";
+import type {PingInfo, PingPayload} from "../pings/ping_payload.js";
 import type { JSONObject } from "../utils.js";
+import { ExperimentData } from "../metrics/types/experiment";
 
 const LOG_TAG = "core.Events";
 
@@ -76,13 +77,19 @@ export class CoreEvent<
  */
 const CoreEvents: {
   afterPingCollection: CoreEvent<[PingPayload], Promise<JSONObject>>,
+  afterPingInfoCollection: CoreEvent<[PingInfo, ExperimentData?], Promise<JSONObject>>,
   [unused: string]: CoreEvent
 } = {
   // Event that is triggered immediatelly after a ping is collect and before it is recorded.
   //
   //  - Context: The `PingPayload` of the recently collected ping.
   //  - Result: The modified payload as a JSON object.
-  afterPingCollection: new CoreEvent<[PingPayload], Promise<JSONObject>>("afterPingCollection")
+  afterPingCollection: new CoreEvent<[PingPayload], Promise<JSONObject>>("afterPingCollection"),
+  // Event that is triggered immediatelly after a ping_info is collect and before it is recorded.
+  //
+  //  - Context: The `PingPayload` of the recently collected ping.
+  //  - Result: The modified payload as a JSON object.
+  afterPingInfoCollection: new CoreEvent<[PingInfo, ExperimentData?], Promise<JSONObject>>("afterPingInfoCollection")
 };
 
 export default CoreEvents;

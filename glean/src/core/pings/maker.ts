@@ -12,6 +12,7 @@ import CoreEvents from "../events/index.js";
 import { Lifetime } from "../metrics/lifetime.js";
 import { Context } from "../context.js";
 import log, { LoggingLevel } from "../log.js";
+import { ExperimentData } from "../metrics/types/experiment.js";
 
 const LOG_TAG = "core.Pings.Maker";
 
@@ -109,9 +110,10 @@ export async function getStartEndTimes(ping: CommonPingData): Promise<{ startTim
  *
  * @param ping The ping to build the `ping_info` section for.
  * @param reason The reason for submitting this ping.
+ * @param experiment_data
  * @returns The final `ping_info` section in its payload format.
  */
-export async function buildPingInfoSection(ping: CommonPingData, reason?: string): Promise<PingInfo> {
+export async function buildPingInfoSection(ping: CommonPingData, reason?: string, experiment_data?: ExperimentData): Promise<PingInfo> {
   const seq = await getSequenceNumber(ping);
   const { startTime, endTime } = await getStartEndTimes(ping);
 
@@ -125,6 +127,7 @@ export async function buildPingInfoSection(ping: CommonPingData, reason?: string
     pingInfo.reason = reason;
   }
 
+  await CoreEvents.afterPingInfoCollection.trigger(pingInfo, experiment_data);
   return pingInfo;
 }
 
