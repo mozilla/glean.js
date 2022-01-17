@@ -139,7 +139,7 @@ class PingType implements CommonPingData {
   }
 
   /**
-   * Test-only API**
+   * Test-only API
    *
    * Runs a validation function before the ping is collected.
    *

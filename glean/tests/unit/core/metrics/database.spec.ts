@@ -8,16 +8,16 @@ import Database, { generateReservedMetricIdentifiers } from "../../../../src/cor
 import StringMetricType, { StringMetric } from "../../../../src/core/metrics/types/string";
 
 import type { JSONObject, JSONValue } from "../../../../src/core/utils";
-import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";
 import { BooleanMetric } from "../../../../src/core/metrics/types/boolean";
+import { testResetGlean } from "../../../../src/core/testing";
 
 describe("MetricsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
 
     // These metric types are used throughout tests,
     // but is added directly on the database instead of creating it through new BooleanMetricType.

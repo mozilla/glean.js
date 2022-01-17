@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { ErrorType } from "../core/error/error_type.js";
+import { testResetGlean } from "../core/testing/index.js";
 
 import platform from "../platform/qt/index.js";
 import base from "./base.js";
@@ -27,6 +28,8 @@ export default {
   ...base(platform),
 
   ErrorType,
+
+  testResetGlean,
 
   _private: {
     PingType,

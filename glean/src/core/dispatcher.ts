@@ -406,7 +406,7 @@ class Dispatcher {
   }
 
   /**
-   * Test-Only API**
+   * Test-only API
    *
    * Returns a promise that resolves once the current task execution in finished.
    *
@@ -420,7 +420,7 @@ class Dispatcher {
   }
 
   /**
-   * Test-Only API**
+   * Test-only API
    *
    * Returns the dispatcher back to an uninitialized state.
    *

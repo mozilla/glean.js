@@ -13,6 +13,8 @@ import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
 import type { JSONObject } from "../../../../src/core/utils";
 import TestPlatform from "../../../../src/platform/test";
+import { testResetGlean } from "../../../../src/core/testing";
+import { testUninitializeGlean } from "../../../../src/core/testing/utils";
 
 const sandbox = sinon.createSandbox();
 
@@ -35,7 +37,7 @@ describe("PingType", function() {
   });
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   it("collects and stores ping on submit", async function () {
@@ -99,7 +101,7 @@ describe("PingType", function() {
   });
 
   it("no pings are submitted if Glean has not been initialized", async function() {
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     const spy = sandbox.spy(TestPlatform.uploader, "post");
     const ping = new PingType({

@@ -92,7 +92,7 @@ class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends Metr
   }
 
   /**
-   * Test-only API**
+   * Test-only API
    *
    * Gets the currently stored events.
    *

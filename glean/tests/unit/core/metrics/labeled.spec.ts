@@ -7,13 +7,14 @@ import sinon from "sinon";
 
 import { Context } from "../../../../src/core/context";
 import { ErrorType } from "../../../../src/core/error/error_type";
-import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import BooleanMetricType from "../../../../src/core/metrics/types/boolean";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import LabeledMetricType from "../../../../src/core/metrics/types/labeled";
 import StringMetricType from "../../../../src/core/metrics/types/string";
 import PingType from "../../../../src/core/pings/ping_type";
+import { testResetGlean } from "../../../../src/core/testing";
+import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
 import type { JSONObject } from "../../../../src/core/utils";
 import { stopGleanUploader } from "../../../utils";
 
@@ -23,7 +24,7 @@ describe("LabeledMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
     // Disable ping uploading for it not to interfere with this tests.
     stopGleanUploader();
   });
@@ -168,7 +169,7 @@ describe("LabeledMetric", function() {
     );
 
     // Make sure Glean isn't initialized, so that tasks get enqueued.
-    await Glean.testUninitialize();
+    await testUninitializeGlean();
 
     for (let i = 0; i <= 20; i++) {
       labeledCounterMetric[`label_${i}`].add(1);
@@ -176,7 +177,7 @@ describe("LabeledMetric", function() {
     // Go back and record in one of the real labels again.
     labeledCounterMetric["label_0"].add(1);
 
-    await Glean.testInitialize("gleanjs.unit.test", true);
+    await testInitializeGlean("gleanjs.unit.test", true);
 
     assert.strictEqual(await labeledCounterMetric["label_0"].testGetValue(), 2);
     for (let i = 1; i <= 15; i++) {
@@ -433,7 +434,7 @@ describe("LabeledMetric", function() {
     }
 
     // Reset glean without clearing the storage.
-    await Glean.testResetGlean(testAppId, true, undefined, false);
+    await testResetGlean(testAppId, true, undefined, false);
 
     // Try to store another label.
     labeledCounterMetric["new_label"].add(40);
