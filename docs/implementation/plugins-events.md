@@ -29,6 +29,10 @@ is a good example of that. That plugin encrypts all outgoing pings when enabled.
 plugin due to the encryption dependencies it includes in the bundle and it is only used by a small
 amount of clients. It makes sense to make it a stand-alone feature.
 
+> **Note**: Even if a feature is not as large as the encryption feature, if it is not used by most
+> clients we should always consider making it a plugin. Multiple small features that are not used
+> can also sum up to a large unnecessary size increase and we want to avoid that.
+
 ## Creating a new event and plugin
 
 Since plugins and events are a very recent tool for Glean.js developers,
