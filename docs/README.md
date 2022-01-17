@@ -29,3 +29,4 @@ For user documenation on the Glean SDKs, refer to [The Glean Book](https://mozil
 ### Implementation Details
 
 - [Ping Uploading](./implementation/upload.md)
+- [Plugins and Core Events](./implementation/plugins-events.md)
