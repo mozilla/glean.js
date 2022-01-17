@@ -1,6 +1,6 @@
 # Plugins
 
-Plugins provide a way for Glean.js to support especialized use cases without bloating
+Plugins provide a way for the Glean JS SDK to support specialized use cases without bloating
 the size of the library. Each plugin can be attached to a Glean core event to augment
 or modify its behaviour.
 
@@ -18,10 +18,10 @@ signature for the `trigger` API.
 
 ## When should we implement a feature as a plugin?
 
-When we are requested a feature that would make more sense as a plugin than as a core feature
-we create a new plugin and event for it. However, when is that?
+When a requested feature would make more sense as a plugin than as a core feature
+we should create a new plugin and event for it. However, when is that?
 
-Plugins should always be the choice when we are implementing a feature that has a very especialized
+Plugins should always be the choice when we are implementing a feature that has a very specialized
 use case and would be left unused by most users.
 
 The [`PingEncryptionPlugin`](https://mozilla.github.io/glean.js/classes/plugins_encryption.default.html)
