@@ -152,6 +152,13 @@ run $SED -i.bak -E \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
+# Update size docs
+cd "${WORKSPACE_ROOT}/benchmarks"
+npm install
+npm run link:glean
+npm run size:docs
+cd "${WORKSPACE_ROOT}"
+
 echo "Everything prepared for v${NEW_VERSION}"
 echo
 echo "Changed files:"
