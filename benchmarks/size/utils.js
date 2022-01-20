@@ -31,6 +31,8 @@ export const METRIC_TYPES = [
 
 export const PLUGINS = [ "encryption" ];
 
+export const PLATFORMS = [ "web", "webext", "node" ];
+
 const UNITS = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 /**
  * Formats a given number of bytes.
