@@ -47,7 +47,8 @@ triggers the new plugin. This checklist covers the whole process from adding an 
 4. Implement the plugin to attach to the newly created event.
 5. Expose the new plugin endpoint for external users under the `exports` keyword on the `package.json`.
 6. Expose the new plugin type declarations for external users under the `typesVersions` keyword on the `package.json`.
-7. Document the new plugin on [the Glean book](https://mozilla.github.io/glean/book/language-bindings/javascript/plugins/index.html).
+7. Add the new plugins to the [`PLUGINS`](../../benchmarks/size/utils.js) array on the benchmarks project, in order for it's size impact to the be added to the auto-generated sizes documentation on every release.
+8. Document the new plugin on [the Glean book](https://mozilla.github.io/glean/book/language-bindings/javascript/plugins/index.html).
 
 > **Note**: Although we can create different plugins that attach to the same event,
 > only one plugin may be attached to each event at a time.
