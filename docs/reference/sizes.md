@@ -5,10 +5,10 @@ The size of the Glean.js bundle varies depending on the metric types and plugins
 ## Minimum bundle
 
 The minimum bundle imports only the metric types used by Glean itself, e.g.
-error metrics, internal metrics, \`client_info\` metrics and \`ping_info\` metrics.
+error metrics, internal metrics, `client_info` metrics and `ping_info` metrics.
 
-> To check out a comprehensive list of which metrics are collected by Glean and their types check out
-> ["Metrics collected by Glean.js"](https://github.com/mozilla/glean.js/blob/main/docs/reference/metrics.md).
+To check out a comprehensive list of which metrics are collected by Glean and their types check out
+["Metrics collected by Glean.js"](https://github.com/mozilla/glean.js/blob/main/docs/reference/metrics.md).
 
 <!-- ! -->
 || Size |
