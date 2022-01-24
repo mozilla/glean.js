@@ -124,3 +124,6 @@ generated/
 
 # This is the name of the Glean virtual environment
 .venv
+
+# Temporary folder used on the benchmarks scripts
+benchmarks/size/tmp/
