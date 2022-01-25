@@ -11,6 +11,7 @@ import DatetimeMetricType, { DatetimeMetric } from "../../../../src/core/metrics
 import TimeUnit from "../../../../src/core/metrics/time_unit";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";
+import { testResetGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 
@@ -22,7 +23,7 @@ describe("DatetimeMetric", function() {
   });
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   it("datetime internal representation validation works as expected", function () {

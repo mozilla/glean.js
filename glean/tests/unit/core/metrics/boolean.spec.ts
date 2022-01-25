@@ -8,12 +8,13 @@ import { Context } from "../../../../src/core/context";
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import BooleanMetricType from "../../../../src/core/metrics/types/boolean";
+import { testResetGlean } from "../../../../src/core/testing";
 
 describe("BooleanMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {

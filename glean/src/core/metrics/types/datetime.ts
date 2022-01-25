@@ -168,7 +168,7 @@ class DatetimeMetricType extends MetricType {
   timeUnit: TimeUnit;
 
   constructor(meta: CommonMetricData, timeUnit: string) {
-    super("datetime", meta);
+    super("datetime", meta, DatetimeMetric);
     this.timeUnit = timeUnit as TimeUnit;
   }
 
@@ -253,7 +253,7 @@ class DatetimeMetricType extends MetricType {
   }
 
   /**
-   * Test-only API**
+   * Test-only API
    *
    * Gets the currently stored value as an ISO date string.
    *
@@ -269,7 +269,7 @@ class DatetimeMetricType extends MetricType {
   }
 
   /**
-   * Test-only API**
+   * Test-only API
    *
    * Gets the currently stored value as a boolean.
    *

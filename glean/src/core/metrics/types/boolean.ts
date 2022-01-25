@@ -30,7 +30,7 @@ export class BooleanMetric extends Metric<boolean, boolean> {
  */
 class BooleanMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("boolean", meta);
+    super("boolean", meta, BooleanMetric);
   }
 
   /**
@@ -50,7 +50,7 @@ class BooleanMetricType extends MetricType {
   }
 
   /**
-   * Test-only API**
+   * Test-only API
    *
    * Gets the currently stored value as a boolean.
    *

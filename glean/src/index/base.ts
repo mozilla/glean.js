@@ -23,11 +23,6 @@ export default (platform: Platform): {
   setDebugViewTag(value: string): void,
   shutdown(): Promise<void>,
   setSourceTags(value: string[]): void,
-  testResetGlean(
-    applicationId: string,
-    uploadEnabled?: boolean,
-    config?: ConfigurationInterface
-  ): Promise<void>
 } => {
   return {
     /**
@@ -120,25 +115,5 @@ export default (platform: Platform): {
     setSourceTags(value: string[]): void {
       Glean.setSourceTags(value);
     },
-
-    /**
-     * Test-only API**
-     *
-     * Resets the Glean singleton to its initial state and re-initializes it.
-     *
-     * @param applicationId The application ID (will be sanitized during initialization).
-     * @param uploadEnabled Determines whether telemetry is enabled.
-     *        If disabled, all persisted metrics, events and queued pings (except
-     *        first_run_date) are cleared. Default to `true`.
-     * @param config Glean configuration options.
-     * @returns A promise that resolves when the initialization is complete.
-     */
-    async testResetGlean(
-      applicationId: string,
-      uploadEnabled = true,
-      config?: RestictedConfigurationInterface
-    ): Promise<void> {
-      return Glean.testResetGlean(applicationId, uploadEnabled, config);
-    }
   };
 };

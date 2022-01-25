@@ -60,7 +60,7 @@ export class RateMetric extends Metric<Rate, Rate> {
  */
 class RateMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("rate", meta);
+    super("rate", meta, RateMetric);
   }
 
   /**

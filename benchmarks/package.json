@@ -5,18 +5,19 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
+    "link:glean:main": "git stash && git checkout main && npm run link:glean && git checkout - && git stash apply",
     "link:glean": "cd ../glean && npm i && npm run build && npm link && cd ../benchmarks && npm link @mozilla/glean",
     "size:build": "webpack --config ./size/webpack.config.js",
-    "size:report:dry": "DRY_RUN=1 ./run.sh",
-    "size:report": "./run.sh"
+    "size:report:dry": "DRY_RUN=1 node --experimental-json-modules size/report.js",
+    "size:report": "node --experimental-json-modules size/report.js",
+    "size:docs:dry": "DRY_RUN=1 node --experimental-json-modules size/docs.js",
+    "size:docs": "node --experimental-json-modules size/docs.js"
   },
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
   "devDependencies": {
-    "npm-run-all": "^4.1.5",
-    "@octokit/request": "^5.6.2",
-    "webpack": "^5.65.0",
-    "webpack-bundle-analyzer": "^4.5.0",
+    "@octokit/request": "^5.6.3",
+    "webpack": "^5.67.0",
     "webpack-cli": "^4.9.1"
   }
 }

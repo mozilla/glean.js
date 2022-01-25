@@ -12,6 +12,7 @@ import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import TimeUnit from "../../../../src/core/metrics/time_unit";
 import TimespanMetricType, { TimespanMetric } from "../../../../src/core/metrics/types/timespan";
 import { ErrorType } from "../../../../src/core/error/error_type";
+import { testResetGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 
@@ -20,7 +21,7 @@ describe("TimespanMetric", function() {
   let fakeNow: SinonStub;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
     fakeNow = typeof performance === "undefined" ? sandbox.stub(Date, "now") : sandbox.stub(performance, "now");
   });
 

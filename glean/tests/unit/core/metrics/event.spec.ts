@@ -8,12 +8,13 @@ import Glean from "../../../../src/core/glean";
 import EventMetricType from "../../../../src/core/metrics/types/event";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { ErrorType } from "../../../../src/core/error/error_type";
+import { testResetGlean } from "../../../../src/core/testing";
 
 describe("EventMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
   });
 
   it("the API records to its storage engine", async function () {

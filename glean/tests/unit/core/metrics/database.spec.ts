@@ -4,19 +4,28 @@
 
 import assert from "assert";
 
-import Database, { generateReservedMetricIdentifiers, isValidInternalMetricsRepresentation } from "../../../../src/core/metrics/database";
+import Database, { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/database";
 import StringMetricType, { StringMetric } from "../../../../src/core/metrics/types/string";
 
 import type { JSONObject, JSONValue } from "../../../../src/core/utils";
-import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";
+import { BooleanMetric } from "../../../../src/core/metrics/types/boolean";
+import { testResetGlean } from "../../../../src/core/testing";
 
 describe("MetricsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
   beforeEach(async function() {
-    await Glean.testResetGlean(testAppId);
+    await testResetGlean(testAppId);
+
+    // These metric types are used throughout tests,
+    // but is added directly on the database instead of creating it through new BooleanMetricType.
+    //
+    // In order for the database to be able to deserialize metrics of this type we need to
+    // add it to the supported metrics map.
+    Context.addSupportedMetric("boolean", BooleanMetric);
+    Context.addSupportedMetric("string", StringMetric);
   });
 
   describe("record", function() {
@@ -250,48 +259,43 @@ describe("MetricsDatabase", function() {
   });
 
   describe("getPingMetrics", function() {
-    it("isValidInternalMetricsRepresentation validates correctly", function() {
-      // Invalids
-      assert.strictEqual(false, isValidInternalMetricsRepresentation("not even an object"));
-      assert.strictEqual(false, isValidInternalMetricsRepresentation({ 1: "an array-like object in not a ping!" }));
-      assert.strictEqual(false, isValidInternalMetricsRepresentation({
-        "aPing": {
-          "string": {
-            "too.nested": "not quite"
-          }
-        }
-      }));
-      assert.strictEqual(false, isValidInternalMetricsRepresentation({ "string": "almost!" }));
-      // Valids
-      assert.strictEqual(true, isValidInternalMetricsRepresentation({ "string": {} }));
-      assert.strictEqual(true, isValidInternalMetricsRepresentation({ "string": { "there.we": "go" } }));
-      assert.strictEqual(true, isValidInternalMetricsRepresentation({
-        "string": {
-          "string.one": "foo",
-          "string.two": "bar",
-          "string.three": "baz",
-        }
-      }));
-      assert.strictEqual(true, isValidInternalMetricsRepresentation({
-        "string": {
-          "string.one": "foo",
-          "string.two": "bar",
-          "string.three": "baz",
-        },
-        "boolean": {
-          "this.is": true,
-          "ping": false,
-          "looks": true
-        }
-      }));
-      assert.strictEqual(true, isValidInternalMetricsRepresentation({}));
-    });
-
     it("when incorrect data is found on the storage, it is deleted", async function() {
       const db = new Database();
-      await db["appStore"].update(["aPing"], () => "not even a string");
+      await db["appStore"].update(["aPing"], () => "not even an object");
       assert.strictEqual(await db.getPingMetrics("aPing", false), undefined);
       assert.strictEqual(await db["appStore"].get(["aPing"]), undefined);
+
+      await db["appStore"].update(["aPing"], () => ({
+        "string": "this should be an object"
+      }));
+      assert.strictEqual(await db.getPingMetrics("aPing", false), undefined);
+      assert.deepStrictEqual(await db["appStore"].get(["aPing"]), {});
+
+      await db["appStore"].update(["aPing"], () => ({
+        "string": {
+          "my.string": 1
+        }
+      }));
+      assert.strictEqual(await db.getPingMetrics("aPing", false), undefined);
+      assert.deepStrictEqual(await db["appStore"].get(["aPing"]), { "string": {} });
+
+      await db["appStore"].update(["aPing"], () => ({
+        "string": {
+          "my.string": "a string"
+        },
+        "wrong": "very wrong"
+      }));
+      assert.deepStrictEqual(await db.getPingMetrics("aPing", false), {
+        "string": {
+          "my.string": "a string"
+        }
+      });
+      assert.deepStrictEqual(await db["appStore"].get(["aPing"]),
+        {
+          "string": {
+            "my.string": "a string"
+          }
+        });
     });
 
     it("getting a ping with metric from only one lifetime works correctly", async function() {

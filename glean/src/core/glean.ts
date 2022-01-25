@@ -14,10 +14,9 @@ import EventsDatabase from "./metrics/events_database/index.js";
 import UUIDMetricType from "./metrics/types/uuid.js";
 import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
 import CorePings from "./internal_pings.js";
-import { registerPluginToEvent, testResetEvents } from "./events/utils.js";
+import { registerPluginToEvent } from "./events/utils.js";
 import ErrorManager from "./error/index.js";
 import type Platform from "../platform/index.js";
-import TestPlatform from "../platform/test/index.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import { Context } from "./context.js";
 import PingType from "./pings/ping_type.js";
@@ -29,7 +28,10 @@ namespace Glean {
   // The below properties are exported for testing purposes.
   //
   // Instances of Glean's core metrics.
-  export const coreMetrics = new CoreMetrics();
+  //
+  // Disabling the lint, because we will actually re-assign this variable in the testInitializeGlean API.
+  // eslint-disable-next-line prefer-const
+  export let coreMetrics = new CoreMetrics();
   // Instances of Glean's core pings.
   export const corePings = new CorePings();
   // An instance of the ping uploader.
@@ -443,83 +445,6 @@ namespace Glean {
     }
 
     Context.platform = platform;
-  }
-
-  /**
-   * Test-only API**
-   *
-   * Initializes Glean in testing mode.
-   *
-   * All platform specific APIs will be mocked.
-   *
-   * @param applicationId The application ID (will be sanitized during initialization).
-   * @param uploadEnabled Determines whether telemetry is enabled.
-   *        If disabled, all persisted metrics, events and queued pings (except
-   *        first_run_date) are cleared. Default to `true`.
-   * @param config Glean configuration options.
-   */
-  export async function testInitialize(
-    applicationId: string,
-    uploadEnabled = true,
-    config?: ConfigurationInterface
-  ): Promise<void> {
-    Context.testing = true;
-
-    setPlatform(TestPlatform);
-    initialize(applicationId, uploadEnabled, config);
-
-    await Context.dispatcher.testBlockOnQueue();
-  }
-
-  /**
-   * Test-only API**
-   *
-   * Resets Glean to an uninitialized state.
-   * This is a no-op in case Glean has not been initialized.
-   *
-   * @param clearStores Whether or not to clear the events, metrics and pings databases on uninitialize.
-   */
-  export async function testUninitialize(clearStores = true): Promise<void> {
-    if (Context.initialized) {
-      await shutdown();
-
-      if (clearStores) {
-        await Context.eventsDatabase.clearAll();
-        await Context.metricsDatabase.clearAll();
-        await Context.pingsDatabase.clearAll();
-      }
-
-      // Get back to an uninitialized state.
-      Context.testUninitialize();
-
-      // Deregister all plugins
-      testResetEvents();
-    }
-  }
-
-  /**
-   * Test-only API**
-   *
-   * Resets the Glean singleton to its initial state and re-initializes it.
-   *
-   * Note: There is no way to only allow this function to be called in test mode,
-   * because this is the function that puts Glean in test mode by setting Context.testing to true.
-   *
-   * @param applicationId The application ID (will be sanitized during initialization).
-   * @param uploadEnabled Determines whether telemetry is enabled.
-   *        If disabled, all persisted metrics, events and queued pings (except
-   *        first_run_date) are cleared. Default to `true`.
-   * @param config Glean configuration options.
-   * @param clearStores Whether or not to clear the events, metrics and pings databases on reset.
-   */
-  export async function testResetGlean(
-    applicationId: string,
-    uploadEnabled = true,
-    config?: ConfigurationInterface,
-    clearStores = true,
-  ): Promise<void> {
-    await testUninitialize(clearStores);
-    await testInitialize(applicationId, uploadEnabled, config);
   }
 }
 

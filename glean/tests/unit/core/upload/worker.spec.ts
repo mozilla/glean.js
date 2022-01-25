@@ -10,7 +10,6 @@ import type { UploadTask } from "../../../../src/core/upload/task";
 import uploadTaskFactory from "../../../../src/core/upload/task";
 import PingUploadWorker from "../../../../src/core/upload/worker";
 import TestPlatform from "../../../../src/platform/test";
-import Glean from "../../../../src/core/glean";
 import { CounterUploader, WaitableUploader } from "../../../utils";
 import { makePath } from "../../../../src/core/pings/maker";
 import { Context } from "../../../../src/core/context";
@@ -18,6 +17,7 @@ import Policy from "../../../../src/core/upload/policy";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
 import type { UploadResult } from "../../../../src/core/upload/uploader";
 import { isUndefined } from "../../../../src/core/utils";
+import { testResetGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 
@@ -87,7 +87,7 @@ describe("PingUploadWorker", function() {
   before(async function () {
     // We call this only once so that the platform is set
     // and we are able to access the Platform info.
-    await Glean.testResetGlean(testAppId, true);
+    await testResetGlean(testAppId, true);
   });
 
   afterEach(function () {
@@ -216,8 +216,6 @@ describe("PingUploadWorker", function() {
     assert.ok("Date" in headers);
     assert.ok("Content-Length" in headers);
     assert.ok("Content-Type" in headers);
-    assert.ok("X-Client-Type" in headers);
-    assert.ok("X-Client-Version" in headers);
     assert.ok("X-Telemetry-Agent" in headers);
     assert.strictEqual(headers["Content-Encoding"], "gzip");
   });

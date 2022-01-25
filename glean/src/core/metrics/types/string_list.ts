@@ -51,7 +51,7 @@ export class StringListMetric extends Metric<string[], string[]> {
  */
 class StringListMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
-    super("string_list", meta);
+    super("string_list", meta, StringListMetric);
   }
 
   /**
@@ -143,7 +143,7 @@ class StringListMetricType extends MetricType {
   }
 
   /**
-   * Test-only API**
+   * Test-only API
    *
    * Gets the currently stored value as a string array.
    *
