@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v0.30.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.31.0...main)
+
+# v0.31.0 (2022-01-25)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v0.30.0...v0.31.0)
 
 * [#1065](https://github.com/mozilla/glean.js/pull/1065): Delete minimal amount of data when invalid data is found while collecting ping.
   * Previous behaviour was to delete the whole ping when invalid data was found on the database,
