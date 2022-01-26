@@ -28,8 +28,8 @@ As mentioned, Glean.js bugs are filed in Bugzilla. Anything on the Glean.js comp
 with the tag [`[good first bug]`](https://bugzilla.mozilla.org/buglist.cgi?f1=status_whiteboard&v1=%5Bgood%20first%20bug%5D&o1=substring&resolution=---&query_format=advanced&f2=component&v2=Glean.js&list_id=15653400&o2=equals&classification=Client%20Software&classification=Developer%20Infrastructure&classification=Components&classification=Server%20Software&classification=Other)
 is a good place to start.
 
-These bugs will usually have a comment explaning the steps to get started working on them.
-(If you find a `[good first bug]` that doesn't have an explainer comment, please ask for one).
+These bugs will usually have a comment explaining the steps to get started working on them.
+(If you find a `[good first bug]` that doesn't have an explanation comment, please ask for one).
 
 If you are picking a good first bug or not, make sure you are assigned to the bug before sending a Pull Request for it.
 

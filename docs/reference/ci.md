@@ -49,7 +49,7 @@ It is left to the discretion of each reviewer to approve this job or not.
 
 ### `check-qt-js`
 
-This is a rudimentray check to make sure the Glean.js Qt/QML bundle cleanly loads in QML
+This is a rudimentary check to make sure the Glean.js Qt/QML bundle cleanly loads in QML
 environments. The QML JavaScript environment contains a few particularities unusual to
 JavaScript developers and the purpose of this job is to make sure new changes to Glean.js
 do not fail for these corner cases.

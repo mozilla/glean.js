@@ -2,7 +2,7 @@
 
 This documentation is meant for Glean.js developers.
 
-For user documenation on the Glean SDKs, refer to [The Glean Book](https://mozilla.github.io/glean/).
+For user documentation on the Glean SDKs, refer to [The Glean Book](https://mozilla.github.io/glean/).
 
 > 🚧 **UNDER CONSTRUCTION** 🚧
 >
