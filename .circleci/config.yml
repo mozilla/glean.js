@@ -7,6 +7,22 @@
 version: 2.1
 
 jobs:
+  spellcheck:
+    docker:
+      # Use Ubuntu Focal (20.04) so we get aspell 0.60.8 or later
+      # (which contains markdown support)
+      - image: circleci/buildpack-deps:focal
+    steps:
+      - checkout
+      - run:
+          name: Upgrade packages
+          command: sudo apt update
+      - run:
+          name: Install aspell
+          command: sudo apt install aspell aspell-en
+      - run:
+          name: Check documentation spelling
+          command: bin/spellcheck.sh list
   lint:
     docker:
       - image: cimg/python:3.9.4
@@ -237,6 +253,7 @@ jobs:
 workflows:
   ci:
     jobs:
+      - spellcheck
       - lint
       - build:
           requires:
