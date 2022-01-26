@@ -17,7 +17,7 @@ The app will display a button that when clicked should trigger Glean.js events.
 npm run build:qt
 ```
 
-2. Whithin this sample directory, copy the Glean.js library:
+2. Within this sample directory, copy the Glean.js library:
 
 ```bash
 cp -r ../../glean/dist/qt/org/ src/App/org/

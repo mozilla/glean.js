@@ -2,9 +2,9 @@
 
 Glean.js is released in the [`@mozilla/glean`](https://www.npmjs.com/package/@mozilla/glean) npm package.
 
-That package will contain subpackages with Glean.js builds for each environment supported.
+That package will contain sub packages with Glean.js builds for each environment supported.
 
-The development & release process roughly follows the [GitFlow model](https://nvie.com/posts/a-successful-git-branching-model/).
+The development & release process roughly follows the [Git Flow model](https://nvie.com/posts/a-successful-git-branching-model/).
 
 > **Note**: The rest of this section assumes that `upstream` points to the `https://github.com/mozilla/glean.js` repository, while `origin` points to the developer fork. For some developer workflows, `upstream` can be the same as `origin`.
 

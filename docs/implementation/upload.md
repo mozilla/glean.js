@@ -4,12 +4,12 @@ This document describes how Glean.js handles ping uploading.
 
 It is not a straight line from the moment a ping is [submitted](https://mozilla.github.io/glean/book/reference/pings/index.html#submit)
 to the moment it is uploaded to the telemetry servers. Even though the aim is that submission will
-trigger upload immediatelly, multiple factors need to be accounted for that may delay upload such as:
+trigger upload immediately, multiple factors need to be accounted for that may delay upload such as:
 rate limitations, network errors and user interactions e.g. a user closing the application before
 Glean is able to upload a ping.
 
 There are three main internal structures that handle ping upload orchestration and resiliency
-inside the Glean.js codebase. These are: the `PingsDatabase`, the `PingUploadManager` and the
+inside the Glean.js code base. These are: the `PingsDatabase`, the `PingUploadManager` and the
 `PingUploadWorker`.
 
 ## `PingsDatabase`
@@ -46,7 +46,7 @@ The `getUploadTask` API will return three possible tasks:
 - The `Wait_UploadTask`, which signals that the worker has reached the rate limits for this API and should
   wait before calling it again. It contains an amount of milliseconds to wait before requesting new tasks.
 - The `Done_UploadTask`, which signals that worker is done and should stop asking for new tasks.
-This task is prompted either by the queue being emtpy or by upload limitations being hit.
+This task is prompted either by the queue being empty or by upload limitations being hit.
 
 This function applies the [ping rate limitations](https://mozilla.github.io/glean/book/user/pings/index.html?highlight=client_info#rate-limiting)
 and guards against upload worker infinite loops e.g. when upload attempts return too many recoverable
@@ -58,7 +58,7 @@ lack of internet connection for example.
 The `processPingUploadResponse` API will process the result of an upload attempt. There are
 three possible outcomes of an upload attempt.
 
-1. **Success**: ping was uploaded succesfully and server returned status `200 OK`.
+1. **Success**: ping was uploaded successfully and server returned status `200 OK`.
 2. **Unrecoverable failure**: there was error assembling a ping request or the server returned a
 status in the 4XX range.
 3. **Recoverable failure**: there was an error sending a request to the server e.g. for lack of
@@ -67,7 +67,7 @@ internet connection, or the server returned an error status outside of the 4XX r
 For results 1. and 2. the `processPingUploadResponse` API will process the result
 and delete the related ping from the pings database. Glean will not retry uploading these pings.
 
-For result 3. the ping will be re-enqueued and upload will be retried immediatelly or later.
+For result 3. the ping will be re-enqueued and upload will be retried immediately or later.
 The number or recoverable errors is also increased in this case.
 
 ## `PingUploadWorker`

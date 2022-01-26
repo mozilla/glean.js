@@ -2,7 +2,7 @@
 
 Plugins provide a way for the Glean JS SDK to support specialized use cases without bloating
 the size of the library. Each plugin can be attached to a Glean core event to augment
-or modify its behaviour.
+or modify its behavior.
 
 A Glean plugin is a class that extends the [`Plugin`](https://mozilla.github.io/glean.js/classes/plugins.default.html) class. Each plugin instance exposes an
 `action` API, to be triggered by the event. The signature of the `action` API will depend on

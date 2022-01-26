@@ -2,17 +2,22 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.31.0...main)
 
+* [#1130](https://github.com/mozilla/glean.js/pull/1130): BUGFIX: Guarantee event timestamps
+cannot be negative numbers.
+  * Timestamps were observed to be negative in a few occurrences, for platforms that do not provide the `performance.now` API, namely QML, and in which we fallback to the `Date.now` API.
+  * If event timestamps are negative pings are rejected by the pipeline.
+
 # v0.31.0 (2022-01-25)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.30.0...v0.31.0)
 
 * [#1065](https://github.com/mozilla/glean.js/pull/1065): Delete minimal amount of data when invalid data is found while collecting ping.
-  * Previous behaviour was to delete the whole ping when invalid data was found on the database,
-  new behaviour only deletes the actually invalid data and leave the rest of the ping intact.
+  * Previous behavior was to delete the whole ping when invalid data was found on the database,
+  new behavior only deletes the actually invalid data and leave the rest of the ping intact.
 * [#1065](https://github.com/mozilla/glean.js/pull/1065): Only import metric types into the library when they are used either by the user or Glean itself.
   * Previously the code required to deserialize metric data from the database was always imported by the library even if the metric type was never used by the client. This effort will decrease the size of the Glean.js bundles that don't import all the metric types.
 * [#1046](https://github.com/mozilla/glean.js/pull/1046): Remove legacy X-Client-Type X-Client-Version from Glean pings.
-* [#1071](https://github.com/mozilla/glean.js/pull/1071): **BREAKING CHANGE**: Move the `testResetGlean` API from the Glean singletion and into it's own entry point `@mozilla/glean/testing`.
+* [#1071](https://github.com/mozilla/glean.js/pull/1071): **BREAKING CHANGE**: Move the `testResetGlean` API from the Glean singleton and into it's own entry point `@mozilla/glean/testing`.
   * In order to use this API one must import it through `import { testResetGlean } from "@mozilla/glean/testing"` instead of using it from the Glean singleton directly.
   * This lower the size of the Glean library, because testing functionality is not imported unless in a testing environment.
   * This change does not apply to QML. In this environment the API remains the same.
@@ -62,7 +67,7 @@
   * Users may provide a folder name through the `VIRTUAL_ENV` environment variable.
   * If the user is inside an active virtualenv the `VIRTUAL_ENV` environment variable is already set by Python. See: https://docs.python.org/3/library/venv.html.
 * [#968](https://github.com/mozilla/glean.js/pull/968): Add runtime arguments type checking to `Glean.setUploadEnabled` API.
-* [#970](https://github.com/mozilla/glean.js/pull/970): BUGFIX: Guarantee uploading is immediatelly resumed if the uploader has been stopped due to any of the uploading limits being hit.
+* [#970](https://github.com/mozilla/glean.js/pull/970): BUGFIX: Guarantee uploading is immediately resumed if the uploader has been stopped due to any of the uploading limits being hit.
 
 # v0.25.0 (2021-11-15)
 
@@ -79,10 +84,10 @@
 
 * [#856](https://github.com/mozilla/glean.js/pull/856): Expose the `@mozilla/glean/web` entry point for using Glean.js in websites.
 * [#856](https://github.com/mozilla/glean.js/pull/860): Implement the `PlatformInfo` module for the web platform.
-  * Out of `os`, `os_version`, `architecture` and `locale`, on the web platform, we can only retrive `os` and `locale` information. The other information will default to the known value `Unknown` for all pings coming from this platform.
+  * Out of `os`, `os_version`, `architecture` and `locale`, on the web platform, we can only retrieve `os` and `locale` information. The other information will default to the known value `Unknown` for all pings coming from this platform.
 * [#856](https://github.com/mozilla/glean.js/pull/856): Expose the `@mozilla/glean/web` entry point for using Glean.js in websites.
 * [#908](https://github.com/mozilla/glean.js/pull/908): BUGFIX: Guarantee internal `uploadEnabled` state always has a value.
-  * When `uploadEnabled` was set to `false` and then Glean was restarted with it still `false`, the internal `uploadEnabled` state was not being set. That should not cause particularly harmful behaviour, since `undefined` is still a "falsy" value. However, this would create a stream of loud and annoying log messages.
+  * When `uploadEnabled` was set to `false` and then Glean was restarted with it still `false`, the internal `uploadEnabled` state was not being set. That should not cause particularly harmful behavior, since `undefined` is still a "falsy" value. However, this would create a stream of loud and annoying log messages.
 * [#898](https://github.com/mozilla/glean.js/pull/898): Implement the `Storage` module for the web platform.
 
 # v0.23.0 (2021-10-12)
@@ -120,7 +125,7 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.20.0...v0.21.0)
 
 * [#754](https://github.com/mozilla/glean.js/pull/754): Change target ECMAScript target from 2015 to 2016 when building for Qt.
-* [#779](https://github.com/mozilla/glean.js/pull/779): Add a number of workarounds for the Qt Javascript engine.
+* [#779](https://github.com/mozilla/glean.js/pull/779): Add a number of workarounds for the Qt JavaScript engine.
 
 * [#775](https://github.com/mozilla/glean.js/pull/775): Disallow calling test only methods outside of test mode.
   * NOTE: Test mode is set once the API `Glean.testResetGlean` is called.
@@ -182,9 +187,9 @@ logic, which allows for reliable sorting of events throughout restarts.
 
 * [#346](https://github.com/mozilla/glean.js/pull/346): Provide default HTTP client for Qt/QML platform.
 * [#399](https://github.com/mozilla/glean.js/pull/399): Check if there are ping data before attempting to delete it.
-  * This change lowers the amount of log messages related to attempting to delete inexistent data.
+  * This change lowers the amount of log messages related to attempting to delete nonexistent data.
 * [#411](https://github.com/mozilla/glean.js/pull/411): Tag all messages logged by Glean with the component they are coming from.
-* [#415](https://github.com/mozilla/glean.js/pull/415), [#430](https://github.com/mozilla/glean.js/pull/430): Gzip ping paylod before upload
+* [#415](https://github.com/mozilla/glean.js/pull/415), [#430](https://github.com/mozilla/glean.js/pull/430): Gzip ping payload before upload
   * This changes the signature of `Uploader.post` to accept `string | Uint8Array` for the `body` parameter, instead of only `string`.
 * [#431](https://github.com/mozilla/glean.js/pull/431): BUGFIX: Record the timestamp for events before dispatching to the internal task queue.
 * [#462](https://github.com/mozilla/glean.js/pull/462): Implement persistent storage for Qt/QML platform.
@@ -202,7 +207,7 @@ logic, which allows for reliable sorting of events throughout restarts.
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.14.0...v0.14.1)
 
-* [#342](https://github.com/mozilla/glean.js/pull/342): BUGFIX: Fix timespan payload representatin to match exactly the payload expected according to the Glean schema.
+* [#342](https://github.com/mozilla/glean.js/pull/342): BUGFIX: Fix timespan payload representation to match exactly the payload expected according to the Glean schema.
 * [#343](https://github.com/mozilla/glean.js/pull/343): BUGFIX: Report the correct failure exit code when the Glean command line tool fails.
 
 # v0.14.0 (2021-05-19)
@@ -314,7 +319,7 @@ logic, which allows for reliable sorting of events throughout restarts.
 
 * [#123](https://github.com/mozilla/glean.js/pull/123): BUGFIX: Fix support for ES6 environments.
   * Include `.js` extensions in all local import statements.
-    * ES6' module resolution algorithm does not currently support automatic resolution of file extensions and does not have the hability to import directories that have an index file. The extension and the name of the file being import need to _always_ be specified. See: https://nodejs.org/api/esm.html#esm_customizing_esm_specifier_resolution_algorithm
+    * ES6' module resolution algorithm does not currently support automatic resolution of file extensions and does not have the ability to import directories that have an index file. The extension and the name of the file being import need to _always_ be specified. See: https://nodejs.org/api/esm.html#esm_customizing_esm_specifier_resolution_algorithm
   * Add a `type: module` declaration to the main `package.json`.
     * Without this statement, ES6 support is disabled. See: https://nodejs.org/docs/latest-v13.x/api/esm.html#esm_enabling.:
     * To keep support for CommonJS, in our CommonJS build we include a `package.json` that overrides the `type: module` of the main `package.json` with a `type: commonjs`.
@@ -327,7 +332,7 @@ logic, which allows for reliable sorting of events throughout restarts.
   * This plugin listens to the `afterPingCollection` event. It receives the collected payload of a ping and returns an encrypted version of it using a JWK provided upon instantiation.
 * [#95](https://github.com/mozilla/glean.js/pull/95): Add a `plugins` property to the configuration options and create an event abstraction for triggering internal Glean events.
   * The only internal event triggered at this point is the `afterPingCollection` event, which is triggered after ping collection and logging, and before ping storing.
-  * Plugins are built to listen to a specific Glean event. Each plugin must define an `action`, which is executed everytime the event they are listening to is triggered.
+  * Plugins are built to listen to a specific Glean event. Each plugin must define an `action`, which is executed every time the event they are listening to is triggered.
 * [#101](https://github.com/mozilla/glean.js/pull/101): BUGFIX: Only validate Debug View Tag and Source Tags when they are present.
 * [#102](https://github.com/mozilla/glean.js/pull/102): BUGFIX: Include a Glean User-Agent header in all pings.
 * [#97](https://github.com/mozilla/glean.js/pull/97): Add support for labeled metric types (string, boolean and counter).
@@ -345,8 +350,8 @@ logic, which allows for reliable sorting of events throughout restarts.
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.2.0...v0.3.0)
 
-* [#90](https://github.com/mozilla/glean.js/pull/90): Provide exports for CommonJS and browser environemnts.
-* [#90](https://github.com/mozilla/glean.js/pull/90): BUGIFX: Accept lifetimes as strings when instantiating metric types.
+* [#90](https://github.com/mozilla/glean.js/pull/90): Provide exports for CommonJS and browser environments.
+* [#90](https://github.com/mozilla/glean.js/pull/90): BUGFIX: Accept lifetimes as strings when instantiating metric types.
 * [#90](https://github.com/mozilla/glean.js/pull/90): BUGFIX: Fix type declaration paths.
 * [#90](https://github.com/mozilla/glean.js/pull/90): BUGFIX: Make web-ext-types a peer dependency.
   * This is quick fix until [Bug 1694701](https://bugzilla.mozilla.org/show_bug.cgi?id=1694701) is fixed.
@@ -376,7 +381,7 @@ logic, which allows for reliable sorting of events throughout restarts.
   * `initialize` and `setUploadEnabled`.
 * [#36](https://github.com/mozilla/glean.js/pull/36): Implement the event metric type.
 * [#31](https://github.com/mozilla/glean.js/pull/31): Implement a task Dispatcher to help in executing Promises in a deterministic order.
-* [#26](https://github.com/mozilla/glean.js/pull/26): Implement the setUploadEnable API.
+* [#26](https://github.com/mozilla/glean.js/pull/26): Implement the setUploadEnabled API.
 * [#25](https://github.com/mozilla/glean.js/pull/25): Implement an adapter that leverages browser APIs to upload pings.
 * [#24](https://github.com/mozilla/glean.js/pull/24): Implement a ping upload manager.
 * [#23](https://github.com/mozilla/glean.js/pull/23): Implement the initialize API and glean internal metrics.
