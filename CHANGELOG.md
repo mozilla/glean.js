@@ -4,7 +4,7 @@
 
 * [#1130](https://github.com/mozilla/glean.js/pull/1130): BUGFIX: Guarantee event timestamps
 cannot be negative numbers.
-  * Timestamps were observed to be negative in a few occurrences, for platforms that do not provide the `performance.now` API, namely QML, and in which we fallback to the `Date.now` API.
+  * Timestamps were observed to be negative in a few occurances, for platforms that do not provide the `performance.now` API, namely QML, and in which we fallback to the `Date.now` API.
   * If event timestamps are negative pings are rejected by the pipeline.
 
 # v0.31.0 (2022-01-25)
