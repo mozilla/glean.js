@@ -168,12 +168,6 @@ export function generateUUIDv4(): string {
   }
 }
 
-// For the case when `performance` is not available in the environment,
-// we instead will use Date. To do so, we need to have a TIME_ORIGIN
-// to subtract the current UNIX timestamp from, to make sure using Date
-// works the same as using performance.
-// See: https://developer.mozilla.org/en-US/docs/Web/API/DOMHighResTimeStamp#the_time_origin
-const TIME_ORIGIN = Date.now();
 /**
  * A helper function to get the current amount of milliseconds passed since
  * a given time origin.
@@ -185,7 +179,7 @@ export function getMonotonicNow(): number {
   // means we should get creative to find a proper clock for that platform.
   // Fall back to `Date.now` for now, until bug 1690528 is fixed.
   const now = typeof performance === "undefined"
-    ? (Date.now() - TIME_ORIGIN)
+    ? Date.now()
     : performance.now();
 
   return Math.round(now);
