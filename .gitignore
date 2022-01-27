@@ -127,3 +127,6 @@ generated/
 
 # Temporary folder used on the benchmarks scripts
 benchmarks/size/tmp/
+
+# Browserstack Local generated files
+*.err

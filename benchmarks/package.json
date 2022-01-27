@@ -13,12 +13,14 @@
     "size:docs:dry": "DRY_RUN=1 node --experimental-json-modules size/docs.js",
     "size:docs": "node --experimental-json-modules size/docs.js",
     "compat:glean": "glean translate compat/metrics.yaml compat/pings.yaml -f javascript -o compat/generated",
-    "compat:test": "npm run compat:glean && node --experimental-json-modules compat/tests/local.test.js"
+    "compat:test": "npm run compat:glean && node --experimental-json-modules compat/tests/local.test.js",
+    "compat:test:browserstack": "npm run compat:glean && node --experimental-json-modules compat/tests/browserstack.test.js"
   },
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
   "devDependencies": {
     "@octokit/request": "^5.6.3",
+    "browserstack-local": "^1.4.8",
     "geckodriver": "^3.0.1",
     "selenium-webdriver": "^4.1.1",
     "webpack": "^5.67.0",
