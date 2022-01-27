@@ -1,0 +1,20 @@
+# This Source Code Form is subject to the terms of the Mozilla Public
+# License, v. 2.0. If a copy of the MPL was not distributed with this
+# file, You can obtain one at http://mozilla.org/MPL/2.0/.
+
+---
+$schema: moz://mozilla.org/schemas/glean/pings/2-0-0
+
+benchmark:
+  description: |
+    A custom ping to help benchmark Glean.js' browser compatibility.
+
+    It is sent everytime the benchmarks page is opened.
+  include_client_id: true
+  send_if_empty: false
+  bugs:
+    - https://bugzilla.mozilla.org/1741586
+  data_reviews:
+    - https://bugzilla.mozilla.org/show_bug.cgi?id=1741586
+  notification_emails:
+    - glean-team@mozilla.com

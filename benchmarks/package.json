@@ -11,13 +11,20 @@
     "size:report:dry": "DRY_RUN=1 node --experimental-json-modules size/report.js",
     "size:report": "node --experimental-json-modules size/report.js",
     "size:docs:dry": "DRY_RUN=1 node --experimental-json-modules size/docs.js",
-    "size:docs": "node --experimental-json-modules size/docs.js"
+    "size:docs": "node --experimental-json-modules size/docs.js",
+    "compat:glean": "glean translate compat/metrics.yaml compat/pings.yaml -f javascript -o compat/generated",
+    "compat:build": "npm run compat:glean && webpack ./compat/index.js --output-path=./compat/dist --output-filename=index.js --mode=development",
+    "compat:dev": "npm run compat:build && webpack serve ./compat/index.js --static-directory=./compat --mode=development --open ",
+    "compat:test": "node --experimental-json-modules compat/tests/local.test.js"
   },
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
   "devDependencies": {
     "@octokit/request": "^5.6.3",
+    "geckodriver": "^3.0.1",
+    "selenium-webdriver": "^4.1.1",
     "webpack": "^5.67.0",
-    "webpack-cli": "^4.9.1"
+    "webpack-cli": "^4.9.1",
+    "webpack-dev-server": "^4.7.3"
   }
 }
