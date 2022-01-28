@@ -299,16 +299,18 @@ workflows:
                 - main
                 - release
                 - /^release-.*/
-      - check-size:
+      # - check-size:
+      #     context: data-eng-gleanjs-gh
+      #     requires:
+      #       - hold
+      - browser-compat-smoke-tests:
           context: data-eng-gleanjs-gh
           requires:
             - hold
-      - browser-compat-smoke-tests:
-          context: data-eng-gleanjs-gh
-          only:
-            - main
-            - release
-            - /^release-.*/
+          # only:
+          #   - main
+          #   - release
+          #   - /^release-.*/
       - docs-deploy:
           context: data-eng-gleanjs-gh
           filters:
