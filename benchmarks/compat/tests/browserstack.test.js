@@ -5,7 +5,10 @@
 import browserstack from "browserstack-local";
 import webdriver from "selenium-webdriver";
 
-import { runWebTest, fastSelenium } from "./utils.js"
+import { runWebTest, fastSelenium, App } from "./utils.js"
+
+const app = new App();
+app.start();
 
 fastSelenium();
 
@@ -60,11 +63,14 @@ for (const browser of BROWSERS) {
 
         await runWebTest(driver);
 
-        // Marking the test as passed for Browserstack.
+        // Marking the test as passed for Browserstack
         await driver.executeScript(
           "browserstack_executor: {\"action\": \"setSessionStatus\", \"arguments\": {\"status\":\"passed\",\"reason\": \"Ping successfully sent!\"}}"
         );
       } catch(_) {
+        // Make sure the process exits with an error code
+        process.exitCode = 1;
+        // Marking the test as failed for Browserstack
         await driver.executeScript(
           "browserstack_executor: {\"action\": \"setSessionStatus\", \"arguments\": {\"status\":\"failed\",\"reason\": \"Ping not sent :(\"}}"
         );
@@ -75,6 +81,8 @@ for (const browser of BROWSERS) {
     }());
   }
 }
+
+app.stop();
 
 // Stop BrowserStack.Local.
 await new Promise(resolve => {
