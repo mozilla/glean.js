@@ -5,7 +5,10 @@
 import webdriver from "selenium-webdriver"
 import { Capabilities } from "selenium-webdriver";
 
-import { runWebTest } from "./utils.js"
+import { App, runWebTest } from "./utils.js"
+
+const app = new App();
+await app.start();
 
 await (async function() {
   let driver;
@@ -17,9 +20,11 @@ await (async function() {
 
     await runWebTest(driver);
   } catch(e) {
-    // We just catch this so that even if the test fails we quit the driver.
-    // Either way there will be a log saying if the test failed.
+    // Make sure the process exits with an error code
+    process.exitCode = 1;
   }
 
   driver.quit();
 }());
+
+await app.stop();
