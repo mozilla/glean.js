@@ -1,7 +1,8 @@
-personal_ws-1.1 en 65 
+personal_ws-1.1 en 68 
 API's
 APIs
 BUGFIX
+BrowserStack
 Changelog
 CircleCI
 Ciufo
@@ -26,11 +27,13 @@ UI
 UUID
 UploadResult
 UploadResultStatus
+benchmarking
 boolean
 booleans
 brizental
 changelog
 chutten
+compat
 datetime
 deserialize
 deserializing
