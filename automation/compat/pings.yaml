@@ -9,7 +9,7 @@ benchmark:
   description: |
     A custom ping to help benchmark Glean.js' browser compatibility.
 
-    It is sent everytime the benchmarks page is opened.
+    It is sent everytime the automation page is opened.
   include_client_id: true
   send_if_empty: false
   bugs:

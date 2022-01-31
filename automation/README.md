@@ -1,8 +1,8 @@
-# Glean.js benchmarks
+# Glean.js automation
 
 ## Size
 
-The size project contains benchmarking scripts
+The size project contains scripts
 for analyzing the size of the Glean.js library.
 
 ### Report
@@ -45,7 +45,7 @@ npm run size:docs
 
 ## Browser compatibility
 
-The compat project contains benchmarking scripts
+The compat project contains scripts
 for smoke testing Glean.js in various supported browsers.
 
 To run the test locally in Firefox only:

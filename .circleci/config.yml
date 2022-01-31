@@ -188,9 +188,9 @@ jobs:
       - run:
           name: Run browser comapt smoke tests
           command: |
-            npm --prefix ./benchmarks install
-            npm --prefix ./benchmarks run link:glean
-            npm --prefix ./benchmarks run compat:test:browserstack
+            npm --prefix ./automation install
+            npm --prefix ./automation run link:glean
+            npm --prefix ./automation run compat:test:browserstack
 
   check-size:
     docker:
@@ -200,9 +200,9 @@ jobs:
       - run:
           name: Get and post build sizes to GitHub PR
           command: |
-            npm --prefix ./benchmarks install
-            npm --prefix ./benchmarks run link:glean
-            npm --prefix ./benchmarks run size:report
+            npm --prefix ./automation install
+            npm --prefix ./automation run link:glean
+            npm --prefix ./automation run size:report
 
   # via https://circleci.com/blog/deploying-documentation-to-github-pages-with-continuous-integration/
   docs-deploy:
