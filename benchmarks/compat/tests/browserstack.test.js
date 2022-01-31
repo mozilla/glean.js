@@ -12,7 +12,7 @@ fastSelenium();
 const app = new App();
 app.start();
 
-// All of the minimum supported versions were found throw manual testing.
+// All of the minimum supported versions were found through manual testing.
 const BROWSERS = [
   { name: "firefox", minVersion: "60" },
   { name: "safari", minVersion: "11.1" },
@@ -22,7 +22,7 @@ const BROWSERS = [
   { name: "edge", minVersion: "80" },
 ];
 
-// Start BrowserStack.Local so that the remote machines can access  localhost.
+// Start BrowserStack.Local so that the remote machines can access localhost.
 const bs = new browserstack.Local();
 await new Promise(resolve => {
   bs.start(

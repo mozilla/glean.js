@@ -29,7 +29,7 @@ npm run size:report
 ### Docs
 
 Builds the Glean.js library for all the targeted platforms and document
-the size of the library and of each extra metrics and plugins.
+the size of the library and of each extra metric and plugin.
 
 To run the script without updating the documentation:
 
