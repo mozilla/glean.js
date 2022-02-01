@@ -9,7 +9,12 @@ import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus, UploadResult } from "../
 const LOG_TAG = "platform.browser.Uploader";
 
 class BrowserUploader extends Uploader {
-  async post(url: string, body: string | Uint8Array, headers: Record<string, string> = {}): Promise<UploadResult> {
+  async post(
+    url: string,
+    body: string | Uint8Array,
+    headers: Record<string, string> = {},
+    keepalive = true
+  ): Promise<UploadResult> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), DEFAULT_UPLOAD_TIMEOUT_MS);
 
@@ -19,7 +24,7 @@ class BrowserUploader extends Uploader {
         headers,
         method: "POST",
         body: body,
-        keepalive: true,
+        keepalive,
         // Strips any cookies or authorization headers from the request.
         credentials: "omit",
         signal: controller.signal,
@@ -31,6 +36,13 @@ class BrowserUploader extends Uploader {
       if (e instanceof DOMException) {
         log(LOG_TAG, ["Timeout while attempting to upload ping.\n", e], LoggingLevel.Error);
       } else if (e instanceof TypeError) {
+        if (keepalive) {
+          // Try again without `keepalive`, because that may be the issue.
+          // This problem was observed in chromium versions below v81.
+          // See: https://chromium.googlesource.com/chromium/src/+/26d70b36dd1c18244fb17b91d275332c8b73eab3
+          return this.post(url, body, headers, false);
+        }
+
         // From MDN: "A fetch() promise will reject with a TypeError
         // when a network error is encountered or CORS is misconfigured on the server-side,
         // although this usually means permission issues or similar"

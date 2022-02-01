@@ -1,0 +1,30 @@
+{
+  "name": "automation",
+  "version": "1.0.0",
+  "description": "Glean.js automation helper package",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "link:glean:main": "git stash && git checkout main && npm run link:glean && git checkout - && git stash apply",
+    "link:glean": "cd ../glean && npm i && npm run build && npm link && cd ../automation && npm link @mozilla/glean",
+    "size:build": "webpack --config ./size/webpack.config.js",
+    "size:report:dry": "DRY_RUN=1 node --experimental-json-modules size/report.js",
+    "size:report": "node --experimental-json-modules size/report.js",
+    "size:docs:dry": "DRY_RUN=1 node --experimental-json-modules size/docs.js",
+    "size:docs": "node --experimental-json-modules size/docs.js",
+    "compat:glean": "glean translate compat/metrics.yaml compat/pings.yaml -f javascript -o compat/generated",
+    "compat:test": "npm run compat:glean && node --experimental-json-modules compat/tests/local.test.js",
+    "compat:test:browserstack": "npm run compat:glean && node --experimental-json-modules compat/tests/browserstack.test.js"
+  },
+  "author": "The Glean Team <glean-team@mozilla.com>",
+  "license": "MPL-2.0",
+  "devDependencies": {
+    "@octokit/request": "^5.6.3",
+    "browserstack-local": "^1.4.8",
+    "geckodriver": "^3.0.1",
+    "selenium-webdriver": "^4.1.1",
+    "webpack": "^5.67.0",
+    "webpack-cli": "^4.9.2",
+    "webpack-dev-server": "^4.7.3"
+  }
+}

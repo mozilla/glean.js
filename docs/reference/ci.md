@@ -21,6 +21,10 @@ This repository runs multiple checks on each PR to ensure code quality.
 
 ## Jobs
 
+### `spellchecks`
+
+Run a spellchecker on all Markdown files in this repository.
+
 ### `lint`
 
 Runs all necessary lints on the code. This includes:
@@ -33,7 +37,7 @@ Runs all necessary lints on the code. This includes:
 
 Runs unit and integration test on the `@mozilla/glean` library.
 
-### `samples-tests`
+### `sample-webext-test`, `sample-node-test`, `sample-qt-test`
 
 Runs unit tests on the Glean.js sample apps.
 
@@ -47,12 +51,17 @@ us in check related to the size of the final Glean.js bundle.
 
 It is left to the discretion of each reviewer to approve this job or not.
 
-### `check-qt-js`
+This job does not run for on the `release`, `release-.*` and `main` branches.
 
-This is a rudimentary check to make sure the Glean.js Qt/QML bundle cleanly loads in QML
-environments. The QML JavaScript environment contains a few particularities unusual to
-JavaScript developers and the purpose of this job is to make sure new changes to Glean.js
-do not fail for these corner cases.
+### `browser-compat-smoke-tests`
+
+_Only runs on the `release`, `release-.*` and `main` branches._
+
+This job runs a smoke test for the Glean JavaScript SDK on websites. The same test is run
+on Firefox, Chrome, Safari and Edge. For each we run the test both on their latest version
+and the minimum supported version.
+
+We use [BrowserStack](https://www.browserstack.com/) to access all of these different browser versions easily.
 
 ### `docs-deploy`
 

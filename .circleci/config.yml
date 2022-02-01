@@ -180,6 +180,18 @@ jobs:
             qmake -r
             QML_IMPORT_TRACE=1 xvfb-run make check
 
+  browser-compat-smoke-tests:
+    docker:
+      - image: cimg/python:3.9.4-node
+    steps:
+      - checkout
+      - run:
+          name: Run browser comapt smoke tests
+          command: |
+            npm --prefix ./automation install
+            npm --prefix ./automation run link:glean
+            npm --prefix ./automation run compat:test:browserstack
+
   check-size:
     docker:
       - image: cimg/node:16.1.0
@@ -188,7 +200,9 @@ jobs:
       - run:
           name: Get and post build sizes to GitHub PR
           command: |
-            ./benchmarks/run.sh
+            npm --prefix ./automation install
+            npm --prefix ./automation run link:glean
+            npm --prefix ./automation run size:report
 
   # via https://circleci.com/blog/deploying-documentation-to-github-pages-with-continuous-integration/
   docs-deploy:
@@ -284,11 +298,19 @@ workflows:
               ignore:
                 - main
                 - release
-                - /^release-*/
+                - /^release-.*/
       - check-size:
           context: data-eng-gleanjs-gh
           requires:
             - hold
+      - browser-compat-smoke-tests:
+          context: data-eng-gleanjs-gh
+          filters:
+            branches:
+              only:
+                - main
+                - release
+                - /^release-.*/
       - docs-deploy:
           context: data-eng-gleanjs-gh
           filters:

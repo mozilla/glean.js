@@ -26,6 +26,7 @@ For user documentation on the Glean SDKs, refer to [The Glean Book](https://mozi
 - [Continuous Integration](./reference/ci.md)
 - [Metrics collected by Glean.js](./reference/metrics.md)
 - [Estimated bundle sizes](./reference/sizes.md)
+- [Compatibility](./reference/compat.md)
 
 ### Implementation Details
 
