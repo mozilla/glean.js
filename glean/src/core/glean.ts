@@ -61,11 +61,11 @@ namespace Glean {
   async function onUploadDisabled(at_init: boolean): Promise<void> {
     // It's fine to set this before submitting the deletion request ping,
     // that ping is still sent even if upload is disabled.
-    let reason: string; 
+    let reason: string;
     if (at_init) {
-      reason = "at_init"
+      reason = "at_init";
     } else {
-      reason = "set_upload_enabled"
+      reason = "set_upload_enabled";
     }
     Context.uploadEnabled = false;
     // We need to use an undispatched submission to guarantee that the
