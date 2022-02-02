@@ -143,7 +143,7 @@ namespace Glean {
    *        If disabled, all persisted metrics, events and queued pings
    *        (except first_run_date) are cleared.
    * @param config Glean configuration options.
-   * @throw
+   * @throws
    * - If config.serverEndpoint is an invalid URL;
    * - If the application if is an empty string.
    */
