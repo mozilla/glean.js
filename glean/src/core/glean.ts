@@ -57,7 +57,7 @@ namespace Glean {
    * A deletion_request ping is sent, all pending metrics, events and queued
    * pings are cleared, and the client_id is set to KNOWN_CLIENT_ID.
    * Afterward, the upload_enabled flag is set to false.
-   * 
+   *
    * @param at_init When true contains the "at_init" reason
    */
   async function onUploadDisabled(at_init: boolean): Promise<void> {
