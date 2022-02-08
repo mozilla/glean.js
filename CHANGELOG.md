@@ -7,6 +7,7 @@ cannot be negative numbers.
   * Timestamps were observed to be negative in a few occurrences, for platforms that do not provide the `performance.now` API, namely QML, and in which we fallback to the `Date.now` API.
   * If event timestamps are negative pings are rejected by the pipeline.
 * [#1132](https://github.com/mozilla/glean.js/pull/1132): Retry ping request on network error with `keepalive: false`. This is sometimes an issue on Chrome browsers below v81.
+* [#1170](https://github.com/mozilla/glean.js/pull/1170): Update glean_parser to version 5.0.0.
 
 # v0.31.0 (2022-01-25)
 
