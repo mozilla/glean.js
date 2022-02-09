@@ -277,7 +277,7 @@ describe("Glean", function() {
     const postSpy = sandbox.spy(Context.platform.uploader, "post");
 
     Glean.setUploadEnabled(false);
-    Glean.onUploadDisabled(true);
+    
     await Context.dispatcher.testBlockOnQueue();
 
     assert.strictEqual(postSpy.callCount, 1);
@@ -316,8 +316,7 @@ describe("Glean", function() {
 
   it("deletion request ping is sent when toggling upload status between runs", async function() {
     Glean.setUploadEnabled(true);
-    Glean.onUploadDisabled(false);
-    
+
     // Un-initialize, but don't clear the stores.
     await testUninitializeGlean(false);
 
