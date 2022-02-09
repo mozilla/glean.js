@@ -277,7 +277,7 @@ describe("Glean", function() {
     const postSpy = sandbox.spy(Context.platform.uploader, "post");
 
     Glean.setUploadEnabled(false);
-    
+
     await Context.dispatcher.testBlockOnQueue();
 
     assert.strictEqual(postSpy.callCount, 1);
