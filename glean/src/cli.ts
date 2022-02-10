@@ -10,6 +10,8 @@ import * as path from "path";
 import { argv, platform } from "process";
 import { promisify } from "util";
 
+import isOnline from "is-online";
+
 import log, { LoggingLevel } from "./core/log.js";
 
 const LOG_TAG = "CLI";
@@ -63,7 +65,7 @@ if found_version != expected_version:
     else:
         print(f'Using Python environment at {sys.executable},')
         print(f'expected glean_parser version {expected_version}, found {found_version}.')
-        sys.exit(1)
+    sys.exit(1)
 try:
     subprocess.check_call([
         sys.executable,
@@ -190,7 +192,8 @@ async function runGlean(projectRoot: string, parserArgs: string[]) {
   const spinner = getStartedSpinner();
   const venvRoot = path.join(projectRoot, VIRTUAL_ENVIRONMENT_DIR);
   const pythonBin = path.join(getPythonVenvBinariesPath(venvRoot), getSystemPythonBinName());
-  const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" online glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
+  const isOnlineArg = await isOnline() ? "online" : "offline";
+  const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
 
   const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
     exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
