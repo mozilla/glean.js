@@ -8,6 +8,10 @@ cannot be negative numbers.
   * If event timestamps are negative pings are rejected by the pipeline.
 * [#1132](https://github.com/mozilla/glean.js/pull/1132): Retry ping request on network error with `keepalive: false`. This is sometimes an issue on Chrome browsers below v81.
 * [#1170](https://github.com/mozilla/glean.js/pull/1170): Update glean_parser to version 5.0.0.
+* [#1178](https://github.com/mozilla/glean.js/pull/1178): Enable running the `glean` command offline.
+  * When offline Glean will not attempt to install glean_parser.
+* [#1178](https://github.com/mozilla/glean.js/pull/1178): Enable running the `glean` command with as many or as little arguments as wanted.
+  * Previously the command could only be run with 3 commands, even though all glean_parser commands would have been valid commands for the `glean` CLI.
 
 # v0.31.0 (2022-01-25)
 
