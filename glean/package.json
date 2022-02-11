@@ -134,7 +134,6 @@
   },
   "dependencies": {
     "fflate": "^0.7.1",
-    "is-online": "^9.0.1",
     "jose": "^4.0.4",
     "tslib": "^2.3.1",
     "uuid": "^8.3.2"
