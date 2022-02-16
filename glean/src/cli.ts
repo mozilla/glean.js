@@ -190,7 +190,8 @@ async function runGlean(projectRoot: string, parserArgs: string[]) {
   const spinner = getStartedSpinner();
   const venvRoot = path.join(projectRoot, VIRTUAL_ENVIRONMENT_DIR);
   const pythonBin = path.join(getPythonVenvBinariesPath(venvRoot), getSystemPythonBinName());
-  const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" online glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
+  const isOnlineArg = process.env.OFFLINE ? "offline" : "online";
+  const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
 
   const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
     exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
@@ -235,10 +236,6 @@ function stopSpinner(spinner: NodeJS.Timeout) {
  * @param args the arguments passed to this process.
  */
 async function run(args: string[]) {
-  if (args.length < 3) {
-    throw new Error("Not enough arguments. Please refer to https://mozilla.github.io/glean_parser/readme.html");
-  }
-
   const projectRoot = process.cwd();
   try {
     await setup(projectRoot);
