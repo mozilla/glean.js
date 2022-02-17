@@ -11,8 +11,7 @@
     ]
   },
   "permissions": [
-    "storage",
-    "https://incoming.telemetry.mozilla.org/"
+    "storage"
   ],
   "browser_action": {
     "browser_style": true,
