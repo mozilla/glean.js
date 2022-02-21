@@ -79,6 +79,13 @@ export class UrlMetric extends Metric<string, string> {
   }
 }
 
+/**
+ * Base implementation of the URL metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the URL metric type.
+ */
 class InternalUrlMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("url", meta, UrlMetric);

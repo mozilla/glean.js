@@ -11,8 +11,7 @@ import PingUploadManager from "./upload/manager.js";
 import { isBoolean, isString, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
 import EventsDatabase from "./metrics/events_database/index.js";
-import { InternalUUIDMetricType as UUIDMetricType} from "./metrics/types/uuid.js";
-import { InternalDatetimeMetricType as DatetimeMetricType, DatetimeMetric } from "./metrics/types/datetime.js";
+import { DatetimeMetric } from "./metrics/types/datetime.js";
 import CorePings from "./internal_pings.js";
 import { registerPluginToEvent } from "./events/utils.js";
 import ErrorManager from "./error/index.js";
@@ -125,10 +124,10 @@ namespace Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    await UUIDMetricType._private_setUndispatched(coreMetrics.clientId, KNOWN_CLIENT_ID);
+    await coreMetrics.clientId.setUndispatched(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await DatetimeMetricType._private_setUndispatched(coreMetrics.firstRunDate, firstRunDate);
+    await coreMetrics.firstRunDate.setUndispatched(firstRunDate);
 
     Context.uploadEnabled = false;
   }

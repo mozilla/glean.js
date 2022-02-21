@@ -62,7 +62,7 @@ export async function getSequenceNumber(ping: CommonPingData): Promise<number> {
   });
 
   const currentSeqData = await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, seq);
-  await CounterMetricType._private_addUndispatched(seq, 1);
+  await seq.addUndispatched(1);
 
   if (currentSeqData) {
     // Creating a new counter metric validates that the metric stored is actually a number.
@@ -95,7 +95,7 @@ export async function getStartEndTimes(ping: CommonPingData): Promise<{ startTim
 
   // Update the start time with the current time.
   const endTimeData = new Date();
-  await DatetimeMetricType._private_setUndispatched(startTimeMetric, endTimeData);
+  await startTimeMetric.setUndispatched(endTimeData);
   const endTime = DatetimeMetric.fromDate(endTimeData, TimeUnit.Minute);
 
   return {

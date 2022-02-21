@@ -40,6 +40,13 @@ export class TextMetric extends Metric<string, string> {
   }
 }
 
+/**
+ * Base implementation of the text metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the text metric type.
+ */
 class InternalTextMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("text", meta, TextMetric);

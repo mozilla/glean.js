@@ -23,6 +23,13 @@ export class BooleanMetric extends Metric<boolean, boolean> {
   }
 }
 
+/**
+ * Base implementation of the boolean metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the boolean metric type.
+ */
 class InternalBooleanMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("boolean", meta, BooleanMetric);

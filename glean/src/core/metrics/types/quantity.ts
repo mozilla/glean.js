@@ -33,31 +33,31 @@ export class QuantityMetric extends Metric<number, number> {
   }
 }
 
+/**
+ * Base implementation of the quantity metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the quantity metric type.
+ */
 class InternalQuantityMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("quantity", meta, QuantityMetric);
   }
 
   /**
-   * An internal implemention of `set` that does not dispatch the recording task.
+   * An implemention of `set` that does not dispatch the recording task.
    *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
-   *
-   * @param instance The metric instance to record to.
    * @param value The string we want to set to.
    */
-  static async _private_setUndispatched(instance: InternalQuantityMetricType, value: number): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
+  async setUndispatched(value: number): Promise<void> {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
     if (value < 0) {
       await Context.errorManager.record(
-        instance,
+        this,
         ErrorType.InvalidValue,
         `Set negative value ${value}`
       );
@@ -69,11 +69,11 @@ class InternalQuantityMetricType extends MetricType {
     }
 
     const metric = new QuantityMetric(value);
-    await Context.metricsDatabase.record(instance, metric);
+    await Context.metricsDatabase.record(this, metric);
   }
 
   set(value: number): void {
-    Context.dispatcher.launch(() => InternalQuantityMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(() => this.setUndispatched(value));
   }
 
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {

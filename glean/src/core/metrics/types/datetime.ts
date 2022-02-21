@@ -158,6 +158,13 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
   }
 }
 
+/**
+ * Base implementation of the datetime metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the datetime metric type.
+ */
 export class InternalDatetimeMetricType extends MetricType {
   timeUnit: TimeUnit;
 
@@ -167,19 +174,12 @@ export class InternalDatetimeMetricType extends MetricType {
   }
 
   /**
-   * An internal implemention of `set` that does not dispatch the recording task.
+   * An implemention of `set` that does not dispatch the recording task.
    *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
-   *
-   * @param instance The metric instance to record to.
    * @param value The date we want to set to.
    */
-  static async _private_setUndispatched(instance: InternalDatetimeMetricType, value?: Date): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
+  async setUndispatched(value?: Date): Promise<void> {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
@@ -191,7 +191,7 @@ export class InternalDatetimeMetricType extends MetricType {
     // regardless of the time unit. So we zero out information that
     // is not necessary for the current time unit of this metric.
     const truncatedDate = value;
-    switch(instance.timeUnit) {
+    switch(this.timeUnit) {
     case (TimeUnit.Day):
       truncatedDate.setMilliseconds(0);
       truncatedDate.setSeconds(0);
@@ -210,12 +210,12 @@ export class InternalDatetimeMetricType extends MetricType {
       break;
     }
 
-    const metric = DatetimeMetric.fromDate(value, instance.timeUnit);
-    await Context.metricsDatabase.record(instance, metric);
+    const metric = DatetimeMetric.fromDate(value, this.timeUnit);
+    await Context.metricsDatabase.record(this, metric);
   }
 
   set(value?: Date): void {
-    Context.dispatcher.launch(() => InternalDatetimeMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(() => this.setUndispatched(value));
   }
 
   /**

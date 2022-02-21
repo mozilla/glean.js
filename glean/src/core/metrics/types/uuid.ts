@@ -34,25 +34,25 @@ export class UUIDMetric extends Metric<string, string> {
   }
 }
 
+/**
+ * Base implementation of the UUID metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the UUID metric type.
+ */
 export class InternalUUIDMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("uuid", meta, UUIDMetric);
   }
 
   /**
-   * An internal implemention of `set` that does not dispatch the recording task.
+   * An implemention of `set` that does not dispatch the recording task.
    *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
-   *
-   * @param instance The metric instance to record to.
    * @param value The UUID we want to set to.
    */
-  static async _private_setUndispatched(instance: InternalUUIDMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
+  async setUndispatched(value: string): Promise<void> {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
@@ -65,18 +65,18 @@ export class InternalUUIDMetricType extends MetricType {
       metric = new UUIDMetric(value);
     } catch {
       await Context.errorManager.record(
-        instance,
+        this,
         ErrorType.InvalidValue,
         `"${value}" is not a valid UUID.`
       );
       return;
     }
 
-    await Context.metricsDatabase.record(instance, metric);
+    await Context.metricsDatabase.record(this, metric);
   }
 
   set(value: string): void {
-    Context.dispatcher.launch(() => InternalUUIDMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(() => this.setUndispatched(value));
   }
 
   generateAndSet(): string | undefined {

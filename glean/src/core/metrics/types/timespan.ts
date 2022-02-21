@@ -74,6 +74,13 @@ export class TimespanMetric extends Metric<TimespanInternalRepresentation, Times
   }
 }
 
+/**
+ * Base implementation of the timespan metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the timespan metric type.
+ */
 export class InternalTimespanMetricType extends MetricType {
   private timeUnit: TimeUnit;
   startTime?: number;
@@ -84,25 +91,18 @@ export class InternalTimespanMetricType extends MetricType {
   }
 
   /**
-   * An internal implemention of `setRaw` that does not dispatch the recording task.
+   * An implemention of `setRaw` that does not dispatch the recording task.
    *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
-   *
-   * @param instance The metric instance to record to.
    * @param elapsed The elapsed time to record, in milliseconds.
    */
-  static async _private_setRawUndispatched(instance: InternalTimespanMetricType, elapsed: number): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
+  async setRawUndispatched(elapsed: number): Promise<void> {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
-    if (!isUndefined(instance.startTime)) {
+    if (!isUndefined(this.startTime)) {
       await Context.errorManager.record(
-        instance,
+        this,
         ErrorType.InvalidState,
         "Timespan already running. Raw value not recorded."
       );
@@ -121,7 +121,7 @@ export class InternalTimespanMetricType extends MetricType {
         } catch {
           metric = new TimespanMetric({
             timespan: elapsed,
-            timeUnit: instance.timeUnit,
+            timeUnit: this.timeUnit,
           });
         }
 
@@ -129,11 +129,11 @@ export class InternalTimespanMetricType extends MetricType {
       };
     })(elapsed);
 
-    await Context.metricsDatabase.transform(instance, transformFn);
+    await Context.metricsDatabase.transform(this, transformFn);
 
     if (reportValueExists) {
       await Context.errorManager.record(
-        instance,
+        this,
         ErrorType.InvalidState,
         "Timespan value already recorded. New value discarded."
       );
@@ -199,7 +199,7 @@ export class InternalTimespanMetricType extends MetricType {
         return;
       }
 
-      await InternalTimespanMetricType._private_setRawUndispatched(this, elapsed);
+      await this.setRawUndispatched(elapsed);
     });
   }
 
@@ -214,7 +214,7 @@ export class InternalTimespanMetricType extends MetricType {
     Context.dispatcher.launch(async () => {
       // `elapsed` is in nanoseconds in order to match the glean-core API.
       const elapsedMillis = elapsed * 10**(-6);
-      await InternalTimespanMetricType._private_setRawUndispatched(this, elapsedMillis);
+      await this.setRawUndispatched(elapsedMillis);
     });
   }
 

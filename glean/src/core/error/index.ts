@@ -68,7 +68,7 @@ export default class ErrorManager {
     const errorMetric = getErrorMetricForMetric(metric, error);
     log(createLogTag(metric), [`${metric.baseIdentifier()}:`, message]);
     if (numErrors > 0) {
-      await CounterMetricType._private_addUndispatched(errorMetric, numErrors);
+      await errorMetric.addUndispatched(numErrors);
     }
   }
 

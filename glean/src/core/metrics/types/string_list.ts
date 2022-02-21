@@ -43,11 +43,11 @@ export class StringListMetric extends Metric<string[], string[]> {
 }
 
 /**
- * A string list metric.
+ * Base implementation of the string list metric type,
+ * meant only for Glean internal use.
  *
- * This allows appending a string value with arbitrary content to a list.
- * The list is length-limited to `MAX_LIST_LENGTH`.
- * Strings are length-limited to `MAX_STRING_LENGTH` characters.
+ * This class exposes Glean-internal properties and methods
+ * of the string list metric type.
  */
 class InternalStringListMetricType extends MetricType {
   constructor(meta: CommonMetricData) {

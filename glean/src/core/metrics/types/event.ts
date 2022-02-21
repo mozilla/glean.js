@@ -13,6 +13,13 @@ import { ErrorType } from "../../error/error_type.js";
 const LOG_TAG = "core.metrics.EventMetricType";
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
+/**
+ * Base implementation of the event metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the event metric type.
+ */
 export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends MetricType {
   private allowedExtraKeys?: string[];
 
@@ -22,52 +29,44 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
   }
 
   /**
-   * An internal implemention of `record` that does not dispatch the recording task.
+   * An implemention of `record` that does not dispatch the recording task.
    *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
-   *
-   * @param instance The metric instance to record to.
    * @param extra optional. Used for events where additional richer context is needed.
    *        The maximum length for string values is 100 bytes.
    * @param timestamp The event timestamp, defaults to now.
    * @returns A promise that resolves once the event is recorded.
    */
-  static async _private_recordUndispatched(
-    instance: InternalEventMetricType,
+  async recordUndispatched(
     extra?: ExtraMap,
     timestamp: number = getMonotonicNow()
   ): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
     // Truncate the extra keys, if needed.
     let truncatedExtra: ExtraMap | undefined = undefined;
-    if (extra && instance.allowedExtraKeys) {
+    if (extra && this.allowedExtraKeys) {
       truncatedExtra = {};
       for (const [name, value] of Object.entries(extra)) {
-        if (instance.allowedExtraKeys.includes(name)) {
+        if (this.allowedExtraKeys.includes(name)) {
           if (isString(value)) {
-            truncatedExtra[name] = await truncateStringAtBoundaryWithError(instance, value, MAX_LENGTH_EXTRA_KEY_VALUE);
+            truncatedExtra[name] = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_EXTRA_KEY_VALUE);
           } else {
             truncatedExtra[name] = value;
           }
         } else {
-          await Context.errorManager.record(instance, ErrorType.InvalidValue, `Invalid key index: ${name}`);
+          await Context.errorManager.record(this, ErrorType.InvalidValue, `Invalid key index: ${name}`);
           continue;
         }
       }
     }
 
     return Context.eventsDatabase.record(
-      instance,
+      this,
       new RecordedEvent(
-        instance.category,
-        instance.name,
+        this.category,
+        this.name,
         timestamp,
         truncatedExtra,
       )
@@ -84,7 +83,7 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
     const timestamp = getMonotonicNow();
 
     Context.dispatcher.launch(async () => {
-      await InternalEventMetricType._private_recordUndispatched(this, extra, timestamp);
+      await this.recordUndispatched(extra, timestamp);
     });
   }
 

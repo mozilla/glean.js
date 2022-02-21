@@ -34,25 +34,25 @@ export class CounterMetric extends Metric<number, number> {
   }
 }
 
+/**
+ * Base implementation of the counter metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the counter metric type.
+ */
 export class InternalCounterMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("counter", meta, CounterMetric);
   }
 
   /**
-   * An internal implemention of `add` that does not dispatch the recording task.
+   * An implemention of `add` that does not dispatch the recording task.
    *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
-   *
-   * @param instance The metric instance to record to.
    * @param amount The amount we want to add.
    */
-  static async _private_addUndispatched(instance: InternalCounterMetricType, amount?: number): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
+  async addUndispatched(amount?: number): Promise<void> {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
@@ -62,7 +62,7 @@ export class InternalCounterMetricType extends MetricType {
 
     if (amount <= 0) {
       await Context.errorManager.record(
-        instance,
+        this,
         ErrorType.InvalidValue,
         `Added negative and zero value ${amount}`
       );
@@ -90,11 +90,11 @@ export class InternalCounterMetricType extends MetricType {
       };
     })(amount);
 
-    await Context.metricsDatabase.transform(instance, transformFn);
+    await Context.metricsDatabase.transform(this, transformFn);
   }
 
   add(amount?: number): void {
-    Context.dispatcher.launch(async () => InternalCounterMetricType._private_addUndispatched(this, amount));
+    Context.dispatcher.launch(async () => this.addUndispatched(amount));
   }
 
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {

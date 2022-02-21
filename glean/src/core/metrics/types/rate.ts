@@ -49,6 +49,13 @@ export class RateMetric extends Metric<Rate, Rate> {
   }
 }
 
+/**
+ * Base implementation of the rate metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the rate metric type.
+ */
 class InternalRateMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("rate", meta, RateMetric);
