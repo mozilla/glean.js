@@ -49,23 +49,11 @@ export class StringListMetric extends Metric<string[], string[]> {
  * The list is length-limited to `MAX_LIST_LENGTH`.
  * Strings are length-limited to `MAX_STRING_LENGTH` characters.
  */
-class StringListMetricType extends MetricType {
+class InternalStringListMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("string_list", meta, StringListMetric);
   }
 
-  /**
-   * Sets to the specified string list value.
-   *
-   * # Note
-   *
-   * Truncates the list if it is longer than `MAX_LIST_LENGTH` and records an error.
-   *
-   * Truncates the value if it is longer than `MAX_STRING_LENGTH` characters
-   * and records an error.
-   *
-   * @param value The list of strings to set the metric to.
-   */
   set(value: string[]): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -90,17 +78,6 @@ class StringListMetricType extends MetricType {
     });
   }
 
-  /**
-   * Adds a new string `value` to the list.
-   *
-   * # Note
-   *
-   * - If the list is already of length `MAX_LIST_LENGTH`, record an error.
-   * - Truncates the value if it is longer than `MAX_STRING_LENGTH` characters
-   * and records an error.
-   *
-   * @param value The string to add.
-   */
   add(value: string): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -142,17 +119,6 @@ class StringListMetricType extends MetricType {
     });
   }
 
-  /**
-   * Test-only API
-   *
-   * Gets the currently stored value as a string array.
-   *
-   * This doesn't clear the stored value.
-   *
-   * @param ping the ping from which we want to retrieve this metrics value from.
-   *        Defaults to the first value in `sendInPings`.
-   * @returns The value found in storage or `undefined` if nothing was found.
-   */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string[] | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: string[] | undefined;
@@ -164,4 +130,71 @@ class StringListMetricType extends MetricType {
   }
 }
 
-export default StringListMetricType;
+export default class {
+  #inner: InternalStringListMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalStringListMetricType(meta);
+  }
+
+  /**
+   * Sets to the specified string list value.
+   *
+   * # Note
+   *
+   * Truncates the list if it is longer than `MAX_LIST_LENGTH` and records an error.
+   *
+   * Truncates the value if it is longer than `MAX_STRING_LENGTH` characters
+   * and records an error.
+   *
+   * @param value The list of strings to set the metric to.
+   */
+  set(value: string[]): void {
+    this.#inner.set(value);
+  }
+
+  /**
+   * Adds a new string `value` to the list.
+   *
+   * # Note
+   *
+   * - If the list is already of length `MAX_LIST_LENGTH`, record an error.
+   * - Truncates the value if it is longer than `MAX_STRING_LENGTH` characters
+   * and records an error.
+   *
+   * @param value The string to add.
+   */
+  add(value: string): void {
+    this.#inner.add(value);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Gets the currently stored value as a string array.
+   *
+   * This doesn't clear the stored value.
+   *
+   * @param ping the ping from which we want to retrieve this metrics value from.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns The value found in storage or `undefined` if nothing was found.
+   */
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string[] | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
+  }
+}
+

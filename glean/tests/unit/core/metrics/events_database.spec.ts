@@ -8,7 +8,7 @@ import sinon from "sinon";
 
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import EventsDatabase, { getGleanRestartedEventMetric } from "../../../../src/core/metrics/events_database";
-import EventMetricType from "../../../../src/core/metrics/types/event";
+import { InternalEventMetricType as EventMetricType} from "../../../../src/core/metrics/types/event";
 import type { JSONObject } from "../../../../src/core/utils";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/database";

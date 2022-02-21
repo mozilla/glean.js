@@ -4,7 +4,7 @@
 
 import type { MetricType } from "../metrics/index.js";
 import type { ErrorType } from "./error_type.js";
-import CounterMetricType from "../metrics/types/counter.js";
+import { InternalCounterMetricType as CounterMetricType} from "../metrics/types/counter.js";
 import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled.js";
 import log from "../log.js";
 
@@ -81,7 +81,7 @@ export default class ErrorManager {
    *        Defaults to the first value in `sendInPings`.
    * @returns The number of errors reported.
    */
-  async testGetNumRecordedErrors (
+  async testGetNumRecordedErrors(
     metric: MetricType,
     error: ErrorType,
     ping?: string

@@ -40,19 +40,11 @@ export class TextMetric extends Metric<string, string> {
   }
 }
 
-/**
- * A text metric.
- */
-class TextMetricType extends MetricType {
+class InternalTextMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("text", meta, TextMetric);
   }
 
-  /**
-   * Sets to a specified value.
-   *
-   * @param text the value to set.
-   */
   set(text: string): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -63,6 +55,36 @@ class TextMetricType extends MetricType {
       const metric = new TextMetric(truncatedValue);
       await Context.metricsDatabase.record(this, metric);
     });
+  }
+
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: string | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
+      });
+      return metric;
+    }
+  }
+}
+
+/**
+ * A text metric.
+ */
+export default class {
+  #inner: InternalTextMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalTextMetricType(meta);
+  }
+
+  /**
+   * Sets to a specified value.
+   *
+   * @param text the value to set.
+   */
+  set(text: string): void {
+    this.#inner.set(text);
   }
 
   /**
@@ -76,15 +98,22 @@ class TextMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
-    if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: string | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
-      });
-      return metric;
-    }
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
 
-export default TextMetricType;

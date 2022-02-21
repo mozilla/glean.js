@@ -13,10 +13,7 @@ import { ErrorType } from "../../error/error_type.js";
 const LOG_TAG = "core.metrics.EventMetricType";
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
 
-/**
- * An event metric.
- */
-class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends MetricType {
+export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends MetricType {
   private allowedExtraKeys?: string[];
 
   constructor(meta: CommonMetricData, allowedExtraKeys?: string[]) {
@@ -40,7 +37,7 @@ class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends Metr
    * @returns A promise that resolves once the event is recorded.
    */
   static async _private_recordUndispatched(
-    instance: EventMetricType,
+    instance: InternalEventMetricType,
     extra?: ExtraMap,
     timestamp: number = getMonotonicNow()
   ): Promise<void> {
@@ -87,7 +84,7 @@ class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends Metr
     const timestamp = getMonotonicNow();
 
     Context.dispatcher.launch(async () => {
-      await EventMetricType._private_recordUndispatched(this, extra, timestamp);
+      await InternalEventMetricType._private_recordUndispatched(this, extra, timestamp);
     });
   }
 
@@ -113,4 +110,52 @@ class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends Metr
   }
 }
 
-export default EventMetricType;
+/**
+ * An event metric.
+ */
+export default class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> {
+  #inner: InternalEventMetricType;
+
+  constructor(meta: CommonMetricData, allowedExtraKeys?: string[]) {
+    this.#inner = new InternalEventMetricType<SpecificExtraMap>(meta, allowedExtraKeys);
+  }
+
+  /**
+   * Record an event.
+   *
+   * @param extra optional. Used for events where additional richer context is needed.
+   *        The maximum length for string values is 100 bytes.
+   */
+  record(extra?: SpecificExtraMap): void {
+    this.#inner.record(extra);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Gets the currently stored events.
+   *
+   * This doesn't clear the stored value.
+   *
+   * @param ping the ping from which we want to retrieve this metrics value from.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns The value found in storage or `undefined` if nothing was found.
+   */
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
+  }
+}

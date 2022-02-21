@@ -5,8 +5,8 @@
 import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "../constants.js";
 import type { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
 import type CommonPingData from "./common_ping_data.js";
-import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
-import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
+import { InternalCounterMetricType as CounterMetricType, CounterMetric } from "../metrics/types/counter.js";
+import { InternalDatetimeMetricType as DatetimeMetricType, DatetimeMetric } from "../metrics/types/datetime.js";
 import TimeUnit from "../metrics/time_unit.js";
 import CoreEvents from "../events/index.js";
 import { Lifetime } from "../metrics/lifetime.js";

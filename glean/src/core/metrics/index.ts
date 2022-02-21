@@ -115,14 +115,6 @@ export abstract class MetricType implements CommonMetricData {
     return (uploadEnabled && !this.disabled);
   }
 
-  /**
-   * Returns the number of errors recorded for the given metric.
-   *
-   * @param errorType The type of the error recorded.
-   * @param ping represents the name of the ping to retrieve the metric for.
-   *        Defaults to the first value in `sendInPings`.
-   * @returns the number of errors recorded for the metric.
-   */
   async testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): Promise<number> {
     if (testOnlyCheck("testGetNumRecordedErrors")) {
       return Context.errorManager.testGetNumRecordedErrors(this, errorType as ErrorType, ping);

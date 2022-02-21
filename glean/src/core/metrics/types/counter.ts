@@ -34,13 +34,7 @@ export class CounterMetric extends Metric<number, number> {
   }
 }
 
-/**
- * A counter metric.
- *
- * Used to count things.
- * The value can only be incremented, not decremented.
- */
-class CounterMetricType extends MetricType {
+export class InternalCounterMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("counter", meta, CounterMetric);
   }
@@ -57,7 +51,7 @@ class CounterMetricType extends MetricType {
    * @param instance The metric instance to record to.
    * @param amount The amount we want to add.
    */
-  static async _private_addUndispatched(instance: CounterMetricType, amount?: number): Promise<void> {
+  static async _private_addUndispatched(instance: InternalCounterMetricType, amount?: number): Promise<void> {
     if (!instance.shouldRecord(Context.uploadEnabled)) {
       return;
     }
@@ -99,6 +93,34 @@ class CounterMetricType extends MetricType {
     await Context.metricsDatabase.transform(instance, transformFn);
   }
 
+  add(amount?: number): void {
+    Context.dispatcher.launch(async () => InternalCounterMetricType._private_addUndispatched(this, amount));
+  }
+
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: number | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<number>(ping, this);
+      });
+      return metric;
+    }
+  }
+}
+
+/**
+ * A counter metric.
+ *
+ * Used to count things.
+ * The value can only be incremented, not decremented.
+ */
+export default class {
+  #inner: InternalCounterMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalCounterMetricType(meta);
+  }
+
   /**
    * Increases the counter by `amount`.
    *
@@ -112,11 +134,11 @@ class CounterMetricType extends MetricType {
    *               If not provided will default to `1`.
    */
   add(amount?: number): void {
-    Context.dispatcher.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
+    this.#inner.add(amount);
   }
 
   /**
-   * Test-only API.**
+   * Test-only API.
    *
    * Gets the currently stored value as a number.
    *
@@ -126,15 +148,21 @@ class CounterMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
-    if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: number | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<number>(ping, this);
-      });
-      return metric;
-    }
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<number | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
-export default CounterMetricType;

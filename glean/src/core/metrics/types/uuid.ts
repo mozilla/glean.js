@@ -34,12 +34,7 @@ export class UUIDMetric extends Metric<string, string> {
   }
 }
 
-/**
- *  An UUID metric.
- *
- * Stores UUID v4 (randomly generated) values.
- */
-class UUIDMetricType extends MetricType {
+export class InternalUUIDMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("uuid", meta, UUIDMetric);
   }
@@ -56,7 +51,7 @@ class UUIDMetricType extends MetricType {
    * @param instance The metric instance to record to.
    * @param value The UUID we want to set to.
    */
-  static async _private_setUndispatched(instance: UUIDMetricType, value: string): Promise<void> {
+  static async _private_setUndispatched(instance: InternalUUIDMetricType, value: string): Promise<void> {
     if (!instance.shouldRecord(Context.uploadEnabled)) {
       return;
     }
@@ -80,21 +75,10 @@ class UUIDMetricType extends MetricType {
     await Context.metricsDatabase.record(instance, metric);
   }
 
-  /**
-   * Sets to the specified value.
-   *
-   * @param value the value to set.
-   * @throws In case `value` is not a valid UUID.
-   */
   set(value: string): void {
-    Context.dispatcher.launch(() => UUIDMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(() => InternalUUIDMetricType._private_setUndispatched(this, value));
   }
 
-  /**
-   * Generates a new random uuid and sets the metric to it.
-   *
-   * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
-   */
   generateAndSet(): string | undefined {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
@@ -106,17 +90,6 @@ class UUIDMetricType extends MetricType {
     return value;
   }
 
-  /**
-   * Test-only API
-   *
-   * Gets the currently stored value as a string.
-   *
-   * This doesn't clear the stored value.
-   *
-   * @param ping the ping from which we want to retrieve this metrics value from.
-   *        Defaults to the first value in `sendInPings`.
-   * @returns The value found in storage or `undefined` if nothing was found.
-   */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: string | undefined;
@@ -128,4 +101,64 @@ class UUIDMetricType extends MetricType {
   }
 }
 
-export default UUIDMetricType;
+/**
+ *  An UUID metric.
+ *
+ * Stores UUID v4 (randomly generated) values.
+ */
+export default class {
+  #inner: InternalUUIDMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalUUIDMetricType(meta);
+  }
+
+  /**
+   * Sets to the specified value.
+   *
+   * @param value the value to set.
+   * @throws In case `value` is not a valid UUID.
+   */
+  set(value: string): void {
+    this.#inner.set(value);
+  }
+
+  /**
+   * Generates a new random uuid and sets the metric to it.
+   *
+   * @returns The generated value or `undefined` in case this
+   *          metric shouldn't be recorded.
+   */
+  generateAndSet(): string | undefined {
+    return this.#inner.generateAndSet();
+  }
+
+  /**
+   * Test-only API.**
+   *
+   * Gets the currently stored value as a string.
+   *
+   * This doesn't clear the stored value.
+   *
+   * @param ping the ping from which we want to retrieve this metrics value from.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns The value found in storage or `undefined` if nothing was found.
+   */
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
+  }
+}

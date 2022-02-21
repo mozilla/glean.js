@@ -158,13 +158,7 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
   }
 }
 
-/**
- * A datetime metric.
- *
- * Used to record an absolute date and time,
- * such as the time the user first ran the application.
- */
-class DatetimeMetricType extends MetricType {
+export class InternalDatetimeMetricType extends MetricType {
   timeUnit: TimeUnit;
 
   constructor(meta: CommonMetricData, timeUnit: string) {
@@ -184,7 +178,7 @@ class DatetimeMetricType extends MetricType {
    * @param instance The metric instance to record to.
    * @param value The date we want to set to.
    */
-  static async _private_setUndispatched(instance: DatetimeMetricType, value?: Date): Promise<void> {
+  static async _private_setUndispatched(instance: InternalDatetimeMetricType, value?: Date): Promise<void> {
     if (!instance.shouldRecord(Context.uploadEnabled)) {
       return;
     }
@@ -220,17 +214,12 @@ class DatetimeMetricType extends MetricType {
     await Context.metricsDatabase.record(instance, metric);
   }
 
-  /**
-   * Set a datetime value, truncating it to the metric's resolution.
-   *
-   * @param value The Date value to set. If not provided, will record the current time.
-   */
   set(value?: Date): void {
-    Context.dispatcher.launch(() => DatetimeMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(() => InternalDatetimeMetricType._private_setUndispatched(this, value));
   }
 
   /**
-   * Test-only and private API**
+   * Test-only API
    *
    * Gets the currently stored value as a DatetimeMetric.
    *
@@ -252,6 +241,39 @@ class DatetimeMetricType extends MetricType {
     }
   }
 
+  async testGetValueAsString(ping: string = this.sendInPings[0]): Promise<string | undefined> {
+    const metric = await this.testGetValueAsDatetimeMetric(ping, "testGetValueAsString");
+    return metric ? metric.payload() : undefined;
+  }
+
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<Date | undefined> {
+    const metric = await this.testGetValueAsDatetimeMetric(ping, "testGetValue");
+    return metric ? metric.date : undefined;
+  }
+}
+
+/**
+ * A datetime metric.
+ *
+ * Used to record an absolute date and time,
+ * such as the time the user first ran the application.
+ */
+export default class {
+  #inner: InternalDatetimeMetricType;
+
+  constructor(meta: CommonMetricData, timeUnit: string) {
+    this.#inner = new InternalDatetimeMetricType(meta, timeUnit);
+  }
+
+  /**
+   * Set a datetime value, truncating it to the metric's resolution.
+   *
+   * @param value The Date value to set. If not provided, will record the current time.
+   */
+  set(value?: Date): void {
+    this.#inner.set(value);
+  }
+
   /**
    * Test-only API
    *
@@ -263,9 +285,8 @@ class DatetimeMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValueAsString(ping: string = this.sendInPings[0]): Promise<string | undefined> {
-    const metric = await this.testGetValueAsDatetimeMetric(ping, "testGetValueAsString");
-    return metric ? metric.payload() : undefined;
+  async testGetValueAsString(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+    return this.#inner.testGetValueAsString(ping);
   }
 
   /**
@@ -286,10 +307,21 @@ class DatetimeMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<Date | undefined> {
-    const metric = await this.testGetValueAsDatetimeMetric(ping, "testGetValue");
-    return metric ? metric.date : undefined;
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<Date | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
-export default DatetimeMetricType;

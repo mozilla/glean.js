@@ -3,9 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "./constants.js";
-import UUIDMetricType from "./metrics/types/uuid.js";
-import DatetimeMetricType from "./metrics/types/datetime.js";
-import StringMetricType from "./metrics/types/string.js";
+import { InternalUUIDMetricType as UUIDMetricType } from "./metrics/types/uuid.js";
+import { InternalDatetimeMetricType as DatetimeMetricType } from "./metrics/types/datetime.js";
+import { InternalStringMetricType as StringMetricType } from "./metrics/types/string.js";
 import { createMetric } from "./metrics/utils.js";
 import TimeUnit from "./metrics/time_unit.js";
 import { generateUUIDv4 } from "./utils.js";

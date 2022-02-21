@@ -33,13 +33,7 @@ export class QuantityMetric extends Metric<number, number> {
   }
 }
 
-/**
- * A quantity metric.
- *
- * Used to store quantity.
- * The value can only be non-negative.
- */
-class QuantityMetricType extends MetricType {
+class InternalQuantityMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("quantity", meta, QuantityMetric);
   }
@@ -56,7 +50,7 @@ class QuantityMetricType extends MetricType {
    * @param instance The metric instance to record to.
    * @param value The string we want to set to.
    */
-  static async _private_setUndispatched(instance: QuantityMetricType, value: number): Promise<void> {
+  static async _private_setUndispatched(instance: InternalQuantityMetricType, value: number): Promise<void> {
     if (!instance.shouldRecord(Context.uploadEnabled)) {
       return;
     }
@@ -78,6 +72,34 @@ class QuantityMetricType extends MetricType {
     await Context.metricsDatabase.record(instance, metric);
   }
 
+  set(value: number): void {
+    Context.dispatcher.launch(() => InternalQuantityMetricType._private_setUndispatched(this, value));
+  }
+
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: number | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<number>(ping, this);
+      });
+      return metric;
+    }
+  }
+}
+
+/**
+ * A quantity metric.
+ *
+ * Used to store quantity.
+ * The value can only be non-negative.
+ */
+export default class {
+  #inner: InternalQuantityMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalQuantityMetricType(meta);
+  }
+
   /**
    * Sets to the specified quantity value.
    * Logs an warning if the value is negative.
@@ -85,7 +107,7 @@ class QuantityMetricType extends MetricType {
    * @param value the value to set. Must be non-negative
    */
   set(value: number): void {
-    Context.dispatcher.launch(() => QuantityMetricType._private_setUndispatched(this, value));
+    this.#inner.set(value);
   }
 
   /**
@@ -99,15 +121,21 @@ class QuantityMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
-    if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: number | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<number>(ping, this);
-      });
-      return metric;
-    }
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<number | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
-export default QuantityMetricType;

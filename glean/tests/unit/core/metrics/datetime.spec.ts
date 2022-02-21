@@ -6,7 +6,7 @@ import assert from "assert";
 import sinon from "sinon";
 
 import Glean from "../../../../src/core/glean";
-import DatetimeMetricType, { DatetimeMetric } from "../../../../src/core/metrics/types/datetime";
+import DatetimeMetricType, { InternalDatetimeMetricType, DatetimeMetric } from "../../../../src/core/metrics/types/datetime";
 
 import TimeUnit from "../../../../src/core/metrics/time_unit";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
@@ -195,7 +195,8 @@ describe("DatetimeMetric", function() {
     // Monkeypatch this functions to have a deterministic return value anywhere in the world.
     sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
 
-    const metric = new DatetimeMetricType({
+    // Use the internal method here so we can manually record.
+    const metric = new InternalDatetimeMetricType({
       category: "aCategory",
       name: "aDatetimeMetric",
       sendInPings: ["aPing"],
