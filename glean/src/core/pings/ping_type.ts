@@ -15,6 +15,16 @@ type ValidatorFunction = (reason?: string) => Promise<void>;
 type PromiseCallback = (value: void | PromiseLike<void>) => void;
 
 /**
+ * Asserts whether or not a given ping is a deletion-request ping.
+ *
+ * @param name The ping name to check.
+ * @returns Whether or not the name is the deletion-request ping name.
+ */
+function isDeletionRequest(name: string): boolean {
+  return name === DELETION_REQUEST_PING_NAME;
+}
+
+/**
  * Stores information about a ping.
  *
  * This is required so that given metric data queued on disk we can send
@@ -39,8 +49,59 @@ class PingType implements CommonPingData {
     this.reasonCodes = meta.reasonCodes ?? [];
   }
 
-  private isDeletionRequest(): boolean {
-    return this.name === DELETION_REQUEST_PING_NAME;
+  /**
+   * An internal implemention of `submit` that does not dispatch the submission task.
+   *
+   * # Important
+   *
+   * This is absolutely not meant to be used outside of Glean itself.
+   * It may cause multiple issues because it cannot guarantee
+   * that the submission of the ping will happen in order with other Glean API calls.
+   *
+   * @param instance The ping instance to submit.
+   * @param reason The reason the ping was triggered. Included in the
+   *               `ping_info.reason` part of the payload.
+   * @param testResolver The asynchronous validation function to run in order to validate
+   *        the ping content.
+   */
+  static async _private_submitUndispatched(instance: PingType, reason?: string, testResolver?: PromiseCallback): Promise<void> {
+    if (!Context.initialized) {
+      log(LOG_TAG, "Glean must be initialized before submitting pings.", LoggingLevel.Info);
+      return;
+    }
+
+    if (!Context.uploadEnabled && !isDeletionRequest(instance.name)) {
+      log(
+        LOG_TAG,
+        "Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.",
+        LoggingLevel.Info
+      );
+      return;
+    }
+
+    let correctedReason = reason;
+    if (reason && !instance.reasonCodes.includes(reason)) {
+      log(LOG_TAG, `Invalid reason code ${reason} from ${this.name}. Ignoring.`, LoggingLevel.Warn);
+      correctedReason = undefined;
+    }
+
+    const identifier = generateUUIDv4();
+    await collectAndStorePing(identifier, instance, correctedReason);
+
+    if (testResolver) {
+      testResolver();
+
+      // Finally clean up!
+      instance.resolveTestPromiseFunction = undefined;
+      instance.rejectTestPromiseFunction = undefined;
+      instance.testCallback = undefined;
+    }
+  }
+
+  private static _private_internalSubmit(instance: PingType, reason?: string, testResolver?: PromiseCallback): void {
+    Context.dispatcher.launch(async () => {
+      await PingType._private_submitUndispatched(instance, reason, testResolver);
+    });
   }
 
   /**
@@ -81,61 +142,6 @@ class PingType implements CommonPingData {
     } else {
       PingType._private_internalSubmit(this, reason);
     }
-  }
-
-  /**
-   * An internal implemention of `submit` that does not dispatch the submission task.
-   *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the submission of the ping will happen in order with other Glean API calls.
-   *
-   * @param instance The ping instance to submit.
-   * @param reason The reason the ping was triggered. Included in the
-   *               `ping_info.reason` part of the payload.
-   * @param testResolver The asynchronous validation function to run in order to validate
-   *        the ping content.
-   */
-  static async _private_submitUndispatched(instance: PingType, reason?: string, testResolver?: PromiseCallback): Promise<void> {
-    if (!Context.initialized) {
-      log(LOG_TAG, "Glean must be initialized before submitting pings.", LoggingLevel.Info);
-      return;
-    }
-
-    if (!Context.uploadEnabled && !instance.isDeletionRequest()) {
-      log(
-        LOG_TAG,
-        "Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.",
-        LoggingLevel.Info
-      );
-      return;
-    }
-
-    let correctedReason = reason;
-    if (reason && !instance.reasonCodes.includes(reason)) {
-      log(LOG_TAG, `Invalid reason code ${reason} from ${this.name}. Ignoring.`, LoggingLevel.Warn);
-      correctedReason = undefined;
-    }
-
-    const identifier = generateUUIDv4();
-    await collectAndStorePing(identifier, instance, correctedReason);
-
-    if (testResolver) {
-      testResolver();
-
-      // Finally clean up!
-      instance.resolveTestPromiseFunction = undefined;
-      instance.rejectTestPromiseFunction = undefined;
-      instance.testCallback = undefined;
-    }
-  }
-
-  private static _private_internalSubmit(instance: PingType, reason?: string, testResolver?: PromiseCallback): void {
-    Context.dispatcher.launch(async () => {
-      await PingType._private_submitUndispatched(instance, reason, testResolver);
-    });
   }
 
   /**

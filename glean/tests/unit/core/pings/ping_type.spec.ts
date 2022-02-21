@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import PingType from "../../../../src/core/pings/ping_type";
+import PingType, { InternalPingType } from "../../../../src/core/pings/ping_type";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import Glean from "../../../../src/core/glean";
@@ -115,7 +115,8 @@ describe("PingType", function() {
   });
 
   it("runs a validator with no metrics tests", async function() {
-    const ping = new PingType({
+    // Need to use the internal type here in order to access the test promise related props.
+    const ping = new InternalPingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false,
@@ -211,7 +212,8 @@ describe("PingType", function() {
   });
 
   it("running a validator multiple times fails when not awaiting", function() {
-    const ping = new PingType({
+    // Need to use the internal type here in order to access the test promise related props.
+    const ping = new InternalPingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false

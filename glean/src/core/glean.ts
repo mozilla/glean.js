@@ -19,7 +19,6 @@ import ErrorManager from "./error/index.js";
 import type Platform from "../platform/index.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import { Context } from "./context.js";
-import PingType from "./pings/ping_type.js";
 import log, { LoggingLevel } from "./log.js";
 
 const LOG_TAG = "core.Glean";
@@ -72,7 +71,7 @@ namespace Glean {
     // We need to use an undispatched submission to guarantee that the
     // ping is collected before metric are cleared, otherwise we end up
     // with malformed pings.
-    await PingType._private_submitUndispatched(corePings.deletionRequest);
+    await corePings.deletionRequest.submitUndispatched();
     await clearMetrics();
   }
 
