@@ -195,4 +195,29 @@ describe("RateMetric", function() {
       { numerator: Number.MAX_SAFE_INTEGER, denominator: Number.MAX_SAFE_INTEGER }
     );
   });
+
+  it("attempting to record a value of incorrect type records an error", async function () {
+    const metric = new RateMetricType({
+      category: "aCategory",
+      name: "aRateMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.addToDenominator("not number");
+    // Floating point numbers should also record an error
+    metric.addToDenominator(Math.PI);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.addToNumerator("not number");
+    // Floating point numbers should also record an error
+    metric.addToNumerator(Math.PI);
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 4);
+    assert.strictEqual(await metric.testGetValue(), undefined);
+  });
 });
