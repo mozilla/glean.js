@@ -6,6 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { isString, testOnlyCheck } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError } from "../metric.js";
+import { MetricValidation } from "../metric.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 
@@ -18,16 +21,6 @@ const URL_MAX_LENGTH = 2048;
 //
 // Reference: https://url.spec.whatwg.org/#url-scheme-string
 const URL_VALIDATION_REGEX = /^[a-zA-Z][a-zA-Z0-9-\+\.]*:(.*)$/;
-
-/**
- * Error thrown when there is a URL validation error that also yields error recording.
- */
-class UrlMetricError extends Error {
-  constructor(readonly type: ErrorType, message?: string) {
-    super(message);
-    this.name = "UrlMetricError";
-  }
-}
 
 export class UrlMetric extends Metric<string, string> {
   constructor(v: unknown) {
@@ -48,30 +41,40 @@ export class UrlMetric extends Metric<string, string> {
    * @param v The value to validate.
    * @returns Whether or not v is a valid URL-like string.
    */
-  validate(v: unknown): v is string {
+  validate(v: unknown): MetricValidationResult {
     if (!isString(v)) {
-      return false;
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected string, got ${typeof v}`
+      };
     }
 
     if (v.length > URL_MAX_LENGTH) {
-      throw new UrlMetricError(
-        ErrorType.InvalidOverflow,
-        `URL length ${v.length} exceeds maximum of ${URL_MAX_LENGTH}.`
-      );
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `URL length ${v.length} exceeds maximum of ${URL_MAX_LENGTH}`,
+        errorType: ErrorType.InvalidOverflow,
+      };
     }
 
     if (v.startsWith("data:")) {
-      throw new UrlMetricError(ErrorType.InvalidValue, "URL metric does not support data URLs.");
+      return {
+        type: MetricValidation.Error,
+        errorMessage: "URL metric does not support data URLs",
+        errorType: ErrorType.InvalidValue,
+      };
     }
 
 
     if (!URL_VALIDATION_REGEX.test(v)) {
-      throw new UrlMetricError(
-        ErrorType.InvalidValue, `"${v}" does not start with a valid URL scheme.`
-      );
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `"${v}" does not start with a valid URL scheme`,
+        errorType: ErrorType.InvalidValue,
+      };
     }
 
-    return true;
+    return { type: MetricValidation.Success };
   }
 
   payload(): string {
@@ -101,8 +104,8 @@ class InternalUrlMetricType extends MetricType {
         const metric = new UrlMetric(url);
         await Context.metricsDatabase.record(this, metric);
       } catch (e) {
-        if (e instanceof UrlMetricError) {
-          await Context.errorManager.record(this, e.type, e);
+        if (e instanceof MetricValidationError) {
+          await e.recordError(this);
         }
       }
     });
