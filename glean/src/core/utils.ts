@@ -7,6 +7,7 @@ import { v4 as UUIDv4 } from "uuid";
 import { Context } from "./context.js";
 import { ErrorType } from "./error/error_type.js";
 import log, { LoggingLevel } from "./log.js";
+import { MetricValidationError } from "./metrics/metric.js";
 
 const LOG_TAG = "core.utils";
 
@@ -195,9 +196,14 @@ export function getMonotonicNow(): number {
  * @param value The string to truncate.
  * @param length The lenght to truncate to.
  * @returns A string with at most `length` bytes.
+ * @throws In case `value` is not a string.
  */
-export async function truncateStringAtBoundaryWithError(metric: MetricType, value: string, length: number): Promise<string> {
-  const truncated = value.substr(0, length);
+export async function truncateStringAtBoundaryWithError(metric: MetricType, value: unknown, length: number): Promise<string> {
+  if(!isString(value)) {
+    throw new MetricValidationError(`Expected string, got ${JSON.stringify(value)}`);
+  }
+
+  const truncated = value.substring(0, length);
   if (truncated !== value) {
     await Context.errorManager.record(
       metric,

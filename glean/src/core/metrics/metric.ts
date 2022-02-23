@@ -86,6 +86,11 @@ export abstract class Metric<
   /**
    * Validates that a given value is in the correct format for this metrics internal representation.
    *
+   * # Note
+   *
+   * This function should only check for validations
+   * that would prevent a metric from being recorded.
+   *
    * @param v The value to verify.
    * @returns Whether or not validation was successfull.
    */

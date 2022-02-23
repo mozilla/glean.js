@@ -2,12 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import log, { LoggingLevel } from "../log.js";
 import type { StorageIndex } from "../storage/index.js";
 import type { JSONObject, JSONValue } from "../utils.js";
 import { isJSONValue, isObject } from "../utils.js";
-
-const LOG_TAG = "core.Storage.Utils";
 
 /**
  * Gets an entry in a given object on a given index.
@@ -41,11 +38,18 @@ export function getValueFromNestedObject(obj: JSONObject, index: StorageIndex): 
 /**
  * Updates / Adds an entry in a given object on a given index.
  *
+ * # Important
+ *
+ * Any errors thrown on a transformation function are bubbled up.
+ *
+ * Remember to take in to account that storage may not contain
+ * the data we expect it to, so always validate the type of
+ * the value passed on to the transformation function.
+ *
  * @param obj The object to update
  * @param index The index of the entry to update
  * @param transformFn A transformation function to apply to the currently persisted value.
  * @returns An updated copy of the object.
- * @throws In case the index is an empty array.
  */
 export function updateNestedObject(
   obj: JSONObject,
@@ -78,19 +82,10 @@ export function updateNestedObject(
 
   const finalKey = index[index.length - 1];
   const current = target[finalKey];
-  try {
-    const value = transformFn(current);
-    target[finalKey] = value;
-    return returnObject;
-  } catch(e) {
-    log(
-      LOG_TAG,
-      ["Error while transforming stored value. Ignoring old value.", e],
-      LoggingLevel.Error
-    );
-    target[finalKey] = transformFn(undefined);
-    return returnObject;
-  }
+
+  const value = transformFn(current);
+  target[finalKey] = value;
+  return returnObject;
 }
 
 /**
