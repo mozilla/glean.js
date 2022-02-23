@@ -232,3 +232,18 @@ export function testOnlyCheck(name: string, logTag = LOG_TAG): boolean {
 
   return true;
 }
+
+/**
+ * Computes a sum, saturating at Number.MAX_SAFE_INTEGER.
+ *
+ * @param {...number} args Arguments to sum
+ * @returns Sum result, of Number.MAX_SAFE_INTEGER is sum was larger than that.
+ */
+export function saturatingAdd(...args: number[]) {
+  let result = args.reduce((sum, item) => sum + item, 0);
+  if (result > Number.MAX_SAFE_INTEGER) {
+    result = Number.MAX_SAFE_INTEGER;
+  }
+
+  return result;
+}
