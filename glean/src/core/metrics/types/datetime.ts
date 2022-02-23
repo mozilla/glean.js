@@ -6,7 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import TimeUnit from "../../metrics/time_unit.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError } from "../metric.js";
+import { Metric, MetricValidation } from "../metric.js";
 import { isNumber, isObject, isString, testOnlyCheck } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.DatetimeMetricType";
@@ -43,7 +45,11 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
     super(v);
   }
 
-  static fromDate(v: Date, timeUnit: TimeUnit): DatetimeMetric {
+  static fromDate(v: unknown, timeUnit: TimeUnit): DatetimeMetric {
+    if(!(v instanceof Date)) {
+      throw new MetricValidationError(`Expected Date object, got ${JSON.stringify(v)}`);
+    }
+
     return new DatetimeMetric({
       timeUnit,
       timezone: v.getTimezoneOffset(),
@@ -78,19 +84,25 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
     return this._inner.date;
   }
 
-  validate(v: unknown): v is DatetimeInternalRepresentation {
+  validate(v: unknown): MetricValidationResult {
     if (!isObject(v) || Object.keys(v).length !== 3) {
-      return false;
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected Glean datetime metric object, got ${JSON.stringify(v)}`
+      };
     }
 
     const timeUnitVerification = "timeUnit" in v && isString(v.timeUnit) && Object.values(TimeUnit).includes(v.timeUnit as TimeUnit);
     const timezoneVerification = "timezone" in v && isNumber(v.timezone);
     const dateVerification = "date" in v && isString(v.date) && v.date.length === 24 && !isNaN(Date.parse(v.date));
     if (!timeUnitVerification || !timezoneVerification || !dateVerification) {
-      return false;
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Invalid property on datetime metric, got ${JSON.stringify(v)}`
+      };
     }
 
-    return true;
+    return { type: MetricValidation.Success };
   }
 
   /**
@@ -214,8 +226,15 @@ export class InternalDatetimeMetricType extends MetricType {
       break;
     }
 
-    const metric = DatetimeMetric.fromDate(value, this.timeUnit);
-    await Context.metricsDatabase.record(this, metric);
+    try {
+      const metric = DatetimeMetric.fromDate(value, this.timeUnit);
+      await Context.metricsDatabase.record(this, metric);
+    } catch(e) {
+      if (e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
+    }
+
   }
 
   set(value?: Date): void {
