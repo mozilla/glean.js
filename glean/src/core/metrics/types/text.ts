@@ -6,6 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError } from "../metric.js";
+import { MetricValidation } from "../metric.js";
 import { Metric } from "../metric.js";
 
 const LOG_TAG = "core.metrics.TextMetricType";
@@ -23,16 +26,15 @@ export class TextMetric extends Metric<string, string> {
    * @param v The value to validate.
    * @returns Whether or not v is valid text data.
    */
-  validate(v: unknown): v is string {
+  validate(v: unknown): MetricValidationResult {
     if (!isString(v)) {
-      return false;
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected string, got ${typeof v}`
+      };
     }
 
-    if (v.length > TEXT_MAX_LENGTH) {
-      return false;
-    }
-
-    return true;
+    return { type: MetricValidation.Success };
   }
 
   payload(): string {
@@ -58,9 +60,15 @@ class InternalTextMetricType extends MetricType {
         return;
       }
 
-      const truncatedValue = await truncateStringAtBoundaryWithError(this, text, TEXT_MAX_LENGTH);
-      const metric = new TextMetric(truncatedValue);
-      await Context.metricsDatabase.record(this, metric);
+      try {
+        const truncatedValue = await truncateStringAtBoundaryWithError(this, text, TEXT_MAX_LENGTH);
+        const metric = new TextMetric(truncatedValue);
+        await Context.metricsDatabase.record(this, metric);
+      } catch(e) {
+        if (e instanceof MetricValidationError) {
+          await e.recordError(this);
+        }
+      }
     });
   }
 
