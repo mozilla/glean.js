@@ -5,7 +5,9 @@
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError } from "../metric.js";
+import { Metric, MetricValidation } from "../metric.js";
 import { isBoolean, testOnlyCheck } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.BooleanMetricType";
@@ -15,9 +17,17 @@ export class BooleanMetric extends Metric<boolean, boolean> {
     super(v);
   }
 
-  validate(v: unknown): v is boolean {
-    return isBoolean(v);
+  validate(v: unknown): MetricValidationResult {
+    if (!isBoolean(v)) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected boolean value, got ${JSON.stringify(v)}`
+      };
+    } else {
+      return { type: MetricValidation.Success };
+    }
   }
+
   payload(): boolean {
     return this._inner;
   }
@@ -41,8 +51,14 @@ class InternalBooleanMetricType extends MetricType {
         return;
       }
 
-      const metric = new BooleanMetric(value);
-      await Context.metricsDatabase.record(this, metric);
+      try {
+        const metric = new BooleanMetric(value);
+        await Context.metricsDatabase.record(this, metric);
+      } catch(e) {
+        if (e instanceof MetricValidationError) {
+          await e.recordError(this);
+        }
+      }
     });
   }
 
