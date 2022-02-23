@@ -6,7 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { isInteger, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
+import type { MetricValidationResult } from "../metric.js";
+import { Metric, MetricValidation , MetricValidationError } from "../metric.js";
+import { validatePositiveInteger } from "../utils.js";
 import { ErrorType } from "../../error/error_type.js";
 
 const LOG_TAG = "core.metrics.QuantityMetricType";
@@ -16,16 +18,23 @@ export class QuantityMetric extends Metric<number, number> {
     super(v);
   }
 
-  validate(v: unknown): v is number {
+  validate(v: unknown): MetricValidationResult {
     if (!isInteger(v)) {
-      return false;
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected integer value, got ${JSON.stringify(v)}`
+      };
     }
 
     if (v < 0) {
-      return false;
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected positive value, got ${JSON.stringify(v)}`,
+        errorType: ErrorType.InvalidValue
+      };
     }
 
-    return true;
+    return { type: MetricValidation.Success };
   }
 
   payload(): number {
@@ -72,8 +81,14 @@ class InternalQuantityMetricType extends MetricType {
       value = Number.MAX_SAFE_INTEGER;
     }
 
-    const metric = new QuantityMetric(value);
-    await Context.metricsDatabase.record(this, metric);
+    try {
+      const metric = new QuantityMetric(value);
+      await Context.metricsDatabase.record(this, metric);
+    } catch(e) {
+      if (e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
+    }
   }
 
   set(value: number): void {
