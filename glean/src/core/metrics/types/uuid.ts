@@ -6,6 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { generateUUIDv4, isString, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError } from "../metric.js";
+import { MetricValidation } from "../metric.js";
 import { Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 
@@ -21,12 +24,23 @@ export class UUIDMetric extends Metric<string, string> {
     super(v);
   }
 
-  validate(v: unknown): v is string {
+  validate(v: unknown): MetricValidationResult {
     if (!isString(v)) {
-      return false;
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected string, got ${typeof v}`
+      };
     }
 
-    return UUID_REGEX.test(v);
+    if (!UUID_REGEX.test(v)) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `"${v}" is not a valid UUID`,
+        errorType: ErrorType.InvalidValue,
+      };
+    }
+
+    return { type: MetricValidation.Success };
   }
 
   payload(): string {
@@ -67,16 +81,12 @@ export class InternalUUIDMetricType extends MetricType {
     let metric: UUIDMetric;
     try {
       metric = new UUIDMetric(value);
-    } catch {
-      await Context.errorManager.record(
-        this,
-        ErrorType.InvalidValue,
-        `"${value}" is not a valid UUID.`
-      );
-      return;
+      await Context.metricsDatabase.record(this, metric);
+    } catch(e) {
+      if(e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
     }
-
-    await Context.metricsDatabase.record(this, metric);
   }
 
   set(value: string): void {
