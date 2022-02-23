@@ -16,7 +16,7 @@ import log from "../log.js";
  */
 function createLogTag(metric: MetricType): string {
   const capitalizedType = metric.type.charAt(0).toUpperCase() + metric.type.slice(1);
-  return `core.Metrics.${capitalizedType}`;
+  return `core.metrics.${capitalizedType}`;
 }
 
 /**

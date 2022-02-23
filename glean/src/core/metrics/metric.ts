@@ -2,10 +2,30 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import log, { LoggingLevel } from "../log.js";
 import type { JSONValue } from "../utils.js";
+import type { MetricType } from "./index.js";
+import { Context } from "../context.js";
+import { ErrorType } from "../error/error_type.js";
 
-const LOG_TAG = "core.Metrics.Metric";
+export enum MetricValidation {
+  Success,
+  Error
+}
+
+export type MetricValidationResult =
+  { type: MetricValidation.Success } |
+  { type: MetricValidation.Error, errorMessage: string, errorType?: ErrorType };
+
+export class MetricValidationError extends Error {
+  constructor(message?: string, readonly type = ErrorType.InvalidType) {
+    super(message);
+    this.name = "MetricValidationError";
+  }
+
+  async recordError(metric: MetricType) {
+    await Context.errorManager.record(metric, this.type, this.message);
+  }
+}
 
 /**
  * The Metric class describes the shared behaviour amongst concrete metrics.
@@ -19,19 +39,14 @@ const LOG_TAG = "core.Metrics.Metric";
  *    - Is the format in which this metric will be represented in the ping payload.
  *    - This format must be the exact same as described in [the Glean schema](https://github.com/mozilla-services/mozilla-pipeline-schemas/blob/master/schemas/glean/glean/glean.1.schema.json).
  */
-
 export abstract class Metric<
   InternalRepresentation extends JSONValue,
   PayloadRepresentation extends JSONValue
-  > {
+> {
   protected _inner: InternalRepresentation;
 
   constructor(v: unknown) {
-    if (!this.validate(v)) {
-      throw new Error("Unable to create new Metric instance, value is in unexpected format.");
-    }
-
-    this._inner = v;
+    this._inner = this.validateOrThrow(v);
   }
 
   /**
@@ -46,30 +61,35 @@ export abstract class Metric<
   /**
    * Sets this metrics value.
    *
-   * @param v The value to set, must be in the exact internal representation of this metric.
-   * @throws In case the metric is not in the expected format.
+   * @param v The value to set.
    */
-  set(v: unknown): void {
-    if (!this.validate(v)) {
-      log(
-        LOG_TAG,
-        `Unable to set metric to ${JSON.stringify(v)}. Value is in unexpected format. Ignoring.`,
-        LoggingLevel.Error
-      );
-      return;
+  set(v: InternalRepresentation): void {
+    this._inner = v;
+  }
+
+  /**
+   * Validates a given value using the validation function and throws incase not valid.
+   *
+   * @param v The value to verify.
+   * @returns `v` if it is valid.
+   */
+  validateOrThrow(v: unknown): InternalRepresentation {
+    const validation = this.validate(v);
+    if (validation.type === MetricValidation.Error) {
+      throw new MetricValidationError(validation.errorMessage, validation.errorType);
     }
 
-    this._inner = v;
+    // This is safe, we have just validated the type above.
+    return v as InternalRepresentation;
   }
 
   /**
    * Validates that a given value is in the correct format for this metrics internal representation.
    *
    * @param v The value to verify.
-   * @returns A special Typescript value (which compiles down to a boolean)
-   *          stating whether `v` is of the correct type.
+   * @returns Whether or not validation was successfull.
    */
-  abstract validate(v: unknown): v is InternalRepresentation;
+  abstract validate(v: unknown): MetricValidationResult;
 
   /**
    * Gets this metrics value in its payload representation.
