@@ -4,9 +4,12 @@
 
 import type { CommonMetricData} from "../index.js";
 import type { JSONValue} from "../../utils.js";
+import { isInteger} from "../../utils.js";
 import TimeUnit from "../time_unit.js";
 import { MetricType } from "../index.js";
-import { isString, isObject, isNumber, isUndefined, getMonotonicNow, testOnlyCheck } from "../../utils.js";
+import { isString, isObject, isUndefined, getMonotonicNow, testOnlyCheck } from "../../utils.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidation , MetricValidationError} from "../metric.js";
 import { Metric } from "../metric.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -52,18 +55,49 @@ export class TimespanMetric extends Metric<TimespanInternalRepresentation, Times
     }
   }
 
-  validate(v: unknown): v is TimespanInternalRepresentation {
-    if (!isObject(v) || Object.keys(v).length !== 2) {
-      return false;
+  validateTimespan(v: unknown): MetricValidationResult {
+    if (!isInteger(v)) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected integer value, got ${JSON.stringify(v)}`
+      };
+    }
+
+    if (v < 0) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected positive value, got ${JSON.stringify(v)}`,
+        errorType: ErrorType.InvalidValue
+      };
+    }
+
+    return { type: MetricValidation.Success };
+  }
+
+  validate(v: unknown): MetricValidationResult {
+    if (!isObject(v) || Object.keys(v).length !== 2 || !("timespan" in v) || !("timeUnit" in v)) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected timespan object, got ${JSON.stringify(v)}`
+      };
+    }
+
+    const timespanVerification = this.validateTimespan(v.timespan);
+    if (timespanVerification.type === MetricValidation.Error) {
+      return timespanVerification;
     }
 
     const timeUnitVerification = "timeUnit" in v && isString(v.timeUnit) && Object.values(TimeUnit).includes(v.timeUnit as TimeUnit);
-    const timespanVerification = "timespan" in v && isNumber(v.timespan) && v.timespan >= 0;
-    if (!timeUnitVerification || !timespanVerification) {
-      return false;
+    if(!timeUnitVerification) {
+      // We don't need super specific error messages for time unit verification,
+      // because the this value will only be passed at construction time and glean_parser does that.
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected valid timeUnit for timespan, got ${JSON.stringify(v)}`
+      };
     }
 
-    return true;
+    return { type: MetricValidation.Success };
   }
 
   payload(): TimespanPayloadRepresentation {
@@ -114,26 +148,33 @@ export class InternalTimespanMetricType extends MetricType {
     }
 
     let reportValueExists = false;
-    const transformFn = ((elapsed) => {
-      return (old?: JSONValue): TimespanMetric => {
-        let metric: TimespanMetric;
-        try {
-          metric = new TimespanMetric(old);
-          // If creating the metric didn't error,
-          // there is a valid timespan already recorded for this metric.
-          reportValueExists = true;
-        } catch {
-          metric = new TimespanMetric({
-            timespan: elapsed,
-            timeUnit: this.timeUnit,
-          });
-        }
+    try {
+      const transformFn = ((elapsed) => {
+        return (old?: JSONValue): TimespanMetric => {
+          let metric: TimespanMetric;
+          try {
+            metric = new TimespanMetric(old);
+            // If creating the metric didn't error,
+            // there is a valid timespan already recorded for this metric.
+            reportValueExists = true;
+          } catch {
+            // This may still throw in case elapsed in not the correct type.
+            metric = new TimespanMetric({
+              timespan: elapsed,
+              timeUnit: this.timeUnit,
+            });
+          }
 
-        return metric;
-      };
-    })(elapsed);
+          return metric;
+        };
+      })(elapsed);
 
-    await Context.metricsDatabase.transform(this, transformFn);
+      await Context.metricsDatabase.transform(this, transformFn);
+    } catch(e) {
+      if(e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
+    }
 
     if (reportValueExists) {
       await Context.errorManager.record(
