@@ -3,14 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { isString, testOnlyCheck } from "../../utils.js";
+import { testOnlyCheck } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
-import { MetricValidationError } from "../metric.js";
-import { MetricValidation } from "../metric.js";
-import { Metric } from "../metric.js";
+import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.URLMetricType";
 // The maximum number of characters a URL Metric may have.
@@ -42,22 +41,21 @@ export class UrlMetric extends Metric<string, string> {
    * @returns Whether or not v is a valid URL-like string.
    */
   validate(v: unknown): MetricValidationResult {
-    if (!isString(v)) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected string, got ${typeof v}`
-      };
+    const validation = validateString(v);
+    if (validation.type === MetricValidation.Error) {
+      return validation;
     }
 
-    if (v.length > URL_MAX_LENGTH) {
+    const str = v as string;
+    if (str.length > URL_MAX_LENGTH) {
       return {
         type: MetricValidation.Error,
-        errorMessage: `URL length ${v.length} exceeds maximum of ${URL_MAX_LENGTH}`,
+        errorMessage: `URL length ${str.length} exceeds maximum of ${URL_MAX_LENGTH}`,
         errorType: ErrorType.InvalidOverflow,
       };
     }
 
-    if (v.startsWith("data:")) {
+    if (str.startsWith("data:")) {
       return {
         type: MetricValidation.Error,
         errorMessage: "URL metric does not support data URLs",
@@ -66,10 +64,10 @@ export class UrlMetric extends Metric<string, string> {
     }
 
 
-    if (!URL_VALIDATION_REGEX.test(v)) {
+    if (!URL_VALIDATION_REGEX.test(str)) {
       return {
         type: MetricValidation.Error,
-        errorMessage: `"${v}" does not start with a valid URL scheme`,
+        errorMessage: `"${str}" does not start with a valid URL scheme`,
         errorType: ErrorType.InvalidValue,
       };
     }

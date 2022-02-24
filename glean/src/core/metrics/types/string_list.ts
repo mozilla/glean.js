@@ -6,12 +6,12 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
-import { MetricValidationError } from "../metric.js";
-import { Metric, MetricValidation } from "../metric.js";
-import { isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import type { JSONValue } from "../../utils.js";
 import { ErrorType } from "../../error/error_type.js";
 import log from "../../log.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.StringListMetricType";
 export const MAX_LIST_LENGTH = 20;
@@ -31,11 +31,9 @@ export class StringListMetric extends Metric<string[], string[]> {
     }
 
     for (const s of v) {
-      if (!isString(s)) {
-        return {
-          type: MetricValidation.Error,
-          errorMessage: `Expected an array of strings, got ${JSON.stringify(v)}`
-        };
+      const validation = validateString(s);
+      if (validation.type === MetricValidation.Error) {
+        return validation;
       }
     }
 

@@ -5,13 +5,12 @@
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric.js";
-import { saturatingAdd } from "../../utils.js";
+import { saturatingAdd, isUndefined, testOnlyCheck } from "../../utils.js";
 import { MetricType } from "../index.js";
-import { isUndefined, isInteger, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
-import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
-import { ErrorType } from "../../error/error_type.js";
+import { Metric, MetricValidationError } from "../metric.js";
 import log from "../../log.js";
+import { validatePositiveInteger } from "../utils.js";
 
 const LOG_TAG = "core.metrics.CounterMetricType";
 
@@ -21,22 +20,7 @@ export class CounterMetric extends Metric<number, number> {
   }
 
   validate(v: unknown): MetricValidationResult {
-    if (!isInteger(v)) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected integer value, got ${JSON.stringify(v)}`
-      };
-    }
-
-    if (v <= 0) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected positive value, got ${JSON.stringify(v)}`,
-        errorType: ErrorType.InvalidValue
-      };
-    }
-
-    return { type: MetricValidation.Success };
+    return validatePositiveInteger(v, false);
   }
 
   payload(): number {

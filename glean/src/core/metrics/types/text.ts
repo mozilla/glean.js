@@ -3,13 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
 import { MetricValidationError } from "../metric.js";
-import { MetricValidation } from "../metric.js";
 import { Metric } from "../metric.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.TextMetricType";
 // The maximum number of characters for text.
@@ -27,14 +27,7 @@ export class TextMetric extends Metric<string, string> {
    * @returns Whether or not v is valid text data.
    */
   validate(v: unknown): MetricValidationResult {
-    if (!isString(v)) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected string, got ${typeof v}`
-      };
-    }
-
-    return { type: MetricValidation.Success };
+    return validateString(v);
   }
 
   payload(): string {

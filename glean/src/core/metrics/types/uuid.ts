@@ -4,13 +4,12 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { generateUUIDv4, isString, testOnlyCheck } from "../../utils.js";
+import { generateUUIDv4, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
-import { MetricValidationError } from "../metric.js";
-import { MetricValidation } from "../metric.js";
-import { Metric } from "../metric.js";
+import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.UUIDMetricType";
 // Loose UUID regex for checking if a string has a UUID _shape_. Does not contain version checks.
@@ -25,17 +24,16 @@ export class UUIDMetric extends Metric<string, string> {
   }
 
   validate(v: unknown): MetricValidationResult {
-    if (!isString(v)) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected string, got ${typeof v}`
-      };
+    const validation = validateString(v);
+    if (validation.type === MetricValidation.Error) {
+      return validation;
     }
 
-    if (!UUID_REGEX.test(v)) {
+    const str = v as string;
+    if (!UUID_REGEX.test(str)) {
       return {
         type: MetricValidation.Error,
-        errorMessage: `"${v}" is not a valid UUID`,
+        errorMessage: `"${str}" is not a valid UUID`,
         errorType: ErrorType.InvalidValue,
       };
     }

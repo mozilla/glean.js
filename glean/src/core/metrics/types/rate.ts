@@ -6,14 +6,11 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
-import { MetricValidationError } from "../metric.js";
-import { MetricValidation } from "../metric.js";
-import { Metric } from "../metric.js";
-import { saturatingAdd, testOnlyCheck } from "../../utils.js";
-import { isInteger, isObject } from "../../utils.js";
+import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
+import { saturatingAdd, testOnlyCheck, isObject } from "../../utils.js";
 import type { JSONValue } from "../../utils.js";
 import log from "../../log.js";
-import { ErrorType } from "../../error/error_type.js";
+import { validatePositiveInteger } from "../utils.js";
 
 const LOG_TAG = "core.metrics.RateMetricType";
 
@@ -35,25 +32,6 @@ export class RateMetric extends Metric<Rate, Rate> {
     return this._inner.denominator;
   }
 
-  validatePart(v: unknown, part: "numerator" | "denominator"): MetricValidationResult {
-    if (!isInteger(v)) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected integer value on rate metric ${part}, got ${JSON.stringify(v)}`
-      };
-    }
-
-    if (v < 0) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected positive value, got ${JSON.stringify(v)}`,
-        errorType: ErrorType.InvalidValue
-      };
-    }
-
-    return { type: MetricValidation.Success };
-  }
-
   validate(v: unknown): MetricValidationResult {
     if (!isObject(v) || Object.keys(v).length !== 2) {
       return {
@@ -62,12 +40,12 @@ export class RateMetric extends Metric<Rate, Rate> {
       };
     }
 
-    const numeratorVerification = this.validatePart(v.numerator, "numerator");
+    const numeratorVerification = validatePositiveInteger(v.numerator);
     if (numeratorVerification.type === MetricValidation.Error) {
       return numeratorVerification;
     }
 
-    const denominatorVerification = this.validatePart(v.denominator, "denominator");
+    const denominatorVerification = validatePositiveInteger(v.denominator);
     if (denominatorVerification.type === MetricValidation.Error) {
       return denominatorVerification;
     }

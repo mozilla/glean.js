@@ -6,8 +6,9 @@ import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
-import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
-import { isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { Metric, MetricValidationError } from "../metric.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.StringMetricType";
 export const MAX_LENGTH_VALUE = 100;
@@ -18,14 +19,7 @@ export class StringMetric extends Metric<string, string> {
   }
 
   validate(v: unknown): MetricValidationResult {
-    if (!isString(v)) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected string, got ${typeof v}`
-      };
-    }
-
-    return { type: MetricValidation.Success };
+    return validateString(v);
   }
 
   payload(): string {

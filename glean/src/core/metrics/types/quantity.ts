@@ -4,10 +4,10 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { isInteger, testOnlyCheck } from "../../utils.js";
+import { testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
-import { Metric, MetricValidation , MetricValidationError } from "../metric.js";
+import { Metric, MetricValidationError } from "../metric.js";
 import { validatePositiveInteger } from "../utils.js";
 import { ErrorType } from "../../error/error_type.js";
 
@@ -19,22 +19,7 @@ export class QuantityMetric extends Metric<number, number> {
   }
 
   validate(v: unknown): MetricValidationResult {
-    if (!isInteger(v)) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected integer value, got ${JSON.stringify(v)}`
-      };
-    }
-
-    if (v < 0) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `Expected positive value, got ${JSON.stringify(v)}`,
-        errorType: ErrorType.InvalidValue
-      };
-    }
-
-    return { type: MetricValidation.Success };
+    return validatePositiveInteger(v);
   }
 
   payload(): number {
