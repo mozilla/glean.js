@@ -3,12 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import type { ExtraMap } from "../events_database/recorded_event.js";
-import { MetricType } from "../index.js";
+import type { ExtraMap , Event } from "../events_database/recorded_event.js";
 import { RecordedEvent } from "../events_database/recorded_event.js";
+import { MetricType } from "../index.js";
 import { getMonotonicNow, isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
+import { MetricValidationError } from "../metric.js";
 
 const LOG_TAG = "core.metrics.EventMetricType";
 const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
@@ -48,33 +49,44 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
       return;
     }
 
-    // Truncate the extra keys, if needed.
-    let truncatedExtra: ExtraMap | undefined = undefined;
-    if (extra && this.allowedExtraKeys) {
-      truncatedExtra = {};
-      for (const [name, value] of Object.entries(extra)) {
-        if (this.allowedExtraKeys.includes(name)) {
-          if (isString(value)) {
-            truncatedExtra[name] = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_EXTRA_KEY_VALUE);
+    try {
+      // Create metric here, in order to run the validations and throw in case input in invalid.
+      const metric = new RecordedEvent({
+        category: this.category,
+        name: this.name,
+        timestamp,
+        extra,
+      });
+
+      // Truncate the extra keys, if needed.
+      let truncatedExtra: ExtraMap | undefined = undefined;
+      if (extra && this.allowedExtraKeys) {
+        truncatedExtra = {};
+        for (const [name, value] of Object.entries(extra)) {
+          if (this.allowedExtraKeys.includes(name)) {
+            if (isString(value)) {
+              truncatedExtra[name] = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_EXTRA_KEY_VALUE);
+            } else {
+              truncatedExtra[name] = value;
+            }
           } else {
-            truncatedExtra[name] = value;
+            await Context.errorManager.record(this, ErrorType.InvalidValue, `Invalid key index: ${name}`);
+            continue;
           }
-        } else {
-          await Context.errorManager.record(this, ErrorType.InvalidValue, `Invalid key index: ${name}`);
-          continue;
         }
+      }
+
+      metric.set({
+        ...metric.get(),
+        extra: truncatedExtra,
+      });
+      return Context.eventsDatabase.record(this, metric);
+    } catch(e) {
+      if (e instanceof MetricValidationError) {
+        await e.recordError(this);
       }
     }
 
-    return Context.eventsDatabase.record(
-      this,
-      new RecordedEvent(
-        this.category,
-        this.name,
-        timestamp,
-        truncatedExtra,
-      )
-    );
   }
 
   /**
@@ -102,9 +114,9 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<Event[] | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let events: RecordedEvent[] | undefined;
+      let events: Event[] | undefined;
       await Context.dispatcher.testLaunch(async () => {
         events = await Context.eventsDatabase.getEvents(ping, this);
       });
@@ -144,7 +156,7 @@ export default class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<RecordedEvent[] | undefined> {
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<Event[] | undefined> {
     return this.#inner.testGetValue(ping);
   }
 

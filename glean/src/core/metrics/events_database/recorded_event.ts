@@ -4,62 +4,53 @@
 
 import { GLEAN_RESERVED_EXTRA_KEYS } from "../../constants.js";
 import type { JSONObject } from "../../utils.js";
+import { isBoolean, isNumber, isString, isInteger, isObject } from "../../utils.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidation, Metric } from "../metric.js";
+import { validateString } from "../utils.js";
 
 export type ExtraValues = string | boolean | number;
 // A helper type for the 'extra' map.
 export type ExtraMap = Record<string, ExtraValues>;
 
+export interface Event extends JSONObject {
+  // The event's category.
+  //
+  // This is defined by users in the metrics file.
+  readonly category: string,
+  // The event's name.
+  //
+  // This is defined by users in the metrics file.
+  readonly name: string,
+  // The timestamp of when the event was recorded.
+  //
+  // This allows to order events.
+  readonly timestamp: number,
+  // A map of all extra data values.
+  //
+  // The set of allowed extra keys is defined by users in the metrics file.
+  extra?: ExtraMap,
+}
+
 // Represents the recorded data for a single event.
-export class RecordedEvent {
-  constructor(
-    // The event's category.
-    //
-    // This is defined by users in the metrics file.
-    readonly category: string,
-    // The event's name.
-    //
-    // This is defined by users in the metrics file.
-    readonly name: string,
-    // The timestamp of when the event was recorded.
-    //
-    // This allows to order events.
-    readonly timestamp: number,
-    // A map of all extra data values.
-    //
-    // The set of allowed extra keys is defined by users in the metrics file.
-    public extra?: ExtraMap,
-  ) {}
-
-  static toJSONObject(e: RecordedEvent): JSONObject {
-    return {
-      "category": e.category,
-      "name": e.name,
-      "timestamp": e.timestamp,
-      "extra": e.extra,
-    };
-  }
-
-  static fromJSONObject(e: JSONObject): RecordedEvent {
-    return new RecordedEvent(
-      e["category"] as string,
-      e["name"] as string,
-      e["timestamp"] as number,
-      e["extra"] as ExtraMap | undefined
-    );
+export class RecordedEvent extends Metric<Event, Event> {
+  constructor(v: unknown) {
+    super(v);
   }
 
   private static withTransformedExtras(
-    e: RecordedEvent,
+    e: Event,
     transformFn: (extras: ExtraMap) => ExtraMap
-  ): RecordedEvent {
+  ): Event {
     const extras = e.extra || {};
     const transformedExtras = transformFn(extras);
-    return new RecordedEvent(
-      e.category,
-      e.name,
-      e.timestamp,
-      (transformedExtras && Object.keys(transformedExtras).length > 0) ? transformedExtras : undefined
-    );
+    return {
+      category: e.category,
+      name: e.name,
+      timestamp: e.timestamp,
+      extra: (transformedExtras && Object.keys(transformedExtras).length > 0)
+        ? transformedExtras : undefined
+    };
   }
 
   /**
@@ -69,22 +60,22 @@ export class RecordedEvent {
    * @param value The value of the key.
    */
   addExtra(key: string, value: ExtraValues): void {
-    if (!this.extra) {
-      this.extra = {};
+    if (!this._inner.extra) {
+      this._inner.extra = {};
     }
 
-    this.extra[key] = value;
+    this._inner.extra[key] = value;
   }
 
   /**
-   * Generate a new RecordedEvent object,
+   * Generate a new Event object,
    * stripped of Glean reserved extra keys.
    *
-   * @returns A new RecordedEvent object.
+   * @returns A new Event object.
    */
-  withoutReservedExtras(): RecordedEvent {
+  withoutReservedExtras(): Event {
     return RecordedEvent.withTransformedExtras(
-      this,
+      this.get(),
       (extras: ExtraMap): ExtraMap => {
         return Object.keys(extras)
           .filter(key => !GLEAN_RESERVED_EXTRA_KEYS.includes(key))
@@ -96,8 +87,59 @@ export class RecordedEvent {
     );
   }
 
+  validate(v: unknown): MetricValidationResult {
+    if (!isObject(v) || ![3,4].includes(Object.keys(v).length)) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected Glean event object, got ${typeof v}`
+      };
+    }
+
+    const categoryValidation = "category" in v && isString(v.category);
+    const nameValidation = "name" in v && isString(v.name);
+    if (!categoryValidation || !nameValidation) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Unexpected value for "category" or "name" in event object: ${JSON.stringify(v)}`
+      };
+    }
+
+    const timestampValidation = "timestamp" in v && isInteger(v.timestamp) && v.timestamp >= 0;
+    if (!timestampValidation) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Event timestamp must be a positive integer, got ${JSON.stringify(v)}`
+      };
+    }
+
+    if (v.extra) {
+      if (!isObject(v.extra)) {
+        return {
+          type: MetricValidation.Error,
+          errorMessage: `Expected Glean extras object, got ${typeof v}`
+        };
+      }
+
+      for (const [key, value] of Object.entries(v.extra)) {
+        const validation = validateString(key);
+        if (validation.type === MetricValidation.Error) {
+          return validation;
+        }
+
+        if (!isString(value) && !isNumber(value) && !isBoolean(value)) {
+          return {
+            type: MetricValidation.Error,
+            errorMessage: `Unexpected value for extra key ${key}: ${JSON.stringify(value)}`
+          };
+        }
+      }
+    }
+
+    return { type: MetricValidation.Success };
+  }
+
   /**
-   * Generate a new RecordedEvent object,
+   * Generate a new Event object,
    * in the format expected on ping payloads.
    *
    * Strips reserved extra keys
@@ -105,7 +147,7 @@ export class RecordedEvent {
    *
    * @returns A new RecordedEvent object.
    */
-  payload(): RecordedEvent {
+  payload(): Event {
     return RecordedEvent.withTransformedExtras(
       this.withoutReservedExtras(),
       (extras: ExtraMap): ExtraMap => {
