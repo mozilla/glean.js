@@ -22,8 +22,19 @@ const LOG_TAG = "CLI";
 // > one is running inside a virtual environment.
 //
 // See: https://docs.python.org/3/library/venv.html
-// (Also applies to envs created using virtualenv though)
-const VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV?.split("/").slice(-1)[0] || ".venv";
+// (Also applies to envs created using virtualenv though, so we check whether they are 
+// separate/standlone or created in a subdir of the project)
+let STANDALONE_VIRTUAL_ENV_EXISTS: boolean = false;
+let VIRTUAL_ENVIRONMENT_DIR: string;
+if (process.env.VIRTUAL_ENV != undefined && !process.env.VIRTUAL_ENV.startsWith(process.cwd())){
+  // We have a pre-existing virtual environment that is not a child of the project dir
+  VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV;
+  STANDALONE_VIRTUAL_ENV_EXISTS = true;
+} else {
+  // Legacy support for how things used to run: assume virtual environment is inside 
+  // the project and create our default one if necessary
+  VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV?.split("/").slice(-1)[0] || ".venv";
+}
 
 // The version of glean_parser to install from PyPI.
 const GLEAN_PARSER_VERSION = "5.0.1";
@@ -111,7 +122,7 @@ function getPythonVenvBinariesPath(venvRoot: string): string {
  *          is accessible, `false` otherwise.
  */
 async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
-  log(LOG_TAG, `Checking for a Glean virtual environment at ${venvPath}`);
+  log(LOG_TAG, `Checking for a virtual environment at ${venvPath}`);
 
   const venvPython =
     path.join(getPythonVenvBinariesPath(venvPath), getSystemPythonBinName());
@@ -135,7 +146,7 @@ async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
  * @returns `true` if the environment was correctly created, `false` otherwise.
  */
 async function createPythonVenv(venvPath: string): Promise<boolean> {
-  log(LOG_TAG, `Creating a Glean virtual environment at ${venvPath}`);
+  log(LOG_TAG, `Creating a virtual environment at ${venvPath}`);
 
   const pipFilename = (platform === "win32") ? "pip3.exe" : "pip3";
   const venvPip =
@@ -163,19 +174,41 @@ async function createPythonVenv(venvPath: string): Promise<boolean> {
 }
 
 /**
+ * Derives the most appropriate path to a viable virtualenv, which may be
+ * inside the project dir, or entirely separate, depending on configuration
+ *
+ * @param projectRoot the project's root directory.
+ *
+ * @returns a string path to the virtual environment's root dir
+ */
+
+async function getVenvRoot(projectRoot:string) {
+  if (STANDALONE_VIRTUAL_ENV_EXISTS){
+    // The virtual environment exists outside of the project
+    // root (eg a pyenv virtualenv or virtualenv in $HOME),
+    // so that's all we need
+    return VIRTUAL_ENVIRONMENT_DIR
+  }
+  // The default/most simple place for a Python virtual environment created
+  // with `python venv` is in the project itself, so we need a path
+  // relative to the project root
+  return path.join(projectRoot, VIRTUAL_ENVIRONMENT_DIR);
+
+}
+
+/**
  * Checks if a virtual environment for running the glean_parser exists,
  * otherwise it creates it.
  *
  * @param projectRoot the project's root directory.
  */
 async function setup(projectRoot: string) {
-  const venvRoot = path.join(projectRoot, VIRTUAL_ENVIRONMENT_DIR);
-
+  const venvRoot = await getVenvRoot(projectRoot);
   const venvExists = await checkPythonVenvExists(venvRoot);
   if (venvExists) {
-    log(LOG_TAG, `Using Glean virtual environment at ${venvRoot}`);
+    log(LOG_TAG, `Using virtual environment at ${venvRoot}`);
   } else if (!await createPythonVenv(venvRoot)){
-    log(LOG_TAG, `Failed to create a Glean virtual environment at ${venvRoot}`);
+    log(LOG_TAG, `Failed to create a virtual environment at ${venvRoot}`);
     process.exit(1);
   }
 }
@@ -188,7 +221,7 @@ async function setup(projectRoot: string) {
  */
 async function runGlean(projectRoot: string, parserArgs: string[]) {
   const spinner = getStartedSpinner();
-  const venvRoot = path.join(projectRoot, VIRTUAL_ENVIRONMENT_DIR);
+  const venvRoot = await getVenvRoot(projectRoot);
   const pythonBin = path.join(getPythonVenvBinariesPath(venvRoot), getSystemPythonBinName());
   const isOnlineArg = process.env.OFFLINE ? "offline" : "online";
   const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
