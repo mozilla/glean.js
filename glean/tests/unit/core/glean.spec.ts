@@ -276,10 +276,10 @@ describe("Glean", function() {
   it("deletion request is sent when toggling upload from on to off", async function() {
     // Un-initialize, but don't clear the stores.
     await testUninitializeGlean();
-    
+
     const mockUploader = new WaitableUploader();
     const pingBody = mockUploader.waitForPingSubmission(DELETION_REQUEST_PING_NAME);
-    
+
     await testInitializeGlean(
       testAppId,
       true,
@@ -288,9 +288,9 @@ describe("Glean", function() {
       });
     Glean.setUploadEnabled(false);
     // If ping was not sent this promise will reject.
-    let dataCodes = await pingBody.then(data => {
-      for (let value of Object.values(data)) {
-        let info = JSON.parse((JSON.stringify(value)));
+    const dataCodes:JSONObject = await pingBody.then(data => {
+      for (const value of Object.values(data)) {
+        const info = JSON.parse((JSON.stringify(value)));
         return info;
       }
     });
@@ -339,9 +339,9 @@ describe("Glean", function() {
     );
 
     // If ping was not sent this promise will reject.
-    let dataCodes = await pingBody.then(data => {
-      for (let value of Object.values(data)) {
-        let info = JSON.parse((JSON.stringify(value)));
+    const dataCodes: JSONObject = await pingBody.then(data => {
+      for (const value of Object.values(data)) {
+        const info = JSON.parse((JSON.stringify(value)));
         return info;
       }
     });
