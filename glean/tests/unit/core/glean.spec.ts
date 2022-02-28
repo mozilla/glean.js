@@ -274,21 +274,29 @@ describe("Glean", function() {
   });
 
   it("deletion request is sent when toggling upload from on to off", async function() {
-    const postSpy = sandbox.spy(Context.platform.uploader, "post");
-
+    // Un-initialize, but don't clear the stores.
+    await testUninitializeGlean();
+    
+    const mockUploader = new WaitableUploader();
+    const pingBody = mockUploader.waitForPingSubmission(DELETION_REQUEST_PING_NAME);
+    
+    await testInitializeGlean(
+      testAppId,
+      true,
+      {
+        httpClient: mockUploader,
+      });
     Glean.setUploadEnabled(false);
+    // If ping was not sent this promise will reject.
+    let dataCodes = await pingBody.then(data => {
+      for (let value of Object.values(data)) {
+        let info = JSON.parse((JSON.stringify(value)));
+        return info;
+      }
+    });
 
-    await Context.dispatcher.testBlockOnQueue();
-
-    assert.strictEqual(postSpy.callCount, 1);
-    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+    assert.strictEqual(dataCodes["reason"], "set_upload_enabled");
     assert.strictEqual(Context.uploadEnabled, false);
-
-    postSpy.resetHistory();
-    Glean.setUploadEnabled(true);
-    await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(postSpy.callCount, 0);
-    assert.strictEqual(Context.uploadEnabled, true);
   });
 
   it("deletion request is sent when toggling upload from on to off and the pings queue is full", async function() {
@@ -331,7 +339,14 @@ describe("Glean", function() {
     );
 
     // If ping was not sent this promise will reject.
-    await pingBody;
+    let dataCodes = await pingBody.then(data => {
+      for (let value of Object.values(data)) {
+        let info = JSON.parse((JSON.stringify(value)));
+        return info;
+      }
+    });
+
+    assert.strictEqual(dataCodes["reason"], "at_init");
     assert.strictEqual(Context.uploadEnabled, false);
   });
 

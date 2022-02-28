@@ -22,6 +22,7 @@ class CorePings {
       name: DELETION_REQUEST_PING_NAME,
       includeClientId: true,
       sendIfEmpty: true,
+      reasonCodes: ["at_init", "set_upload_enabled"]
     });
   }
 }
