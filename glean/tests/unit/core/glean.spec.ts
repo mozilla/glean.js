@@ -288,7 +288,7 @@ describe("Glean", function() {
       });
     Glean.setUploadEnabled(false);
     // If ping was not sent this promise will reject.
-    await pingBody
+    await pingBody;
 
     assert.strictEqual(Context.uploadEnabled, false);
   });
@@ -333,7 +333,7 @@ describe("Glean", function() {
     );
 
     // If ping was not sent this promise will reject.
-    await pingBody
+    await pingBody;
 
     assert.strictEqual(Context.uploadEnabled, false);
   });
