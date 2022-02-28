@@ -57,7 +57,8 @@ When CI has finished and is green for your specific release branch, you are read
     1. [Draft a New Release](https://github.com/mozilla/glean.js/releases/new) in the GitHub UI (`Releases > Draft a New Release`).
     2. Enter `v<myversion>` as the tag. It's important this is the same as the version you specified to the `prepare_release.sh` script, with the `v` prefix added.
     3. Select the `release` branch as the target.
-     4. Under the description, paste the contents of the release notes from `CHANGELOG.md`.
+    4. Under the description, paste the contents of the release notes from `CHANGELOG.md`.
+    5. Below the `CHANGELOG.md` contents, include the glean_parser version correspondent with the release, for future reference.
 5. Wait for the CI build to complete for the tag.
     * You can check [on CircleCI for the running build](https://circleci.com/gh/mozilla/glean.js).
 6. Send a pull request to merge back the specific release branch to the development branch: <https://github.com/mozilla/glean.js/compare/main...release-v25.0.0?expand=1>

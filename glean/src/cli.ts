@@ -230,6 +230,11 @@ function stopSpinner(spinner: NodeJS.Timeout) {
  * @param args the arguments passed to this process.
  */
 async function run(args: string[]) {
+  if (args.includes("--glean-parser-version")) {
+    console.log(GLEAN_PARSER_VERSION);
+    process.exit(1);
+  }
+
   try {
     await setup();
   } catch (err) {
