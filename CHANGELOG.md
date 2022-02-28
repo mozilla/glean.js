@@ -2,9 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.31.0...main)
 
-* [#1220](https://github.com/mozilla/glean.js/pull/1220): Refactor virtual environment behavior to support virtual environments that aren't in the project root. 
+* [#1220](https://github.com/mozilla/glean.js/pull/1220): Refactor virtual environment behavior to support virtual environments that aren't in the project root.
   * This means it's possible to run Glean with a virtual environment created by `virtualenv` or `pyenv-virtualenv` without causing a Glean-specific `.venv` directory to be created in a project that is using Glean.
-
 * [#1130](https://github.com/mozilla/glean.js/pull/1130): BUGFIX: Guarantee event timestamps
 cannot be negative numbers.
   * Timestamps were observed to be negative in a few occurrences, for platforms that do not provide the `performance.now` API, namely QML, and in which we fallback to the `Date.now` API.
@@ -16,6 +15,7 @@ cannot be negative numbers.
 * [#1178](https://github.com/mozilla/glean.js/pull/1178): Enable running the `glean` command with as many or as little arguments as wanted.
   * Previously the command could only be run with 3 commands, even though all glean_parser commands would have been valid commands for the `glean` CLI.
 * [#1210](https://github.com/mozilla/glean.js/pull/1210): Show comprehensive error message when missing `storage` permissions for Glean on web extensions.
+* [#1223](https://github.com/mozilla/glean.js/pull/1223): Add `--glean-parser-version` command to CLI to allow users to retrieve the glean_parser version without installing glean_parser.
 
 # v0.31.0 (2022-01-25)
 
