@@ -2,8 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.31.0...main)
 
-* [#1220](https://github.com/mozilla/glean.js/pull/1220): Minorly refactor virtual environment behaviour to support virtualenvs that aren't in the project root. 
-  * This means it's possible to run Glean with a virtual environment created by `virtualenv` or `pyenv-virtualenv` without causing a Glean-specific `.venv` dir to be created in a project is using Glean.
+* [#1220](https://github.com/mozilla/glean.js/pull/1220): Refactor virtual environment behavior to support virtual environments that aren't in the project root. 
+  * This means it's possible to run Glean with a virtual environment created by `virtualenv` or `pyenv-virtualenv` without causing a Glean-specific `.venv` directory to be created in a project that is using Glean.
 
 * [#1130](https://github.com/mozilla/glean.js/pull/1130): BUGFIX: Guarantee event timestamps
 cannot be negative numbers.
