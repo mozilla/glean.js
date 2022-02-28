@@ -288,10 +288,12 @@ describe("Glean", function() {
       });
     Glean.setUploadEnabled(false);
     // If ping was not sent this promise will reject.
-    const dataCodes:JSONObject = await pingBody.then(data => {
+    const dataCodes = await pingBody.then(data => {
       for (const value of Object.values(data)) {
         const info = JSON.parse((JSON.stringify(value)));
-        return info;
+        if (info) {
+          return info;
+        }
       }
     });
 
@@ -339,10 +341,12 @@ describe("Glean", function() {
     );
 
     // If ping was not sent this promise will reject.
-    const dataCodes: JSONObject = await pingBody.then(data => {
+    const dataCodes = await pingBody.then(data => {
       for (const value of Object.values(data)) {
         const info = JSON.parse((JSON.stringify(value)));
-        return info;
+        if (info) {
+          return info;
+        }
       }
     });
 
