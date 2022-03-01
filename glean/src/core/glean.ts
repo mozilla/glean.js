@@ -40,9 +40,9 @@ namespace Glean {
   // Temporary holders for debug values,
   // to be used when these values are set before initialize
   // and can be applied during initialized.
-  export let debugViewTag: string | undefined;
-  export let logPings: boolean | undefined;
-  export let sourceTags: string[] | undefined;
+  export let preInitDebugViewTag: string | undefined;
+  export let preInitLogPings: boolean | undefined;
+  export let preInitSourceTags: string[] | undefined;
 
   /**
    * Handles the changing of state from upload disabled to enabled.
@@ -202,9 +202,9 @@ namespace Glean {
     const correctConfig = new Configuration(config);
     Context.config = correctConfig;
 
-    if (logPings) Context.config.logPings = logPings;
-    if (debugViewTag) Context.config.debugViewTag = debugViewTag;
-    if (sourceTags) Context.config.sourceTags = sourceTags;
+    if (preInitLogPings) Context.config.logPings = preInitLogPings;
+    if (preInitDebugViewTag) Context.config.debugViewTag = preInitDebugViewTag;
+    if (preInitSourceTags) Context.config.sourceTags = preInitSourceTags;
 
     Context.metricsDatabase = new MetricsDatabase();
     Context.eventsDatabase = new EventsDatabase();
@@ -348,7 +348,7 @@ namespace Glean {
   export function setLogPings(flag: boolean): void {
     if (!Context.initialized) {
       // Cache value to apply during init.
-      logPings = flag;
+      preInitLogPings = flag;
     } else {
       Context.dispatcher.launch(() => {
         Context.config.logPings = flag;
@@ -371,7 +371,7 @@ namespace Glean {
   export function setDebugViewTag(value: string): void {
     if (!Context.initialized) {
       // Cache value to apply during init.
-      debugViewTag = value;
+      preInitDebugViewTag = value;
     } else {
       Context.dispatcher.launch(() => {
         Context.config.debugViewTag = value;
@@ -395,7 +395,7 @@ namespace Glean {
   export function setSourceTags(value: string[]): void {
     if (!Context.initialized) {
       // Cache value to apply during init.
-      sourceTags = value;
+      preInitSourceTags = value;
     } else {
       Context.dispatcher.launch(() => {
         Context.config.sourceTags = value;

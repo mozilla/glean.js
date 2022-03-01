@@ -64,8 +64,8 @@ export async function testUninitializeGlean(clearStores = true): Promise<void> {
     testResetEvents();
 
     // Clear debug features cache
-    Glean.logPings = undefined;
-    Glean.debugViewTag = undefined;
-    Glean.sourceTags = undefined;
+    Glean.preInitLogPings = undefined;
+    Glean.preInitDebugViewTag = undefined;
+    Glean.preInitSourceTags = undefined;
   }
 }

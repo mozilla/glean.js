@@ -103,7 +103,7 @@ export default (platform: Platform): {
      *
      * Ping tags will show in the destination datasets, after ingestion.
      *
-     * Note Setting `sourceTags` will override all previously set tags.
+     * Note: Setting `sourceTags` will override all previously set tags.
      *
      * @param value A vector of at most 5 valid HTTP header values.
      *        Individual tags must match the regex: "[a-zA-Z0-9-]{1,20}".
