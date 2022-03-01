@@ -32,6 +32,7 @@ export class CoreMetrics {
   readonly appChannel: StringMetricType;
   readonly appBuild: StringMetricType;
   readonly appDisplayVersion: StringMetricType;
+  readonly buildDate: DatetimeMetricType;
 
 
   constructor() {
@@ -106,6 +107,14 @@ export class CoreMetrics {
       lifetime: Lifetime.Application,
       disabled: false,
     });
+
+    this.buildDate = new DatetimeMetricType({
+      name: "build_date",
+      category: "",
+      sendInPings: ["glean_client_info"],
+      lifetime: Lifetime.Application,
+      disabled: false,
+    }, "second");
   }
 
   async initialize(): Promise<void> {
@@ -119,6 +128,9 @@ export class CoreMetrics {
     await this.appDisplayVersion.setUndispatched(Context.config.appDisplayVersion || "Unknown");
     if (Context.config.channel) {
       await this.appChannel.setUndispatched(Context.config.channel);
+    }
+    if (Context.config.buildDate) {
+      await DatetimeMetricType._private_setUndispatched(this.buildDate);
     }
   }
 

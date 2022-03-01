@@ -86,6 +86,7 @@ describe("PingMaker", function() {
       channel: "channel",
       appBuild:"build",
       appDisplayVersion: "display version",
+      buildDate: new Date(),
       serverEndpoint: "http://localhost:8080"
     });
 
@@ -97,6 +98,7 @@ describe("PingMaker", function() {
     assert.ok("os_version" in clientInfo2);
     assert.ok("architecture" in clientInfo2);
     assert.ok("locale" in clientInfo2);
+    assert.ok("build_date"in clientInfo2);
     assert.strictEqual(clientInfo2["app_channel"], "channel");
     assert.strictEqual(clientInfo2["app_build"], "build");
     assert.strictEqual(clientInfo2["app_display_version"], "display version");

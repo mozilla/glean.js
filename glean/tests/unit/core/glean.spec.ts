@@ -472,13 +472,20 @@ describe("Glean", function() {
     assert.strictEqual(await metric.testGetValue(), undefined);
   });
 
-  it("appBuild and appDisplayVersion are correctly reported", async function () {
+  it("appBuild, appDisplayVersion and buildDate are correctly reported", async function () {
     await testUninitializeGlean();
 
     const testBuild = "test";
     const testDisplayVersion = "1.2.3-stella";
 
-    await testInitializeGlean(testAppId, true, { appBuild: testBuild, appDisplayVersion: testDisplayVersion });
+    await testInitializeGlean(
+      testAppId,
+      true, {
+        appBuild: testBuild,
+        appDisplayVersion: testDisplayVersion,
+        buildDate: new Date(),
+      }
+    );
     await Context.dispatcher.testBlockOnQueue();
 
     assert.strictEqual(await Glean.coreMetrics.appBuild.testGetValue(), testBuild);
