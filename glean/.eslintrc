@@ -50,20 +50,6 @@
   ],
   "overrides": [
     {
-      "files": "tests/**",
-      "env": {
-        "mocha": true
-      },
-      "extends": [
-        "plugin:mocha/recommended"
-      ],
-      "rules": {
-        "mocha/no-skipped-tests": "off",
-        "mocha/no-pending-tests": "off",
-        "mocha/no-setup-in-describe": "off"
-      }
-    },
-    {
       "files": "*.json",
       "extends": [
         "plugin:json/recommended"
@@ -99,6 +85,21 @@
       "rules": {
         "import/extensions": ["error", "always", { "ignorePackages": true } ]
       }
-    }
+    },
+    {
+      "files": "tests/**",
+      "env": {
+        "mocha": true
+      },
+      "extends": [
+        "plugin:mocha/recommended",
+      ],
+      "rules": {
+        "mocha/no-skipped-tests": "off",
+        "mocha/no-pending-tests": "off",
+        "mocha/no-setup-in-describe": "off",
+        "@typescript-eslint/no-misused-promises": "off"
+      }
+    },
   ]
 }
