@@ -70,23 +70,23 @@ try {
     const coreIncrease = build.min - build.main.min;
     const fullIncrease = build.max - build.main.max;
     return `| **${build.name}** |
-  | core only | ${formatBytes(build.main.min)} | ${formatBytes(build.min)} | ${coreIncrease > 0 ? "📈" : "📉"} ${formatBytes(Math.abs(coreIncrease))} |
-  | full bundle | ${formatBytes(build.main.max)} | ${formatBytes(build.max)} | ${coreIncrease > 0 ? "📈" : "📉"} ${formatBytes(Math.abs(fullIncrease))} |`
+| core only | ${formatBytes(build.main.min)} | ${formatBytes(build.min)} | ${coreIncrease > 0 ? "📈" : "📉"} ${formatBytes(Math.abs(coreIncrease))} |
+| full bundle | ${formatBytes(build.main.max)} | ${formatBytes(build.max)} | ${coreIncrease > 0 ? "📈" : "📉"} ${formatBytes(Math.abs(fullIncrease))} |`
   });
   
   const report =  `
-  # Build size report
-  
-  Merging ${process.env.CIRCLE_PULL_REQUEST} into [main](https://github.com/mozilla/glean.js) will:
-  ${bulletPoints.join("\n")}
-  
-  ---
-  
-  | | Current size | New size | Size increase |
-  |--:|:---:|:---:|:---:|
-  ${tableRows.join("\n")}
+# Build size report
+
+Merging ${process.env.CIRCLE_PULL_REQUEST} into [main](https://github.com/mozilla/glean.js) will:
+${bulletPoints.join("\n")}
+
+---
+
+| | Current size | New size | Size increase |
+|--:|:---:|:---:|:---:|
+${tableRows.join("\n")}
   `;
-  
+
   if (process.env.DRY_RUN) {
     console.log(report);
   } else {

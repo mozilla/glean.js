@@ -2,7 +2,7 @@
 
 Plugins provide a way for the Glean JS SDK to support specialized use cases without bloating
 the size of the library. Each plugin can be attached to a Glean core event to augment
-or modify its behaviour.
+or modify its behavior.
 
 A Glean plugin is a class that extends the [`Plugin`](https://mozilla.github.io/glean.js/classes/plugins.default.html) class. Each plugin instance exposes an
 `action` API, to be triggered by the event. The signature of the `action` API will depend on
@@ -45,7 +45,7 @@ triggers the new plugin. This checklist covers the whole process from adding an 
 2. Trigger the event at the expected time. This varies per event.
 3. Create a new plugin file under `/plugins/`.
 4. Implement the plugin to attach to the newly created event.
-5. Add the new plugins to the [`PLUGINS`](../../benchmarks/size/utils.js) array on the benchmarks project, in order for it's size impact to the be added to the auto-generated sizes documentation on every release.
+5. Add the new plugins to the [`PLUGINS`](../../automation/size/utils.js) array on the automation project, in order for it's size impact to the be added to the auto-generated sizes documentation on every release.
 6. Document the new plugin on [the Glean book](https://mozilla.github.io/glean/book/language-bindings/javascript/plugins/index.html).
 
 > **Note**: Although we can create different plugins that attach to the same event,

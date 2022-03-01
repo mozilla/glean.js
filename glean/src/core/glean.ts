@@ -37,6 +37,13 @@ namespace Glean {
   // An instance of the ping uploader.
   export let pingUploader: PingUploadManager;
 
+  // Temporary holders for debug values,
+  // to be used when these values are set before initialize
+  // and can be applied during initialized.
+  export let preInitDebugViewTag: string | undefined;
+  export let preInitLogPings: boolean | undefined;
+  export let preInitSourceTags: string[] | undefined;
+
   /**
    * Handles the changing of state from upload disabled to enabled.
    *
@@ -195,6 +202,10 @@ namespace Glean {
     const correctConfig = new Configuration(config);
     Context.config = correctConfig;
 
+    if (preInitLogPings) Context.config.logPings = preInitLogPings;
+    if (preInitDebugViewTag) Context.config.debugViewTag = preInitDebugViewTag;
+    if (preInitSourceTags) Context.config.sourceTags = preInitSourceTags;
+
     Context.metricsDatabase = new MetricsDatabase();
     Context.eventsDatabase = new EventsDatabase();
     Context.pingsDatabase = new PingsDatabase();
@@ -335,12 +346,17 @@ namespace Glean {
    * @param flag Whether or not to log pings.
    */
   export function setLogPings(flag: boolean): void {
-    Context.dispatcher.launch(() => {
-      Context.config.logPings = flag;
+    if (!Context.initialized) {
+      // Cache value to apply during init.
+      preInitLogPings = flag;
+    } else {
+      Context.dispatcher.launch(() => {
+        Context.config.logPings = flag;
 
-      // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
+        // The dispatcher requires that dispatched functions return promises.
+        return Promise.resolve();
+      });
+    }
   }
 
   /**
@@ -349,17 +365,21 @@ namespace Glean {
    * When this property is set, all subsequent outgoing pings will include the `X-Debug-ID` header
    * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
-   *
    * @param value The value of the header.
    *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
    */
   export function setDebugViewTag(value: string): void {
-    Context.dispatcher.launch(() => {
-      Context.config.debugViewTag = value;
+    if (!Context.initialized) {
+      // Cache value to apply during init.
+      preInitDebugViewTag = value;
+    } else {
+      Context.dispatcher.launch(() => {
+        Context.config.debugViewTag = value;
 
-      // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
+        // The dispatcher requires that dispatched functions return promises.
+        return Promise.resolve();
+      });
+    }
   }
 
   /**
@@ -367,20 +387,23 @@ namespace Glean {
    *
    * Ping tags will show in the destination datasets, after ingestion.
    *
-   * Note** Setting `sourceTags` will override all previously set tags.
-   *
-   * To unset the `sourceTags` call `unsetSourceTags();
+   * Note: Setting `sourceTags` will override all previously set tags.
    *
    * @param value A vector of at most 5 valid HTTP header values.
    *        Individual tags must match the regex: "[a-zA-Z0-9-]{1,20}".
    */
   export function setSourceTags(value: string[]): void {
-    Context.dispatcher.launch(() => {
-      Context.config.sourceTags = value;
+    if (!Context.initialized) {
+      // Cache value to apply during init.
+      preInitSourceTags = value;
+    } else {
+      Context.dispatcher.launch(() => {
+        Context.config.sourceTags = value;
 
-      // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
+        // The dispatcher requires that dispatched functions return promises.
+        return Promise.resolve();
+      });
+    }
   }
 
   /**

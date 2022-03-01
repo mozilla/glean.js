@@ -275,7 +275,7 @@ describe("TimespanMetric", function() {
     // Nothing should have been recorded.
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
 
-    // TODO: Make sure also invalid state error was recorded.
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
 
   it("time cannot go backwards", async function() {

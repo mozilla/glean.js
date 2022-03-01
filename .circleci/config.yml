@@ -7,6 +7,22 @@
 version: 2.1
 
 jobs:
+  spellcheck:
+    docker:
+      # Use Ubuntu Focal (20.04) so we get aspell 0.60.8 or later
+      # (which contains markdown support)
+      - image: circleci/buildpack-deps:focal
+    steps:
+      - checkout
+      - run:
+          name: Upgrade packages
+          command: sudo apt update
+      - run:
+          name: Install aspell
+          command: sudo apt install aspell aspell-en
+      - run:
+          name: Check documentation spelling
+          command: bin/spellcheck.sh list
   lint:
     docker:
       - image: cimg/python:3.9.4
@@ -156,13 +172,25 @@ jobs:
             pip install -r requirements.txt
             glean_parser translate src/App/metrics.yaml src/App/pings.yaml \
               -f javascript -o src/App/generated \
-              --option platform=qt --option version="0.31"
+              --option platform=qt --option version="0.32"
       - run:
           name: Run Qt sample tests
           command: |
             cd samples/qt
             qmake -r
             QML_IMPORT_TRACE=1 xvfb-run make check
+
+  browser-compat-smoke-tests:
+    docker:
+      - image: cimg/python:3.9.4-node
+    steps:
+      - checkout
+      - run:
+          name: Run browser comapt smoke tests
+          command: |
+            npm --prefix ./automation install
+            npm --prefix ./automation run link:glean
+            npm --prefix ./automation run compat:test:browserstack
 
   check-size:
     docker:
@@ -172,7 +200,9 @@ jobs:
       - run:
           name: Get and post build sizes to GitHub PR
           command: |
-            ./benchmarks/run.sh
+            npm --prefix ./automation install
+            npm --prefix ./automation run link:glean
+            npm --prefix ./automation run size:report
 
   # via https://circleci.com/blog/deploying-documentation-to-github-pages-with-continuous-integration/
   docs-deploy:
@@ -237,6 +267,7 @@ jobs:
 workflows:
   ci:
     jobs:
+      - spellcheck
       - lint
       - build:
           requires:
@@ -267,11 +298,19 @@ workflows:
               ignore:
                 - main
                 - release
-                - /^release-*/
+                - /^release-.*/
       - check-size:
           context: data-eng-gleanjs-gh
           requires:
             - hold
+      - browser-compat-smoke-tests:
+          context: data-eng-gleanjs-gh
+          filters:
+            branches:
+              only:
+                - main
+                - release
+                - /^release-.*/
       - docs-deploy:
           context: data-eng-gleanjs-gh
           filters:

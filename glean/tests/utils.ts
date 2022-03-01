@@ -44,7 +44,7 @@ export class WaitableUploader extends Uploader {
   private waitingForPath?: string;
   private waitingForCount?: number;
 
-  private waitResolver?: (pingBody?: JSONObject) => void;
+  private waitResolver?: (pingBody?: JSONObject, headers?: Record<string, string>) => void;
   private batchResult: JSONObject[] = [];
 
   private reset(): void {
@@ -66,7 +66,7 @@ export class WaitableUploader extends Uploader {
     this.waitingForName = name;
     this.waitingForCount = count;
     return new Promise<JSONObject[]>((resolve, reject) => {
-      const rejectTimeout = setTimeout(() => {console.log("YEAH BYE"); reject();}, 1500);
+      const rejectTimeout = setTimeout(reject, 1500);
 
       this.waitResolver = () => {
         clearTimeout(rejectTimeout);
@@ -85,28 +85,32 @@ export class WaitableUploader extends Uploader {
    *
    * @param name The name of the ping to wait for.
    * @param path The expected path of the ping to wait for.
+   * @param includeHeaders Whether or not to include headers in response object. Defaults to false.
    * @returns The body of the submitted ping.
    */
-  waitForPingSubmission(name: string, path?: string): Promise<JSONObject> {
+  waitForPingSubmission(name: string, path?: string, includeHeaders = false): Promise<JSONObject> {
     this.waitingForName = name;
     this.waitingForPath = path;
     return new Promise<JSONObject>((resolve, reject) => {
-      const rejectTimeout = setTimeout(() => reject(), 1500);
+      const rejectTimeout = setTimeout(reject, 1500);
 
-      this.waitResolver = (pingBody?: JSONObject) => {
+      this.waitResolver = (pingBody?: JSONObject, headers?: Record<string, string>) => {
         clearTimeout(rejectTimeout);
 
         this.reset();
         // Uncomment for debugging the ping payload.
-        console.log(JSON.stringify(pingBody, null, 2));
-        resolve(pingBody as JSONObject);
-      };
+        // console.log(JSON.stringify(pingBody, null, 2));
 
-      setTimeout(() => reject(), 1000);
+        if (includeHeaders) {
+          resolve({ body: pingBody as JSONObject, headers: headers as Record<string, string> });
+        } else {
+          resolve(pingBody as JSONObject);
+        }
+      };
     });
   }
 
-  async post(url: string, body: string): Promise<UploadResult> {
+  async post(url: string, body: string, headers: Record<string, string>): Promise<UploadResult> {
     // Make this a tiny bit slow to mimic reality a bit better.
     await new Promise<void>(resolve => {
       setTimeout(() => resolve(), Math.random() * 10);
@@ -122,7 +126,7 @@ export class WaitableUploader extends Uploader {
           this.waitResolver?.();
         }
       } else {
-        this.waitResolver?.(unzipPingPayload(body));
+        this.waitResolver?.(unzipPingPayload(body), headers);
       }
     }
 

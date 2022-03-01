@@ -22,11 +22,11 @@ const LOG_TAG = "CLI";
 // > one is running inside a virtual environment.
 //
 // See: https://docs.python.org/3/library/venv.html
-// (Also applies to envs created using virtualenv though)
-const VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV?.split("/").slice(-1)[0] || ".venv";
+// (Also applies to envs created using `virtualenv` and `pyenv-virtualenv`)
+const VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV || path.join(process.cwd(), ".venv");
 
 // The version of glean_parser to install from PyPI.
-const GLEAN_PARSER_VERSION = "4.1.1";
+const GLEAN_PARSER_VERSION = "5.0.1";
 
 // This script runs a given Python module as a "main" module, like
 // `python -m module`. However, it first checks that the installed
@@ -111,7 +111,7 @@ function getPythonVenvBinariesPath(venvRoot: string): string {
  *          is accessible, `false` otherwise.
  */
 async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
-  log(LOG_TAG, `Checking for a Glean virtual environment at ${venvPath}`);
+  log(LOG_TAG, `Checking for a virtual environment at ${venvPath}`);
 
   const venvPython =
     path.join(getPythonVenvBinariesPath(venvPath), getSystemPythonBinName());
@@ -135,7 +135,7 @@ async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
  * @returns `true` if the environment was correctly created, `false` otherwise.
  */
 async function createPythonVenv(venvPath: string): Promise<boolean> {
-  log(LOG_TAG, `Creating a Glean virtual environment at ${venvPath}`);
+  log(LOG_TAG, `Creating a virtual environment at ${venvPath}`);
 
   const pipFilename = (platform === "win32") ? "pip3.exe" : "pip3";
   const venvPip =
@@ -165,17 +165,13 @@ async function createPythonVenv(venvPath: string): Promise<boolean> {
 /**
  * Checks if a virtual environment for running the glean_parser exists,
  * otherwise it creates it.
- *
- * @param projectRoot the project's root directory.
  */
-async function setup(projectRoot: string) {
-  const venvRoot = path.join(projectRoot, VIRTUAL_ENVIRONMENT_DIR);
-
-  const venvExists = await checkPythonVenvExists(venvRoot);
+async function setup() {
+  const venvExists = await checkPythonVenvExists(VIRTUAL_ENVIRONMENT_DIR);
   if (venvExists) {
-    log(LOG_TAG, `Using Glean virtual environment at ${venvRoot}`);
-  } else if (!await createPythonVenv(venvRoot)){
-    log(LOG_TAG, `Failed to create a Glean virtual environment at ${venvRoot}`);
+    log(LOG_TAG, `Using virtual environment at ${VIRTUAL_ENVIRONMENT_DIR}`);
+  } else if (!await createPythonVenv(VIRTUAL_ENVIRONMENT_DIR)){
+    log(LOG_TAG, `Failed to create a virtual environment at ${VIRTUAL_ENVIRONMENT_DIR}`);
     process.exit(1);
   }
 }
@@ -183,14 +179,13 @@ async function setup(projectRoot: string) {
 /**
  * Runs the glean_parser with the provided options.
  *
- * @param projectRoot the project's root directory.
  * @param parserArgs the list of arguments passed to this command.
  */
-async function runGlean(projectRoot: string, parserArgs: string[]) {
+async function runGlean(parserArgs: string[]) {
   const spinner = getStartedSpinner();
-  const venvRoot = path.join(projectRoot, VIRTUAL_ENVIRONMENT_DIR);
-  const pythonBin = path.join(getPythonVenvBinariesPath(venvRoot), getSystemPythonBinName());
-  const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" online glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
+  const pythonBin = path.join(getPythonVenvBinariesPath(VIRTUAL_ENVIRONMENT_DIR), getSystemPythonBinName());
+  const isOnlineArg = process.env.OFFLINE ? "offline" : "online";
+  const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
 
   const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
     exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
@@ -235,13 +230,13 @@ function stopSpinner(spinner: NodeJS.Timeout) {
  * @param args the arguments passed to this process.
  */
 async function run(args: string[]) {
-  if (args.length < 3) {
-    throw new Error("Not enough arguments. Please refer to https://mozilla.github.io/glean_parser/readme.html");
+  if (args.includes("--glean-parser-version")) {
+    console.log(GLEAN_PARSER_VERSION);
+    process.exit(1);
   }
 
-  const projectRoot = process.cwd();
   try {
-    await setup(projectRoot);
+    await setup();
   } catch (err) {
     log(
       LOG_TAG,
@@ -251,7 +246,7 @@ async function run(args: string[]) {
     process.exit(1);
   }
 
-  await runGlean(projectRoot, args.slice(2));
+  await runGlean(args.slice(2));
 }
 
 // For discoverability, try to leave this function as the last one on this file.

@@ -153,7 +153,7 @@ run $SED -i.bak -E \
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
 # Update size docs
-cd "${WORKSPACE_ROOT}/benchmarks"
+cd "${WORKSPACE_ROOT}/automation"
 npm install
 npm run link:glean
 npm run size:docs

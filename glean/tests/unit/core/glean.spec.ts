@@ -430,6 +430,30 @@ describe("Glean", function() {
     assert.strictEqual(Context.config.sourceTags, undefined);
   });
 
+  it("enabling debug features before init apply to ping sent at initialize", async function() {
+    await testUninitializeGlean(false);
+
+    const consoleSpy = sandbox.spy(console, "info");
+
+    Glean.setLogPings(true);
+    Glean.setDebugViewTag("test");
+    Glean.setSourceTags(["hey", "ho"]);
+
+    // The only ping we send at init is deletion-request.
+    const httpClient = new WaitableUploader();
+    const waitForPing = httpClient.waitForPingSubmission(DELETION_REQUEST_PING_NAME, undefined, true);
+    await testInitializeGlean(testAppId, false, { httpClient });
+
+    const { body, headers } = await waitForPing;
+    // This checks if console.info is called at any point with the payload of the ping we just sent.
+    // This asserts that logPings was effective.
+    assert.ok(consoleSpy.getCalls().find(call => {
+      return call.args.find(arg => arg === JSON.stringify(body, null, 2));
+    }));
+    assert.strictEqual((headers as Record<string, string>)?.["X-Debug-ID"], "test");
+    assert.strictEqual((headers as Record<string, string>)?.["X-Source-Tags"], "hey,ho");
+  });
+
   it("testResetGlean correctly resets", async function () {
     const metric = new StringMetricType({
       category: "aCategory",

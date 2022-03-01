@@ -2,7 +2,7 @@
 
 This documentation is meant for Glean.js developers.
 
-For user documenation on the Glean SDKs, refer to [The Glean Book](https://mozilla.github.io/glean/).
+For user documentation on the Glean SDKs, refer to [The Glean Book](https://mozilla.github.io/glean/).
 
 > 🚧 **UNDER CONSTRUCTION** 🚧
 >
@@ -26,6 +26,7 @@ For user documenation on the Glean SDKs, refer to [The Glean Book](https://mozil
 - [Continuous Integration](./reference/ci.md)
 - [Metrics collected by Glean.js](./reference/metrics.md)
 - [Estimated bundle sizes](./reference/sizes.md)
+- [Compatibility](./reference/compat.md)
 
 ### Implementation Details
 

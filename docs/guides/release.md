@@ -2,9 +2,9 @@
 
 Glean.js is released in the [`@mozilla/glean`](https://www.npmjs.com/package/@mozilla/glean) npm package.
 
-That package will contain subpackages with Glean.js builds for each environment supported.
+That package will contain sub packages with Glean.js builds for each environment supported.
 
-The development & release process roughly follows the [GitFlow model](https://nvie.com/posts/a-successful-git-branching-model/).
+The development & release process roughly follows the [Git Flow model](https://nvie.com/posts/a-successful-git-branching-model/).
 
 > **Note**: The rest of this section assumes that `upstream` points to the `https://github.com/mozilla/glean.js` repository, while `origin` points to the developer fork. For some developer workflows, `upstream` can be the same as `origin`.
 
@@ -57,7 +57,8 @@ When CI has finished and is green for your specific release branch, you are read
     1. [Draft a New Release](https://github.com/mozilla/glean.js/releases/new) in the GitHub UI (`Releases > Draft a New Release`).
     2. Enter `v<myversion>` as the tag. It's important this is the same as the version you specified to the `prepare_release.sh` script, with the `v` prefix added.
     3. Select the `release` branch as the target.
-     4. Under the description, paste the contents of the release notes from `CHANGELOG.md`.
+    4. Under the description, paste the contents of the release notes from `CHANGELOG.md`.
+    5. Below the `CHANGELOG.md` contents, include the glean_parser version correspondent with the release, for future reference.
 5. Wait for the CI build to complete for the tag.
     * You can check [on CircleCI for the running build](https://circleci.com/gh/mozilla/glean.js).
 6. Send a pull request to merge back the specific release branch to the development branch: <https://github.com/mozilla/glean.js/compare/main...release-v25.0.0?expand=1>

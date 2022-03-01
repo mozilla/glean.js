@@ -69,6 +69,15 @@ class WebExtStore implements Store {
         the webextension-polyfill peer dependency. To do so, run \`npm i webextension-polyfill\`.`
       );
     }
+
+    if (typeof browser.storage.local === "undefined") {
+      throw Error(
+        `Unable to access web extension storage.
+        This is probably happening due to missing \`storage\` API permissions.
+        Make sure this permission was set on the manifest.json file.`
+      );
+    }
+
     this.store = browser.storage.local;
     this.rootKey = rootKey;
     this.logTag = `${LOG_TAG}.${rootKey}`;
