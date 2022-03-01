@@ -62,5 +62,10 @@ export async function testUninitializeGlean(clearStores = true): Promise<void> {
 
     // Deregister all plugins
     testResetEvents();
+
+    // Clear debug features cache
+    Glean.logPings = undefined;
+    Glean.debugViewTag = undefined;
+    Glean.sourceTags = undefined;
   }
 }
