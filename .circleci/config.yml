@@ -207,7 +207,7 @@ jobs:
   # via https://circleci.com/blog/deploying-documentation-to-github-pages-with-continuous-integration/
   docs-deploy:
     docker:
-      - image: cimg/node:16.1.0
+      - image: cimg/python:3.9.4-node
     steps:
       - checkout
       - run:
@@ -234,7 +234,7 @@ jobs:
 
   publish:
     docker:
-      - image: cimg/node:16.1.0
+      - image: cimg/python:3.9.4-node
     steps:
       - checkout
       - run:
