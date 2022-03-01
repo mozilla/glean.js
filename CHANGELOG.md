@@ -16,6 +16,7 @@ cannot be negative numbers.
   * Previously the command could only be run with 3 commands, even though all glean_parser commands would have been valid commands for the `glean` CLI.
 * [#1210](https://github.com/mozilla/glean.js/pull/1210): Show comprehensive error message when missing `storage` permissions for Glean on web extensions.
 * [#1223](https://github.com/mozilla/glean.js/pull/1223): Add `--glean-parser-version` command to CLI to allow users to retrieve the glean_parser version without installing glean_parser.
+* [#1228](https://github.com/mozilla/glean.js/pull/1228): BUGFIX: Apply debug features before sending pings at initialize.
 
 # v0.31.0 (2022-01-25)
 
