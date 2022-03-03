@@ -288,7 +288,7 @@ describe("Glean", function() {
       });
     Glean.setUploadEnabled(false);
     // If ping was not sent this promise will reject.
-    const { ping_info: info }  = await pingBody;
+    const { ping_info: info } = await pingBody;
     const reasonCodes = JSON.parse(JSON.stringify(info));
 
     assert.strictEqual(reasonCodes.reason, "set_upload_enabled");
@@ -335,7 +335,7 @@ describe("Glean", function() {
     );
 
     // If ping was not sent this promise will reject.
-    const { ping_info: info }  = await pingBody;
+    const { ping_info: info } = await pingBody;
     const reasonCodes = JSON.parse(JSON.stringify(info));
 
     assert.strictEqual(reasonCodes.reason, "at_init");
