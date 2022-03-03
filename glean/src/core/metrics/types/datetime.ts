@@ -176,6 +176,10 @@ export class InternalDatetimeMetricType extends MetricType {
   /**
    * An implemention of `set` that does not dispatch the recording task.
    *
+   * # Important
+   *
+   * This method should **never** be exposed to users.
+   *
    * @param value The date we want to set to.
    */
   async setUndispatched(value?: Date): Promise<void> {

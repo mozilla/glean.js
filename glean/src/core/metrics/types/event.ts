@@ -31,6 +31,10 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
   /**
    * An implemention of `record` that does not dispatch the recording task.
    *
+   * # Important
+   *
+   * This method should **never** be exposed to users.
+   *
    * @param extra optional. Used for events where additional richer context is needed.
    *        The maximum length for string values is 100 bytes.
    * @param timestamp The event timestamp, defaults to now.

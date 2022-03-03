@@ -47,6 +47,10 @@ export class InternalPingType implements CommonPingData {
   /**
    * An implemention of `submit` that does not dispatch the submission task.
    *
+   * # Important
+   *
+   * This method should **never** be exposed to users.
+   *
    * @param reason The reason the ping was triggered. Included in the
    *               `ping_info.reason` part of the payload.
    * @param testResolver The asynchronous validation function to run in order to validate

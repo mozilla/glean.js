@@ -93,6 +93,10 @@ export class InternalTimespanMetricType extends MetricType {
   /**
    * An implemention of `setRaw` that does not dispatch the recording task.
    *
+   * # Important
+   *
+   * This method should **never** be exposed to users.
+   *
    * @param elapsed The elapsed time to record, in milliseconds.
    */
   async setRawUndispatched(elapsed: number): Promise<void> {

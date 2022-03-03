@@ -48,6 +48,10 @@ export class InternalStringMetricType extends MetricType {
   /**
    * An implemention of `set` that does not dispatch the recording task.
    *
+   * # Important
+   *
+   * This method should **never** be exposed to users.
+   *
    * @param value The string we want to set to.
    */
   async setUndispatched(value: string): Promise<void> {

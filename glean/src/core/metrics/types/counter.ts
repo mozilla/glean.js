@@ -49,6 +49,10 @@ export class InternalCounterMetricType extends MetricType {
   /**
    * An implemention of `add` that does not dispatch the recording task.
    *
+   * # Important
+   *
+   * This method should **never** be exposed to users.
+   *
    * @param amount The amount we want to add.
    */
   async addUndispatched(amount?: number): Promise<void> {
