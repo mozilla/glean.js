@@ -71,7 +71,7 @@ try {
     const fullIncrease = build.max - build.main.max;
     return `| **${build.name}** |
 | core only | ${formatBytes(build.main.min)} | ${formatBytes(build.min)} | ${coreIncrease > 0 ? "📈" : "📉"} ${formatBytes(Math.abs(coreIncrease))} |
-| full bundle | ${formatBytes(build.main.max)} | ${formatBytes(build.max)} | ${coreIncrease > 0 ? "📈" : "📉"} ${formatBytes(Math.abs(fullIncrease))} |`
+| full bundle | ${formatBytes(build.main.max)} | ${formatBytes(build.max)} | ${fullIncrease > 0 ? "📈" : "📉"} ${formatBytes(Math.abs(fullIncrease))} |`
   });
   
   const report =  `

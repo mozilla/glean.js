@@ -24,20 +24,17 @@ export class BooleanMetric extends Metric<boolean, boolean> {
 }
 
 /**
- *  A boolean metric.
+ * Base implementation of the boolean metric type,
+ * meant only for Glean internal use.
  *
- * Records a simple flag.
+ * This class exposes Glean-internal properties and methods
+ * of the boolean metric type.
  */
-class BooleanMetricType extends MetricType {
+class InternalBooleanMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("boolean", meta, BooleanMetric);
   }
 
-  /**
-   * Sets to the specified boolean value.
-   *
-   * @param value the value to set.
-   */
   set(value: boolean): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -47,6 +44,38 @@ class BooleanMetricType extends MetricType {
       const metric = new BooleanMetric(value);
       await Context.metricsDatabase.record(this, metric);
     });
+  }
+
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: boolean | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<boolean>(ping, this);
+      });
+      return metric;
+    }
+  }
+}
+
+/**
+ *  A boolean metric.
+ *
+ * Records a simple flag.
+ */
+export default class {
+  #inner: InternalBooleanMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalBooleanMetricType(meta);
+  }
+
+  /**
+   * Sets to the specified boolean value.
+   *
+   * @param value the value to set.
+   */
+  set(value: boolean): void {
+    this.#inner.set(value);
   }
 
   /**
@@ -60,15 +89,21 @@ class BooleanMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
-    if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: boolean | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<boolean>(ping, this);
-      });
-      return metric;
-    }
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<boolean | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
-export default BooleanMetricType;

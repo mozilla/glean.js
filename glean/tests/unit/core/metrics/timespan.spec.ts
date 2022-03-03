@@ -10,7 +10,7 @@ import { Context } from "../../../../src/core/context";
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import TimeUnit from "../../../../src/core/metrics/time_unit";
-import TimespanMetricType, { TimespanMetric } from "../../../../src/core/metrics/types/timespan";
+import TimespanMetricType, { InternalTimespanMetricType, TimespanMetric } from "../../../../src/core/metrics/types/timespan";
 import { ErrorType } from "../../../../src/core/error/error_type";
 import { testResetGlean } from "../../../../src/core/testing";
 
@@ -213,7 +213,8 @@ describe("TimespanMetric", function() {
   });
 
   it("cancel does not store and clears start time", async function() {
-    const metric = new TimespanMetricType({
+    // Use the internal type here so we can access the `startTime` property.
+    const metric = new InternalTimespanMetricType({
       category: "aCategory",
       name: "aTimespan",
       sendInPings: ["aPing"],

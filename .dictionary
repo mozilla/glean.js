@@ -1,4 +1,4 @@
-personal_ws-1.1 en 70 
+personal_ws-1.1 en 71 
 API's
 APIs
 BUGFIX
@@ -66,6 +66,7 @@ unminified
 uploader
 uploaders
 url
+uuid
 virtualenv
 webext
 webpack

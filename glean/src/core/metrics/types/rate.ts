@@ -49,29 +49,18 @@ export class RateMetric extends Metric<Rate, Rate> {
   }
 }
 
-/*
- * A rate metric.
+/**
+ * Base implementation of the rate metric type,
+ * meant only for Glean internal use.
  *
- * Used to determine the proportion of things via two counts:
- * * A numerator defining the amount of times something happened,
- * * A denominator counting the amount of times someting could have happened.
- *
- * Both numerator and denominator can only be incremented, not decremented.
+ * This class exposes Glean-internal properties and methods
+ * of the rate metric type.
  */
-class RateMetricType extends MetricType {
+class InternalRateMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("rate", meta, RateMetric);
   }
 
-  /**
-   * Increases the numerator by amount.
-   *
-   * # Note
-   *
-   * Records an `InvalidValue` error if the `amount` is negative.
-   *
-   * @param amount The amount to increase by. Should be non-negative.
-   */
   addToNumerator(amount: number): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -118,15 +107,6 @@ class RateMetricType extends MetricType {
     });
   }
 
-  /**
-   * Increases the denominator by amount.
-   *
-   * # Note
-   *
-   * Records an `InvalidValue` error if the `amount` is negative.
-   *
-   * @param amount The amount to increase by. Should be non-negative.
-   */
   addToDenominator(amount: number): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -173,6 +153,59 @@ class RateMetricType extends MetricType {
     });
   }
 
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<Rate | undefined> {
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: Rate | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<Rate>(ping, this);
+      });
+      return metric;
+    }
+  }
+}
+
+/*
+ * A rate metric.
+ *
+ * Used to determine the proportion of things via two counts:
+ * * A numerator defining the amount of times something happened,
+ * * A denominator counting the amount of times someting could have happened.
+ *
+ * Both numerator and denominator can only be incremented, not decremented.
+ */
+export default class {
+  #inner: InternalRateMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalRateMetricType(meta);
+  }
+
+  /**
+   * Increases the numerator by amount.
+   *
+   * # Note
+   *
+   * Records an `InvalidValue` error if the `amount` is negative.
+   *
+   * @param amount The amount to increase by. Should be non-negative.
+   */
+  addToNumerator(amount: number): void {
+    this.#inner.addToNumerator(amount);
+  }
+
+  /**
+   * Increases the denominator by amount.
+   *
+   * # Note
+   *
+   * Records an `InvalidValue` error if the `amount` is negative.
+   *
+   * @param amount The amount to increase by. Should be non-negative.
+   */
+  addToDenominator(amount: number): void {
+    this.#inner.addToDenominator(amount);
+  }
+
   /**
    * Test-only API.**
    *
@@ -188,15 +221,21 @@ class RateMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<Rate | undefined> {
-    if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: Rate | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<Rate>(ping, this);
-      });
-      return metric;
-    }
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<Rate | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
-export default RateMetricType;

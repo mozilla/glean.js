@@ -94,9 +94,9 @@ Once you have your `Metric` subclass, include it in Glean.js'
 [`METRIC_MAP`](https://github.com/mozilla/glean.js/blob/main/glean/src/core/metrics/utils.ts#L17).
 This map will be used as a template for creating metric instances from the metrics database.
 
-### The `MetricType` class
+### The `InternalMetricType` class
 
-Now you are ready to implement the `MetricType` class for your new metric type.
+Now you are ready to implement the `InternalMetricType` class for your new metric type.
 This class will hold all the metadata related to a specific user defined metric and
 expose the recording and testing APIs of your new metric type.
 
@@ -106,15 +106,11 @@ This API's design should have been discussed and decided upon during the metric 
 
 Still, metric type classes will always have at least one recording function and one testing function.
 
-> **Note** The `type` property on the `MetricType` subclass is a constant. It will be used
+> **Note** The `type` property on the `InternalMetricType` subclass is a constant. It will be used
 > to determine in which section of the ping the recorded metrics for this type should be placed.
 > It's value is the name of the section for this metric type on the ping payload.
 > Make sure that, when you included your `Metric` class on the `METRIC_MAP` the property has the
-> same value as the `type` property on the corresponding `MetricType`.
-
-Once you are done implementing the `MetricType` class for your new metric type,
-make sure to manually expose it for Qt platforms by adding it to
-[the Qt entry point file](https://github.com/mozilla/glean.js/blob/main/glean/src/index/qt.ts).
+> same value as the `type` property on the corresponding `InternalMetricType`.
 
 #### Recording functions
 
@@ -171,6 +167,16 @@ async function testGetValue(ping: string = this.sendInPings[0]): Promise<string 
 
 The `testGetNumRecordedErrors` function does not need to be implemented individually per metric
 type as it is already implemented on the `MetricType` super class.
+
+### The `MetricType` class
+
+The `MetricType` class is the default export on each metric type file. It exposes **only** the APIs
+users will interact with and contains the `InternalMetricType` instance as a [private field](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields).
+It is a wrapper around the `InternalMetricType`.
+
+Once you are done implementing the `MetricType` class for your new metric type,
+make sure to manually expose it for Qt platforms by adding it to
+[the Qt entry point file](https://github.com/mozilla/glean.js/blob/main/glean/src/index/qt.ts).
 
 ## Testing
 

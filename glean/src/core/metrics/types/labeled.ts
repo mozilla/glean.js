@@ -144,7 +144,8 @@ export async function getValidDynamicLabel(metric: MetricType): Promise<string> 
     : key;
 }
 
-type SupportedLabeledTypes = CounterMetricType | BooleanMetricType | StringMetricType;
+type SupportedLabeledTypes =
+  CounterMetricType | BooleanMetricType | StringMetricType;
 
 class LabeledMetricType<T extends SupportedLabeledTypes> {
   // Define an index signature to make the Proxy aware of the expected return type.

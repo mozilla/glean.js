@@ -75,11 +75,13 @@ export class TimespanMetric extends Metric<TimespanInternalRepresentation, Times
 }
 
 /**
- * A timespan metric.
+ * Base implementation of the timespan metric type,
+ * meant only for Glean internal use.
  *
- * Timespans are used to make a measurement of how much time is spent in a particular task.
+ * This class exposes Glean-internal properties and methods
+ * of the timespan metric type.
  */
-class TimespanMetricType extends MetricType {
+export class InternalTimespanMetricType extends MetricType {
   private timeUnit: TimeUnit;
   startTime?: number;
 
@@ -89,25 +91,22 @@ class TimespanMetricType extends MetricType {
   }
 
   /**
-   * An internal implemention of `setRaw` that does not dispatch the recording task.
+   * An implemention of `setRaw` that does not dispatch the recording task.
    *
    * # Important
    *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
+   * This method should **never** be exposed to users.
    *
-   * @param instance The metric instance to record to.
    * @param elapsed The elapsed time to record, in milliseconds.
    */
-  static async _private_setRawUndispatched(instance: TimespanMetricType, elapsed: number): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
+  async setRawUndispatched(elapsed: number): Promise<void> {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
-    if (!isUndefined(instance.startTime)) {
+    if (!isUndefined(this.startTime)) {
       await Context.errorManager.record(
-        instance,
+        this,
         ErrorType.InvalidState,
         "Timespan already running. Raw value not recorded."
       );
@@ -126,7 +125,7 @@ class TimespanMetricType extends MetricType {
         } catch {
           metric = new TimespanMetric({
             timespan: elapsed,
-            timeUnit: instance.timeUnit,
+            timeUnit: this.timeUnit,
           });
         }
 
@@ -134,24 +133,17 @@ class TimespanMetricType extends MetricType {
       };
     })(elapsed);
 
-    await Context.metricsDatabase.transform(instance, transformFn);
+    await Context.metricsDatabase.transform(this, transformFn);
 
     if (reportValueExists) {
       await Context.errorManager.record(
-        instance,
+        this,
         ErrorType.InvalidState,
         "Timespan value already recorded. New value discarded."
       );
     }
   }
 
-  /**
-   * Starts tracking time for the provided metric.
-   *
-   * This records an error if it's already tracking time (i.e. start was
-   * already called with no corresponding `stop()`. In which case the original
-   * start time will be preserved.
-   */
   start(): void {
     // Get the start time outside of the dispatched task so that
     // it is the time this function is called and not the time the task is executed.
@@ -177,11 +169,6 @@ class TimespanMetricType extends MetricType {
     });
   }
 
-  /**
-   * Stops tracking time for the provided metric. Sets the metric to the elapsed time.
-   *
-   * This will record an error if no `start()` was called.
-   */
   stop(): void {
     // Get the stop time outside of the dispatched task so that
     // it is the time this function is called and not the time the task is executed.
@@ -216,15 +203,10 @@ class TimespanMetricType extends MetricType {
         return;
       }
 
-      await TimespanMetricType._private_setRawUndispatched(this, elapsed);
+      await this.setRawUndispatched(elapsed);
     });
   }
 
-  /**
-   * Aborts a previous `start()` call.
-   *
-   * No error is recorded if no `start()` was called.
-   */
   cancel(): void {
     Context.dispatcher.launch(() => {
       this.startTime = undefined;
@@ -232,38 +214,14 @@ class TimespanMetricType extends MetricType {
     });
   }
 
-  /**
-   * Explicitly sets the timespan value.
-   *
-   * This API should only be used if your library or application requires
-   * recording times in a way that can not make use of
-   * {@link TimespanMetricType#start}/{@link TimespanMetricType#stop}.
-   *
-   * Care should be taken using this if the ping lifetime might contain more
-   * than one timespan measurement. To be safe, this function should generally
-   * be followed by sending a custom ping containing the timespan.
-   *
-   * @param elapsed The elapsed time to record, in nanoseconds.
-   */
   setRawNanos(elapsed: number): void {
     Context.dispatcher.launch(async () => {
       // `elapsed` is in nanoseconds in order to match the glean-core API.
       const elapsedMillis = elapsed * 10**(-6);
-      await TimespanMetricType._private_setRawUndispatched(this, elapsedMillis);
+      await this.setRawUndispatched(elapsedMillis);
     });
   }
 
-  /**
-   * Test-only API.**
-   *
-   * Gets the currently stored value as a number.
-   *
-   * This doesn't clear the stored value.
-   *
-   * @param ping the ping from which we want to retrieve this metrics value from.
-   *        Defaults to the first value in `sendInPings`.
-   * @returns The value found in storage or `undefined` if nothing was found.
-   */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let value: TimespanInternalRepresentation | undefined;
@@ -278,5 +236,92 @@ class TimespanMetricType extends MetricType {
   }
 }
 
-export default TimespanMetricType;
+/**
+ * A timespan metric.
+ *
+ * Timespans are used to make a measurement of how much time
+ * is spent in a particular task.
+ */
+export default class {
+  #inner: InternalTimespanMetricType;
+
+  constructor(meta: CommonMetricData, timeUnit: string) {
+    this.#inner = new InternalTimespanMetricType(meta, timeUnit);
+  }
+
+  /**
+   * Starts tracking time for the provided metric.
+   *
+   * This records an error if it's already tracking time (i.e. start was
+   * already called with no corresponding `stop()`. In which case the original
+   * start time will be preserved.
+   */
+  start(): void {
+    this.#inner.start();
+  }
+
+  /**
+   * Stops tracking time for the provided metric. Sets the metric to the elapsed time.
+   *
+   * This will record an error if no `start()` was called.
+   */
+  stop(): void {
+    this.#inner.stop();
+  }
+
+  /**
+   * Aborts a previous `start()` call.
+   *
+   * No error is recorded if no `start()` was called.
+   */
+  cancel(): void {
+    this.#inner.cancel();
+  }
+
+  /**
+   * Explicitly sets the timespan value.
+   *
+   * This API should only be used if your library or application requires
+   * recording times in a way that can not make use of
+   * {@link InternalTimespanMetricType#start}/{@link InternalTimespanMetricType#stop}.
+   *
+   * Care should be taken using this if the ping lifetime might contain more
+   * than one timespan measurement. To be safe, this function should generally
+   * be followed by sending a custom ping containing the timespan.
+   *
+   * @param elapsed The elapsed time to record, in nanoseconds.
+   */
+  setRawNanos(elapsed: number): void {
+    this.#inner.setRawNanos(elapsed);
+  }
+
+  /**
+   * Test-only API.**
+   *
+   * Gets the currently stored value as a number.
+   *
+   * This doesn't clear the stored value.
+   *
+   * @param ping the ping from which we want to retrieve this metrics value from.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns The value found in storage or `undefined` if nothing was found.
+   */
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<number | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
+  }
+}
 

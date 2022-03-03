@@ -6,9 +6,9 @@ import type Store from "../../storage/index.js";
 import type { JSONArray, JSONObject, JSONValue } from "../../utils.js";
 import { isString } from "../../utils.js";
 import { isUndefined } from "../../utils.js";
-import EventMetricType from "../types/event.js";
+import { InternalEventMetricType as EventMetricType } from "../types/event.js";
 import log, { LoggingLevel } from "../../log.js";
-import CounterMetricType from "../types/counter.js";
+import { InternalCounterMetricType as CounterMetricType } from "../types/counter.js";
 import { Lifetime } from "../lifetime.js";
 import { Context } from "../../context.js";
 import { generateReservedMetricIdentifiers } from "../database.js";
@@ -86,8 +86,7 @@ async function recordGleanRestartedEvent(
   time = Context.startTime
 ): Promise<void> {
   const metric = getGleanRestartedEventMetric(sendInPings);
-  await EventMetricType._private_recordUndispatched(
-    metric,
+  await metric.recordUndispatched(
     {
       [GLEAN_REFERENCE_TIME_EXTRA_KEY]: time.toISOString()
     },
@@ -143,7 +142,7 @@ class EventsDatabase {
     const storeNames = await this.getAvailableStoreNames();
     // Increment the execution counter for known stores.
     // !IMPORTANT! This must happen before any event is recorded for this run.
-    await CounterMetricType._private_addUndispatched(getExecutionCounterMetric(storeNames), 1);
+    await getExecutionCounterMetric(storeNames).addUndispatched(1);
     await recordGleanRestartedEvent(storeNames);
 
     this.initialized = true;
@@ -169,7 +168,7 @@ class EventsDatabase {
       // 1. The ping was already sent during this session and the events storage was cleared;
       // 2. No event has ever been recorded for this ping.
       if (!currentExecutionCount) {
-        await CounterMetricType._private_addUndispatched(executionCounter, 1);
+        await executionCounter.addUndispatched(1);
         currentExecutionCount = 1;
 
         // Record the `glean.restarted` event,

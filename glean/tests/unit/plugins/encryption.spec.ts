@@ -6,7 +6,7 @@ import assert from "assert";
 import sinon from "sinon";
 import { generateKeyPair, exportJWK, compactDecrypt } from "jose";
 
-import PingType from "../../../src/core/pings/ping_type";
+import { InternalPingType as PingType} from "../../../src/core/pings/ping_type";
 import type { JSONObject } from "../../../src/core/utils";
 import { WaitableUploader } from "../../utils";
 import PingEncryptionPlugin from "../../../src/plugins/encryption";
