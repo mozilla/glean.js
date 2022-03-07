@@ -20,7 +20,7 @@
   "license": "MPL-2.0",
   "devDependencies": {
     "@octokit/request": "^5.6.3",
-    "browserstack-local": "^1.4.8",
+    "browserstack-local": "^1.4.9",
     "geckodriver": "^3.0.1",
     "selenium-webdriver": "^4.1.1",
     "webpack": "^5.69.1",
