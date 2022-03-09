@@ -130,7 +130,7 @@ export class CoreMetrics {
       await this.appChannel.setUndispatched(Context.config.channel);
     }
     if (Context.config.buildDate) {
-      await DatetimeMetricType._private_setUndispatched(this.buildDate);
+      await this.buildDate.setUndispatched();
     }
   }
 
