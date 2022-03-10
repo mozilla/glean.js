@@ -4,10 +4,12 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { generateUUIDv4, isString, testOnlyCheck } from "../../utils.js";
+import { generateUUIDv4, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.UUIDMetricType";
 // Loose UUID regex for checking if a string has a UUID _shape_. Does not contain version checks.
@@ -21,12 +23,22 @@ export class UUIDMetric extends Metric<string, string> {
     super(v);
   }
 
-  validate(v: unknown): v is string {
-    if (!isString(v)) {
-      return false;
+  validate(v: unknown): MetricValidationResult {
+    const validation = validateString(v);
+    if (validation.type === MetricValidation.Error) {
+      return validation;
     }
 
-    return UUID_REGEX.test(v);
+    const str = v as string;
+    if (!UUID_REGEX.test(str)) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `"${str}" is not a valid UUID`,
+        errorType: ErrorType.InvalidValue,
+      };
+    }
+
+    return { type: MetricValidation.Success };
   }
 
   payload(): string {
@@ -67,16 +79,12 @@ export class InternalUUIDMetricType extends MetricType {
     let metric: UUIDMetric;
     try {
       metric = new UUIDMetric(value);
-    } catch {
-      await Context.errorManager.record(
-        this,
-        ErrorType.InvalidValue,
-        `"${value}" is not a valid UUID.`
-      );
-      return;
+      await Context.metricsDatabase.record(this, metric);
+    } catch(e) {
+      if(e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
     }
-
-    await Context.metricsDatabase.record(this, metric);
   }
 
   set(value: string): void {

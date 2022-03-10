@@ -3,10 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError } from "../metric.js";
 import { Metric } from "../metric.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.TextMetricType";
 // The maximum number of characters for text.
@@ -23,16 +26,8 @@ export class TextMetric extends Metric<string, string> {
    * @param v The value to validate.
    * @returns Whether or not v is valid text data.
    */
-  validate(v: unknown): v is string {
-    if (!isString(v)) {
-      return false;
-    }
-
-    if (v.length > TEXT_MAX_LENGTH) {
-      return false;
-    }
-
-    return true;
+  validate(v: unknown): MetricValidationResult {
+    return validateString(v);
   }
 
   payload(): string {
@@ -58,9 +53,15 @@ class InternalTextMetricType extends MetricType {
         return;
       }
 
-      const truncatedValue = await truncateStringAtBoundaryWithError(this, text, TEXT_MAX_LENGTH);
-      const metric = new TextMetric(truncatedValue);
-      await Context.metricsDatabase.record(this, metric);
+      try {
+        const truncatedValue = await truncateStringAtBoundaryWithError(this, text, TEXT_MAX_LENGTH);
+        const metric = new TextMetric(truncatedValue);
+        await Context.metricsDatabase.record(this, metric);
+      } catch(e) {
+        if (e instanceof MetricValidationError) {
+          await e.recordError(this);
+        }
+      }
     });
   }
 

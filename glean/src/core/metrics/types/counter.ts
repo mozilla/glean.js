@@ -4,11 +4,13 @@
 
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
+import type { MetricValidationResult } from "../metric.js";
+import { saturatingAdd, isUndefined, testOnlyCheck } from "../../utils.js";
 import { MetricType } from "../index.js";
-import { isUndefined, isInteger, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
-import { ErrorType } from "../../error/error_type.js";
+import { Metric, MetricValidationError } from "../metric.js";
+import log from "../../log.js";
+import { validatePositiveInteger } from "../utils.js";
 
 const LOG_TAG = "core.metrics.CounterMetricType";
 
@@ -17,20 +19,17 @@ export class CounterMetric extends Metric<number, number> {
     super(v);
   }
 
-  validate(v: unknown): v is number {
-    if (!isInteger(v)) {
-      return false;
-    }
-
-    if (v <= 0) {
-      return false;
-    }
-
-    return true;
+  validate(v: unknown): MetricValidationResult {
+    return validatePositiveInteger(v, false);
   }
 
   payload(): number {
     return this._inner;
+  }
+
+  saturatingAdd(amount: unknown): void {
+    const correctAmount = this.validateOrThrow(amount);
+    this._inner = saturatingAdd(this._inner, correctAmount);
   }
 }
 
@@ -64,37 +63,31 @@ export class InternalCounterMetricType extends MetricType {
       amount = 1;
     }
 
-    if (amount <= 0) {
-      await Context.errorManager.record(
-        this,
-        ErrorType.InvalidValue,
-        `Added negative and zero value ${amount}`
-      );
-      return;
+    try {
+      const transformFn = ((amount) => {
+        return (v?: JSONValue): CounterMetric => {
+          const metric = new CounterMetric(amount);
+          if (v) {
+            try {
+              // Throws an error if v in not valid input.
+              metric.saturatingAdd(v);
+            } catch {
+              log(
+                LOG_TAG,
+                `Unexpected value found in storage for metric ${this.name}: ${JSON.stringify(v)}. Overwriting.`
+              );
+            }
+          }
+          return metric;
+        };
+      })(amount);
+
+      await Context.metricsDatabase.transform(this, transformFn);
+    } catch(e) {
+      if (e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
     }
-
-    const transformFn = ((amount) => {
-      return (v?: JSONValue): CounterMetric => {
-        let metric: CounterMetric;
-        let result: number;
-        try {
-          metric = new CounterMetric(v);
-          result = metric.get() + amount;
-        } catch {
-          metric = new CounterMetric(amount);
-          result = amount;
-        }
-
-        if (result > Number.MAX_SAFE_INTEGER) {
-          result = Number.MAX_SAFE_INTEGER;
-        }
-
-        metric.set(result);
-        return metric;
-      };
-    })(amount);
-
-    await Context.metricsDatabase.transform(this, transformFn);
   }
 
   add(amount?: number): void {

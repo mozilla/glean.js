@@ -3,11 +3,14 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 
-import type { Metric } from "./metric.js";
+import type { Metric, MetricValidationResult } from "./metric.js";
+import { MetricValidation } from "./metric.js";
 import type { JSONValue } from "../utils.js";
+import { isInteger, isString } from "../utils.js";
 
 import { LabeledMetric } from "./types/labeled.js";
 import { Context } from "../context.js";
+import { ErrorType } from "../error/error_type.js";
 
 
 
@@ -52,4 +55,48 @@ export function validateMetricInternalRepresentation<T extends JSONValue>(
   } catch {
     return false;
   }
+}
+
+/**
+ * Validates that a given value is a positive integer.
+ *
+ * @param v The value to validate
+ * @param zeroIsValid Whether or not to consider 0 a valid value, defaults to `true`
+ * @returns A validation result
+ */
+export function validatePositiveInteger(v: unknown, zeroIsValid = true): MetricValidationResult {
+  if (!isInteger(v)) {
+    return {
+      type: MetricValidation.Error,
+      errorMessage: `Expected integer value, got ${JSON.stringify(v)}`
+    };
+  }
+
+  const validation = zeroIsValid ? v < 0 : v <= 0;
+  if (validation) {
+    return {
+      type: MetricValidation.Error,
+      errorMessage: `Expected positive value, got ${JSON.stringify(v)}`,
+      errorType: ErrorType.InvalidValue
+    };
+  }
+
+  return { type: MetricValidation.Success };
+}
+
+/**
+ * Validates that a given value is a string.
+ *
+ * @param v The value to validate
+ * @returns A validation result
+ */
+export function validateString(v: unknown): MetricValidationResult {
+  if (!isString(v)) {
+    return {
+      type: MetricValidation.Error,
+      errorMessage: `Expected string value, got ${JSON.stringify(v)}`
+    };
+  }
+
+  return { type: MetricValidation.Success };
 }

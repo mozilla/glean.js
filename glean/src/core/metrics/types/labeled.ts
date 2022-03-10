@@ -7,7 +7,8 @@ import type CounterMetricType from "./counter.js";
 import type BooleanMetricType from "./boolean.js";
 import type StringMetricType from "./string.js";
 import type { JSONValue } from "../../utils.js";
-import { Metric } from "../metric.js";
+import type { MetricValidationResult } from "../metric.js";
+import { Metric, MetricValidation } from "../metric.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 
@@ -23,8 +24,8 @@ export class LabeledMetric extends Metric<JSONValue, JSONValue> {
     super(v);
   }
 
-  validate(v: unknown): v is JSONValue {
-    return true;
+  validate(_v: unknown): MetricValidationResult {
+    return { type: MetricValidation.Success };
   }
 
   payload(): JSONValue {

@@ -12,6 +12,7 @@ import TimeUnit from "../../../../src/core/metrics/time_unit";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";
 import { testResetGlean } from "../../../../src/core/testing";
+import { ErrorType } from "../../../../src/core/error/error_type";
 
 const sandbox = sinon.createSandbox();
 
@@ -217,5 +218,22 @@ describe("DatetimeMetric", function() {
     // 4. This means that the real time at the time of recording is 13:41
     const recorded = await metric.testGetValueAsString("aPing");
     assert.strictEqual(recorded, "2021-01-07T13:41:26.312-01:00");
+  });
+
+  it("attempting to record a value of incorrect type records an error", async function () {
+    const metric = new DatetimeMetricType({
+      category: "aCategory",
+      name: "aDatetimeMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, TimeUnit.Millisecond);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.set("not date");
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
+    assert.strictEqual(await metric.testGetValue(), undefined);
   });
 });

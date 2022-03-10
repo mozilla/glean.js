@@ -5,8 +5,10 @@
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
-import { isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import type { MetricValidationResult } from "../metric.js";
+import { Metric, MetricValidationError } from "../metric.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.StringMetricType";
 export const MAX_LENGTH_VALUE = 100;
@@ -16,16 +18,8 @@ export class StringMetric extends Metric<string, string> {
     super(v);
   }
 
-  validate(v: unknown): v is string {
-    if (!isString(v)) {
-      return false;
-    }
-
-    if (v.length > MAX_LENGTH_VALUE) {
-      return false;
-    }
-
-    return true;
+  validate(v: unknown): MetricValidationResult {
+    return validateString(v);
   }
 
   payload(): string {
@@ -59,9 +53,15 @@ export class InternalStringMetricType extends MetricType {
       return;
     }
 
-    const truncatedValue = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_VALUE);
-    const metric = new StringMetric(truncatedValue);
-    await Context.metricsDatabase.record(this, metric);
+    try {
+      const truncatedValue = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_VALUE);
+      const metric = new StringMetric(truncatedValue);
+      await Context.metricsDatabase.record(this, metric);
+    } catch(e) {
+      if (e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
+    }
   }
 
   set(value: string): void {

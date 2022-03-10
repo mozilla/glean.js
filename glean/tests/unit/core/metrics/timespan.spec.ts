@@ -331,4 +331,23 @@ describe("TimespanMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), 100);
     assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
+
+  it("attempting to record a value of incorrect type records an error", async function () {
+    const metric = new TimespanMetricType({
+      category: "aCategory",
+      name: "aTimespan",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, "millisecond");
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.setRawNanos("not number");
+    // Floating point numbers should also record an error
+    metric.setRawNanos(Math.PI);
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
+    assert.strictEqual(await metric.testGetValue(), undefined);
+  });
 });

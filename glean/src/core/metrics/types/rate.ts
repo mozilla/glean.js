@@ -5,11 +5,12 @@
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
-import { testOnlyCheck } from "../../utils.js";
-import { isNumber, isObject } from "../../utils.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
+import { saturatingAdd, testOnlyCheck, isObject } from "../../utils.js";
 import type { JSONValue } from "../../utils.js";
-import { ErrorType } from "../../error/error_type.js";
+import log from "../../log.js";
+import { validatePositiveInteger } from "../utils.js";
 
 const LOG_TAG = "core.metrics.RateMetricType";
 
@@ -31,21 +32,29 @@ export class RateMetric extends Metric<Rate, Rate> {
     return this._inner.denominator;
   }
 
-  validate(v: unknown): v is Rate {
+  validate(v: unknown): MetricValidationResult {
     if (!isObject(v) || Object.keys(v).length !== 2) {
-      return false;
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `Expected Glean rate metric object, got ${JSON.stringify(v)}`
+      };
     }
 
-    const numeratorVerification = "numerator" in v && isNumber(v.numerator) && v.numerator >= 0;
-    const denominatorVerification = "denominator" in v && isNumber(v.denominator) && v.denominator >= 0;
-    return numeratorVerification && denominatorVerification;
+    const numeratorVerification = validatePositiveInteger(v.numerator);
+    if (numeratorVerification.type === MetricValidation.Error) {
+      return numeratorVerification;
+    }
+
+    const denominatorVerification = validatePositiveInteger(v.denominator);
+    if (denominatorVerification.type === MetricValidation.Error) {
+      return denominatorVerification;
+    }
+
+    return { type: MetricValidation.Success };
   }
 
   payload(): Rate {
-    return {
-      numerator: this._inner.numerator,
-      denominator: this._inner.denominator
-    };
+    return this._inner;
   }
 }
 
@@ -61,95 +70,67 @@ class InternalRateMetricType extends MetricType {
     super("rate", meta, RateMetric);
   }
 
-  addToNumerator(amount: number): void {
+  /**
+   * Adds a new rate value with the currently stored value.
+   *
+   * @param value The value to merge.
+   */
+  private add(value: Rate): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
 
-      if (amount < 0) {
-        await Context.errorManager.record(
-          this,
-          ErrorType.InvalidValue,
-          `Added negative value ${amount} to numerator.`
-        );
-        return;
+      try {
+        const transformFn = ((value) => {
+          return (v?: JSONValue): RateMetric => {
+            const metric = new RateMetric(value);
+            if (v) {
+              try {
+                const persistedMetric = new RateMetric(v);
+                metric.set({
+                  numerator: saturatingAdd(metric.numerator, persistedMetric.numerator),
+                  denominator: saturatingAdd(metric.denominator, persistedMetric.denominator),
+                });
+              } catch {
+                log(
+                  LOG_TAG,
+                  `Unexpected value found in storage for metric ${this.name}: ${JSON.stringify(v)}. Overwriting.`
+                );
+              }
+            }
+            return metric;
+          };
+        })(value);
+        await Context.metricsDatabase.transform(this, transformFn);
+      } catch(e) {
+        if (e instanceof MetricValidationError) {
+          await e.recordError(this);
+        }
       }
+    });
+  }
 
-      const transformFn = ((amount) => {
-        return (v?: JSONValue): RateMetric => {
-          let metric: RateMetric;
-          let result: number;
-          try {
-            metric = new RateMetric(v);
-            result = metric.numerator + amount;
-          } catch {
-            metric = new RateMetric({
-              numerator: amount,
-              denominator: 0
-            });
-            result = amount;
-          }
-
-          if (result > Number.MAX_SAFE_INTEGER) {
-            result = Number.MAX_SAFE_INTEGER;
-          }
-
-          metric.set({
-            numerator: result,
-            denominator: metric.denominator
-          });
-          return metric;
-        };
-      })(amount);
-
-      await Context.metricsDatabase.transform(this, transformFn);
+  /**
+   * Increases the numerator by amount.
+   *
+   * # Note
+   *
+   * Records an `InvalidValue` error if the `amount` is negative.
+   *
+   * @param amount The amount to increase by. Should be non-negative.
+   */
+  addToNumerator(amount: number): void {
+    this.add({
+      denominator: 0,
+      numerator: amount,
     });
   }
 
   addToDenominator(amount: number): void {
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      if (amount < 0) {
-        await Context.errorManager.record(
-          this,
-          ErrorType.InvalidValue,
-          `Added negative value ${amount} to denominator.`
-        );
-        return;
-      }
-
-      const transformFn = ((amount) => {
-        return (v?: JSONValue): RateMetric => {
-          let metric: RateMetric;
-          let result: number;
-          try {
-            metric = new RateMetric(v);
-            result = metric.denominator + amount;
-          } catch {
-            metric = new RateMetric({
-              numerator: 0,
-              denominator: amount
-            });
-            result = amount;
-          }
-
-          if (result > Number.MAX_SAFE_INTEGER) {
-            result = Number.MAX_SAFE_INTEGER;
-          }
-
-          metric.set({
-            numerator: metric.numerator,
-            denominator: result
-          });
-          return metric;
-        };
-      })(amount);
-
-      await Context.metricsDatabase.transform(this, transformFn);
+    this.add({
+      numerator: 0,
+      denominator: amount,
     });
   }
 
