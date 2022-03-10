@@ -22,7 +22,7 @@ export class MetricValidationError extends Error {
     try {
       this.name = "MetricValidationError";
     } catch {
-      // This is fails in Qt.
+      // This fails in Qt.
       // See https://bugreports.qt.io/browse/QTBUG-101298
     }
   }
@@ -73,7 +73,7 @@ export abstract class Metric<
   }
 
   /**
-   * Validates a given value using the validation function and throws incase not valid.
+   * Validates a given value using the validation function and throws in case it is not valid.
    *
    * @param v The value to verify.
    * @returns `v` if it is valid.
