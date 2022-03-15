@@ -88,6 +88,7 @@ export class RecordedEvent extends Metric<Event, Event> {
   }
 
   validate(v: unknown): MetricValidationResult {
+    // The expected object here is the Event object, which may have 3 or 4 properties.
     if (!isObject(v) || ![3,4].includes(Object.keys(v).length)) {
       return {
         type: MetricValidation.Error,
