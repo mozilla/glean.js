@@ -37,57 +37,6 @@ describe("EventsDatabase", function() {
     clock.restore();
   });
 
-  it("stable serialization", function () {
-    const event_empty = new RecordedEvent(
-      "cat",
-      "name",
-      2,
-      // Intentional, no extra.
-    );
-
-    const event_data = new RecordedEvent(
-      "cat",
-      "name",
-      2,
-      {
-        "a key": "a value",
-      }
-    );
-
-    const event_empty_json = RecordedEvent.toJSONObject(event_empty);
-    const event_data_json = RecordedEvent.toJSONObject(event_data);
-
-    assert.deepStrictEqual(event_empty, RecordedEvent.fromJSONObject(event_empty_json));
-    assert.deepStrictEqual(event_data, RecordedEvent.fromJSONObject(event_data_json));
-  });
-
-  it("deserialize existing data", function () {
-    const event_empty_json = {
-      "category": "cat",
-      "extra": undefined,
-      "name": "name",
-      "timestamp": 2,
-    };
-
-    const event_data_json = {
-      "category": "cat",
-      "extra": {
-        "a key": "a value"
-      },
-      "name": "name",
-      "timestamp": 2,
-    };
-
-    const event_empty = RecordedEvent.fromJSONObject(event_empty_json);
-    const event_data = RecordedEvent.fromJSONObject(event_data_json);
-
-    assert.deepStrictEqual(
-      event_empty_json,
-      RecordedEvent.toJSONObject(event_empty)
-    );
-    assert.deepStrictEqual(event_data_json, RecordedEvent.toJSONObject(event_data));
-  });
-
   // Note: "does not record if upload is disabled" was not ported from Rust. We
   // are only checking for upload being enabled in the metric type itself, to
   // reduce coupling across the components.
@@ -118,11 +67,11 @@ describe("EventsDatabase", function() {
     let snapshot = await db.getPingEvents("store1", false);
     assert.strictEqual(snapshot, undefined);
 
-    await db.record(metric, new RecordedEvent(
-      "telemetry",
-      "test_event_clear",
-      1000,
-    ));
+    await db.record(metric, new RecordedEvent({
+      category: "telemetry",
+      name: "test_event_clear",
+      timestamp: 1000,
+    }));
 
     // Take a first snapshot and clear the recorded content.
     snapshot = await db.getPingEvents("store1", true);
@@ -155,23 +104,23 @@ describe("EventsDatabase", function() {
       disabled: false
     });
 
-    await db.record(metric, new RecordedEvent(
-      metric.category,
-      metric.name,
-      1000,
-    ));
+    await db.record(metric, new RecordedEvent({
+      category: metric.category,
+      name: metric.name,
+      timestamp: 1000,
+    }));
 
-    await db.record(metric, new RecordedEvent(
-      metric.category,
-      metric.name,
-      100,
-    ));
+    await db.record(metric, new RecordedEvent({
+      category: metric.category,
+      name: metric.name,
+      timestamp: 100,
+    }));
 
-    await db.record(metric, new RecordedEvent(
-      metric.category,
-      metric.name,
-      10000,
-    ));
+    await db.record(metric, new RecordedEvent({
+      category: metric.category,
+      name: metric.name,
+      timestamp: 10000,
+    }));
 
     const snapshot = await db.getPingEvents("store1", true);
     assert.ok(snapshot);
@@ -200,17 +149,17 @@ describe("EventsDatabase", function() {
       disabled: false
     });
 
-    await db.record(metric, new RecordedEvent(
-      metric.category,
-      metric.name,
-      100,
-    ));
+    await db.record(metric, new RecordedEvent({
+      category: metric.category,
+      name: metric.name,
+      timestamp: 100,
+    }));
 
     for (const ping of pings) {
       assert.strictEqual(await executionCounter.testGetValue(ping), 1);
       // We need to use `getAndValidatePingData` here,
       // because the public function will strip reserved extra keys.
-      const rawRecordedEvent = (await db["getAndValidatePingData"](ping))[0];
+      const rawRecordedEvent = (await db["getAndValidatePingData"](ping))[0].get();
       assert.strictEqual(rawRecordedEvent.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
     }
   });
@@ -235,11 +184,11 @@ describe("EventsDatabase", function() {
     });
 
     // Record events once, so that the events database has record of them.
-    await db.record(metric, new RecordedEvent(
-      metric.category,
-      metric.name,
-      100,
-    ));
+    await db.record(metric, new RecordedEvent({
+      category: metric.category,
+      name: metric.name,
+      timestamp: 100,
+    }));
 
     // Fake restart db a few times and check that execution counter goes up.
     for (let i = 1; i <= 10; i++) {
@@ -275,56 +224,56 @@ describe("EventsDatabase", function() {
       sendIfEmpty: false
     });
 
-    await db.record(metric, new RecordedEvent(
-      metric.category,
-      metric.name,
-      100,
-    ));
+    await db.record(metric, new RecordedEvent({
+      category: metric.category,
+      name: metric.name,
+      timestamp: 100,
+    }));
     // We expect only two events here, restarted and the above. Execution counter 1.
     const rawRecordedEvents1 = (await db["getAndValidatePingData"]("aPing"));
     assert.strictEqual(rawRecordedEvents1.length, 2);
-    assert.strictEqual(rawRecordedEvents1[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
-    assert.strictEqual(rawRecordedEvents1[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents1[0].get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents1[1].get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
 
     // Fake restart Glean and record a new event.
     const restartedDb = new EventsDatabase();
     await restartedDb.initialize();
-    await db.record(metric, new RecordedEvent(
-      metric.category,
-      metric.name,
-      100,
-    ));
+    await db.record(metric, new RecordedEvent({
+      category: metric.category,
+      name: metric.name,
+      timestamp: 100,
+    }));
 
     // We expect two more events here,
     // the first two are the ones we recorded before restart, so it's execution counter is 1,
     // the next two events are this run's restart event + the event we just recorded and both are execution counter 2.
     const rawRecordedEvents2 = (await db["getAndValidatePingData"]("aPing"))
       .sort((a, b) => {
-        const executionCounterA = a.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] as number;
-        const executionCounterB = b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] as number;
+        const executionCounterA = a.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] as number;
+        const executionCounterB = b.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] as number;
         return executionCounterA - executionCounterB;
       });
     assert.strictEqual(rawRecordedEvents2.length, 4);
-    assert.strictEqual(rawRecordedEvents2[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
-    assert.strictEqual(rawRecordedEvents2[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
-    assert.strictEqual(rawRecordedEvents2[2].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 2);
-    assert.strictEqual(rawRecordedEvents2[3].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 2);
+    assert.strictEqual(rawRecordedEvents2[0].get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents2[1].get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents2[2].get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 2);
+    assert.strictEqual(rawRecordedEvents2[3].get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 2);
 
     ping.submit();
     // Sanity check that the execution counter was cleared.
     assert.strictEqual(await executionCounter.testGetValue("aPing"), undefined);
 
-    await db.record(metric, new RecordedEvent(
-      metric.category,
-      metric.name,
-      100,
-    ));
+    await db.record(metric, new RecordedEvent({
+      category: metric.category,
+      name: metric.name,
+      timestamp: 100,
+    }));
 
     // We expect only two events again, the other have been cleared, execution counter 1.
     const rawRecordedEvents3 = (await db["getAndValidatePingData"]("aPing"));
     assert.strictEqual(rawRecordedEvents3.length, 2);
-    assert.strictEqual(rawRecordedEvents3[0].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
-    assert.strictEqual(rawRecordedEvents3[1].extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents3[0].get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
+    assert.strictEqual(rawRecordedEvents3[1].get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY], 1);
   });
 
   it("reserved extra properties are removed from the recorded events", async function () {
@@ -345,14 +294,18 @@ describe("EventsDatabase", function() {
       disabled: false
     });
     // Record an initial event.
-    await db.record(metric, new RecordedEvent(metric.category, metric.name, 10));
+    await db.record(metric, new RecordedEvent({
+      category: metric.category,
+      name: metric.name,
+      timestamp: 10
+    }));
 
     const snapshot = await db.getPingEvents("store1", true);
     assert.ok(snapshot);
     assert.strictEqual(1, snapshot.length);
 
-    const e = RecordedEvent.fromJSONObject(snapshot[0] as JSONObject);
-    assert.strictEqual(e.extra, undefined);
+    const e = new RecordedEvent(snapshot[0] as JSONObject);
+    assert.strictEqual(e.get().extra, undefined);
   });
 
   it("glean.restarted events are properly injected when initializing", async function () {
@@ -370,11 +323,11 @@ describe("EventsDatabase", function() {
       disabled: false
     });
 
-    await db.record(event, new RecordedEvent(
-      event.category,
-      event.name,
-      1000,
-    ));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 1000,
+    }));
 
     // Move the clock forward by one minute to look like Glean was really restarted.
     Context.startTime.setTime(Context.startTime.getTime() + 1000 * 60);
@@ -411,7 +364,11 @@ describe("EventsDatabase", function() {
         disabled: false
       });
 
-      await db.record(event, new RecordedEvent(event.category, event.name, 1000));
+      await db.record(event, new RecordedEvent({
+        category: event.category,
+        name: event.name,
+        timestamp: 1000
+      }));
 
       // Move the clock forward by one minute.
       Context.startTime.setTime(Context.startTime.getTime() + 1000 * 60);
@@ -425,12 +382,12 @@ describe("EventsDatabase", function() {
 
     // First event snapshot is always 0.
     const [ firstEvent, ...subsequentEvents ] = snapshot;
-    assert.strictEqual(RecordedEvent.fromJSONObject(firstEvent as JSONObject).timestamp, 0);
+    assert.strictEqual(new RecordedEvent(firstEvent as JSONObject).get().timestamp, 0);
 
     // Make sure subsequent timestamps are strictly increasing.
     let prevTime = 0;
     for (const event of subsequentEvents) {
-      const e = RecordedEvent.fromJSONObject(event as JSONObject);
+      const e = new RecordedEvent(event as JSONObject).get();
       assert.ok(e.timestamp > prevTime);
       prevTime = e.timestamp;
     }
@@ -462,7 +419,11 @@ describe("EventsDatabase", function() {
         disabled: false
       });
 
-      await db.record(event, new RecordedEvent(event.category, event.name, 1000));
+      await db.record(event, new RecordedEvent({
+        category: event.category,
+        name: event.name,
+        timestamp: 1000
+      }));
 
       // Move the clock backwards by one hour.
       Context.startTime.setTime(Context.startTime.getTime() - 1000 * 60 * 60);
@@ -476,12 +437,12 @@ describe("EventsDatabase", function() {
 
     // First event snapshot is always 0.
     const [ firstEvent, ...subsequentEvents ] = snapshot;
-    assert.strictEqual(RecordedEvent.fromJSONObject(firstEvent as JSONObject).timestamp, 0);
+    assert.strictEqual(new RecordedEvent(firstEvent as JSONObject).get().timestamp, 0);
 
     // Make sure subsequent timestamps are strictly increasing.
     let prevTime = 0;
     for (const event of subsequentEvents) {
-      const e = RecordedEvent.fromJSONObject(event as JSONObject);
+      const e = new RecordedEvent(event as JSONObject).get();
       assert.ok(e.timestamp > prevTime);
       prevTime = e.timestamp;
     }
@@ -513,7 +474,11 @@ describe("EventsDatabase", function() {
         disabled: false
       });
 
-      await db.record(event, new RecordedEvent(event.category, event.name, 1000));
+      await db.record(event, new RecordedEvent({
+        category: event.category,
+        name: event.name,
+        timestamp: 1000
+      }));
 
       // Do not move the clock forward, time stands still.
       // Fake a re-start.
@@ -526,12 +491,12 @@ describe("EventsDatabase", function() {
 
     // First event snapshot is always 0.
     const [ firstEvent, ...subsequentEvents ] = snapshot;
-    assert.strictEqual(RecordedEvent.fromJSONObject(firstEvent as JSONObject).timestamp, 0);
+    assert.strictEqual(new RecordedEvent(firstEvent as JSONObject).get().timestamp, 0);
 
     // Make sure subsequent timestamps are strictly increasing.
     let prevTime = 0;
     for (const event of subsequentEvents) {
-      const e = RecordedEvent.fromJSONObject(event as JSONObject);
+      const e = new RecordedEvent(event as JSONObject).get();
       assert.ok(e.timestamp > prevTime);
       prevTime = e.timestamp;
     }
@@ -570,8 +535,16 @@ describe("EventsDatabase", function() {
     });
 
     // Events are recorded.
-    await db.record(event, new RecordedEvent(event.category, event.name, 0));
-    await db.record(event, new RecordedEvent(event.category, event.name, 10));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 0
+    }));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 10
+    }));
 
     // Move the clock forward by one hour.
     const restartedTimeOffset = 1000 * 60 * 60;
@@ -581,8 +554,16 @@ describe("EventsDatabase", function() {
     await db.initialize();
 
     // New events are recorded.
-    await db.record(event, new RecordedEvent(event.category, event.name, 10));
-    await db.record(event, new RecordedEvent(event.category, event.name, 40));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 10
+    }));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 40
+    }));
 
     // Fake submit ping and perform checks on the ping payload.
     const payload = await collectPing(ping);
@@ -624,8 +605,16 @@ describe("EventsDatabase", function() {
     });
 
     // Events are recorded.
-    await db.record(event, new RecordedEvent(event.category, event.name, 0));
-    await db.record(event, new RecordedEvent(event.category, event.name, 10));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 0
+    }));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 10
+    }));
 
     // Move the clock forward by one hour.
     const restartedTimeOffset = 1000 * 60 * 60;
@@ -635,8 +624,16 @@ describe("EventsDatabase", function() {
     await db.initialize();
 
     // New set of events are recorded
-    await db.record(event, new RecordedEvent(event.category, event.name, 10));
-    await db.record(event, new RecordedEvent(event.category, event.name, 40));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 10
+    }));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 40
+    }));
 
     // Move the clock forward by one more hour.
     Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset * 2);
@@ -645,8 +642,16 @@ describe("EventsDatabase", function() {
     await db.initialize();
 
     // New set of events are recorded
-    await db.record(event, new RecordedEvent(event.category, event.name, 20));
-    await db.record(event, new RecordedEvent(event.category, event.name, 30));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 20
+    }));
+    await db.record(event, new RecordedEvent({
+      category: event.category,
+      name: event.name,
+      timestamp: 30
+    }));
 
     // Fake submit ping and perform checks on the ping payload.
     const payload = await collectPing(ping);
@@ -689,8 +694,16 @@ describe("EventsDatabase", function() {
         disabled: false
       });
 
-      await db.record(event, new RecordedEvent(event.category, event.name, timestamp1));
-      await db.record(event, new RecordedEvent(event.category, event.name, timestamp2));
+      await db.record(event, new RecordedEvent({
+        category: event.category,
+        name: event.name,
+        timestamp: timestamp1
+      }));
+      await db.record(event, new RecordedEvent({
+        category: event.category,
+        name: event.name,
+        timestamp: timestamp2
+      }));
     }
 
     // Check timestamps are correct.

@@ -281,4 +281,26 @@ describe("EventMetric", function() {
     const extras3 = snapshot[2].extra;
     assert.ok(!extras3);
   });
+
+  it("attempting to record a value of incorrect type records an error", async function () {
+    const metric = new EventMetricType({
+      category: "telemetry",
+      name: "test",
+      sendInPings: [ "aPing" ],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, ["key1", "key2"]);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.record("not object");
+    // Extra values may only be booleans, numbers or strings
+    //
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.record({ "key1": { "not": "valid" }});
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
+    assert.strictEqual(await metric.testGetValue(), undefined);
+  });
 });

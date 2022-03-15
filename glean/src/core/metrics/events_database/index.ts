@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type Store from "../../storage/index.js";
-import type { JSONArray, JSONObject, JSONValue } from "../../utils.js";
+import type { JSONArray, JSONValue } from "../../utils.js";
 import { isString } from "../../utils.js";
 import { isUndefined } from "../../utils.js";
 import { InternalEventMetricType as EventMetricType } from "../types/event.js";
@@ -12,7 +12,7 @@ import { InternalCounterMetricType as CounterMetricType } from "../types/counter
 import { Lifetime } from "../lifetime.js";
 import { Context } from "../../context.js";
 import { generateReservedMetricIdentifiers } from "../database.js";
-import type { ExtraValues} from "./recorded_event.js";
+import type { ExtraValues , Event } from "./recorded_event.js";
 import { RecordedEvent } from "./recorded_event.js";
 import {
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
@@ -179,7 +179,7 @@ class EventsDatabase {
 
       const transformFn = (v?: JSONValue): JSONArray => {
         const existing: JSONArray = (v as JSONArray) ?? [];
-        existing.push(RecordedEvent.toJSONObject(value));
+        existing.push(value.get());
         return existing;
       };
       await this.eventsStore.update([ping], transformFn);
@@ -200,7 +200,7 @@ class EventsDatabase {
   async getEvents(
     ping: string,
     metric: EventMetricType
-  ): Promise<RecordedEvent[] | undefined> {
+  ): Promise<Event[] | undefined> {
     const events = await this.getAndValidatePingData(ping);
     if (events.length === 0) {
       return;
@@ -208,7 +208,7 @@ class EventsDatabase {
 
     return events
       // Only report events for the requested metric.
-      .filter((e) => (e.category === metric.category) && (e.name === metric.name))
+      .filter((e) => (e.get().category === metric.category) && (e.get().name === metric.name))
       .map(e => e.withoutReservedExtras());
   }
 
@@ -242,7 +242,15 @@ class EventsDatabase {
       return [];
     }
 
-    return data.map((e) => RecordedEvent.fromJSONObject((e as JSONObject)));
+    return data.reduce((result, e) => {
+      try {
+        const event = new RecordedEvent(e);
+        return [...result, event];
+      } catch {
+        log(LOG_TAG, `Unexpected data found in events storage: ${JSON.stringify(e)}. Ignoring.`);
+        return result;
+      }
+    }, [] as RecordedEvent[]);
   }
 
   /**
@@ -288,20 +296,20 @@ class EventsDatabase {
   ): Promise<JSONArray> {
     // Sort events by execution counter and by timestamp.
     const sortedEvents = pingData.sort((a, b) => {
-      const executionCounterA = Number(a.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
-      const executionCounterB = Number(b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
+      const executionCounterA = Number(a.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
+      const executionCounterB = Number(b.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
       // Sort by execution counter, in case they are different.
       if (executionCounterA !== executionCounterB) {
         return executionCounterA - executionCounterB;
       }
 
       // Sort by timestamp if events come from same execution.
-      return a.timestamp - b.timestamp;
+      return a.get().timestamp - b.get().timestamp;
     });
 
     let lastRestartDate: Date;
     try {
-      lastRestartDate = createDateObject(sortedEvents[0].extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
+      lastRestartDate = createDateObject(sortedEvents[0].get().extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
       // Drop the first `restarted` event.
       sortedEvents.shift();
     } catch {
@@ -310,11 +318,11 @@ class EventsDatabase {
       lastRestartDate = Context.startTime;
     }
 
-    const firstEventOffset = sortedEvents[0]?.timestamp || 0;
+    const firstEventOffset = sortedEvents[0]?.get().timestamp || 0;
     let restartedOffset = 0;
     for (const [index, event] of sortedEvents.entries()) {
       try {
-        const nextRestartDate = createDateObject(event.extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
+        const nextRestartDate = createDateObject(event.get().extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
         const dateOffset = nextRestartDate.getTime() - lastRestartDate.getTime();
         lastRestartDate = nextRestartDate;
 
@@ -324,7 +332,7 @@ class EventsDatabase {
         // The restarted event is always timestamp 0,
         // so in order to guarantee event timestamps are always in ascending order,
         // the offset needs to be _at least_ larger than the previous timestamp.
-        const previousEventTimestamp = sortedEvents[index - 1].timestamp;
+        const previousEventTimestamp = sortedEvents[index - 1].get().timestamp;
         if (newRestartedOffset <= previousEventTimestamp) {
           // In case the new offset results in descending timestamps,
           // we increase the previous timestamp by one to make sure
@@ -350,23 +358,23 @@ class EventsDatabase {
       // The execution counter is a counter metric, the smallest value it can have is `1`.
       // At this stage all metrics should have an execution counter, but out of caution we
       // will fallback to `1` in case it is not present.
-      const executionCount = Number(event.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || 1);
+      const executionCount = Number(event.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || 1);
       let adjustedTimestamp: number;
       if (executionCount === 1) {
-        adjustedTimestamp = event.timestamp - firstEventOffset;
+        adjustedTimestamp = event.get().timestamp - firstEventOffset;
       } else {
-        adjustedTimestamp = event.timestamp + restartedOffset;
+        adjustedTimestamp = event.get().timestamp + restartedOffset;
       }
 
-      sortedEvents[index] = new RecordedEvent(
-        event.category,
-        event.name,
-        adjustedTimestamp,
-        event.extra
-      );
+      sortedEvents[index] = new RecordedEvent({
+        category: event.get().category,
+        name: event.get().name,
+        timestamp: adjustedTimestamp,
+        extra: event.get().extra
+      });
     }
 
-    return sortedEvents.map((e) => RecordedEvent.toJSONObject(e.payload()));
+    return sortedEvents.map((e) => e.payload());
   }
 
   /**
