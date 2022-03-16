@@ -262,7 +262,7 @@ class MetricsDatabase {
         if (!validateMetricInternalRepresentation(metricType, metrics[metricIdentifier])) {
           log(
             LOG_TAG,
-            `Invalid value found in storage for metric "${metricIdentifier}". Deleting.`,
+            `Invalid value "${JSON.stringify(metrics[metricIdentifier])}" found in storage for metric "${metricIdentifier}". Deleting.`,
             LoggingLevel.Debug
           );
 

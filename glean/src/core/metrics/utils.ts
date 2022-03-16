@@ -11,8 +11,9 @@ import { isInteger, isString } from "../utils.js";
 import { LabeledMetric } from "./types/labeled.js";
 import { Context } from "../context.js";
 import { ErrorType } from "../error/error_type.js";
+import log, { LoggingLevel } from "../log.js";
 
-
+const LOG_TAG = "Glean.core.Metrics.utils";
 
 /**
  * A metric factory function.
@@ -31,7 +32,7 @@ export function createMetric(type: string, v: unknown): Metric<JSONValue, JSONVa
 
   const ctor = Context.getSupportedMetric(type);
   if (!ctor) {
-    throw new Error(`Unable to create metric of unknown type ${type}`);
+    throw new Error(`Unable to create metric of unknown type "${type}".`);
   }
 
   return new ctor(v);
@@ -52,7 +53,8 @@ export function validateMetricInternalRepresentation<T extends JSONValue>(
   try {
     createMetric(type, v);
     return true;
-  } catch {
+  } catch(e) {
+    log(LOG_TAG, (e as Error).message, LoggingLevel.Error);
     return false;
   }
 }
