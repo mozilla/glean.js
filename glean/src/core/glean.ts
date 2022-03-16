@@ -23,15 +23,6 @@ import log, { LoggingLevel } from "./log.js";
 const LOG_TAG = "core.Glean";
 
 namespace Glean {
-  // The below properties are exported for testing purposes.
-  //
-  // Instances of Glean's core metrics.
-  //
-  // Disabling the lint, because we will actually re-assign this variable in the testInitializeGlean API.
-  // eslint-disable-next-line prefer-const
-  export let coreMetrics = new CoreMetrics();
-  // Instances of Glean's core pings.
-  export const corePings = new CorePings();
   // An instance of the ping uploader.
   export let pingUploader: PingUploadManager;
 
@@ -51,7 +42,7 @@ namespace Glean {
    */
   async function onUploadEnabled(): Promise<void> {
     Context.uploadEnabled = true;
-    await coreMetrics.initialize();
+    await Context.coreMetrics.initialize();
   }
 
   /**
@@ -70,7 +61,7 @@ namespace Glean {
     // We need to use an undispatched submission to guarantee that the
     // ping is collected before metric are cleared, otherwise we end up
     // with malformed pings.
-    await corePings.deletionRequest.submitUndispatched();
+    await Context.corePings.deletionRequest.submitUndispatched();
     await clearMetrics();
   }
 
@@ -97,7 +88,7 @@ namespace Glean {
       firstRunDate = new DatetimeMetric(
         await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
-          coreMetrics.firstRunDate
+          Context.coreMetrics.firstRunDate
         )
       ).date;
     } catch {
@@ -124,10 +115,10 @@ namespace Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    await coreMetrics.clientId.setUndispatched(KNOWN_CLIENT_ID);
+    await Context.coreMetrics.clientId.setUndispatched(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await coreMetrics.firstRunDate.setUndispatched(firstRunDate);
+    await Context.coreMetrics.firstRunDate.setUndispatched(firstRunDate);
 
     Context.uploadEnabled = false;
   }
@@ -193,6 +184,9 @@ namespace Glean {
       );
       return;
     }
+
+    Context.coreMetrics = new CoreMetrics();
+    Context.corePings = new CorePings();
 
     Context.applicationId = sanitizeApplicationId(applicationId);
 
@@ -265,7 +259,7 @@ namespace Glean {
         // deletion request ping.
         const clientId = await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
-          coreMetrics.clientId
+          Context.coreMetrics.clientId
         );
 
         if (clientId) {

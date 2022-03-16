@@ -12,6 +12,8 @@ import type { JSONValue } from "./utils.js";
 import Dispatcher from "./dispatcher.js";
 import log, { LoggingLevel } from "./log.js";
 import type { Configuration } from "./config.js";
+import type CorePings from "./internal_pings.js";
+import type { CoreMetrics } from "./internal_metrics.js";
 
 const LOG_TAG = "core.Context";
 
@@ -32,6 +34,8 @@ export class Context {
 
   private _dispatcher: Dispatcher;
   private _platform!: Platform;
+  private _corePings!: CorePings;
+  private _coreMetrics!: CoreMetrics;
 
   // The following group of properties are all set on Glean.initialize
   // Attempting to get them before they are set will log an error.
@@ -228,6 +232,22 @@ export class Context {
 
   static set testing(flag: boolean) {
     Context.instance._testing = flag;
+  }
+
+  static get corePings(): CorePings {
+    return Context.instance._corePings;
+  }
+
+  static set corePings(pings: CorePings) {
+    Context.instance._corePings = pings;
+  }
+
+  static get coreMetrics(): CoreMetrics {
+    return Context.instance._coreMetrics;
+  }
+
+  static set coreMetrics(metrics: CoreMetrics) {
+    Context.instance._coreMetrics = metrics;
   }
 
   static set platform(platform: Platform) {

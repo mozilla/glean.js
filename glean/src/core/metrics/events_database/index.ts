@@ -20,7 +20,6 @@ import {
   GLEAN_REFERENCE_TIME_EXTRA_KEY
 } from "../../constants.js";
 import { ErrorType } from "../../error/error_type.js";
-import Glean from "../../glean.js";
 
 const LOG_TAG = "core.Metric.EventsDatabase";
 
@@ -150,7 +149,7 @@ class EventsDatabase {
     if (storeNames.includes(EVENTS_PING_NAME)) {
       const storedEvents = (await this.eventsStore.get([EVENTS_PING_NAME]) as JSONArray) ?? [];
       if (storedEvents.length > 0) {
-        await Glean.corePings.events.submitUndispatched("startup");
+        await Context.corePings.events.submitUndispatched("startup");
       }
     }
 
@@ -201,7 +200,7 @@ class EventsDatabase {
 
       await this.eventsStore.update([ping], transformFn);
       if (ping === EVENTS_PING_NAME && numEvents >= Context.config.maxEvents) {
-        await Glean.corePings.events.submitUndispatched("max_capacity");
+        await Context.corePings.events.submitUndispatched("max_capacity");
       }
     }
   }

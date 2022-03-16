@@ -22,7 +22,6 @@ import { testResetGlean } from "../../../../src/core/testing";
 import type { Event } from "../../../../src/core/metrics/events_database/recorded_event";
 import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
 import { WaitableUploader } from "../../../utils";
-import Glean from "../../../../src/core/glean";
 import type { PingPayload } from "../../../../src/core/pings/ping_payload";
 
 const sandbox = sinon.createSandbox();
@@ -794,7 +793,7 @@ describe("EventsDatabase", function() {
     // Initialization should trigger a startup ping
     await testInitializeGlean(testAppId, true, { httpClient });
     // Send another 'events' ping after init, it should contain the preInit events
-    await Glean.corePings.events.submitUndispatched();
+    await Context.corePings.events.submitUndispatched();
 
     // First ping is the startup ping,
     // second ping is the events ping submitted above.
