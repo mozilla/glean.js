@@ -35,6 +35,10 @@ export interface QueuedPing extends PingInternalRepresentation {
 class PingUploadManager implements PingsDatabaseObserver {
   // A FIFO queue storing a `QueuedPing` for each pending ping.
   private queue: QueuedPing[];
+  // A set of the idenfitifers of pings being processed
+  // i.e. pings that were removed from the queue by calling `getUploadTask`,
+  // but have not yet been deleted from the database / re-enqueued by calling `processPingUploadResponse`.
+  private processing: Set<string>;
   // A worker that will take care of actually uploading pings.
   private worker: PingUploadWorker;
 
@@ -50,6 +54,7 @@ class PingUploadManager implements PingsDatabaseObserver {
     private readonly rateLimiter = new RateLimiter(),
   ) {
     this.queue = [];
+    this.processing = new Set();
 
     this.worker = new PingUploadWorker(
       // Initialize the ping upload worker with either the platform defaults or a custom
@@ -65,11 +70,16 @@ class PingUploadManager implements PingsDatabaseObserver {
   /**
    * Enqueues a new ping at the end of the queue.
    *
-   * Will not enqueue if a ping with the same identifier is already enqueued.
+   * Will not enqueue if a ping with the same identifier is already enqueued
+   * or is currently being processed.
    *
    * @param ping The ping to enqueue.
    */
   private enqueuePing(ping: QueuedPing): void {
+    if (this.processing.has(ping.identifier)) {
+      return;
+    }
+
     for (const queuedPing of this.queue) {
       if (queuedPing.identifier === ping.identifier) {
         return;
@@ -109,9 +119,11 @@ class PingUploadManager implements PingsDatabaseObserver {
         return uploadTaskFactory.wait(remainingTime || 0);
       }
 
-      // We are sure this array is not empty, so `shift` will never return an `undefined` value.
+      // We are sure this array is not empty, so this will never return an `undefined` value.
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
       const nextPing = this.queue.shift()!;
+      this.processing.add(nextPing.identifier);
+
       return uploadTaskFactory.upload(nextPing);
     }
 
@@ -175,8 +187,7 @@ class PingUploadManager implements PingsDatabaseObserver {
    */
   async processPingUploadResponse(ping: QueuedPing, response: UploadResult): Promise<void> {
     const { identifier } = ping;
-    // Remove ping from queue list.
-    this.queue.filter(p => p.identifier !== identifier);
+    this.processing.delete(identifier);
 
     const { status, result } = response;
     if (status && status >= 200 && status < 300) {
