@@ -117,9 +117,6 @@ describe("EventMetric", function() {
     assert.strictEqual(snapshot?.length, 1);
   });
 
-  it.skip("bug 1690253: flush queued events on startup");
-  it.skip("bug 1690253: flush queued events on startup and correctly handle pre init events");
-
   it("long extra values record an error", async function () {
     const metric = new EventMetricType({
       category: "telemetry",
@@ -145,9 +142,6 @@ describe("EventMetric", function() {
     metric.record({ nonRegisteredLabel: "01234567890" });
     assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1);
   });
-
-  it.skip("bug 1690301: overdue events are submitted in registered custom pings");
-  it.skip("bug 1690301: overdue events are discarded if ping is not registered");
 
   it("records properly without optional arguments", async function () {
     const pings = ["store1", "store2"];

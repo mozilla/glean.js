@@ -224,14 +224,20 @@ namespace Glean {
     //
     // The dispatcher will catch and log any exceptions.
     Context.dispatcher.flushInit(async () => {
-      // We need to mark Glean as initialized before dealing with the upload status,
-      // otherwise we will not be able to submit deletion-request pings if necessary.
-      //
-      // This is fine, we are inside a dispatched task that is guaranteed to run before any
-      // other task. No external API call will be executed before we leave this task.
       Context.initialized = true;
 
       Context.uploadEnabled = uploadEnabled;
+
+      // Initialize the events database.
+      //
+      // It's important this happens _after_ the upload state is set,
+      // because initializing the events database may record the execution_counter and
+      // glean.restarted metrics. If the upload state is not defined these metrics cannot be recorded.
+      //
+      // This may also submit an 'events' ping,
+      // so it also needs to happen before application lifetime metrics are cleared.
+      await Context.eventsDatabase.initialize();
+
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
       if (uploadEnabled) {
@@ -272,13 +278,6 @@ namespace Glean {
           await clearMetrics();
         }
       }
-
-      // Initialize the events database.
-      //
-      // It's important this happens _after_ the upload state is dealt with,
-      // because initializing the events database may record the execution_counter and
-      // glean.restarted metrics. If the upload state is not defined these metrics can't be recorded.
-      await Context.eventsDatabase.initialize();
 
       // We only scan the pendings pings **after** dealing with the upload state.
       // If upload is disabled, pending pings files are deleted
