@@ -53,15 +53,23 @@ namespace Glean {
    * A deletion_request ping is sent, all pending metrics, events and queued
    * pings are cleared, and the client_id is set to KNOWN_CLIENT_ID.
    * Afterward, the upload_enabled flag is set to false.
+   *
+   * @param at_init Whether or not upload has been disabled during initialization.
    */
-  async function onUploadDisabled(): Promise<void> {
+  async function onUploadDisabled(at_init: boolean): Promise<void> {
     // It's fine to set this before submitting the deletion request ping,
     // that ping is still sent even if upload is disabled.
+    let reason: string;
+    if (at_init) {
+      reason = "at_init";
+    } else {
+      reason = "set_upload_enabled";
+    }
     Context.uploadEnabled = false;
     // We need to use an undispatched submission to guarantee that the
     // ping is collected before metric are cleared, otherwise we end up
     // with malformed pings.
-    await Context.corePings.deletionRequest.submitUndispatched();
+    await Context.corePings.deletionRequest.submitUndispatched(reason);
     await clearMetrics();
   }
 
@@ -264,7 +272,7 @@ namespace Glean {
 
         if (clientId) {
           if (clientId !== KNOWN_CLIENT_ID) {
-            await onUploadDisabled();
+            await onUploadDisabled(true);
           }
         } else {
           // Call `clearMetrics` directly here instead of `onUploadDisabled` to avoid sending
@@ -323,7 +331,7 @@ namespace Glean {
         if (flag) {
           await onUploadEnabled();
         } else {
-          await onUploadDisabled();
+          await onUploadDisabled(false);
         }
       }
     });
