@@ -1,8 +1,9 @@
-personal_ws-1.1 en 69 
+personal_ws-1.1 en 71 
 API's
 APIs
 BUGFIX
 BrowserStack
+CLI
 Changelog
 CircleCI
 Ciufo
@@ -65,6 +66,7 @@ unminified
 uploader
 uploaders
 url
+uuid
 virtualenv
 webext
 webpack

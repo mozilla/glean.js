@@ -4,10 +4,12 @@
 
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
-import { generateUUIDv4, isString, testOnlyCheck } from "../../utils.js";
+import { generateUUIDv4, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.UUIDMetricType";
 // Loose UUID regex for checking if a string has a UUID _shape_. Does not contain version checks.
@@ -21,12 +23,22 @@ export class UUIDMetric extends Metric<string, string> {
     super(v);
   }
 
-  validate(v: unknown): v is string {
-    if (!isString(v)) {
-      return false;
+  validate(v: unknown): MetricValidationResult {
+    const validation = validateString(v);
+    if (validation.type === MetricValidation.Error) {
+      return validation;
     }
 
-    return UUID_REGEX.test(v);
+    const str = v as string;
+    if (!UUID_REGEX.test(str)) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `"${str}" is not a valid UUID`,
+        errorType: ErrorType.InvalidValue,
+      };
+    }
+
+    return { type: MetricValidation.Success };
   }
 
   payload(): string {
@@ -35,29 +47,28 @@ export class UUIDMetric extends Metric<string, string> {
 }
 
 /**
- *  An UUID metric.
+ * Base implementation of the UUID metric type,
+ * meant only for Glean internal use.
  *
- * Stores UUID v4 (randomly generated) values.
+ * This class exposes Glean-internal properties and methods
+ * of the UUID metric type.
  */
-class UUIDMetricType extends MetricType {
+export class InternalUUIDMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("uuid", meta, UUIDMetric);
   }
 
   /**
-   * An internal implemention of `set` that does not dispatch the recording task.
+   * An implemention of `set` that does not dispatch the recording task.
    *
    * # Important
    *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
+   * This method should **never** be exposed to users.
    *
-   * @param instance The metric instance to record to.
    * @param value The UUID we want to set to.
    */
-  static async _private_setUndispatched(instance: UUIDMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
+  async setUndispatched(value: string): Promise<void> {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
@@ -68,33 +79,18 @@ class UUIDMetricType extends MetricType {
     let metric: UUIDMetric;
     try {
       metric = new UUIDMetric(value);
-    } catch {
-      await Context.errorManager.record(
-        instance,
-        ErrorType.InvalidValue,
-        `"${value}" is not a valid UUID.`
-      );
-      return;
+      await Context.metricsDatabase.record(this, metric);
+    } catch(e) {
+      if(e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
     }
-
-    await Context.metricsDatabase.record(instance, metric);
   }
 
-  /**
-   * Sets to the specified value.
-   *
-   * @param value the value to set.
-   * @throws In case `value` is not a valid UUID.
-   */
   set(value: string): void {
-    Context.dispatcher.launch(() => UUIDMetricType._private_setUndispatched(this, value));
+    Context.dispatcher.launch(() => this.setUndispatched(value));
   }
 
-  /**
-   * Generates a new random uuid and sets the metric to it.
-   *
-   * @returns The generated value or `undefined` in case this metric shouldn't be recorded.
-   */
   generateAndSet(): string | undefined {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
@@ -106,17 +102,6 @@ class UUIDMetricType extends MetricType {
     return value;
   }
 
-  /**
-   * Test-only API
-   *
-   * Gets the currently stored value as a string.
-   *
-   * This doesn't clear the stored value.
-   *
-   * @param ping the ping from which we want to retrieve this metrics value from.
-   *        Defaults to the first value in `sendInPings`.
-   * @returns The value found in storage or `undefined` if nothing was found.
-   */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: string | undefined;
@@ -128,4 +113,64 @@ class UUIDMetricType extends MetricType {
   }
 }
 
-export default UUIDMetricType;
+/**
+ *  An UUID metric.
+ *
+ * Stores UUID v4 (randomly generated) values.
+ */
+export default class {
+  #inner: InternalUUIDMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalUUIDMetricType(meta);
+  }
+
+  /**
+   * Sets to the specified value.
+   *
+   * @param value the value to set.
+   * @throws In case `value` is not a valid UUID.
+   */
+  set(value: string): void {
+    this.#inner.set(value);
+  }
+
+  /**
+   * Generates a new random uuid and sets the metric to it.
+   *
+   * @returns The generated value or `undefined` in case this
+   *          metric shouldn't be recorded.
+   */
+  generateAndSet(): string | undefined {
+    return this.#inner.generateAndSet();
+  }
+
+  /**
+   * Test-only API.**
+   *
+   * Gets the currently stored value as a string.
+   *
+   * This doesn't clear the stored value.
+   *
+   * @param ping the ping from which we want to retrieve this metrics value from.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns The value found in storage or `undefined` if nothing was found.
+   */
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
+  }
+}

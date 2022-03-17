@@ -5,7 +5,18 @@
 ---
 
 version: 2.1
-
+commands:
+  install-node:
+    steps:
+      - run:
+          name: Install Node.js
+          command: |
+            curl -fsSL https://deb.nodesource.com/setup_lts.x | sudo -E bash -
+            sudo apt-get install -y nodejs
+parameters:
+  python-version:
+    type: string
+    default: "3.9.4"
 jobs:
   spellcheck:
     docker:
@@ -25,19 +36,10 @@ jobs:
           command: bin/spellcheck.sh list
   lint:
     docker:
-      - image: cimg/python:3.9.4
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
-      - run:
-          name: Install NVM
-          command: |
-            curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.38.0/install.sh | bash
-            export NVM_DIR="$HOME/.nvm"
-            echo 'export NVM_DIR=$HOME/.nvm' >> $BASH_ENV
-            echo 'source $NVM_DIR/nvm.sh' >> $BASH_ENV
-      - run:
-          name: Install Node.js
-          command: nvm install 16.5.0
+      - install-node
       - run:
           name: Check that package-lock.json is updated as needed
           command: |
@@ -63,9 +65,10 @@ jobs:
 
   test:
     docker:
-      - image: cimg/python:3.9.4-node
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
+      - install-node
       - run:
           name: Install Firefox related dependencies
           command: |
@@ -84,9 +87,10 @@ jobs:
 
   build:
     docker:
-      - image: cimg/python:3.9.4-node
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
+      - install-node
       - run:
           name: Install JavaScript dependencies
           command: npm --prefix ./glean install
@@ -99,9 +103,10 @@ jobs:
 
   sample-webext-test:
     docker:
-      - image: cimg/python:3.8.8-node
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
+      - install-node
       - run:
           name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
@@ -121,9 +126,10 @@ jobs:
 
   sample-node-test:
     docker:
-      - image: cimg/python:3.8.8-node
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
+      - install-node
       - run:
           name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
@@ -143,9 +149,10 @@ jobs:
 
   sample-qt-test:
     docker:
-      - image: cimg/python:3.8.8-node
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
+      - install-node
       - run:
           name: Install JavaScript dependencies for Glean
           command: npm --prefix ./glean install
@@ -172,7 +179,7 @@ jobs:
             pip install -r requirements.txt
             glean_parser translate src/App/metrics.yaml src/App/pings.yaml \
               -f javascript -o src/App/generated \
-              --option platform=qt --option version="0.31"
+              --option platform=qt --option version="0.32"
       - run:
           name: Run Qt sample tests
           command: |
@@ -182,9 +189,10 @@ jobs:
 
   browser-compat-smoke-tests:
     docker:
-      - image: cimg/python:3.9.4-node
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
+      - install-node
       - run:
           name: Run browser comapt smoke tests
           command: |
@@ -207,9 +215,10 @@ jobs:
   # via https://circleci.com/blog/deploying-documentation-to-github-pages-with-continuous-integration/
   docs-deploy:
     docker:
-      - image: cimg/node:16.1.0
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
+      - install-node
       - run:
           name: Install JavaScript dependencies
           command: npm --prefix ./glean install
@@ -234,9 +243,10 @@ jobs:
 
   publish:
     docker:
-      - image: cimg/node:16.1.0
+      - image: cimg/python:<< pipeline.parameters.python-version >>
     steps:
       - checkout
+      - install-node
       - run:
           name: Install JavaScript dependencies
           command: npm --prefix ./glean install

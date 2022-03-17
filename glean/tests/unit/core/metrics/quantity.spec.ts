@@ -107,4 +107,23 @@ describe("QuantityMetric", function() {
     metric.set(Number.MAX_SAFE_INTEGER+1);
     assert.strictEqual(await metric.testGetValue("aPing"), Number.MAX_SAFE_INTEGER);
   });
+
+  it("attempting to record a value of incorrect type records an error", async function () {
+    const metric = new QuantityMetricType({
+      category: "aCategory",
+      name: "aQuantityMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.set("not number");
+    // Floating point numbers should also record an error
+    metric.set(Math.PI);
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
+    assert.strictEqual(await metric.testGetValue(), undefined);
+  });
 });

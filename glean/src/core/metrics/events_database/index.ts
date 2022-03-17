@@ -3,18 +3,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type Store from "../../storage/index.js";
-import type { JSONArray, JSONObject, JSONValue } from "../../utils.js";
+import type { JSONArray, JSONValue } from "../../utils.js";
 import { isString } from "../../utils.js";
 import { isUndefined } from "../../utils.js";
-import EventMetricType from "../types/event.js";
+import { InternalEventMetricType as EventMetricType } from "../types/event.js";
 import log, { LoggingLevel } from "../../log.js";
-import CounterMetricType from "../types/counter.js";
+import { InternalCounterMetricType as CounterMetricType } from "../types/counter.js";
 import { Lifetime } from "../lifetime.js";
 import { Context } from "../../context.js";
 import { generateReservedMetricIdentifiers } from "../database.js";
-import type { ExtraValues} from "./recorded_event.js";
+import type { ExtraValues , Event } from "./recorded_event.js";
 import { RecordedEvent } from "./recorded_event.js";
 import {
+  EVENTS_PING_NAME,
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
   GLEAN_REFERENCE_TIME_EXTRA_KEY
 } from "../../constants.js";
@@ -47,12 +48,14 @@ function createDateObject(str?: ExtraValues): Date {
  * Creates an execution counter metric.
  *
  * @param sendInPings The list of pings this metric is sent in.
+ *        Note: The 'events' ping should not contain glean.restarted events,
+ *        so this ping will be filtered out from the 'sendInPings' array.
  * @returns A metric type instance.
  */
 function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
   return new CounterMetricType({
     ...generateReservedMetricIdentifiers("execution_counter"),
-    sendInPings: sendInPings,
+    sendInPings: sendInPings.filter(name => name !== EVENTS_PING_NAME),
     lifetime: Lifetime.Ping,
     disabled: false
   });
@@ -62,13 +65,15 @@ function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
  * Creates an `glean.restarted` event metric.
  *
  * @param sendInPings The list of pings this metric is sent in.
+ *        Note: The 'events' ping should not contain glean.restarted events,
+ *        so this ping will be filtered out from the 'sendInPings' array.
  * @returns A metric type instance.
  */
 export function getGleanRestartedEventMetric(sendInPings: string[]): EventMetricType {
   return new EventMetricType({
     category: "glean",
     name: "restarted",
-    sendInPings: sendInPings,
+    sendInPings: sendInPings.filter(name => name !== EVENTS_PING_NAME),
     lifetime: Lifetime.Ping,
     disabled: false
   }, [ GLEAN_REFERENCE_TIME_EXTRA_KEY ]);
@@ -86,8 +91,7 @@ async function recordGleanRestartedEvent(
   time = Context.startTime
 ): Promise<void> {
   const metric = getGleanRestartedEventMetric(sendInPings);
-  await EventMetricType._private_recordUndispatched(
-    metric,
+  await metric.recordUndispatched(
     {
       [GLEAN_REFERENCE_TIME_EXTRA_KEY]: time.toISOString()
     },
@@ -141,9 +145,17 @@ class EventsDatabase {
     }
 
     const storeNames = await this.getAvailableStoreNames();
+    // Submit the events ping in case there are _any_ events unsubmitted from the previous run
+    if (storeNames.includes(EVENTS_PING_NAME)) {
+      const storedEvents = (await this.eventsStore.get([EVENTS_PING_NAME]) as JSONArray) ?? [];
+      if (storedEvents.length > 0) {
+        await Context.corePings.events.submitUndispatched("startup");
+      }
+    }
+
     // Increment the execution counter for known stores.
     // !IMPORTANT! This must happen before any event is recorded for this run.
-    await CounterMetricType._private_addUndispatched(getExecutionCounterMetric(storeNames), 1);
+    await getExecutionCounterMetric(storeNames).addUndispatched(1);
     await recordGleanRestartedEvent(storeNames);
 
     this.initialized = true;
@@ -169,7 +181,7 @@ class EventsDatabase {
       // 1. The ping was already sent during this session and the events storage was cleared;
       // 2. No event has ever been recorded for this ping.
       if (!currentExecutionCount) {
-        await CounterMetricType._private_addUndispatched(executionCounter, 1);
+        await executionCounter.addUndispatched(1);
         currentExecutionCount = 1;
 
         // Record the `glean.restarted` event,
@@ -178,12 +190,18 @@ class EventsDatabase {
       }
       value.addExtra(GLEAN_EXECUTION_COUNTER_EXTRA_KEY, currentExecutionCount);
 
+      let numEvents = 0;
       const transformFn = (v?: JSONValue): JSONArray => {
-        const existing: JSONArray = (v as JSONArray) ?? [];
-        existing.push(RecordedEvent.toJSONObject(value));
-        return existing;
+        const events: JSONArray = (v as JSONArray) ?? [];
+        events.push(value.get());
+        numEvents = events.length;
+        return events;
       };
+
       await this.eventsStore.update([ping], transformFn);
+      if (ping === EVENTS_PING_NAME && numEvents >= Context.config.maxEvents) {
+        await Context.corePings.events.submitUndispatched("max_capacity");
+      }
     }
   }
 
@@ -201,7 +219,7 @@ class EventsDatabase {
   async getEvents(
     ping: string,
     metric: EventMetricType
-  ): Promise<RecordedEvent[] | undefined> {
+  ): Promise<Event[] | undefined> {
     const events = await this.getAndValidatePingData(ping);
     if (events.length === 0) {
       return;
@@ -209,7 +227,7 @@ class EventsDatabase {
 
     return events
       // Only report events for the requested metric.
-      .filter((e) => (e.category === metric.category) && (e.name === metric.name))
+      .filter((e) => (e.get().category === metric.category) && (e.get().name === metric.name))
       .map(e => e.withoutReservedExtras());
   }
 
@@ -243,7 +261,15 @@ class EventsDatabase {
       return [];
     }
 
-    return data.map((e) => RecordedEvent.fromJSONObject((e as JSONObject)));
+    return data.reduce((result, e) => {
+      try {
+        const event = new RecordedEvent(e);
+        return [...result, event];
+      } catch {
+        log(LOG_TAG, `Unexpected data found in events storage: ${JSON.stringify(e)}. Ignoring.`);
+        return result;
+      }
+    }, [] as RecordedEvent[]);
   }
 
   /**
@@ -289,20 +315,20 @@ class EventsDatabase {
   ): Promise<JSONArray> {
     // Sort events by execution counter and by timestamp.
     const sortedEvents = pingData.sort((a, b) => {
-      const executionCounterA = Number(a.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
-      const executionCounterB = Number(b.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
+      const executionCounterA = Number(a.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
+      const executionCounterB = Number(b.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
       // Sort by execution counter, in case they are different.
       if (executionCounterA !== executionCounterB) {
         return executionCounterA - executionCounterB;
       }
 
       // Sort by timestamp if events come from same execution.
-      return a.timestamp - b.timestamp;
+      return a.get().timestamp - b.get().timestamp;
     });
 
     let lastRestartDate: Date;
     try {
-      lastRestartDate = createDateObject(sortedEvents[0].extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
+      lastRestartDate = createDateObject(sortedEvents[0].get().extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
       // Drop the first `restarted` event.
       sortedEvents.shift();
     } catch {
@@ -311,11 +337,11 @@ class EventsDatabase {
       lastRestartDate = Context.startTime;
     }
 
-    const firstEventOffset = sortedEvents[0]?.timestamp || 0;
+    const firstEventOffset = sortedEvents[0]?.get().timestamp || 0;
     let restartedOffset = 0;
     for (const [index, event] of sortedEvents.entries()) {
       try {
-        const nextRestartDate = createDateObject(event.extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
+        const nextRestartDate = createDateObject(event.get().extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
         const dateOffset = nextRestartDate.getTime() - lastRestartDate.getTime();
         lastRestartDate = nextRestartDate;
 
@@ -325,7 +351,7 @@ class EventsDatabase {
         // The restarted event is always timestamp 0,
         // so in order to guarantee event timestamps are always in ascending order,
         // the offset needs to be _at least_ larger than the previous timestamp.
-        const previousEventTimestamp = sortedEvents[index - 1].timestamp;
+        const previousEventTimestamp = sortedEvents[index - 1].get().timestamp;
         if (newRestartedOffset <= previousEventTimestamp) {
           // In case the new offset results in descending timestamps,
           // we increase the previous timestamp by one to make sure
@@ -351,23 +377,23 @@ class EventsDatabase {
       // The execution counter is a counter metric, the smallest value it can have is `1`.
       // At this stage all metrics should have an execution counter, but out of caution we
       // will fallback to `1` in case it is not present.
-      const executionCount = Number(event.extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || 1);
+      const executionCount = Number(event.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY] || 1);
       let adjustedTimestamp: number;
       if (executionCount === 1) {
-        adjustedTimestamp = event.timestamp - firstEventOffset;
+        adjustedTimestamp = event.get().timestamp - firstEventOffset;
       } else {
-        adjustedTimestamp = event.timestamp + restartedOffset;
+        adjustedTimestamp = event.get().timestamp + restartedOffset;
       }
 
-      sortedEvents[index] = new RecordedEvent(
-        event.category,
-        event.name,
-        adjustedTimestamp,
-        event.extra
-      );
+      sortedEvents[index] = new RecordedEvent({
+        category: event.get().category,
+        name: event.get().name,
+        timestamp: adjustedTimestamp,
+        extra: event.get().extra
+      });
     }
 
-    return sortedEvents.map((e) => RecordedEvent.toJSONObject(e.payload()));
+    return sortedEvents.map((e) => e.payload());
   }
 
   /**

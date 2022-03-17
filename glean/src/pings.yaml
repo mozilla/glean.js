@@ -32,3 +32,36 @@ deletion-request:
       The ping was submitted between Glean init and Glean shutdown.
       Glean was told after init but before shutdown that upload has changed
       from enabled to disabled.
+
+events:
+  description: |
+    The events ping's purpose is to transport event metric information.
+
+    This ping is sent at startup if there are any events
+    from the previous application run in storage.
+    It is also sent when maximum capacity is hit
+    i.e. when a given number of events is in storage.
+    Maximum capacity defaults to 500,
+    but may be changed through the `maxEvents` configuration option.
+  include_client_id: true
+  bugs:
+    - https://bugzilla.mozilla.org/1512938
+  data_reviews:
+    - https://bugzilla.mozilla.org/show_bug.cgi?id=1512938#c3
+  notification_emails:
+    - glean-team@mozilla.com
+  reasons:
+    startup: |
+      The ping was submitted at startup.
+      The events ping is always sent if there are any pending events at startup,
+      because event timestamps are not as reliable across application runs.
+    max_capacity: |
+      The maximum number of events was reached (default 500 events).
+    inactive: |
+      The ping was submitted when becoming inactive. In earlier versions, this
+      was called `background`.
+
+      NOTE: It is not possible to find a definition of "inactivity" that spans
+      all of the platforms served by the Glean JavaScript SDK.
+      This reason is only listed here for documentation purposes.
+      It is never reported by the JavaScript SDK.

@@ -5,8 +5,8 @@
 import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "../constants.js";
 import type { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
 import type CommonPingData from "./common_ping_data.js";
-import CounterMetricType, { CounterMetric } from "../metrics/types/counter.js";
-import DatetimeMetricType, { DatetimeMetric } from "../metrics/types/datetime.js";
+import { InternalCounterMetricType as CounterMetricType, CounterMetric } from "../metrics/types/counter.js";
+import { InternalDatetimeMetricType as DatetimeMetricType, DatetimeMetric } from "../metrics/types/datetime.js";
 import TimeUnit from "../metrics/time_unit.js";
 import CoreEvents from "../events/index.js";
 import { Lifetime } from "../metrics/lifetime.js";
@@ -62,7 +62,7 @@ export async function getSequenceNumber(ping: CommonPingData): Promise<number> {
   });
 
   const currentSeqData = await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, seq);
-  await CounterMetricType._private_addUndispatched(seq, 1);
+  await seq.addUndispatched(1);
 
   if (currentSeqData) {
     // Creating a new counter metric validates that the metric stored is actually a number.
@@ -95,7 +95,7 @@ export async function getStartEndTimes(ping: CommonPingData): Promise<{ startTim
 
   // Update the start time with the current time.
   const endTimeData = new Date();
-  await DatetimeMetricType._private_setUndispatched(startTimeMetric, endTimeData);
+  await startTimeMetric.setUndispatched(endTimeData);
   const endTime = DatetimeMetric.fromDate(endTimeData, TimeUnit.Minute);
 
   return {

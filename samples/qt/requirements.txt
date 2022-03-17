@@ -1,1 +1,1 @@
-glean_parser==4.1.0
+glean_parser==5.1.0

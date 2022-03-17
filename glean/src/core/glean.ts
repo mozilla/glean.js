@@ -11,31 +11,27 @@ import PingUploadManager from "./upload/manager.js";
 import { isBoolean, isString, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
 import EventsDatabase from "./metrics/events_database/index.js";
-import UUIDMetricType from "./metrics/types/uuid.js";
-import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
+import { DatetimeMetric } from "./metrics/types/datetime.js";
 import CorePings from "./internal_pings.js";
 import { registerPluginToEvent } from "./events/utils.js";
 import ErrorManager from "./error/index.js";
 import type Platform from "../platform/index.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import { Context } from "./context.js";
-import PingType from "./pings/ping_type.js";
 import log, { LoggingLevel } from "./log.js";
 
 const LOG_TAG = "core.Glean";
 
 namespace Glean {
-  // The below properties are exported for testing purposes.
-  //
-  // Instances of Glean's core metrics.
-  //
-  // Disabling the lint, because we will actually re-assign this variable in the testInitializeGlean API.
-  // eslint-disable-next-line prefer-const
-  export let coreMetrics = new CoreMetrics();
-  // Instances of Glean's core pings.
-  export const corePings = new CorePings();
   // An instance of the ping uploader.
   export let pingUploader: PingUploadManager;
+
+  // Temporary holders for debug values,
+  // to be used when these values are set before initialize
+  // and can be applied during initialized.
+  export let preInitDebugViewTag: string | undefined;
+  export let preInitLogPings: boolean | undefined;
+  export let preInitSourceTags: string[] | undefined;
 
   /**
    * Handles the changing of state from upload disabled to enabled.
@@ -46,7 +42,7 @@ namespace Glean {
    */
   async function onUploadEnabled(): Promise<void> {
     Context.uploadEnabled = true;
-    await coreMetrics.initialize();
+    await Context.coreMetrics.initialize();
   }
 
   /**
@@ -73,7 +69,7 @@ namespace Glean {
     // We need to use an undispatched submission to guarantee that the
     // ping is collected before metric are cleared, otherwise we end up
     // with malformed pings.
-    await PingType._private_submitUndispatched(corePings.deletionRequest, reason);
+    await Context.corePings.deletionRequest.submitUndispatched(reason);
     await clearMetrics();
   }
 
@@ -100,7 +96,7 @@ namespace Glean {
       firstRunDate = new DatetimeMetric(
         await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
-          coreMetrics.firstRunDate
+          Context.coreMetrics.firstRunDate
         )
       ).date;
     } catch {
@@ -127,10 +123,10 @@ namespace Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    await UUIDMetricType._private_setUndispatched(coreMetrics.clientId, KNOWN_CLIENT_ID);
+    await Context.coreMetrics.clientId.setUndispatched(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await DatetimeMetricType._private_setUndispatched(coreMetrics.firstRunDate, firstRunDate);
+    await Context.coreMetrics.firstRunDate.setUndispatched(firstRunDate);
 
     Context.uploadEnabled = false;
   }
@@ -197,11 +193,18 @@ namespace Glean {
       return;
     }
 
+    Context.coreMetrics = new CoreMetrics();
+    Context.corePings = new CorePings();
+
     Context.applicationId = sanitizeApplicationId(applicationId);
 
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
     Context.config = correctConfig;
+
+    if (preInitLogPings) Context.config.logPings = preInitLogPings;
+    if (preInitDebugViewTag) Context.config.debugViewTag = preInitDebugViewTag;
+    if (preInitSourceTags) Context.config.sourceTags = preInitSourceTags;
 
     Context.metricsDatabase = new MetricsDatabase();
     Context.eventsDatabase = new EventsDatabase();
@@ -223,14 +226,20 @@ namespace Glean {
     //
     // The dispatcher will catch and log any exceptions.
     Context.dispatcher.flushInit(async () => {
-      // We need to mark Glean as initialized before dealing with the upload status,
-      // otherwise we will not be able to submit deletion-request pings if necessary.
-      //
-      // This is fine, we are inside a dispatched task that is guaranteed to run before any
-      // other task. No external API call will be executed before we leave this task.
       Context.initialized = true;
 
       Context.uploadEnabled = uploadEnabled;
+
+      // Initialize the events database.
+      //
+      // It's important this happens _after_ the upload state is set,
+      // because initializing the events database may record the execution_counter and
+      // glean.restarted metrics. If the upload state is not defined these metrics cannot be recorded.
+      //
+      // This may also submit an 'events' ping,
+      // so it also needs to happen before application lifetime metrics are cleared.
+      await Context.eventsDatabase.initialize();
+
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
       if (uploadEnabled) {
@@ -258,7 +267,7 @@ namespace Glean {
         // deletion request ping.
         const clientId = await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
-          coreMetrics.clientId
+          Context.coreMetrics.clientId
         );
 
         if (clientId) {
@@ -271,13 +280,6 @@ namespace Glean {
           await clearMetrics();
         }
       }
-
-      // Initialize the events database.
-      //
-      // It's important this happens _after_ the upload state is dealt with,
-      // because initializing the events database may record the execution_counter and
-      // glean.restarted metrics. If the upload state is not defined these metrics can't be recorded.
-      await Context.eventsDatabase.initialize();
 
       // We only scan the pendings pings **after** dealing with the upload state.
       // If upload is disabled, pending pings files are deleted
@@ -343,12 +345,17 @@ namespace Glean {
    * @param flag Whether or not to log pings.
    */
   export function setLogPings(flag: boolean): void {
-    Context.dispatcher.launch(() => {
-      Context.config.logPings = flag;
+    if (!Context.initialized) {
+      // Cache value to apply during init.
+      preInitLogPings = flag;
+    } else {
+      Context.dispatcher.launch(() => {
+        Context.config.logPings = flag;
 
-      // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
+        // The dispatcher requires that dispatched functions return promises.
+        return Promise.resolve();
+      });
+    }
   }
 
   /**
@@ -357,17 +364,21 @@ namespace Glean {
    * When this property is set, all subsequent outgoing pings will include the `X-Debug-ID` header
    * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
-   *
    * @param value The value of the header.
    *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
    */
   export function setDebugViewTag(value: string): void {
-    Context.dispatcher.launch(() => {
-      Context.config.debugViewTag = value;
+    if (!Context.initialized) {
+      // Cache value to apply during init.
+      preInitDebugViewTag = value;
+    } else {
+      Context.dispatcher.launch(() => {
+        Context.config.debugViewTag = value;
 
-      // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
+        // The dispatcher requires that dispatched functions return promises.
+        return Promise.resolve();
+      });
+    }
   }
 
   /**
@@ -375,20 +386,23 @@ namespace Glean {
    *
    * Ping tags will show in the destination datasets, after ingestion.
    *
-   * Note** Setting `sourceTags` will override all previously set tags.
-   *
-   * To unset the `sourceTags` call `unsetSourceTags();
+   * Note: Setting `sourceTags` will override all previously set tags.
    *
    * @param value A vector of at most 5 valid HTTP header values.
    *        Individual tags must match the regex: "[a-zA-Z0-9-]{1,20}".
    */
   export function setSourceTags(value: string[]): void {
-    Context.dispatcher.launch(() => {
-      Context.config.sourceTags = value;
+    if (!Context.initialized) {
+      // Cache value to apply during init.
+      preInitSourceTags = value;
+    } else {
+      Context.dispatcher.launch(() => {
+        Context.config.sourceTags = value;
 
-      // The dispatcher requires that dispatched functions return promises.
-      return Promise.resolve();
-    });
+        // The dispatcher requires that dispatched functions return promises.
+        return Promise.resolve();
+      });
+    }
   }
 
   /**

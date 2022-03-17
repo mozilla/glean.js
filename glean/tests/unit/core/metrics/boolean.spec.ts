@@ -4,6 +4,7 @@
 
 import assert from "assert";
 import { Context } from "../../../../src/core/context";
+import { ErrorType } from "../../../../src/core/error/error_type";
 
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
@@ -77,5 +78,22 @@ describe("BooleanMetric", function() {
     assert.strictEqual(await metric.testGetValue("aPing"), true);
     assert.strictEqual(await metric.testGetValue("twoPing"), true);
     assert.strictEqual(await metric.testGetValue("threePing"), true);
+  });
+
+  it("attempting to record a non-boolean value records an error", async function () {
+    const metric = new BooleanMetricType({
+      category: "aCategory",
+      name: "aBooleanMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.set("not boolean");
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
+    assert.strictEqual(await metric.testGetValue(), undefined);
   });
 });

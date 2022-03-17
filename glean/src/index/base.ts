@@ -80,8 +80,6 @@ export default (platform: Platform): {
      * When this property is set, all subsequent outgoing pings will include the `X-Debug-ID` header
      * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
      *
-     * To unset the `debugViewTag` call `Glean.unsetDebugViewTag();
-     *
      * @param value The value of the header.
      *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
      */
@@ -105,9 +103,7 @@ export default (platform: Platform): {
      *
      * Ping tags will show in the destination datasets, after ingestion.
      *
-     * Note** Setting `sourceTags` will override all previously set tags.
-     *
-     * To unset the `sourceTags` call `Glean.unsetSourceTags();
+     * Note: Setting `sourceTags` will override all previously set tags.
      *
      * @param value A vector of at most 5 valid HTTP header values.
      *        Individual tags must match the regex: "[a-zA-Z0-9-]{1,20}".

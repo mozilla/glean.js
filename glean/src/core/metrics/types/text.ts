@@ -3,10 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError } from "../metric.js";
 import { Metric } from "../metric.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.TextMetricType";
 // The maximum number of characters for text.
@@ -23,16 +26,8 @@ export class TextMetric extends Metric<string, string> {
    * @param v The value to validate.
    * @returns Whether or not v is valid text data.
    */
-  validate(v: unknown): v is string {
-    if (!isString(v)) {
-      return false;
-    }
-
-    if (v.length > TEXT_MAX_LENGTH) {
-      return false;
-    }
-
-    return true;
+  validate(v: unknown): MetricValidationResult {
+    return validateString(v);
   }
 
   payload(): string {
@@ -41,11 +36,54 @@ export class TextMetric extends Metric<string, string> {
 }
 
 /**
- * A text metric.
+ * Base implementation of the text metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the text metric type.
  */
-class TextMetricType extends MetricType {
+class InternalTextMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("text", meta, TextMetric);
+  }
+
+  set(text: string): void {
+    Context.dispatcher.launch(async () => {
+      if (!this.shouldRecord(Context.uploadEnabled)) {
+        return;
+      }
+
+      try {
+        const truncatedValue = await truncateStringAtBoundaryWithError(this, text, TEXT_MAX_LENGTH);
+        const metric = new TextMetric(truncatedValue);
+        await Context.metricsDatabase.record(this, metric);
+      } catch(e) {
+        if (e instanceof MetricValidationError) {
+          await e.recordError(this);
+        }
+      }
+    });
+  }
+
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: string | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
+      });
+      return metric;
+    }
+  }
+}
+
+/**
+ * A text metric.
+ */
+export default class {
+  #inner: InternalTextMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalTextMetricType(meta);
   }
 
   /**
@@ -54,15 +92,7 @@ class TextMetricType extends MetricType {
    * @param text the value to set.
    */
   set(text: string): void {
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      const truncatedValue = await truncateStringAtBoundaryWithError(this, text, TEXT_MAX_LENGTH);
-      const metric = new TextMetric(truncatedValue);
-      await Context.metricsDatabase.record(this, metric);
-    });
+    this.#inner.set(text);
   }
 
   /**
@@ -76,15 +106,22 @@ class TextMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
-    if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: string | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
-      });
-      return metric;
-    }
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
 
-export default TextMetricType;

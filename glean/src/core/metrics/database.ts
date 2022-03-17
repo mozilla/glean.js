@@ -220,8 +220,7 @@ class MetricsDatabase {
    *
    * # Note
    *
-   * If the value in storage for any of the metrics in the ping is of an unexpected type,
-   * the whole ping payload for that lifetime will be thrown away.
+   * If invalid data is encountered it will be deleted and won't be part of the final ping payload.
    *
    * @param ping The ping we want to get the data from
    * @param lifetime The lifetime of the data we want to retrieve
@@ -263,7 +262,7 @@ class MetricsDatabase {
         if (!validateMetricInternalRepresentation(metricType, metrics[metricIdentifier])) {
           log(
             LOG_TAG,
-            `Invalid value found in storage for metric "${metricIdentifier}". Deleting.`,
+            `Invalid value "${JSON.stringify(metrics[metricIdentifier])}" found in storage for metric "${metricIdentifier}". Deleting.`,
             LoggingLevel.Debug
           );
 

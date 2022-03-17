@@ -4,8 +4,7 @@ The size of the Glean.js bundle varies depending on the metric types and plugins
 
 ## Minimum bundle
 
-The minimum bundle imports only the metric types used by Glean itself, e.g.
-error metrics, internal metrics, `client_info` metrics and `ping_info` metrics.
+The minimum bundle is the Glean.js bundle without any user defined metric types or custom pings.
 
 To check out a comprehensive list of which metrics are collected by Glean and their types check out
 ["Metrics collected by Glean.js"](https://github.com/mozilla/glean.js/blob/main/docs/reference/metrics.md).
@@ -14,9 +13,9 @@ To check out a comprehensive list of which metrics are collected by Glean and th
 || Size |
 |--|--|
 |web|**53 KB**|
-|webext|**52 KB**|
+|webext|**53 KB**|
 |node|**52 KB**|
-|QML|**68 KB**|
+|QML|**69 KB**|
 <!-- ! -->
 
 > **Note**: The QML bundle contains all the metric types and is not distributed through the
@@ -24,15 +23,18 @@ To check out a comprehensive list of which metrics are collected by Glean and th
 
 ## Additional metric types
 
-These metric types are not used by Glean itself,
-thus using each of them will result in a larger bundle.
+Every metric type imported will make the size of the Glean.js bundle larger.
+
+Even importing metric types that are also used by Glean internally will slightly increase
+the size of the bundle due to auxiliary code necessary to export the metric types code
+to external consumers.
 
 <!-- ! -->
 |Metric Type| web|webext|node|
 |--|--|--|--|
 |boolean|527 bytes |527 bytes |527 bytes |
-|labeled|373 bytes |362 bytes |361 bytes |
-|quantity|783 bytes |772 bytes |771 bytes |
+|labeled|385 bytes |361 bytes |360 bytes |
+|quantity|784 bytes |772 bytes |771 bytes |
 |text|574 bytes |574 bytes |574 bytes |
 |timespan|2.4 KB |2.4 KB |2.4 KB |
 |rate|1.6 KB |1.6 KB |1.6 KB |
@@ -47,5 +49,5 @@ Using a plugin also means a size impact on the final bundle.
 <!-- ! -->
 |Plugin| web|webext|node|
 |--|--|--|--|
-|encryption|21 KB |21 KB |28 KB |
+|encryption|22 KB |22 KB |28 KB |
 <!-- ! -->

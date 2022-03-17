@@ -14,4 +14,6 @@ export enum ErrorType {
   InvalidState = "invalid_state",
   // For when the value to be recorded overflows the metric-specific upper range
   InvalidOverflow = "invalid_overflow",
+  // For when the value passed to a recording function is not of the correct type.
+  InvalidType = "invalid_type",
 }

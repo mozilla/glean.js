@@ -180,4 +180,27 @@ describe("StringListMetric", function() {
       await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0
     );
   });
+
+  it("attempting to record a value of incorrect type records an error", async function () {
+    const metric = new StringListMetricType({
+      category: "aCategory",
+      name: "aStringListMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.set("not string list");
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.set([ "one", "two", { "not": "string" } ]);
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.add({ "not": "string" });
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 3);
+    assert.strictEqual(await metric.testGetValue(), undefined);
+  });
 });
