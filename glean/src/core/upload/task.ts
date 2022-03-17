@@ -22,7 +22,7 @@ export const enum UploadTaskTypes {
 // An "uploading window" starts when a requester gets a new
 // `Upload_UploadTask` response and finishes when they
 // finally get a `Done_UploadTask` or `Wait_UploadTask` response.
-type Done_UploadTask = {
+export type Done_UploadTask = {
   type: UploadTaskTypes.Done
 };
 
@@ -31,13 +31,13 @@ type Done_UploadTask = {
 //
 // Contains the amount of time in milliseconds
 // the requester should wait before requesting a new task.
-type Wait_UploadTask = {
+export type Wait_UploadTask = {
   type: UploadTaskTypes.Wait,
   remainingTime: number,
 };
 
 // A flag signaling there are no remaining upload tasks and worker is done (for now).
-type Upload_UploadTask = {
+export type Upload_UploadTask = {
   type: UploadTaskTypes.Upload,
   ping: QueuedPing,
 };

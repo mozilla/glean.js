@@ -9,17 +9,28 @@ import { v4 as UUIDv4 } from "uuid";
 import { Configuration } from "../../../../src/core/config";
 import { Context } from "../../../../src/core/context";
 import PingUploadManager from "../../../../src/core/upload/manager";
-import { UploadResultStatus } from "../../../../src/core/upload/uploader";
+import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 import { CounterUploader, WaitableUploader } from "../../../utils";
 import { DELETION_REQUEST_PING_NAME } from "../../../../src/core/constants";
 import PingsDatabase from "../../../../src/core/pings/database";
 import { makePath } from "../../../../src/core/pings/maker";
 import Policy from "../../../../src/core/upload/policy";
+import type { Upload_UploadTask } from "../../../../src/core/upload/task";
 import { UploadTaskTypes } from "../../../../src/core/upload/task";
 import { MAX_PINGS_PER_INTERVAL } from "../../../../src/core/upload/rate_limiter";
 import { testResetGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
+const MOCK_PAYLOAD = {
+  ping_info: {
+    seq: 1,
+    start_time: "2020-01-11+01:00",
+    end_time: "2020-01-12+01:00",
+  },
+  client_info: {
+    telemetry_sdk_build: "32.0.0"
+  }
+};
 
 describe("PingUploadManager", function() {
   const testAppId = `gleanjs.test.${this.title}`;
@@ -36,24 +47,13 @@ describe("PingUploadManager", function() {
     numPings: number,
     pingName = "ping"
   ): Promise<string[]> {
-    const payload = {
-      ping_info: {
-        seq: 1,
-        start_time: "2020-01-11+01:00",
-        end_time: "2020-01-12+01:00",
-      },
-      client_info: {
-        telemetry_sdk_build: "32.0.0"
-      }
-    };
-
     const identifiers = Array.from({ length: numPings }, () => UUIDv4());
     for (const identifier of identifiers) {
       const path = makePath(
         identifier,
         { name: pingName, includeClientId: true, sendIfEmpty: true }
       );
-      await pingsDatabase.recordPing(path, identifier, payload);
+      await pingsDatabase.recordPing(path, identifier, MOCK_PAYLOAD);
     }
 
     return identifiers;
@@ -329,6 +329,41 @@ describe("PingUploadManager", function() {
     // Wait for the worker to finish processing the ping requests.
     await uploader.blockOnOngoingUploads();
 
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
+  });
+
+  it("pings cannot be re-enqueued while they are being processed", async function () {
+    const uploader = new PingUploadManager(new Configuration(), pingsDatabase);
+    // Disable the PingUploadWorker so it does not interfere with these tests
+    uploader["worker"]["workInternal"] = () => Promise.resolve();
+
+    // Enqueue a ping and start processing it
+    const [ identifier ] = await fillUpPingsDatabase(1);
+    const task = uploader.getUploadTask() as Upload_UploadTask;
+    assert.strictEqual(task.type, UploadTaskTypes.Upload);
+    // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+    assert.strictEqual(task.ping.identifier, identifier);
+
+    // Attempt to re-enqueue the same ping by scanning the pings database,
+    // since the ping has not been deleted yet this will propmt the uploader
+    // to re-enqueue the ping we just created.
+    await pingsDatabase.scanPendingPings();
+
+    // No new pings should have been enqueued so the upload task is Done.
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
+
+    // Fake process the upload response, only the identifier really matters here
+    // we expect the ping to be deleted from the queue and the database now.
+    await uploader.processPingUploadResponse(
+      { identifier, payload: MOCK_PAYLOAD, collectionDate:  "", path: "" },
+      new UploadResult(UploadResultStatus.Success, 200)
+    );
+
+    // Check that the ping was not re-enqueued
+    assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
+
+    // Check the ping was deleted from the database
+    await pingsDatabase.scanPendingPings();
     assert.strictEqual(uploader.getUploadTask().type, UploadTaskTypes.Done);
   });
 });

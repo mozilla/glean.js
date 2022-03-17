@@ -15,10 +15,14 @@ import { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/
 import { InternalPingType as PingType} from "../../../../src/core/pings/ping_type";
 import { Context } from "../../../../src/core/context";
 import { RecordedEvent } from "../../../../src/core/metrics/events_database/recorded_event";
-import { GLEAN_EXECUTION_COUNTER_EXTRA_KEY } from "../../../../src/core/constants";
+import { EVENTS_PING_NAME, GLEAN_EXECUTION_COUNTER_EXTRA_KEY } from "../../../../src/core/constants";
 import { collectPing } from "../../../../src/core/pings/maker";
 import { ErrorType } from "../../../../src/core/error/error_type";
 import { testResetGlean } from "../../../../src/core/testing";
+import type { Event } from "../../../../src/core/metrics/events_database/recorded_event";
+import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
+import { WaitableUploader } from "../../../utils";
+import type { PingPayload } from "../../../../src/core/pings/ping_payload";
 
 const sandbox = sinon.createSandbox();
 const now = new Date();
@@ -727,5 +731,110 @@ describe("EventsDatabase", function() {
       assert.strictEqual(firstEvent.timestamp, timestamp1);
       assert.strictEqual(secondEvent.timestamp, timestamp2);
     }
+  });
+
+  it("send the 'events' ping on initialize when there are remaining events from previous run", async function () {
+    // Restore timer APIs for WaitableUploader to work
+    clock.restore();
+
+    const event = new EventMetricType({
+      category: "test",
+      name: "event",
+      sendInPings: [EVENTS_PING_NAME],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    for (let i = 0; i < 10; i++) {
+      await event.recordUndispatched();
+    }
+
+    const httpClient = new WaitableUploader();
+    const waitForEventsPing = httpClient.waitForPingSubmission(EVENTS_PING_NAME);
+    // Re-initialize Glean without clearing stores,
+    // this will trigger initialization of the events database as well
+    await testResetGlean(testAppId, true, { httpClient }, false);
+
+    const { ping_info: { reason } } = (await waitForEventsPing) as PingPayload;
+    assert.strictEqual(reason, "startup");
+  });
+
+  it("send the 'events' ping on initialize and correctly handle pre init events", async function () {
+    // Restore timer APIs for WaitableUploader to work
+    clock.restore();
+
+    const previousRunEvent = new EventMetricType({
+      category: "test",
+      name: "previousRun",
+      sendInPings: [EVENTS_PING_NAME],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    for (let i = 0; i < 5; i++) {
+      previousRunEvent.record();
+    }
+
+    // Uninitialize Glean, but do not clear stores
+    await testUninitializeGlean(false);
+
+    // Record a bunch of events while Glean is uninitialized
+    const preInitEvent = new EventMetricType({
+      category: "test",
+      name: "preInit",
+      sendInPings: [EVENTS_PING_NAME],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    for (let i = 0; i < 5; i++) {
+      preInitEvent.record();
+    }
+
+    const httpClient = new WaitableUploader();
+    const waitForEventsPings = httpClient.waitForBatchPingSubmission(EVENTS_PING_NAME, 2);
+    // Initialization should trigger a startup ping
+    await testInitializeGlean(testAppId, true, { httpClient });
+    // Send another 'events' ping after init, it should contain the preInit events
+    await Context.corePings.events.submitUndispatched();
+
+    // First ping is the startup ping,
+    // second ping is the events ping submitted above.
+    const [
+      { ping_info: { reason }, events: fromPreviousRun },
+      { events: fromPreInit }
+    ] = (await waitForEventsPings) as PingPayload[];
+
+    assert.strictEqual(reason, "startup");
+    assert.strictEqual(fromPreviousRun?.length, 5);
+    assert.ok(fromPreviousRun.every(event => (event as Event).name === "previousRun"));
+
+    assert.strictEqual(fromPreInit?.length, 5);
+    assert.ok(fromPreInit?.every(event => (event as Event).name === "preInit"));
+  });
+
+  it("send the 'events' ping when max capacity is hit", async function () {
+    // Restore timer APIs for WaitableUploader to work
+    clock.restore();
+
+    const httpClient = new WaitableUploader();
+    const waitForEventsPing = httpClient.waitForPingSubmission(EVENTS_PING_NAME);
+    // Re-initialize Glean with a known max capacity for the events ping
+    await testResetGlean(testAppId, true, { httpClient, maxEvents: 10 });
+
+    const event = new EventMetricType({
+      category: "test",
+      name: "event",
+      sendInPings: [EVENTS_PING_NAME],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+    for (let i = 0; i < 15; i++) {
+      await event.recordUndispatched();
+    }
+
+    const { ping_info: { reason }, events } = (await waitForEventsPing) as PingPayload;
+    assert.strictEqual(reason, "max_capacity");
+    assert.strictEqual(events?.length, 10);
+
+    const leftoverEvents = await Context.eventsDatabase.getPingEvents(EVENTS_PING_NAME, false);
+    assert.strictEqual(leftoverEvents?.length, 5);
   });
 });

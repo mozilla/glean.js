@@ -11,6 +11,10 @@ import { Context } from "./context.js";
 
 const LOG_TAG = "core.Config";
 
+// The default maximum number of events Glean will store before submitting the events ping.
+// If the maximum is hit, the events ping is sent immediately.
+const DEFAULT_MAX_EVENTS = 500;
+
 /**
  * Lists Glean's debug options.
  */
@@ -35,6 +39,8 @@ export interface ConfigurationInterface {
   readonly appDisplayVersion?: string,
   // The server pings are sent to.
   readonly serverEndpoint?: string,
+  // The maximum number of events to store before submitting the events ping.
+  readonly maxEvents?: number,
   // Optional list of plugins to include in current Glean instance.
   plugins?: Plugin[],
   // The HTTP client implementation to use for uploading pings.
@@ -61,6 +67,7 @@ export class Configuration implements ConfigurationInterface {
   readonly architecture?: string;
   readonly osVersion?: string;
   readonly buildDate?: Date;
+  readonly maxEvents: number;
 
   // Debug configuration.
   debug: DebugOptions;
@@ -74,6 +81,7 @@ export class Configuration implements ConfigurationInterface {
     this.architecture = config?.architecture;
     this.osVersion = config?.osVersion;
     this.buildDate = config?.buildDate;
+    this.maxEvents = config?.maxEvents || DEFAULT_MAX_EVENTS;
 
     this.debug = {};
 

@@ -15,6 +15,7 @@ import { generateReservedMetricIdentifiers } from "../database.js";
 import type { ExtraValues , Event } from "./recorded_event.js";
 import { RecordedEvent } from "./recorded_event.js";
 import {
+  EVENTS_PING_NAME,
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
   GLEAN_REFERENCE_TIME_EXTRA_KEY
 } from "../../constants.js";
@@ -47,12 +48,14 @@ function createDateObject(str?: ExtraValues): Date {
  * Creates an execution counter metric.
  *
  * @param sendInPings The list of pings this metric is sent in.
+ *        Note: The 'events' ping should not contain glean.restarted events,
+ *        so this ping will be filtered out from the 'sendInPings' array.
  * @returns A metric type instance.
  */
 function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
   return new CounterMetricType({
     ...generateReservedMetricIdentifiers("execution_counter"),
-    sendInPings: sendInPings,
+    sendInPings: sendInPings.filter(name => name !== EVENTS_PING_NAME),
     lifetime: Lifetime.Ping,
     disabled: false
   });
@@ -62,13 +65,15 @@ function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
  * Creates an `glean.restarted` event metric.
  *
  * @param sendInPings The list of pings this metric is sent in.
+ *        Note: The 'events' ping should not contain glean.restarted events,
+ *        so this ping will be filtered out from the 'sendInPings' array.
  * @returns A metric type instance.
  */
 export function getGleanRestartedEventMetric(sendInPings: string[]): EventMetricType {
   return new EventMetricType({
     category: "glean",
     name: "restarted",
-    sendInPings: sendInPings,
+    sendInPings: sendInPings.filter(name => name !== EVENTS_PING_NAME),
     lifetime: Lifetime.Ping,
     disabled: false
   }, [ GLEAN_REFERENCE_TIME_EXTRA_KEY ]);
@@ -140,6 +145,14 @@ class EventsDatabase {
     }
 
     const storeNames = await this.getAvailableStoreNames();
+    // Submit the events ping in case there are _any_ events unsubmitted from the previous run
+    if (storeNames.includes(EVENTS_PING_NAME)) {
+      const storedEvents = (await this.eventsStore.get([EVENTS_PING_NAME]) as JSONArray) ?? [];
+      if (storedEvents.length > 0) {
+        await Context.corePings.events.submitUndispatched("startup");
+      }
+    }
+
     // Increment the execution counter for known stores.
     // !IMPORTANT! This must happen before any event is recorded for this run.
     await getExecutionCounterMetric(storeNames).addUndispatched(1);
@@ -177,12 +190,18 @@ class EventsDatabase {
       }
       value.addExtra(GLEAN_EXECUTION_COUNTER_EXTRA_KEY, currentExecutionCount);
 
+      let numEvents = 0;
       const transformFn = (v?: JSONValue): JSONArray => {
-        const existing: JSONArray = (v as JSONArray) ?? [];
-        existing.push(value.get());
-        return existing;
+        const events: JSONArray = (v as JSONArray) ?? [];
+        events.push(value.get());
+        numEvents = events.length;
+        return events;
       };
+
       await this.eventsStore.update([ping], transformFn);
+      if (ping === EVENTS_PING_NAME && numEvents >= Context.config.maxEvents) {
+        await Context.corePings.events.submitUndispatched("max_capacity");
+      }
     }
   }
 
