@@ -35,7 +35,7 @@ export interface QueuedPing extends PingInternalRepresentation {
 class PingUploadManager implements PingsDatabaseObserver {
   // A FIFO queue storing a `QueuedPing` for each pending ping.
   private queue: QueuedPing[];
-  // A set of the idenfitifers of pings being processed
+  // A set of the identifiers of pings being processed
   // i.e. pings that were removed from the queue by calling `getUploadTask`,
   // but have not yet been deleted from the database / re-enqueued by calling `processPingUploadResponse`.
   private processing: Set<string>;

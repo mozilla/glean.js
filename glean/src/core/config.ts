@@ -11,8 +11,8 @@ import { Context } from "./context.js";
 
 const LOG_TAG = "core.Config";
 
-// The default maximum amount of events Glean will store before submitting the events ping.
-// If the maximum is hit, the events ping is sent immediatelly.
+// The default maximum number of events Glean will store before submitting the events ping.
+// If the maximum is hit, the events ping is sent immediately.
 const DEFAULT_MAX_EVENTS = 500;
 
 /**
@@ -39,7 +39,7 @@ export interface ConfigurationInterface {
   readonly appDisplayVersion?: string,
   // The server pings are sent to.
   readonly serverEndpoint?: string,
-  // The build date, provided by glean_parser
+  // The maximum number of events to store before submitting the events ping.
   readonly maxEvents?: number,
   // Optional list of plugins to include in current Glean instance.
   plugins?: Plugin[],

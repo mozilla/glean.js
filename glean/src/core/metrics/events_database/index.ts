@@ -49,7 +49,7 @@ function createDateObject(str?: ExtraValues): Date {
  *
  * @param sendInPings The list of pings this metric is sent in.
  *        Note: The 'events' ping should not contain glean.restarted events,
- *        so this ping will be filtered out from the the 'sendInPings' array.
+ *        so this ping will be filtered out from the 'sendInPings' array.
  * @returns A metric type instance.
  */
 function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
@@ -66,7 +66,7 @@ function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
  *
  * @param sendInPings The list of pings this metric is sent in.
  *        Note: The 'events' ping should not contain glean.restarted events,
- *        so this ping will be filtered out from the the 'sendInPings' array.
+ *        so this ping will be filtered out from the 'sendInPings' array.
  * @returns A metric type instance.
  */
 export function getGleanRestartedEventMetric(sendInPings: string[]): EventMetricType {
