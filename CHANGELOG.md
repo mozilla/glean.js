@@ -2,7 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.31.0...main)
 
-* [#1154](https://github.com/mozilla/glean.js/pull/1130): BUGFIX: Implemented init and
+* [#1154](https://github.com/mozilla/glean.js/pull/1130): BUGFIX: Implemented initialize and
 set_upload_enabled reasons for deletion-request ping.
 * [#1130](https://github.com/mozilla/glean.js/pull/1130): BUGFIX: Guarantee event timestamps
 cannot be negative numbers.
