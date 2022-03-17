@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v0.31.0...main)
 
+* [#1154](https://github.com/mozilla/glean.js/pull/1130): BUGFIX: Implemented init and
+set_upload_enabled reasons for deletion-request ping.
 * [#1130](https://github.com/mozilla/glean.js/pull/1130): BUGFIX: Guarantee event timestamps
 cannot be negative numbers.
   * Timestamps were observed to be negative in a few occurrences, for platforms that do not provide the `performance.now` API, namely QML, and in which we fallback to the `Date.now` API.
