@@ -3,9 +3,9 @@
   "include": [
     "../src/core/**/*.ts",
     "../src/plugins/*.ts",
-    "../src/index/node.ts",
-    "../src/index/webext.ts",
-    "../src/index/web.ts"
+    "../src/entry/node.ts",
+    "../src/entry/webext.ts",
+    "../src/entry/web.ts"
   ],
   "compilerOptions": {
     "target": "ES2018",
