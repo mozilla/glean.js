@@ -11,7 +11,7 @@ the [Glean.js developer documentation](docs/README.md).
 ## Context
 
 The Glean JavaScript SDK is part of [the Glean project](https://docs.telemetry.mozilla.org/concepts/glean/glean.html).
-An end-to-end data collection plaftorm developed by Mozilla and primarily targetting Mozilla products
+An end-to-end data collection platform developed by Mozilla and primarily targeting Mozilla products
 across multiple platforms.
 
 Glean provides multiple client SDKs for different programming languages and platforms.
@@ -42,7 +42,7 @@ and the SDK will manage its storage so that data does not remain in storage afte
 
 The Glean SDK tries to do all of this is the least disruptive way possible to users. All of the
 SDKs tasks are queued and executed asynchronously. The APIs exposed by the Glean SDK will only do
-the enqueuing of tasks, a quick synchronous operation. Internally, the Glean SDK will handle the
+the en-queuing of tasks, a quick synchronous operation. Internally, the Glean SDK will handle the
 queued tasks asynchronously, catching any errors thrown along the way so that Glean never
 crashes a users application.
 
@@ -82,7 +82,7 @@ setters and getters to all of Glean's internal state. This file should avoid any
 not `import type`.
 
 `dispatcher.ts` is where Glean's dispatcher implementation lives. The dispatcher is the structure
-that manage's Glean's task queue.
+that manages Glean's task queue.
 
 `metrics/types` is where all of the specific metric type implementations are. Each metric type
 should be implemented in a single file and no other file types should be added to this folder,
@@ -101,7 +101,7 @@ The main difference between each platform's file is that a different `Platform` 
 imported per file.
 
 The Qt/QML entry point is the different one here. QML packages cannot be easily consumed through npm,
-so the QML entry point imports all of Glean's modules and exposes it through this entrypoint. That is
+so the QML entry point imports all of Glean's modules and exposes it through this entry point. That is
 what is done on the `qt.ts` file. The `qt.js` file is the file QML users actually interact with,
 it includes specific QML semantics and is copied to the final destination folder of the QML package
 as-is after Glean.js is compiled for the QML target. (See `bin/prepare-qml-module.sh` for more
@@ -110,7 +110,7 @@ context.)
 ### `platform/`
 
 Some modules such as storage and uploader, cannot be written in such a way that works
-for all platforms, because each plaftorm provides different APIs for these tasks. In order
+for all platforms, because each platform provides different APIs for these tasks. In order
 for useless platform specific code not to bloat the size of the library on each platform,
 the `platform/` module contains implementations of identical interfaces in different platforms.
 
