@@ -11,29 +11,18 @@ import PingUploadManager from "./upload/manager.js";
 import { isBoolean, isString, sanitizeApplicationId } from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
 import EventsDatabase from "./metrics/events_database/index.js";
-import UUIDMetricType from "./metrics/types/uuid.js";
-import DatetimeMetricType, { DatetimeMetric } from "./metrics/types/datetime.js";
+import { DatetimeMetric } from "./metrics/types/datetime.js";
 import CorePings from "./internal_pings.js";
 import { registerPluginToEvent } from "./events/utils.js";
 import ErrorManager from "./error/index.js";
 import type Platform from "../platform/index.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import { Context } from "./context.js";
-import PingType from "./pings/ping_type.js";
 import log, { LoggingLevel } from "./log.js";
 
 const LOG_TAG = "core.Glean";
 
 namespace Glean {
-  // The below properties are exported for testing purposes.
-  //
-  // Instances of Glean's core metrics.
-  //
-  // Disabling the lint, because we will actually re-assign this variable in the testInitializeGlean API.
-  // eslint-disable-next-line prefer-const
-  export let coreMetrics = new CoreMetrics();
-  // Instances of Glean's core pings.
-  export const corePings = new CorePings();
   // An instance of the ping uploader.
   export let pingUploader: PingUploadManager;
 
@@ -53,7 +42,7 @@ namespace Glean {
    */
   async function onUploadEnabled(): Promise<void> {
     Context.uploadEnabled = true;
-    await coreMetrics.initialize();
+    await Context.coreMetrics.initialize();
   }
 
   /**
@@ -64,15 +53,23 @@ namespace Glean {
    * A deletion_request ping is sent, all pending metrics, events and queued
    * pings are cleared, and the client_id is set to KNOWN_CLIENT_ID.
    * Afterward, the upload_enabled flag is set to false.
+   *
+   * @param at_init Whether or not upload has been disabled during initialization.
    */
-  async function onUploadDisabled(): Promise<void> {
+  async function onUploadDisabled(at_init: boolean): Promise<void> {
     // It's fine to set this before submitting the deletion request ping,
     // that ping is still sent even if upload is disabled.
+    let reason: string;
+    if (at_init) {
+      reason = "at_init";
+    } else {
+      reason = "set_upload_enabled";
+    }
     Context.uploadEnabled = false;
     // We need to use an undispatched submission to guarantee that the
     // ping is collected before metric are cleared, otherwise we end up
     // with malformed pings.
-    await PingType._private_submitUndispatched(corePings.deletionRequest);
+    await Context.corePings.deletionRequest.submitUndispatched(reason);
     await clearMetrics();
   }
 
@@ -99,7 +96,7 @@ namespace Glean {
       firstRunDate = new DatetimeMetric(
         await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
-          coreMetrics.firstRunDate
+          Context.coreMetrics.firstRunDate
         )
       ).date;
     } catch {
@@ -126,10 +123,10 @@ namespace Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    await UUIDMetricType._private_setUndispatched(coreMetrics.clientId, KNOWN_CLIENT_ID);
+    await Context.coreMetrics.clientId.setUndispatched(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await DatetimeMetricType._private_setUndispatched(coreMetrics.firstRunDate, firstRunDate);
+    await Context.coreMetrics.firstRunDate.setUndispatched(firstRunDate);
 
     Context.uploadEnabled = false;
   }
@@ -196,6 +193,9 @@ namespace Glean {
       return;
     }
 
+    Context.coreMetrics = new CoreMetrics();
+    Context.corePings = new CorePings();
+
     Context.applicationId = sanitizeApplicationId(applicationId);
 
     // The configuration constructor will throw in case config has any incorrect prop.
@@ -226,14 +226,20 @@ namespace Glean {
     //
     // The dispatcher will catch and log any exceptions.
     Context.dispatcher.flushInit(async () => {
-      // We need to mark Glean as initialized before dealing with the upload status,
-      // otherwise we will not be able to submit deletion-request pings if necessary.
-      //
-      // This is fine, we are inside a dispatched task that is guaranteed to run before any
-      // other task. No external API call will be executed before we leave this task.
       Context.initialized = true;
 
       Context.uploadEnabled = uploadEnabled;
+
+      // Initialize the events database.
+      //
+      // It's important this happens _after_ the upload state is set,
+      // because initializing the events database may record the execution_counter and
+      // glean.restarted metrics. If the upload state is not defined these metrics cannot be recorded.
+      //
+      // This may also submit an 'events' ping,
+      // so it also needs to happen before application lifetime metrics are cleared.
+      await Context.eventsDatabase.initialize();
+
       // The upload enabled flag may have changed since the last run, for
       // example by the changing of a config file.
       if (uploadEnabled) {
@@ -261,12 +267,12 @@ namespace Glean {
         // deletion request ping.
         const clientId = await Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
-          coreMetrics.clientId
+          Context.coreMetrics.clientId
         );
 
         if (clientId) {
           if (clientId !== KNOWN_CLIENT_ID) {
-            await onUploadDisabled();
+            await onUploadDisabled(true);
           }
         } else {
           // Call `clearMetrics` directly here instead of `onUploadDisabled` to avoid sending
@@ -274,13 +280,6 @@ namespace Glean {
           await clearMetrics();
         }
       }
-
-      // Initialize the events database.
-      //
-      // It's important this happens _after_ the upload state is dealt with,
-      // because initializing the events database may record the execution_counter and
-      // glean.restarted metrics. If the upload state is not defined these metrics can't be recorded.
-      await Context.eventsDatabase.initialize();
 
       // We only scan the pendings pings **after** dealing with the upload state.
       // If upload is disabled, pending pings files are deleted
@@ -332,7 +331,7 @@ namespace Glean {
         if (flag) {
           await onUploadEnabled();
         } else {
-          await onUploadDisabled();
+          await onUploadDisabled(false);
         }
       }
     });

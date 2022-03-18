@@ -4,7 +4,7 @@ This guide is for developers who want to develop on Glean.js.
 Glean.js uses [Node.js](https://nodejs.org/).
 Follow the [official guide](https://nodejs.dev/) to install it.
 ### Version requirements
-* `node` >= 12.0.0
+* `node` >= 16.0.0
 * `npm`  >=  7.0.0
 
 ## Building Glean.js

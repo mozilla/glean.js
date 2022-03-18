@@ -117,9 +117,6 @@ describe("EventMetric", function() {
     assert.strictEqual(snapshot?.length, 1);
   });
 
-  it.skip("bug 1690253: flush queued events on startup");
-  it.skip("bug 1690253: flush queued events on startup and correctly handle pre init events");
-
   it("long extra values record an error", async function () {
     const metric = new EventMetricType({
       category: "telemetry",
@@ -145,9 +142,6 @@ describe("EventMetric", function() {
     metric.record({ nonRegisteredLabel: "01234567890" });
     assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1);
   });
-
-  it.skip("bug 1690301: overdue events are submitted in registered custom pings");
-  it.skip("bug 1690301: overdue events are discarded if ping is not registered");
 
   it("records properly without optional arguments", async function () {
     const pings = ["store1", "store2"];
@@ -280,5 +274,27 @@ describe("EventMetric", function() {
 
     const extras3 = snapshot[2].extra;
     assert.ok(!extras3);
+  });
+
+  it("attempting to record a value of incorrect type records an error", async function () {
+    const metric = new EventMetricType({
+      category: "telemetry",
+      name: "test",
+      sendInPings: [ "aPing" ],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, ["key1", "key2"]);
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.record("not object");
+    // Extra values may only be booleans, numbers or strings
+    //
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.record({ "key1": { "not": "valid" }});
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
+    assert.strictEqual(await metric.testGetValue(), undefined);
   });
 });

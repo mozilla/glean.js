@@ -4,11 +4,13 @@
 
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
+import type { MetricValidationResult } from "../metric.js";
+import { saturatingAdd, isUndefined, testOnlyCheck } from "../../utils.js";
 import { MetricType } from "../index.js";
-import { isUndefined, isInteger, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
-import { ErrorType } from "../../error/error_type.js";
+import { Metric, MetricValidationError } from "../metric.js";
+import log from "../../log.js";
+import { validatePositiveInteger } from "../utils.js";
 
 const LOG_TAG = "core.metrics.CounterMetricType";
 
@@ -17,20 +19,89 @@ export class CounterMetric extends Metric<number, number> {
     super(v);
   }
 
-  validate(v: unknown): v is number {
-    if (!isInteger(v)) {
-      return false;
-    }
-
-    if (v <= 0) {
-      return false;
-    }
-
-    return true;
+  validate(v: unknown): MetricValidationResult {
+    return validatePositiveInteger(v, false);
   }
 
   payload(): number {
     return this._inner;
+  }
+
+  saturatingAdd(amount: unknown): void {
+    const correctAmount = this.validateOrThrow(amount);
+    this._inner = saturatingAdd(this._inner, correctAmount);
+  }
+}
+
+/**
+ * Base implementation of the counter metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the counter metric type.
+ */
+export class InternalCounterMetricType extends MetricType {
+  constructor(meta: CommonMetricData) {
+    super("counter", meta, CounterMetric);
+  }
+
+  /**
+   * An implemention of `add` that does not dispatch the recording task.
+   *
+   * # Important
+   *
+   * This method should **never** be exposed to users.
+   *
+   * @param amount The amount we want to add.
+   */
+  async addUndispatched(amount?: number): Promise<void> {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    if (isUndefined(amount)) {
+      amount = 1;
+    }
+
+    try {
+      const transformFn = ((amount) => {
+        return (v?: JSONValue): CounterMetric => {
+          const metric = new CounterMetric(amount);
+          if (v) {
+            try {
+              // Throws an error if v in not valid input.
+              metric.saturatingAdd(v);
+            } catch {
+              log(
+                LOG_TAG,
+                `Unexpected value found in storage for metric ${this.name}: ${JSON.stringify(v)}. Overwriting.`
+              );
+            }
+          }
+          return metric;
+        };
+      })(amount);
+
+      await Context.metricsDatabase.transform(this, transformFn);
+    } catch(e) {
+      if (e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
+    }
+  }
+
+  add(amount?: number): void {
+    Context.dispatcher.launch(async () => this.addUndispatched(amount));
+  }
+
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: number | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<number>(ping, this);
+      });
+      return metric;
+    }
   }
 }
 
@@ -40,63 +111,11 @@ export class CounterMetric extends Metric<number, number> {
  * Used to count things.
  * The value can only be incremented, not decremented.
  */
-class CounterMetricType extends MetricType {
+export default class {
+  #inner: InternalCounterMetricType;
+
   constructor(meta: CommonMetricData) {
-    super("counter", meta, CounterMetric);
-  }
-
-  /**
-   * An internal implemention of `add` that does not dispatch the recording task.
-   *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
-   *
-   * @param instance The metric instance to record to.
-   * @param amount The amount we want to add.
-   */
-  static async _private_addUndispatched(instance: CounterMetricType, amount?: number): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    if (isUndefined(amount)) {
-      amount = 1;
-    }
-
-    if (amount <= 0) {
-      await Context.errorManager.record(
-        instance,
-        ErrorType.InvalidValue,
-        `Added negative and zero value ${amount}`
-      );
-      return;
-    }
-
-    const transformFn = ((amount) => {
-      return (v?: JSONValue): CounterMetric => {
-        let metric: CounterMetric;
-        let result: number;
-        try {
-          metric = new CounterMetric(v);
-          result = metric.get() + amount;
-        } catch {
-          metric = new CounterMetric(amount);
-          result = amount;
-        }
-
-        if (result > Number.MAX_SAFE_INTEGER) {
-          result = Number.MAX_SAFE_INTEGER;
-        }
-
-        metric.set(result);
-        return metric;
-      };
-    })(amount);
-
-    await Context.metricsDatabase.transform(instance, transformFn);
+    this.#inner = new InternalCounterMetricType(meta);
   }
 
   /**
@@ -112,11 +131,11 @@ class CounterMetricType extends MetricType {
    *               If not provided will default to `1`.
    */
   add(amount?: number): void {
-    Context.dispatcher.launch(async () => CounterMetricType._private_addUndispatched(this, amount));
+    this.#inner.add(amount);
   }
 
   /**
-   * Test-only API.**
+   * Test-only API.
    *
    * Gets the currently stored value as a number.
    *
@@ -126,15 +145,21 @@ class CounterMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
-    if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: number | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<number>(ping, this);
-      });
-      return metric;
-    }
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<number | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
-export default CounterMetricType;

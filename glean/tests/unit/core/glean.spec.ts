@@ -49,14 +49,14 @@ describe("Glean", function() {
   it("client_id and first_run_date are regenerated if cleared", async function() {
     await Context.metricsDatabase.clearAll();
     assert.strictEqual(
-      await Glean.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE), undefined);
+      await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE), undefined);
     assert.strictEqual(
-      await Glean.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
+      await Context.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
 
     await testUninitializeGlean();
     await testInitializeGlean(testAppId, true);
-    assert.ok(await Glean.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE));
-    assert.ok(await Glean.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
+    assert.ok(await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE));
+    assert.ok(await Context.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
   });
 
   it("basic metrics should be cleared when upload is disabled", async function() {
@@ -96,36 +96,36 @@ describe("Glean", function() {
   });
 
   it("first_run_date is managed correctly when toggling uploading", async function() {
-    const originalFirstRunDate = await Glean.coreMetrics["firstRunDate"]
+    const originalFirstRunDate = await Context.coreMetrics["firstRunDate"]
       .testGetValueAsString(CLIENT_INFO_STORAGE);
 
     Glean.setUploadEnabled(false);
     assert.strictEqual(
-      await Glean.coreMetrics["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
+      await Context.coreMetrics["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
       originalFirstRunDate
     );
 
     Glean.setUploadEnabled(true);
     assert.strictEqual(
-      await Glean.coreMetrics["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
+      await Context.coreMetrics["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
       originalFirstRunDate
     );
   });
 
   it("client_id is managed correctly when toggling uploading", async function() {
-    const originalClientId = await Glean.coreMetrics["clientId"]
+    const originalClientId = await Context.coreMetrics["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(originalClientId);
     assert.ok(originalClientId !== KNOWN_CLIENT_ID);
 
     Glean.setUploadEnabled(false);
     assert.strictEqual(
-      await Glean.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE),
+      await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
     );
 
     Glean.setUploadEnabled(true);
-    const newClientId = await Glean.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE);
+    const newClientId = await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(newClientId !== originalClientId);
     assert.ok(newClientId !== KNOWN_CLIENT_ID);
   });
@@ -134,7 +134,7 @@ describe("Glean", function() {
     await testUninitializeGlean();
     await testInitializeGlean(testAppId, false);
     assert.strictEqual(
-      await Glean.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE),
+      await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
     );
   });
@@ -143,14 +143,14 @@ describe("Glean", function() {
     Glean.setUploadEnabled(false);
     await testUninitializeGlean();
     await testInitializeGlean(testAppId, true);
-    const clientId = await Glean.coreMetrics["clientId"]
+    const clientId = await Context.coreMetrics["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(clientId);
     assert.ok(clientId !== KNOWN_CLIENT_ID);
   });
 
   it("enabling when already enabled is a no-op", async function() {
-    const spy = sandbox.spy(Glean.coreMetrics, "initialize");
+    const spy = sandbox.spy(Context.coreMetrics, "initialize");
     Glean.setUploadEnabled(true);
     // Wait for `setUploadEnabled` to be executed.
     await Context.dispatcher.testBlockOnQueue();
@@ -274,20 +274,24 @@ describe("Glean", function() {
   });
 
   it("deletion request is sent when toggling upload from on to off", async function() {
-    const postSpy = sandbox.spy(Context.platform.uploader, "post");
+    // Un-initialize, but don't clear the stores.
+    await testUninitializeGlean();
 
+    const mockUploader = new WaitableUploader();
+    const pingBody = mockUploader.waitForPingSubmission(DELETION_REQUEST_PING_NAME);
+
+    await testInitializeGlean(
+      testAppId,
+      true,
+      {
+        httpClient: mockUploader,
+      });
     Glean.setUploadEnabled(false);
-    await Context.dispatcher.testBlockOnQueue();
+    // If ping was not sent this promise will reject.
+    const { ping_info: info } = await pingBody;
 
-    assert.strictEqual(postSpy.callCount, 1);
-    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
+    assert.strictEqual((info as JSONObject).reason, "set_upload_enabled");
     assert.strictEqual(Context.uploadEnabled, false);
-
-    postSpy.resetHistory();
-    Glean.setUploadEnabled(true);
-    await Context.dispatcher.testBlockOnQueue();
-    assert.strictEqual(postSpy.callCount, 0);
-    assert.strictEqual(Context.uploadEnabled, true);
   });
 
   it("deletion request is sent when toggling upload from on to off and the pings queue is full", async function() {
@@ -330,7 +334,9 @@ describe("Glean", function() {
     );
 
     // If ping was not sent this promise will reject.
-    await pingBody;
+    const { ping_info: info } = await pingBody;
+
+    assert.strictEqual((info as JSONObject).reason, "at_init");
     assert.strictEqual(Context.uploadEnabled, false);
   });
 
@@ -472,17 +478,24 @@ describe("Glean", function() {
     assert.strictEqual(await metric.testGetValue(), undefined);
   });
 
-  it("appBuild and appDisplayVersion are correctly reported", async function () {
+  it("appBuild, appDisplayVersion and buildDate are correctly reported", async function () {
     await testUninitializeGlean();
 
     const testBuild = "test";
     const testDisplayVersion = "1.2.3-stella";
 
-    await testInitializeGlean(testAppId, true, { appBuild: testBuild, appDisplayVersion: testDisplayVersion });
+    await testInitializeGlean(
+      testAppId,
+      true, {
+        appBuild: testBuild,
+        appDisplayVersion: testDisplayVersion,
+        buildDate: new Date(),
+      }
+    );
     await Context.dispatcher.testBlockOnQueue();
 
-    assert.strictEqual(await Glean.coreMetrics.appBuild.testGetValue(), testBuild);
-    assert.strictEqual(await Glean.coreMetrics.appDisplayVersion.testGetValue(), testDisplayVersion);
+    assert.strictEqual(await Context.coreMetrics.appBuild.testGetValue(), testBuild);
+    assert.strictEqual(await Context.coreMetrics.appDisplayVersion.testGetValue(), testDisplayVersion);
   });
 
   // Verification test, does not test anything the Dispatcher suite doesn't cover,

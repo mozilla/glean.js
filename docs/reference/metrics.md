@@ -45,6 +45,17 @@ This ping includes the [client id](https://mozilla.github.io/glean/book/user/pin
 
 - <https://bugzilla.mozilla.org/1587095>
 
+**Reasons this ping may be sent:**
+
+- `at_init`: The ping was submitted at startup.
+      Glean discovered that between the last time it was run and this time,
+      upload of data has been disabled.
+
+- `set_upload_enabled`: The ping was submitted between Glean init and Glean shutdown.
+      Glean was told after init but before shutdown that upload has changed
+      from enabled to disabled.
+
+
 All Glean pings contain built-in metrics in the [`ping_info`](https://mozilla.github.io/glean/book/user/pings/index.html#the-ping_info-section) and [`client_info`](https://mozilla.github.io/glean/book/user/pings/index.html#the-client_info-section) sections.
 
 This ping contains no metrics.

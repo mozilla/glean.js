@@ -7,7 +7,6 @@ import type { ConfigurationInterface } from "../config.js";
 import { Context } from "../context.js";
 import { testResetEvents } from "../events/utils.js";
 import Glean from "../glean.js";
-import { CoreMetrics } from "../internal_metrics.js";
 
 /**
  * Test-only API
@@ -27,10 +26,6 @@ export async function testInitializeGlean(
   uploadEnabled = true,
   config?: ConfigurationInterface
 ): Promise<void> {
-  // Core metrics need to be re-initialized so that
-  // the supportedMetrics map is re-created.
-  Glean.coreMetrics = new CoreMetrics();
-
   Context.testing = true;
 
   Glean.setPlatform(TestPlatform);

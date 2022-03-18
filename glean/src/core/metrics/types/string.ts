@@ -5,8 +5,10 @@
 import type { CommonMetricData } from "../index.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
-import { isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import type { MetricValidationResult } from "../metric.js";
+import { Metric, MetricValidationError } from "../metric.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.StringMetricType";
 export const MAX_LENGTH_VALUE = 100;
@@ -16,20 +18,64 @@ export class StringMetric extends Metric<string, string> {
     super(v);
   }
 
-  validate(v: unknown): v is string {
-    if (!isString(v)) {
-      return false;
-    }
-
-    if (v.length > MAX_LENGTH_VALUE) {
-      return false;
-    }
-
-    return true;
+  validate(v: unknown): MetricValidationResult {
+    return validateString(v);
   }
 
   payload(): string {
     return this._inner;
+  }
+}
+
+/**
+ * Base implementation of the string metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the string metric type.
+ */
+export class InternalStringMetricType extends MetricType {
+  constructor(meta: CommonMetricData) {
+    super("string", meta, StringMetric);
+  }
+
+  /**
+   * An implemention of `set` that does not dispatch the recording task.
+   *
+   * # Important
+   *
+   * This method should **never** be exposed to users.
+   *
+   * @param value The string we want to set to.
+   */
+  async setUndispatched(value: string): Promise<void> {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      const truncatedValue = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_VALUE);
+      const metric = new StringMetric(truncatedValue);
+      await Context.metricsDatabase.record(this, metric);
+    } catch(e) {
+      if (e instanceof MetricValidationError) {
+        await e.recordError(this);
+      }
+    }
+  }
+
+  set(value: string): void {
+    Context.dispatcher.launch(() => this.setUndispatched(value));
+  }
+
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: string | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
+      });
+      return metric;
+    }
   }
 }
 
@@ -39,31 +85,11 @@ export class StringMetric extends Metric<string, string> {
  * Record an Unicode string value with arbitrary content.
  * Strings are length-limited to `MAX_LENGTH_VALUE` bytes.
  */
-class StringMetricType extends MetricType {
+export default class {
+  #inner: InternalStringMetricType;
+
   constructor(meta: CommonMetricData) {
-    super("string", meta, StringMetric);
-  }
-
-  /**
-   * An internal implemention of `set` that does not dispatch the recording task.
-   *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the recording of the metric will happen in order with other Glean API calls.
-   *
-   * @param instance The metric instance to record to.
-   * @param value The string we want to set to.
-   */
-  static async _private_setUndispatched(instance: StringMetricType, value: string): Promise<void> {
-    if (!instance.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    const truncatedValue = await truncateStringAtBoundaryWithError(instance, value, MAX_LENGTH_VALUE);
-    const metric = new StringMetric(truncatedValue);
-    await Context.metricsDatabase.record(instance, metric);
+    this.#inner = new InternalStringMetricType(meta);
   }
 
   /**
@@ -77,7 +103,7 @@ class StringMetricType extends MetricType {
    * @param value the value to set.
    */
   set(value: string): void {
-    Context.dispatcher.launch(() => StringMetricType._private_setUndispatched(this, value));
+    this.#inner.set(value);
   }
 
   /**
@@ -91,15 +117,21 @@ class StringMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
-    if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: string | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
-      });
-      return metric;
-    }
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
-export default StringMetricType;

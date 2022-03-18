@@ -106,4 +106,21 @@ describe("TextMetric", function() {
       await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1
     );
   });
+
+  it("attempting to record a value of incorrect type records an error", async function () {
+    const metric = new TextMetricType({
+      category: "aCategory",
+      name: "aTextMetric",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.set({ "not": "string" });
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
+    assert.strictEqual(await metric.testGetValue(), undefined);
+  });
 });

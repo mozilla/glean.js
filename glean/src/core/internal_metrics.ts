@@ -3,9 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "./constants.js";
-import UUIDMetricType from "./metrics/types/uuid.js";
-import DatetimeMetricType from "./metrics/types/datetime.js";
-import StringMetricType from "./metrics/types/string.js";
+import { InternalUUIDMetricType as UUIDMetricType } from "./metrics/types/uuid.js";
+import { InternalDatetimeMetricType as DatetimeMetricType } from "./metrics/types/datetime.js";
+import { InternalStringMetricType as StringMetricType } from "./metrics/types/string.js";
 import { createMetric } from "./metrics/utils.js";
 import TimeUnit from "./metrics/time_unit.js";
 import { generateUUIDv4 } from "./utils.js";
@@ -32,6 +32,7 @@ export class CoreMetrics {
   readonly appChannel: StringMetricType;
   readonly appBuild: StringMetricType;
   readonly appDisplayVersion: StringMetricType;
+  readonly buildDate: DatetimeMetricType;
 
 
   constructor() {
@@ -106,19 +107,30 @@ export class CoreMetrics {
       lifetime: Lifetime.Application,
       disabled: false,
     });
+
+    this.buildDate = new DatetimeMetricType({
+      name: "build_date",
+      category: "",
+      sendInPings: ["glean_client_info"],
+      lifetime: Lifetime.Application,
+      disabled: false,
+    }, "second");
   }
 
   async initialize(): Promise<void> {
     await this.initializeClientId();
     await this.initializeFirstRunDate();
-    await StringMetricType._private_setUndispatched(this.os, await Context.platform.info.os());
-    await StringMetricType._private_setUndispatched(this.osVersion, await Context.platform.info.osVersion(Context.config.osVersion));
-    await StringMetricType._private_setUndispatched(this.architecture, await Context.platform.info.arch(Context.config.architecture));
-    await StringMetricType._private_setUndispatched(this.locale, await Context.platform.info.locale());
-    await StringMetricType._private_setUndispatched(this.appBuild, Context.config.appBuild || "Unknown");
-    await StringMetricType._private_setUndispatched(this.appDisplayVersion, Context.config.appDisplayVersion || "Unknown");
+    await this.os.setUndispatched(await Context.platform.info.os());
+    await this.osVersion.setUndispatched(await Context.platform.info.osVersion(Context.config.osVersion));
+    await this.architecture.setUndispatched(await Context.platform.info.arch(Context.config.architecture));
+    await this.locale.setUndispatched(await Context.platform.info.locale());
+    await this.appBuild.setUndispatched(Context.config.appBuild || "Unknown");
+    await this.appDisplayVersion.setUndispatched(Context.config.appDisplayVersion || "Unknown");
     if (Context.config.channel) {
-      await StringMetricType._private_setUndispatched(this.appChannel, Context.config.channel);
+      await this.appChannel.setUndispatched(Context.config.channel);
+    }
+    if (Context.config.buildDate) {
+      await this.buildDate.setUndispatched();
     }
   }
 
@@ -144,7 +156,7 @@ export class CoreMetrics {
     }
 
     if (needNewClientId) {
-      await UUIDMetricType._private_setUndispatched(this.clientId, generateUUIDv4());
+      await this.clientId.setUndispatched(generateUUIDv4());
     }
   }
 
@@ -158,7 +170,7 @@ export class CoreMetrics {
     );
 
     if (!firstRunDate) {
-      await DatetimeMetricType._private_setUndispatched(this.firstRunDate);
+      await this.firstRunDate.setUndispatched();
     }
   }
 }

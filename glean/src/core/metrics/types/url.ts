@@ -3,11 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { isString, testOnlyCheck } from "../../utils.js";
+import { testOnlyCheck } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import { Metric } from "../metric.js";
+import type { MetricValidationResult } from "../metric.js";
+import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
+import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.URLMetricType";
 // The maximum number of characters a URL Metric may have.
@@ -18,16 +20,6 @@ const URL_MAX_LENGTH = 2048;
 //
 // Reference: https://url.spec.whatwg.org/#url-scheme-string
 const URL_VALIDATION_REGEX = /^[a-zA-Z][a-zA-Z0-9-\+\.]*:(.*)$/;
-
-/**
- * Error thrown when there is a URL validation error that also yields error recording.
- */
-class UrlMetricError extends Error {
-  constructor(readonly type: ErrorType, message?: string) {
-    super(message);
-    this.name = "UrlMetricError";
-  }
-}
 
 export class UrlMetric extends Metric<string, string> {
   constructor(v: unknown) {
@@ -48,30 +40,39 @@ export class UrlMetric extends Metric<string, string> {
    * @param v The value to validate.
    * @returns Whether or not v is a valid URL-like string.
    */
-  validate(v: unknown): v is string {
-    if (!isString(v)) {
-      return false;
+  validate(v: unknown): MetricValidationResult {
+    const validation = validateString(v);
+    if (validation.type === MetricValidation.Error) {
+      return validation;
     }
 
-    if (v.length > URL_MAX_LENGTH) {
-      throw new UrlMetricError(
-        ErrorType.InvalidOverflow,
-        `URL length ${v.length} exceeds maximum of ${URL_MAX_LENGTH}.`
-      );
+    const str = v as string;
+    if (str.length > URL_MAX_LENGTH) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `URL length ${str.length} exceeds maximum of ${URL_MAX_LENGTH}`,
+        errorType: ErrorType.InvalidOverflow,
+      };
     }
 
-    if (v.startsWith("data:")) {
-      throw new UrlMetricError(ErrorType.InvalidValue, "URL metric does not support data URLs.");
+    if (str.startsWith("data:")) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: "URL metric does not support data URLs",
+        errorType: ErrorType.InvalidValue,
+      };
     }
 
 
-    if (!URL_VALIDATION_REGEX.test(v)) {
-      throw new UrlMetricError(
-        ErrorType.InvalidValue, `"${v}" does not start with a valid URL scheme.`
-      );
+    if (!URL_VALIDATION_REGEX.test(str)) {
+      return {
+        type: MetricValidation.Error,
+        errorMessage: `"${str}" does not start with a valid URL scheme`,
+        errorType: ErrorType.InvalidValue,
+      };
     }
 
-    return true;
+    return { type: MetricValidation.Success };
   }
 
   payload(): string {
@@ -80,18 +81,17 @@ export class UrlMetric extends Metric<string, string> {
 }
 
 /**
- * A URL metric.
+ * Base implementation of the URL metric type,
+ * meant only for Glean internal use.
+ *
+ * This class exposes Glean-internal properties and methods
+ * of the URL metric type.
  */
-class UrlMetricType extends MetricType {
+class InternalUrlMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("url", meta, UrlMetric);
   }
 
-  /**
-   * Sets to a specified value.
-   *
-   * @param url the value to set.
-   */
   set(url: string): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -102,11 +102,45 @@ class UrlMetricType extends MetricType {
         const metric = new UrlMetric(url);
         await Context.metricsDatabase.record(this, metric);
       } catch (e) {
-        if (e instanceof UrlMetricError) {
-          await Context.errorManager.record(this, e.type, e);
+        if (e instanceof MetricValidationError) {
+          await e.recordError(this);
         }
       }
     });
+  }
+
+  setUrl(url: URL): void {
+    this.set(url.toString());
+  }
+
+  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
+    if (testOnlyCheck("testGetValue", LOG_TAG)) {
+      let metric: string | undefined;
+      await Context.dispatcher.testLaunch(async () => {
+        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
+      });
+      return metric;
+    }
+  }
+}
+
+/**
+ * A URL metric.
+ */
+export default class {
+  #inner: InternalUrlMetricType;
+
+  constructor(meta: CommonMetricData) {
+    this.#inner = new InternalUrlMetricType(meta);
+  }
+
+  /**
+   * Sets to a specified value.
+   *
+   * @param url the value to set.
+   */
+  set(url: string): void {
+    this.#inner.set(url);
   }
 
   /**
@@ -115,7 +149,7 @@ class UrlMetricType extends MetricType {
    * @param url the value to set.
    */
   setUrl(url: URL): void {
-    this.set(url.toString());
+    this.#inner.setUrl(url);
   }
 
   /**
@@ -133,15 +167,22 @@ class UrlMetricType extends MetricType {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
-    if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: string | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
-      });
-      return metric;
-    }
+  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+    return this.#inner.testGetValue(ping);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Returns the number of errors recorded for the given metric.
+   *
+   * @param errorType The type of the error recorded.
+   * @param ping represents the name of the ping to retrieve the metric for.
+   *        Defaults to the first value in `sendInPings`.
+   * @returns the number of errors recorded for the metric.
+   */
+  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+    return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
 
-export default UrlMetricType;

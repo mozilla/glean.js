@@ -15,12 +15,17 @@ type ValidatorFunction = (reason?: string) => Promise<void>;
 type PromiseCallback = (value: void | PromiseLike<void>) => void;
 
 /**
- * Stores information about a ping.
+ * Asserts whether or not a given ping is a deletion-request ping.
  *
- * This is required so that given metric data queued on disk we can send
- * pings with the correct settings, e.g. whether it has a client_id.
+ * @param name The ping name to check.
+ * @returns Whether or not the name is the deletion-request ping name.
  */
-class PingType implements CommonPingData {
+function isDeletionRequest(name: string): boolean {
+  return name === DELETION_REQUEST_PING_NAME;
+}
+
+
+export class InternalPingType implements CommonPingData {
   readonly name: string;
   readonly includeClientId: boolean;
   readonly sendIfEmpty: boolean;
@@ -39,22 +44,58 @@ class PingType implements CommonPingData {
     this.reasonCodes = meta.reasonCodes ?? [];
   }
 
-  private isDeletionRequest(): boolean {
-    return this.name === DELETION_REQUEST_PING_NAME;
-  }
-
   /**
-   * Collects and submits a ping for eventual uploading.
+   * An implemention of `submit` that does not dispatch the submission task.
    *
-   * The ping content is assembled as soon as possible, but upload is not
-   * guaranteed to happen immediately, as that depends on the upload policies.
+   * # Important
    *
-   * If the ping currently contains no content, it will not be sent,
-   * unless it is configured to be sent if empty.
+   * This method should **never** be exposed to users.
    *
    * @param reason The reason the ping was triggered. Included in the
    *               `ping_info.reason` part of the payload.
+   * @param testResolver The asynchronous validation function to run in order to validate
+   *        the ping content.
    */
+  async submitUndispatched(reason?: string, testResolver?: PromiseCallback): Promise<void> {
+    if (!Context.initialized) {
+      log(LOG_TAG, "Glean must be initialized before submitting pings.", LoggingLevel.Info);
+      return;
+    }
+
+    if (!Context.uploadEnabled && !isDeletionRequest(this.name)) {
+      log(
+        LOG_TAG,
+        "Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.",
+        LoggingLevel.Info
+      );
+      return;
+    }
+
+    let correctedReason = reason;
+    if (reason && !this.reasonCodes.includes(reason)) {
+      log(LOG_TAG, `Invalid reason code ${reason} from ${this.name}. Ignoring.`, LoggingLevel.Warn);
+      correctedReason = undefined;
+    }
+
+    const identifier = generateUUIDv4();
+    await collectAndStorePing(identifier, this, correctedReason);
+
+    if (testResolver) {
+      testResolver();
+
+      // Finally clean up!
+      this.resolveTestPromiseFunction = undefined;
+      this.rejectTestPromiseFunction = undefined;
+      this.testCallback = undefined;
+    }
+  }
+
+  private internalSubmit(reason?: string, testResolver?: PromiseCallback): void {
+    Context.dispatcher.launch(async () => {
+      await this.submitUndispatched(reason, testResolver);
+    });
+  }
+
   submit(reason?: string): void {
     // **** Read this before changing the following code! ****
     //
@@ -68,7 +109,7 @@ class PingType implements CommonPingData {
     if (this.testCallback) {
       this.testCallback(reason)
         .then(() => {
-          PingType._private_internalSubmit(this, reason, this.resolveTestPromiseFunction);
+          this.internalSubmit(reason, this.resolveTestPromiseFunction);
         })
         .catch(e => {
           log(
@@ -76,78 +117,13 @@ class PingType implements CommonPingData {
             [`There was an error validating "${this.name}" (${reason ?? "no reason"}):`, e],
             LoggingLevel.Error
           );
-          PingType._private_internalSubmit(this, reason, this.rejectTestPromiseFunction);
+          this.internalSubmit(reason, this.rejectTestPromiseFunction);
         });
     } else {
-      PingType._private_internalSubmit(this, reason);
+      this.internalSubmit(reason);
     }
   }
 
-  /**
-   * An internal implemention of `submit` that does not dispatch the submission task.
-   *
-   * # Important
-   *
-   * This is absolutely not meant to be used outside of Glean itself.
-   * It may cause multiple issues because it cannot guarantee
-   * that the submission of the ping will happen in order with other Glean API calls.
-   *
-   * @param instance The ping instance to submit.
-   * @param reason The reason the ping was triggered. Included in the
-   *               `ping_info.reason` part of the payload.
-   * @param testResolver The asynchronous validation function to run in order to validate
-   *        the ping content.
-   */
-  static async _private_submitUndispatched(instance: PingType, reason?: string, testResolver?: PromiseCallback): Promise<void> {
-    if (!Context.initialized) {
-      log(LOG_TAG, "Glean must be initialized before submitting pings.", LoggingLevel.Info);
-      return;
-    }
-
-    if (!Context.uploadEnabled && !instance.isDeletionRequest()) {
-      log(
-        LOG_TAG,
-        "Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.",
-        LoggingLevel.Info
-      );
-      return;
-    }
-
-    let correctedReason = reason;
-    if (reason && !instance.reasonCodes.includes(reason)) {
-      log(LOG_TAG, `Invalid reason code ${reason} from ${this.name}. Ignoring.`, LoggingLevel.Warn);
-      correctedReason = undefined;
-    }
-
-    const identifier = generateUUIDv4();
-    await collectAndStorePing(identifier, instance, correctedReason);
-
-    if (testResolver) {
-      testResolver();
-
-      // Finally clean up!
-      instance.resolveTestPromiseFunction = undefined;
-      instance.rejectTestPromiseFunction = undefined;
-      instance.testCallback = undefined;
-    }
-  }
-
-  private static _private_internalSubmit(instance: PingType, reason?: string, testResolver?: PromiseCallback): void {
-    Context.dispatcher.launch(async () => {
-      await PingType._private_submitUndispatched(instance, reason, testResolver);
-    });
-  }
-
-  /**
-   * Test-only API
-   *
-   * Runs a validation function before the ping is collected.
-   *
-   * @param callbackFn The asynchronous validation function to run in order to validate
-   *        the ping content.
-   * @returns A `Promise` resolved when the ping is collected and the validation function
-   *          is executed.
-   */
   async testBeforeNextSubmit(callbackFn: ValidatorFunction): Promise<void> {
     if (testOnlyCheck("testBeforeNextSubmit", LOG_TAG)) {
       if (this.testCallback) {
@@ -168,4 +144,46 @@ class PingType implements CommonPingData {
   }
 }
 
-export default PingType;
+/**
+ * Stores information about a ping.
+ *
+ * This is required so that given metric data queued on disk we can send
+ * pings with the correct settings, e.g. whether it has a client_id.
+ */
+export default class {
+  #inner: InternalPingType;
+
+  constructor(meta: CommonPingData) {
+    this.#inner = new InternalPingType(meta);
+  }
+
+  /**
+   * Collects and submits a ping for eventual uploading.
+   *
+   * The ping content is assembled as soon as possible, but upload is not
+   * guaranteed to happen immediately, as that depends on the upload policies.
+   *
+   * If the ping currently contains no content, it will not be sent,
+   * unless it is configured to be sent if empty.
+   *
+   * @param reason The reason the ping was triggered. Included in the
+   *               `ping_info.reason` part of the payload.
+   */
+  submit(reason?: string): void {
+    this.#inner.submit(reason);
+  }
+
+  /**
+   * Test-only API
+   *
+   * Runs a validation function before the ping is collected.
+   *
+   * @param callbackFn The asynchronous validation function to run in order to validate
+   *        the ping content.
+   * @returns A `Promise` resolved when the ping is collected and the validation function
+   *          is executed.
+   */
+  async testBeforeNextSubmit(callbackFn: ValidatorFunction): Promise<void> {
+    return this.#inner.testBeforeNextSubmit(callbackFn);
+  }
+}

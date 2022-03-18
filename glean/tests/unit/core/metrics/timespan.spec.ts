@@ -10,7 +10,7 @@ import { Context } from "../../../../src/core/context";
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import TimeUnit from "../../../../src/core/metrics/time_unit";
-import TimespanMetricType, { TimespanMetric } from "../../../../src/core/metrics/types/timespan";
+import TimespanMetricType, { InternalTimespanMetricType, TimespanMetric } from "../../../../src/core/metrics/types/timespan";
 import { ErrorType } from "../../../../src/core/error/error_type";
 import { testResetGlean } from "../../../../src/core/testing";
 
@@ -213,7 +213,8 @@ describe("TimespanMetric", function() {
   });
 
   it("cancel does not store and clears start time", async function() {
-    const metric = new TimespanMetricType({
+    // Use the internal type here so we can access the `startTime` property.
+    const metric = new InternalTimespanMetricType({
       category: "aCategory",
       name: "aTimespan",
       sendInPings: ["aPing"],
@@ -329,5 +330,24 @@ describe("TimespanMetric", function() {
     // We expect the start/stop value, not the raw value.
     assert.strictEqual(await metric.testGetValue("aPing"), 100);
     assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
+  });
+
+  it("attempting to record a value of incorrect type records an error", async function () {
+    const metric = new TimespanMetricType({
+      category: "aCategory",
+      name: "aTimespan",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    }, "millisecond");
+
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    metric.setRawNanos("not number");
+    // Floating point numbers should also record an error
+    metric.setRawNanos(Math.PI);
+
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
+    assert.strictEqual(await metric.testGetValue(), undefined);
   });
 });

@@ -5,77 +5,59 @@
 import "jsdom-global/register";
 import assert from "assert";
 import sinon from "sinon";
+import nock from "nock";
+import fetch from "node-fetch";
 
 import BrowserUploader from "../../../../src/platform/browser/uploader";
-import type { JSONObject } from "../../../../src/core/utils";
-import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
+import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 
 const sandbox = sinon.createSandbox();
 
-global.fetch = function() {
-  throw new Error("The `fetch` function should be mocked for each test run individually.");
-};
+const MOCK_ENDPOINT = "http://www.example.com";
 
-class MockResponse {
-  status: number;
-
-  constructor(_blob: never, init: { status: number }) {
-    this.status = init.status;
-  }
-
-  json(): Promise<JSONObject> {
-    return Promise.resolve({ status: this.status });
-  }
-}
-// Disable typescript checking here, for it not to complain about the fact that our MockResponse is not complete.
-// For out intents and purposes it is complete enough.
-//
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-global.Response = MockResponse;
+global.fetch = fetch;
 
-class MockAbortController {
-  abort() {
-    throw new Error("Shouldn't get here.");
-  }
-}
-// Disable typescript checking here, for the same reasons as above.
-//
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-global.AbortController = MockAbortController;
-
-/**
- * Creates a Response object with the given status.
- *
- * @param status The status of the created response.
- * @returns The created Response object.
- */
-function createResponse(status: number): Response {
-  return new Response("", { status });
-}
-
-describe("Uploader/browser", function () {
+describe("Uploader/Browser", function () {
   afterEach(function () {
     sandbox.restore();
   });
 
-  it("returns the status for succesful requests", async function () {
-    const stub = sandbox.stub(global, "fetch");
-    for (const [index, status] of [200, 400, 500].entries()) {
-      stub.onCall(index).returns(Promise.resolve(createResponse(status)));
+  it("returns the correct status for successful requests", async function () {
+    for (const status of [200, 400, 500]) {
+      nock(MOCK_ENDPOINT).post(/./i).reply(status);
+
+      const response = BrowserUploader.post(MOCK_ENDPOINT, "");
       const expectedResponse = new UploadResult(UploadResultStatus.Success, status);
       assert.deepStrictEqual(
-        await BrowserUploader.post("https://localhost:8080", ""),
-        expectedResponse);
+        await response,
+        expectedResponse
+      );
     }
   });
 
-  it("doesn't throw if upload action throws", async function () {
-    sandbox.stub(global, "fetch").callsFake(() => Promise.reject());
+  it("returns the correct status for timeout requests", async function () {
+    nock(MOCK_ENDPOINT).post(/./i).delay(DEFAULT_UPLOAD_TIMEOUT_MS + 1).reply(500);
+
+    const response = BrowserUploader.post(MOCK_ENDPOINT, "");
     const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
     assert.deepStrictEqual(
-      await BrowserUploader.post("https://localhost:8080", ""),
+      await response,
+      expectedResponse
+    );
+  });
+
+  it("returns the correct status for request errors", async function () {
+    nock(MOCK_ENDPOINT).post(/./i).replyWithError({
+      message: "something awful happened",
+      code: "AWFUL_ERROR",
+    });
+
+    const response = BrowserUploader.post(MOCK_ENDPOINT, "");
+    const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
+    assert.deepStrictEqual(
+      await response,
       expectedResponse
     );
   });
