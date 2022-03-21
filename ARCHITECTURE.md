@@ -15,7 +15,7 @@ An end-to-end data collection platform developed by Mozilla and primarily target
 across multiple platforms.
 
 Glean provides multiple client SDKs for different programming languages and platforms.
-One of the aspects that guide Glean SDK development is cross-platform compatibility and the Glean
+One of the aspects that guide Glean SDK development is cross-platform consistency and the Glean
 JavaScript SDK is no exception to that. It is built to work on multiple JavaScript platforms --
 websites, web extensions, Node.js and QML as of the time of writing -- and to be easily extendable
 to other platforms as well.
@@ -27,7 +27,7 @@ Firefox Desktop SDK in the [mozilla-central](https://hg.mozilla.org/mozilla-cent
 
 ## Overview
 
-On a very high level a Glean SDK is a program which exposes APIs for users to record
+On a very high level a Glean SDK is a library which exposes APIs for users to record
 structured data and submit that data in an (again) structured format to a specific endpoint.
 
 Users cannot simply record arbitrary data though. The Glean SDKs expose specialized metrics APIs for
@@ -35,7 +35,7 @@ different collection needs. The SDK is responsible to validating that the data g
 the correct format and only then recording it (or recording an error in case the data provided is
 not correct).
 
-When data is submitted, the Glean SDK is responsible for assembling the correct group of data points
+When data is submitted, the Glean SDK is responsible for assembling the correct group (aka ping) of data points
 (aka metrics) in the format expected by the Glean pipeline, uploading the data and managing the local
 storage. Each metric can have different [lifetimes](https://mozilla.github.io/glean/book/user/metrics/adding-new-metrics.html#a-lifetime-example)
 and the SDK will manage its storage so that data does not remain in storage after it's lifetime is expired.
