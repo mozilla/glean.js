@@ -11,20 +11,20 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./uploader": "./dist/core/upload/uploader.js",
     "./testing": "./dist/core/testing/index.js",
-    "./node": "./dist/index/node.js",
-    "./webext": "./dist/index/webext.js",
-    "./web": "./dist/index/web.js"
+    "./node": "./dist/entry/node.js",
+    "./webext": "./dist/entry/webext.js",
+    "./web": "./dist/entry/web.js"
   },
   "typesVersions": {
     "*": {
       "webext": [
-        "./dist/types/index/webext.d.ts"
+        "./dist/types/entry/webext.d.ts"
       ],
       "node": [
-        "./dist/types/index/node.d.ts"
+        "./dist/types/entry/node.d.ts"
       ],
       "web": [
-        "./dist/types/index/web.d.ts"
+        "./dist/types/entry/web.d.ts"
       ],
       "private/ping": [
         "./dist/types/core/pings/ping_type.d.ts"

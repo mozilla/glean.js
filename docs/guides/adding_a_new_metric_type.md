@@ -176,7 +176,7 @@ It is a wrapper around the `InternalMetricType`.
 
 Once you are done implementing the `MetricType` class for your new metric type,
 make sure to manually expose it for Qt platforms by adding it to
-[the Qt entry point file](https://github.com/mozilla/glean.js/blob/main/glean/src/index/qt.ts).
+[the Qt entry point file](https://github.com/mozilla/glean.js/blob/main/glean/src/entry/qt.ts).
 
 ## Testing
 
