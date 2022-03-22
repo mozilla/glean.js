@@ -49,7 +49,7 @@ export interface PingInternalRepresentation extends JSONObject {
  *          stating whether `v` is in the correct ping internal representation.
  */
 export function isValidPingInternalRepresentation(v: unknown): v is PingInternalRepresentation {
-  if (isObject(v) && [3, 4].includes(Object.keys(v).length)) {
+  if (isObject(v)) {
     const hasValidCollectionDate = "collectionDate" in v && isString(v.collectionDate) && isNumber(new Date(v.collectionDate).getTime());
     const hasValidPath = "path" in v && isString(v.path);
     const hasValidPayload = "payload" in v && isJSONValue(v.payload) && isObject(v.payload);
