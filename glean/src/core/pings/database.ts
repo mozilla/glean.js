@@ -4,7 +4,7 @@
 
 import type Store from "../storage/index.js";
 import type { JSONObject} from "../utils.js";
-import { isObject, isJSONValue, isString } from "../utils.js";
+import { isNumber, isObject, isJSONValue, isString } from "../utils.js";
 import log, { LoggingLevel } from "../log.js";
 import { DELETION_REQUEST_PING_NAME } from "../constants.js";
 import { strToU8 } from "fflate";
@@ -32,6 +32,8 @@ function getPingSize(ping: PingInternalRepresentation): number {
   return strToU8(JSON.stringify(ping)).length;
 }
 
+// IMPORTANT: If this object ever changes, the `isValidPingInternalRepresentation`
+// function below needs to be updated accordingly.
 export interface PingInternalRepresentation extends JSONObject {
   collectionDate: string,
   path: string,
@@ -47,11 +49,12 @@ export interface PingInternalRepresentation extends JSONObject {
  *          stating whether `v` is in the correct ping internal representation.
  */
 export function isValidPingInternalRepresentation(v: unknown): v is PingInternalRepresentation {
-  if (isObject(v) && (Object.keys(v).length === 2 || Object.keys(v).length === 3)) {
+  if (isObject(v) && [3, 4].includes(Object.keys(v).length)) {
+    const hasValidCollectionDate = "collectionDate" in v && isString(v.collectionDate) && isNumber(new Date(v.collectionDate).getTime());
     const hasValidPath = "path" in v && isString(v.path);
     const hasValidPayload = "payload" in v && isJSONValue(v.payload) && isObject(v.payload);
     const hasValidHeaders = (!("headers" in v)) || (isJSONValue(v.headers) && isObject(v.headers));
-    if (!hasValidPath || !hasValidPayload || !hasValidHeaders) {
+    if (!hasValidCollectionDate || !hasValidPath || !hasValidPayload || !hasValidHeaders) {
       return false;
     }
     return true;
@@ -161,7 +164,11 @@ class PingsDatabase {
         if (isValidPingInternalRepresentation(ping)) {
           finalPings[identifier] = ping;
         } else {
-          log(LOG_TAG, "Unexpected data found in pings database. Deleting.", LoggingLevel.Warn);
+          log(
+            LOG_TAG,
+            `Unexpected data found in pings database: ${JSON.stringify(ping, null, 2)}. Deleting.`,
+            LoggingLevel.Warn
+          );
           await this.store.delete([identifier]);
         }
       }

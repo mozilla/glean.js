@@ -10,6 +10,12 @@ import type { Observer} from "../../../../src/core/pings/database";
 import Database, { isValidPingInternalRepresentation } from "../../../../src/core/pings/database";
 import type { JSONObject } from "../../../../src/core/utils";
 import { testResetGlean } from "../../../../src/core/testing";
+import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
+import { InternalCounterMetricType as CounterMetricType } from "../../../../src/core/metrics/types/counter";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
+import { stopGleanUploader } from "../../../utils";
+import { Context } from "../../../../src/core/context";
+import Glean from "../../../../src/core/glean";
 
 const sandbox = sinon.createSandbox();
 const now = new Date();
@@ -93,14 +99,60 @@ describe("PingsDatabase", function() {
       assert.strictEqual(isValidPingInternalRepresentation({}), false);
       assert.strictEqual(isValidPingInternalRepresentation({ path: "some/path" }), false);
       assert.strictEqual(isValidPingInternalRepresentation({ payload: {} }), false);
-      assert.strictEqual(isValidPingInternalRepresentation({ payload: "not an object", path: "some/path" }), false);
-      assert.strictEqual(isValidPingInternalRepresentation({ payload: {}, path: 1234 }), false);
+      assert.strictEqual(isValidPingInternalRepresentation({ collectionDate: "2022-03-22T13:46:27.798Z", payload: "not an object", path: "some/path" }), false);
+      assert.strictEqual(isValidPingInternalRepresentation({ collectionDate: "2022-03-22T13:46:27.798Z", payload: {}, path: 1234 }), false);
       assert.strictEqual(isValidPingInternalRepresentation({ headers: {} }), false);
-      assert.strictEqual(isValidPingInternalRepresentation({ payload: {}, path: "some/path", headers: "not an object" }), false);
+      assert.strictEqual(isValidPingInternalRepresentation({ collectionDate: "2022-03-22T13:46:27.798Z", payload: {}, path: "some/path", headers: "not an object" }), false);
+      assert.strictEqual(isValidPingInternalRepresentation({ collectionDate: "2022-03-22T13:46:27.798Z" }), false);
+      assert.strictEqual(isValidPingInternalRepresentation({ collectionDate: "not valid date", payload: {}, path: "some/path" }), false);
+      assert.strictEqual(isValidPingInternalRepresentation({ collectionDate: 1647956932896, payload: {}, path: "some/path" }), false);
 
       // Valid values
-      assert.strictEqual(isValidPingInternalRepresentation({ payload: {}, path: "some/path", headers: {} }), true);
-      assert.strictEqual(isValidPingInternalRepresentation({ payload: {}, path: "some/path" }), true);
+      assert.strictEqual(isValidPingInternalRepresentation({ collectionDate: "2022-03-22T13:46:27.798Z", payload: {}, path: "some/path", headers: {} }), true);
+      assert.strictEqual(isValidPingInternalRepresentation({ collectionDate: "2022-03-22T13:46:27.798Z", payload: {}, path: "some/path" }), true);
+    });
+
+    it("isValidPingInternalRepresentation validates correctly real generated pings", async function () {
+      // Stop the Glean uploader so that it does not interfere with this test.
+      stopGleanUploader();
+
+      const ping = new PingType({
+        name: "aPing",
+        includeClientId: true,
+        sendIfEmpty: false,
+      });
+
+      const metric = new CounterMetricType({
+        name: "aCounterMetric",
+        category: "test",
+        sendInPings: [ "aPing" ],
+        lifetime: Lifetime.Ping,
+        disabled: false,
+      });
+
+      // Record some metrics and submit the ping.
+      await metric.addUndispatched();
+      await metric.addUndispatched();
+      await metric.addUndispatched();
+      await ping.submitUndispatched();
+
+      // Check that the ping was there.
+      const allPings1 = await Context.pingsDatabase.getAllPings();
+      assert.strictEqual(allPings1.length, 1);
+
+      // Set a debug tag so that the next submitted pings will have a `headers` prop
+      Glean.setDebugViewTag("my-tag");
+
+      // Record some more metrics and submit the ping again.
+      await metric.addUndispatched();
+      await metric.addUndispatched();
+      await metric.addUndispatched();
+      await ping.submitUndispatched();
+
+      // Check that both ping are there.
+      const allPings2 = await Context.pingsDatabase.getAllPings();
+      assert.strictEqual(allPings2.length, 2);
+
     });
 
     it("when incorrect data is found on the storage it is deleted", async function () {
