@@ -159,6 +159,12 @@ npm run link:glean
 npm run size:docs
 cd "${WORKSPACE_ROOT}"
 
+# Update metrics docs
+cd "${WORKSPACE_ROOT}/glean"
+npm install
+npm run build:metrics-docs
+cd "${WORKSPACE_ROOT}"
+
 echo "Everything prepared for v${NEW_VERSION}"
 echo
 echo "Changed files:"
