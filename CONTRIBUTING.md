@@ -19,13 +19,13 @@ Here's the [guide](https://github.com/mozilla/glean.js/blob/main/docs/guides/get
 
 If you are using Glean.js and found a bug or a missing feature, please file a bug.
 
-Glean.js bugs are filed in Bugzilla. Use [this link](https://bugzilla.mozilla.org/enter_bug.cgi?product=Data+Platform+and+Tools&component=Glean.js&priority=P4&status_whiteboard=%5Btelemetry%3Aglean-js%3Am%3F%5D)
-to file a bug in the Glean.js Bugzilla component.
+Glean.js bugs are filed in Bugzilla. Use [this link](https://bugzilla.mozilla.org/enter_bug.cgi?assigned_to=nobody%40mozilla.org&bug_ignored=0&bug_severity=normal&bug_status=NEW&bug_type=defect&cf_fx_iteration=---&cf_fx_points=---&cf_status_firefox100=---&cf_status_firefox101=---&cf_status_firefox99=---&cf_status_firefox_esr91=---&cf_tracking_firefox100=---&cf_tracking_firefox101=---&cf_tracking_firefox99=---&cf_tracking_firefox_esr91=---&component=Glean%3A%20SDK&contenttypemethod=list&contenttypeselection=text%2Fplain&defined_groups=1&filed_via=standard_form&flag_type-4=X&flag_type-607=X&flag_type-721=X&flag_type-737=X&flag_type-799=X&flag_type-800=X&flag_type-803=X&flag_type-936=X&flag_type-947=X&form_name=enter_bug&maketemplate=Remember%20values%20as%20bookmarkable%20template&op_sys=Unspecified&priority=P3&product=Data%20Platform%20and%20Tools&rep_platform=Unspecified&status_whiteboard=%5Bglean-sdk%3Am%3F%5D%5Bglean-js%5D&target_milestone=---&version=unspecified)
+to file a bug in the Glean SDK Bugzilla component.
 
 ## Finding a bug to work on
 
-As mentioned, Glean.js bugs are filed in Bugzilla. Anything on the Glean.js component
-with the tag [`[good first bug]`](https://bugzilla.mozilla.org/buglist.cgi?f1=status_whiteboard&v1=%5Bgood%20first%20bug%5D&o1=substring&resolution=---&query_format=advanced&f2=component&v2=Glean.js&list_id=15653400&o2=equals&classification=Client%20Software&classification=Developer%20Infrastructure&classification=Components&classification=Server%20Software&classification=Other)
+As mentioned, Glean.js bugs are filed in Bugzilla. Anything on the Glean SDK component
+with the tag [`[good first bug]`](https://bugzilla.mozilla.org/buglist.cgi?f1=status_whiteboard&o1=substring&component=Glean%3A%20SDK&query_format=advanced&resolution=---&classification=Client%20Software&classification=Developer%20Infrastructure&classification=Components&classification=Server%20Software&classification=Other&v1=%5Bgood-first-bug%5D%5Bglean-js%5D&list_id=16044682)
 is a good place to start.
 
 These bugs will usually have a comment explaining the steps to get started working on them.
