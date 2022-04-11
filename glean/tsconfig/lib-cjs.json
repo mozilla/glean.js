@@ -3,13 +3,11 @@
   "include": [
     "../src/core/**/*.ts",
     "../src/plugins/*.ts",
-    "../src/entry/node.ts",
-    "../src/entry/webext.ts",
-    "../src/entry/web.ts"
+    "../src/entry/node.ts"
   ],
   "compilerOptions": {
     "target": "ES2018",
-    "module": "ES6",
-    "outDir": "../dist/"
+    "module": "commonjs",
+    "outDir": "../dist/cjs"
   }
 }

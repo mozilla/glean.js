@@ -6,14 +6,32 @@
   "sideEffects": false,
   "exports": {
     "./package.json": "./package.json",
-    "./private/metrics/*": "./dist/core/metrics/types/*.js",
-    "./private/ping": "./dist/core/pings/ping_type.js",
-    "./plugins/*": "./dist/plugins/*.js",
-    "./uploader": "./dist/core/upload/uploader.js",
-    "./testing": "./dist/core/testing/index.js",
-    "./node": "./dist/entry/node.js",
-    "./webext": "./dist/entry/webext.js",
-    "./web": "./dist/entry/web.js"
+    "./private/metrics/*": {
+      "import": "./dist/esm/core/metrics/types/*.js",
+      "require": "./dist/cjs/core/metrics/types/*.js"
+    },
+    "./private/ping": {
+      "import": "./dist/esm/core/pings/ping_type.js",
+      "require": "./dist/cjs/core/pings/ping_type.js"
+    },
+    "./plugins/*": {
+      "import": "./dist/esm/plugins/*.js",
+      "require": "./dist/cjs/plugins/*.js"
+    },
+    "./uploader": {
+      "import": "./dist/esm/core/upload/uploader.js",
+      "require": "./dist/cjs/core/upload/uploader.js"
+    },
+    "./testing": {
+      "import": "./dist/esm/core/testing/index.js",
+      "require": "./dist/cjs/core/testing/index.js"
+    },
+    "./node": {
+      "import": "./dist/esm/entry/node.js",
+      "require": "./dist/cjs/entry/node.js"
+    },
+    "./webext": "./dist/esm/entry/webext.js",
+    "./web": "./dist/esm/entry/web.js"
   },
   "typesVersions": {
     "*": {
@@ -66,9 +84,10 @@
     "lint:circular-deps": "madge --circular src/ --extensions ts",
     "lint:glinter": "npm run cli -- glinter src/metrics.yaml src/pings.yaml --allow-reserved",
     "fix": "eslint . --ext .ts,.js,.json --fix",
-    "build": "rm -rf dist && run-s build:cli build:lib build:types build:qt",
+    "build": "rm -rf dist && run-s build:cli build:lib:esm build:lib:cjs build:types build:qt",
     "build:cli": "tsc -p ./tsconfig/cli.json",
-    "build:lib": "tsc -p ./tsconfig/lib.json",
+    "build:lib:esm": "tsc -p ./tsconfig/lib-esm.json",
+    "build:lib:cjs": "tsc -p ./tsconfig/lib-cjs.json && ./tsconfig/cjs-fixup",
     "build:types": "tsc -p ./tsconfig/types.json",
     "build:qt": "rm -rf dist/qt && webpack --config webpack.config.qt.js && ../bin/prepare-qml-module.sh",
     "build:docs": "rm -rf dist/docs && typedoc --entryPointStrategy expand ./src --out dist/docs --tsconfig tsconfig/docs.json",
