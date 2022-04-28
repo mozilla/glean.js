@@ -10,8 +10,7 @@ import { isInteger, isString } from "../utils.js";
 
 import { LabeledMetric } from "./types/labeled.js";
 import { Context } from "../context.js";
-import { ErrorType } from "@mozilla/glean/error";
-
+import { ErrorType } from "../error/error_type.js";
 import log, { LoggingLevel } from "../log.js";
 
 const LOG_TAG = "Glean.core.Metrics.utils";

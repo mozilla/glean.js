@@ -5,6 +5,5 @@
 import platform from "../platform/browser/webext/index.js";
 import base from "./base.js";
 
-import { ErrorType } from "@mozilla/glean/error";
 export { default as Uploader, UploadResult, UploadResultStatus } from "../core/upload/uploader.js";
 export default base(platform);
