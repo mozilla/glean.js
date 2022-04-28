@@ -19,7 +19,7 @@ import {
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
   GLEAN_REFERENCE_TIME_EXTRA_KEY
 } from "../../constants.js";
-import { ErrorType } from "../../error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 
 const LOG_TAG = "core.Metric.EventsDatabase";
 

@@ -9,7 +9,7 @@ import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
 import { Metric, MetricValidationError } from "../metric.js";
 import { validatePositiveInteger } from "../utils.js";
-import { ErrorType } from "../../error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 
 const LOG_TAG = "core.metrics.QuantityMetricType";
 

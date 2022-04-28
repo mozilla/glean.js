@@ -12,7 +12,7 @@ import type { MetricValidationResult } from "../metric.js";
 import { MetricValidation , MetricValidationError} from "../metric.js";
 import { Metric } from "../metric.js";
 import { Context } from "../../context.js";
-import { ErrorType } from "../../error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 
 const LOG_TAG = "core.metrics.TimespanMetricType";
 

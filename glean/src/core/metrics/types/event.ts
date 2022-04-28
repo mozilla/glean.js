@@ -8,7 +8,7 @@ import { RecordedEvent } from "../events_database/recorded_event.js";
 import { MetricType } from "../index.js";
 import { getMonotonicNow, isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { Context } from "../../context.js";
-import { ErrorType } from "../../error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 import { MetricValidationError } from "../metric.js";
 
 const LOG_TAG = "core.metrics.EventMetricType";
