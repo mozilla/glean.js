@@ -1,6 +1,7 @@
 # Unreleased changes
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.0.0...main)
+
 * [#1318](https://github.com/mozilla/glean.js/pull/1318): Expose `ErrorType` through its own entry point.
 * [#1271](https://github.com/mozilla/glean.js/pull/1271): BUGFIX: Fix pings validation function when scanning pings database on initialize.
   * This bug was preventing pings that contained custom headers from being successfully validated and enqueued on initialize.
