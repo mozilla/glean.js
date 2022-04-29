@@ -3,8 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import { ErrorType } from "@mozilla/glean/error";
-
+import { ErrorType } from "../../../../src/core/error/error_type";
 
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";

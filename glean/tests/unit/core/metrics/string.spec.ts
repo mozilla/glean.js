@@ -9,8 +9,7 @@ import StringMetricType, { MAX_LENGTH_VALUE } from "../../../../src/core/metrics
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 
 import { Context } from "../../../../src/core/context";
-import { ErrorType } from "@mozilla/glean/error";
-
+import { ErrorType } from "../../../../src/core/error/error_type";
 import { testResetGlean } from "../../../../src/core/testing";
 
 describe("StringMetric", function() {
