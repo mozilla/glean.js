@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { MetricType } from "../metrics/index.js";
-import { ErrorType } from "@mozilla/glean/error";
+import { ErrorType } from "./error_type.js";
 import { InternalCounterMetricType as CounterMetricType} from "../metrics/types/counter.js";
 import { combineIdentifierAndLabel, stripLabel } from "../metrics/types/labeled.js";
 import log from "../log.js";
