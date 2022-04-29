@@ -5,7 +5,7 @@
 import type { JSONValue } from "../utils.js";
 import type { MetricType } from "./index.js";
 import { Context } from "../context.js";
-import { ErrorType } from "../error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 
 export enum MetricValidation {
   Success,

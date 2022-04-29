@@ -4,7 +4,8 @@
 
 import assert from "assert";
 
-import { ErrorType } from "../../../src/core/error/error_type";
+import { ErrorType } from "@mozilla/glean/error";
+
 import { Context } from "../../../src/core/context";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { InternalStringMetricType as StringMetricType } from "../../../src/core/metrics/types/string";

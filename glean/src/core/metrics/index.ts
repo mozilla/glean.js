@@ -5,7 +5,7 @@
 import type { JSONValue} from "../utils.js";
 import { isUndefined, testOnlyCheck } from "../utils.js";
 import type { Lifetime } from "./lifetime.js";
-import type { ErrorType } from "../error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 import type { Metric } from "./metric.js";
 import { getValidDynamicLabel } from "./types/labeled.js";
 import { Context } from "../context.js";

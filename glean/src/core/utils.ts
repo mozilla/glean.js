@@ -5,7 +5,7 @@
 import type { MetricType } from "./metrics/index.js";
 import { v4 as UUIDv4 } from "uuid";
 import { Context } from "./context.js";
-import { ErrorType } from "./error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 import log, { LoggingLevel } from "./log.js";
 import { MetricValidationError } from "./metrics/metric.js";
 

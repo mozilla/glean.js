@@ -8,7 +8,7 @@ import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
 import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
-import { ErrorType } from "../../error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.URLMetricType";

@@ -12,7 +12,8 @@ import TimeUnit from "../../../../src/core/metrics/time_unit";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";
 import { testResetGlean } from "../../../../src/core/testing";
-import { ErrorType } from "../../../../src/core/error/error_type";
+import { ErrorType } from "@mozilla/glean/error";
+
 
 const sandbox = sinon.createSandbox();
 

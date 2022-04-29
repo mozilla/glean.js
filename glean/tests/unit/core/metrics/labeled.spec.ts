@@ -6,7 +6,8 @@ import assert from "assert";
 import sinon from "sinon";
 
 import { Context } from "../../../../src/core/context";
-import { ErrorType } from "../../../../src/core/error/error_type";
+import { ErrorType } from "@mozilla/glean/error";
+
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import BooleanMetricType from "../../../../src/core/metrics/types/boolean";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";

@@ -10,7 +10,7 @@ import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric.js";
 import { Metric, MetricValidation } from "../metric.js";
 import { Context } from "../../context.js";
-import { ErrorType } from "../../error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 
 /**
  * This is an internal metric representation for labeled metrics.

@@ -9,7 +9,7 @@ import type { MetricValidationResult } from "../metric.js";
 import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
 import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import type { JSONValue } from "../../utils.js";
-import { ErrorType } from "../../error/error_type.js";
+import { ErrorType } from "@mozilla/glean/error";
 import log from "../../log.js";
 import { validateString } from "../utils.js";
 

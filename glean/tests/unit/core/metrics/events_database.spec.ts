@@ -17,7 +17,8 @@ import { Context } from "../../../../src/core/context";
 import { RecordedEvent } from "../../../../src/core/metrics/events_database/recorded_event";
 import { EVENTS_PING_NAME, GLEAN_EXECUTION_COUNTER_EXTRA_KEY } from "../../../../src/core/constants";
 import { collectPing } from "../../../../src/core/pings/maker";
-import { ErrorType } from "../../../../src/core/error/error_type";
+import { ErrorType } from "@mozilla/glean/error";
+
 import { testResetGlean } from "../../../../src/core/testing";
 import type { Event } from "../../../../src/core/metrics/events_database/recorded_event";
 import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
