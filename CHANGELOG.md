@@ -4,6 +4,7 @@
 
 * [#1271](https://github.com/mozilla/glean.js/pull/1271): BUGFIX: Fix pings validation function when scanning pings database on initialize.
   * This bug was preventing pings that contained custom headers from being successfully validated and enqueued on initialize.
+* [#1335](https://github.com/mozilla/glean.js/pull/1335): BUGFIX: Fix uploading gzip-compressed pings in Node.
 
 # v1.0.0 (2022-03-17)
 
