@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { ErrorType } from "@mozilla/glean/error";
+import { ErrorType } from "../core/error/error_type.js";
 import { testResetGlean } from "../core/testing/index.js";
 
 import platform from "../platform/qt/index.js";
