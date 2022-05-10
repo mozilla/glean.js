@@ -310,11 +310,11 @@ workflows:
                 - release
                 - /^release-.*/
       - check-size:
-          context: data-eng-gleanjs-gh
+          context: data-sre-gleanjs
           requires:
             - hold
       - browser-compat-smoke-tests:
-          context: data-eng-gleanjs-gh
+          context: data-sre-gleanjs
           filters:
             branches:
               only:
@@ -322,14 +322,14 @@ workflows:
                 - release
                 - /^release-.*/
       - docs-deploy:
-          context: data-eng-gleanjs-gh
+          context: data-sre-gleanjs
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^v.*/
       - publish:
-          context: data-eng-gleanjs-gh
+          context: data-sre-gleanjs
           filters:
             branches:
               ignore: /.*/
