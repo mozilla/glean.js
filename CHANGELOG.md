@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.0.0...main)
 
+* [#1361](https://github.com/mozilla/glean.js/pull/1361): BUGFIX: Fix if a custom uploader does not have a timeout the upload code will hang forever.
+  * Applied `DEFAULT` timeout on ping upload worker.
 * [#1271](https://github.com/mozilla/glean.js/pull/1271): BUGFIX: Fix pings validation function when scanning pings database on initialize.
   * This bug was preventing pings that contained custom headers from being successfully validated and enqueued on initialize.
 * [#1335](https://github.com/mozilla/glean.js/pull/1335): BUGFIX: Fix uploading gzip-compressed pings in Node.
