@@ -11,7 +11,7 @@ import { GLEAN_VERSION } from "../constants.js";
 import { Context } from "../context.js";
 import log, { LoggingLevel } from "../log.js";
 import Policy from "./policy.js";
-import { UploadResult, UploadResultStatus } from "./uploader.js";
+import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResult, UploadResultStatus } from "./uploader.js";
 import { UploadTaskTypes } from "./task.js";
 
 const LOG_TAG = "core.Upload.PingUploadWorker";
@@ -112,11 +112,30 @@ class PingUploadWorker {
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
     try {
       const finalPing = await this.buildPingRequest(ping);
-      return await this.uploader.post(
-        `${this.serverEndpoint}${ping.path}`,
-        finalPing.payload,
-        finalPing.headers
-      );
+
+      return await new Promise(async (resolve)=>{
+
+        const setTimeOutNumber = Context.platform.timer.setTimeout(()=>{ 
+
+          resolve(new UploadResult(UploadResultStatus.RecoverableFailure));
+
+          log(LOG_TAG, "Timeout while attempting to upload ping.", LoggingLevel.Error);
+
+        }, DEFAULT_UPLOAD_TIMEOUT_MS);
+
+        const result = await this.uploader.post(
+          `${this.serverEndpoint}${ping.path}`,
+          finalPing.payload,
+          finalPing.headers
+        );
+
+        if(result){
+          Context.platform.timer.clearTimeout(setTimeOutNumber);
+          resolve(result);
+        }
+
+      });
+
     } catch(e) {
       log(LOG_TAG, [ "Error trying to build or post ping request:", e ], LoggingLevel.Warn);
       // An unrecoverable failure will make sure the offending ping is removed from the queue and
