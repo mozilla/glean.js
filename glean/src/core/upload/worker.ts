@@ -127,7 +127,7 @@ class PingUploadWorker {
 
       return await Promise.race([isRequestTimeOut, pingTask]).then((result)=>{
 
-        if(result.status){
+        if(result.status && timeoutNumber){
           Context.platform.timer.clearTimeout(timeoutNumber);
           return result;
 
