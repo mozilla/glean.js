@@ -111,30 +111,28 @@ class PingUploadWorker {
    */
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
     try {
+
       const finalPing = await this.buildPingRequest(ping);
+      let isRequestTimeOut = false;
+      const timeout = Context.platform.timer.setTimeout(() => { isRequestTimeOut = true; }, DEFAULT_UPLOAD_TIMEOUT_MS);
 
-      return await new Promise(async (resolve)=>{
+      const uploadResult = await this.uploader.post(
+        `${this.serverEndpoint}${ping.path}`,
+        finalPing.payload,
+        finalPing.headers
+      );
 
-        const setTimeOutNumber = Context.platform.timer.setTimeout(()=>{ 
+      if(!isRequestTimeOut && uploadResult){
 
-          resolve(new UploadResult(UploadResultStatus.RecoverableFailure));
+        Context.platform.timer.clearTimeout(timeout);
+        return uploadResult;
 
-          log(LOG_TAG, "Timeout while attempting to upload ping.", LoggingLevel.Error);
+      }else{
 
-        }, DEFAULT_UPLOAD_TIMEOUT_MS);
+        log(LOG_TAG, "Timeout while attempting to upload ping.", LoggingLevel.Error);
+        return new UploadResult(UploadResultStatus.RecoverableFailure);
 
-        const result = await this.uploader.post(
-          `${this.serverEndpoint}${ping.path}`,
-          finalPing.payload,
-          finalPing.headers
-        );
-
-        if(result){
-          Context.platform.timer.clearTimeout(setTimeOutNumber);
-          resolve(result);
-        }
-
-      });
+      }
 
     } catch(e) {
       log(LOG_TAG, [ "Error trying to build or post ping request:", e ], LoggingLevel.Warn);
