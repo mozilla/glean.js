@@ -74,7 +74,7 @@ The number or recoverable errors is also increased in this case.
 
 The `PingUploadWorker` is responsible for uploading pings to the telemetry server. It is
 also responsible for assembling the ping request by gzipping the request body (if possible)
-and attaching the default headers to it.
+and attaching the default headers to it. It has a `DEFAULT_TIMEOUT` set to `10,000` Milliseconds.
 
 The `PingUploadWorker` is initialized on an idle state. Once it's `work` API is called it will begin an
 asynchronous job to ask for tasks by calling the `getUploadTask` API. When it gets an `Upload_UploadTask`
