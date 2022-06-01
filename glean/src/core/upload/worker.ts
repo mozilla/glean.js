@@ -111,22 +111,23 @@ class PingUploadWorker {
    */
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
     try {
-
       const finalPing = await this.buildPingRequest(ping);
       let timeoutTaskId: number;
 
       const timeoutTask = new Promise<UploadResult>((resolve) => {
-        timeoutTaskId = Context.platform.timer.setTimeout(()=>{resolve(new UploadResult(UploadResultStatus.RecoverableFailure));}, DEFAULT_UPLOAD_TIMEOUT_MS);
+        timeoutTaskId = Context.platform.timer.setTimeout(() => {
+          resolve(new UploadResult(UploadResultStatus.RecoverableFailure));
+        }, DEFAULT_UPLOAD_TIMEOUT_MS);
       });
 
-      const pingTask = this.uploader.post(
+      const uploadTask = this.uploader.post(
         `${this.serverEndpoint}${ping.path}`,
         finalPing.payload,
         finalPing.headers
       );
 
-      return await Promise.race([timeoutTask, pingTask]).then((result)=>{
-        if(result.status && timeoutTaskId){
+      return await Promise.race([timeoutTask, uploadTask]).then((result) => {
+        if(result.status){
           Context.platform.timer.clearTimeout(timeoutTaskId);
           return result;
         }else{
