@@ -159,8 +159,8 @@ export class TimeoutTaskMockUploader extends Uploader {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async post(_url: string, _body: string): Promise<UploadResult> {
 
-    return new Promise<UploadResult>(reslove=>{
-      setTimeout(()=>{
+    return new Promise<UploadResult>(reslove => {
+      setTimeout(() => {
         reslove(new UploadResult(UploadResultStatus.Success));
       }, DEFAULT_UPLOAD_TIMEOUT_MS + 1);
     });
