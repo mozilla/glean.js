@@ -10,7 +10,7 @@ import type { UploadTask } from "../../../../src/core/upload/task";
 import uploadTaskFactory from "../../../../src/core/upload/task";
 import PingUploadWorker from "../../../../src/core/upload/worker";
 import TestPlatform from "../../../../src/platform/test";
-import { CounterUploader, WaitableUploader } from "../../../utils";
+import { CounterUploader, TimeoutTaskMockUploader, WaitableUploader } from "../../../utils";
 import { makePath } from "../../../../src/core/pings/maker";
 import { Context } from "../../../../src/core/context";
 import Policy from "../../../../src/core/upload/policy";
@@ -436,22 +436,22 @@ describe("PingUploadWorker", function() {
     assert.notStrictEqual(firstJob, secondJob);
   });
 
-  it("retries upload task when worker take longer time than default timeout", async function(){
+  it("retries upload task when worker take longer time than default timeout", async function () {
 
-    const uploader = new CounterUploader();
+    const uploader = new TimeoutTaskMockUploader();
     const worker = new PingUploadWorker(uploader, "https://my-glean-test.com");
     const tasksGenerator = mockGetUploadTasks([
-      ...Array(2).fill(UploadTaskTypes.Upload) as UploadTaskTypes.Upload[],
+      UploadTaskTypes.Upload,
       // Always end with a Done task to make sure the worker stops asking for more tasks.
       UploadTaskTypes.Done,
     ]);
 
+    const processSpy = sandbox.spy();
+
     worker.work(
       () => tasksGenerator.next().value,
-      () => Promise.resolve()
+      processSpy
     );
-
-    
 
 
   });
