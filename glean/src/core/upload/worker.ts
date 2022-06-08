@@ -127,15 +127,14 @@ class PingUploadWorker {
       );
 
       return await Promise.race([timeoutTask, uploadTask]).then((result) => {
-        if(result.status){
+        if (result.status) {
           Context.platform.timer.clearTimeout(timeoutTaskId);
-          return result;
-        }else{
+        } else {
           log(LOG_TAG, "Timeout while attempting to upload ping.", LoggingLevel.Error);
-          return result;
         }
-      });
 
+        return result;
+      });
 
     } catch(e) {
       log(LOG_TAG, [ "Error trying to build or post ping request:", e ], LoggingLevel.Warn);
