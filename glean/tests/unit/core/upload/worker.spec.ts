@@ -15,7 +15,7 @@ import { makePath } from "../../../../src/core/pings/maker";
 import { Context } from "../../../../src/core/context";
 import Policy from "../../../../src/core/upload/policy";
 import { UploadResultStatus } from "../../../../src/core/upload/uploader";
-import type { UploadResult } from "../../../../src/core/upload/uploader";
+import { UploadResult } from "../../../../src/core/upload/uploader";
 import { isUndefined } from "../../../../src/core/utils";
 import { testResetGlean } from "../../../../src/core/testing";
 
@@ -436,24 +436,14 @@ describe("PingUploadWorker", function() {
     assert.notStrictEqual(firstJob, secondJob);
   });
 
-  it("retries upload task when worker take longer time than default timeout", async function () {
-
+  it("test for timeout.", async function () {
     const uploader = new TimeoutTaskMockUploader();
-    const worker = new PingUploadWorker(uploader, "https://my-glean-test.com");
-    const tasksGenerator = mockGetUploadTasks([
-      UploadTaskTypes.Upload,
-      // Always end with a Done task to make sure the worker stops asking for more tasks.
-      UploadTaskTypes.Done,
-    ]);
+    const actualResult = await uploader.post("https://my-glean-test.com", "");
+    const expectedResult = new UploadResult(UploadResultStatus.RecoverableFailure);
 
-    const processSpy = sandbox.spy();
+    assert.strictEqual(uploader.count, 1);
 
-    worker.work(
-      () => tasksGenerator.next().value,
-      processSpy
-    );
-
-
+    assert.strictEqual(actualResult.result, expectedResult.result);
   });
 
 });

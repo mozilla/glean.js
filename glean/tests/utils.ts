@@ -6,7 +6,7 @@ import { gunzipSync } from "fflate";
 
 import type { JSONObject } from "../src/core/utils";
 import { isString } from "../src/core/utils";
-import Uploader, { DEFAULT_UPLOAD_TIMEOUT_MS } from "../src/core/upload/uploader";
+import Uploader from "../src/core/upload/uploader";
 import { UploadResultStatus, UploadResult } from "../src/core/upload/uploader";
 import Glean from "../src/core/glean";
 
@@ -156,13 +156,15 @@ export class CounterUploader extends Uploader {
 
 export class TimeoutTaskMockUploader extends Uploader {
 
+  public count = 0;
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   async post(_url: string, _body: string): Promise<UploadResult> {
-
+    this.count++;
     return new Promise<UploadResult>(reslove => {
       setTimeout(() => {
-        reslove(new UploadResult(UploadResultStatus.Success));
-      }, DEFAULT_UPLOAD_TIMEOUT_MS + 1);
+        reslove(new UploadResult(UploadResultStatus.RecoverableFailure));
+      }, 1500);
     });
 
   }
