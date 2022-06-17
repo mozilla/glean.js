@@ -41,6 +41,9 @@
       ],
       "testing": [
         "./dist/types/core/testing/index.d.ts"
+      ],
+      "error": [
+        "./dist/types/core/error/error_type.d.ts"
       ]
     }
   },
