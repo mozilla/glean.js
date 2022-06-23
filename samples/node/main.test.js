@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { strict as assert } from "assert";
-import { ErrorType } from "@mozilla/glean/node";
+import { ErrorType } from "@mozilla/glean/error";
 import { testResetGlean } from "@mozilla/glean/testing";
 
 import main from "./main.js";
