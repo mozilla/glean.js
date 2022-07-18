@@ -58,7 +58,7 @@ class RemoveUseStrictPlugin {
 // eslint-disable-next-line
 function getBaseConfig(output) {
   return {
-    entry: "./src/index/qt.ts",
+    entry: "./src/entry/qt.ts",
     module: {
       rules: [
         {
@@ -67,7 +67,7 @@ function getBaseConfig(output) {
           exclude: /node_modules/,
           options: {
             onlyCompileBundledFiles: true,
-            // This path is resolved relative to the entry file, ./src/index/qt.ts
+            // This path is resolved relative to the entry file, ./src/entry/qt.ts
             // See: https://github.com/TypeStrong/ts-loader#configfile
             configFile: "../../tsconfig/qt.json"
           },

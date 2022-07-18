@@ -1,8 +1,8 @@
 import QtQuick 2.0
 import QtTest 1.0
 
-import org.mozilla.Glean 1.0
-import generated 1.0
+import org.mozilla.Glean 1.1
+import generated 1.1
 
 import App 1.0
 

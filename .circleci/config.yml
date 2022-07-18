@@ -179,7 +179,7 @@ jobs:
             pip install -r requirements.txt
             glean_parser translate src/App/metrics.yaml src/App/pings.yaml \
               -f javascript -o src/App/generated \
-              --option platform=qt --option version="1.0"
+              --option platform=qt --option version="1.1"
       - run:
           name: Run Qt sample tests
           command: |
@@ -237,8 +237,8 @@ jobs:
             eval "$(ssh-agent -s)"
             DECODED_SSH_DEPLOY_KEY=$(echo $SSH_DEPLOY_KEY | base64 -d)
             ssh-add - \<<< "${DECODED_SSH_DEPLOY_KEY}"
-            git config user.email "brizental+moz-glean@mozilla.com"
-            git config user.name "moz-glean"
+            git config user.email "dataops+ci-bot@mozilla.com"
+            git config user.name "dataops-ci-bot"
             npm --prefix ./glean run publish:docs
 
   publish:
@@ -310,11 +310,11 @@ workflows:
                 - release
                 - /^release-.*/
       - check-size:
-          context: data-eng-gleanjs-gh
+          context: data-sre-gleanjs
           requires:
             - hold
       - browser-compat-smoke-tests:
-          context: data-eng-gleanjs-gh
+          context: data-sre-gleanjs
           filters:
             branches:
               only:
@@ -322,14 +322,14 @@ workflows:
                 - release
                 - /^release-.*/
       - docs-deploy:
-          context: data-eng-gleanjs-gh
+          context: data-sre-gleanjs
           filters:
             branches:
               ignore: /.*/
             tags:
               only: /^v.*/
       - publish:
-          context: data-eng-gleanjs-gh
+          context: data-sre-gleanjs
           filters:
             branches:
               ignore: /.*/

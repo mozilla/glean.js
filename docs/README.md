@@ -32,3 +32,4 @@ For user documentation on the Glean SDKs, refer to [The Glean Book](https://mozi
 
 - [Ping Uploading](./implementation/upload.md)
 - [Plugins and Core Events](./implementation/plugins-events.md)
+- [Bundle size considerations](./implementation/bundle-size.md)

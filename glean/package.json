@@ -1,30 +1,31 @@
 {
   "name": "@mozilla/glean",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for JavaScript environments.",
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./error": "./dist/core/error/error_type.js",
     "./package.json": "./package.json",
     "./private/metrics/*": "./dist/core/metrics/types/*.js",
     "./private/ping": "./dist/core/pings/ping_type.js",
     "./plugins/*": "./dist/plugins/*.js",
     "./uploader": "./dist/core/upload/uploader.js",
     "./testing": "./dist/core/testing/index.js",
-    "./node": "./dist/index/node.js",
-    "./webext": "./dist/index/webext.js",
-    "./web": "./dist/index/web.js"
+    "./node": "./dist/entry/node.js",
+    "./webext": "./dist/entry/webext.js",
+    "./web": "./dist/entry/web.js"
   },
   "typesVersions": {
     "*": {
       "webext": [
-        "./dist/types/index/webext.d.ts"
+        "./dist/types/entry/webext.d.ts"
       ],
       "node": [
-        "./dist/types/index/node.d.ts"
+        "./dist/types/entry/node.d.ts"
       ],
       "web": [
-        "./dist/types/index/web.d.ts"
+        "./dist/types/entry/web.d.ts"
       ],
       "private/ping": [
         "./dist/types/core/pings/ping_type.d.ts"
@@ -40,6 +41,9 @@
       ],
       "testing": [
         "./dist/types/core/testing/index.d.ts"
+      ],
+      "error": [
+        "./dist/types/core/error/error_type.d.ts"
       ]
     }
   },
@@ -66,7 +70,8 @@
     "lint:circular-deps": "madge --circular src/ --extensions ts",
     "lint:glinter": "npm run cli -- glinter src/metrics.yaml src/pings.yaml --allow-reserved",
     "fix": "eslint . --ext .ts,.js,.json --fix",
-    "build": "rm -rf dist && run-s build:cli build:lib build:types build:qt",
+    "build": "run-s build:no-qt build:qt",
+    "build:no-qt": "rm -rf dist && run-s build:cli build:lib build:types",
     "build:cli": "tsc -p ./tsconfig/cli.json",
     "build:lib": "tsc -p ./tsconfig/lib.json",
     "build:types": "tsc -p ./tsconfig/types.json",
@@ -104,7 +109,7 @@
     "@typescript-eslint/parser": "^5.0.0",
     "eslint": "^8.0.1",
     "eslint-plugin-import": "2.25.4",
-    "eslint-plugin-jsdoc": "^38.0.4",
+    "eslint-plugin-jsdoc": "^39.2.9",
     "eslint-plugin-json": "^3.0.0",
     "eslint-plugin-mocha": "^10.0.1",
     "eslint-plugin-notice": "^0.9.10",

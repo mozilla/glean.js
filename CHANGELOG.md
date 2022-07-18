@@ -1,6 +1,16 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v1.0.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.1.0...main)
+
+# v1.1.0 (2022-07-18)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.0.0...v1.1.0)
+
+* [#1318](https://github.com/mozilla/glean.js/pull/1318): Expose `ErrorType` through its own entry point.
+* [#1271](https://github.com/mozilla/glean.js/pull/1271): BUGFIX: Fix pings validation function when scanning pings database on initialize.
+  * This bug was preventing pings that contained custom headers from being successfully validated and enqueued on initialize.
+* [#1335](https://github.com/mozilla/glean.js/pull/1335): BUGFIX: Fix uploading gzip-compressed pings in Node.
+* [#1415](https://github.com/mozilla/glean.js/pull/1415): BUGFIX: Publish the TS type information for the `web` platform.
 
 # v1.0.0 (2022-03-17)
 

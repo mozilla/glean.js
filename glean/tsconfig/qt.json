@@ -4,5 +4,5 @@
     "target": "ES2016",
     "importHelpers": true
   },
-  "include": ["../src/index/qt.ts" ]
+  "include": ["../src/entry/qt.ts" ]
 }

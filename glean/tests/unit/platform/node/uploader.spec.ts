@@ -17,14 +17,18 @@ describe("Uploader/Node", function () {
 
   it("returns the correct status for successful requests", async function () {
     for (const status of [200, 400, 500]) {
-      nock(MOCK_ENDPOINT).post(/./i).reply(status);
+      // We support both plain text and binary payloads (for gzipped content)
+      // so test them both.
+      for (const body of ["", new Uint8Array()]) {
+        nock(MOCK_ENDPOINT).post(/./i).reply(status);
 
-      const response = NodeUploader.post(MOCK_ENDPOINT, "");
-      const expectedResponse = new UploadResult(UploadResultStatus.Success, status);
-      assert.deepStrictEqual(
-        await response,
-        expectedResponse
-      );
+        const response = NodeUploader.post(MOCK_ENDPOINT, body);
+        const expectedResponse = new UploadResult(UploadResultStatus.Success, status);
+        assert.deepStrictEqual(
+          await response,
+          expectedResponse
+        );
+      }
     }
   });
 

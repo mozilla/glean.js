@@ -5,6 +5,7 @@
 import https from "https";
 import http from "http";
 
+import { isString } from "../../core/utils.js";
 import log, { LoggingLevel } from "../../core/log.js";
 import Uploader, {
   UploadResult,
@@ -55,7 +56,7 @@ class NodeUploader extends Uploader {
       });
 
       // Finish sending the request.
-      request.end(body);
+      request.end(isString(body) ? body : Buffer.from(body.buffer));
     });
   }
 }
