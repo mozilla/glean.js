@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v1.0.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.1.0...main)
+
+# v1.1.0 (2022-07-18)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.0.0...v1.1.0)
 
 * [#1318](https://github.com/mozilla/glean.js/pull/1318): Expose `ErrorType` through its own entry point.
 * [#1271](https://github.com/mozilla/glean.js/pull/1271): BUGFIX: Fix pings validation function when scanning pings database on initialize.
