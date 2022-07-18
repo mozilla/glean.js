@@ -20,6 +20,10 @@ cd glean.js/glean
 ```bash
 npm install
 ```
+4. Build:
+```bash
+npm run build
+```
 
 ## Running tests
 Once you have [built](#building-gleanjs) Glean.js, run
