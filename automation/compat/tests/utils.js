@@ -28,6 +28,7 @@ export class App {
     });
 
     this.server = new DevServer({
+      allowedHosts: 'all',
       static: {
         directory: path.join(__dirname, "../"),
       },
