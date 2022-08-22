@@ -33,9 +33,11 @@ pip3 install -r requirements.txt # Install glean_parser
 
 4. Generate metrics and pings files:
 
+> **Note**: The version number below should match the last [released version](https://github.com/mozilla/glean.js/releases) number (minus the trailing `.0`). If the version numbers are different you will run into issues with QML code compilation. To resolve these errors you have to adjust the versions manually in the QML files
+
 ```bash
 glean_parser translate src/App/metrics.yaml src/App/pings.yaml -f javascript -o src/App/generated \
---option platform=qt --option version="0.31"
+--option platform=qt --option version="1.1"
 ```
 
 5. Build the app:
