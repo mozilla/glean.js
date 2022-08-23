@@ -142,13 +142,13 @@ run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
 FILE=samples/qt/README.md
 run $SED -i.bak -E \
-    -e "s/--option platform=qt --option version=[0-9a-z.-]+/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\"/" \
+    -e "s/--option platform=qt --option version=\"[0-9a-z.-]+\"/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\"/" \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
 FILE=.circleci/config.yml
 run $SED -i.bak -E \
-    -e "s/--option platform=qt --option version=[0-9a-z.-]+/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\"/" \
+    -e "s/--option platform=qt --option version=\"[0-9a-z.-]+\"/--option platform=qt --option version=\"${GLEAN_VERSION_FOR_QML}\"/" \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
