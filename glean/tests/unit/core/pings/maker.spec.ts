@@ -10,7 +10,7 @@ import * as PingMaker from "../../../../src/core/pings/maker";
 import Glean from "../../../../src/core/glean";
 import CoreEvents from "../../../../src/core/events";
 import Plugin from "../../../../src/plugins";
-import type { JSONObject } from "../../../../src/core/utils";
+import type { JSONArray, JSONObject } from "../../../../src/core/utils";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
 import EventMetricType from "../../../../src/core/metrics/types/event";
@@ -272,5 +272,48 @@ describe("PingMaker", function() {
     assert.deepStrictEqual(payload.metrics, {
       labeled_counter: { "glean.error.invalid_value": { "glean.restarted": 1 } }
     });
+  });
+
+  it("should delete trailing restarted events", async function() {
+    const ping = new PingType({
+      name: "aPing",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+    const event = new EventMetricType({
+      category: "test",
+      name: "aEvent",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    // Record events
+    for (let i = 0; i < 6; i++) {
+      if (i === 0 || i === 4) {
+        // Record a non-restarted event
+        event.record();
+        // Wait for recording action to complete.
+        await event.testGetValue();
+      } else {
+        // Record a restarted event (easiest way)
+        //
+        // Un-initialize and re-initialize manually instead of using testResetGlean
+        // in order to have control over the startTime at initialization.
+        await testUninitializeGlean(false);
+        // Move the clock backwards by one hour.
+        //
+        // This will generate incoherent timestamps in events at collection time
+        // and record an `InvalidValue` error for the `glean.restarted` event.
+        Context.startTime.setTime(Context.startTime.getTime() - 1000 * 60 * 60);
+        await testInitializeGlean(testAppId, true);
+      }
+    }
+
+    await PingMaker.collectAndStorePing("ident", ping);
+    const allPings = Object.fromEntries(await Context.pingsDatabase.getAllPings());
+    const eventsArray = allPings["ident"]["payload"]["events"] as JSONArray;
+
+    assert.equal(5, eventsArray.length);
   });
 });
