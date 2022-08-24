@@ -342,11 +342,9 @@ describe("EventsDatabase", function() {
     for (const store of stores) {
       const snapshot = await db2.getPingEvents(store, true);
       assert.ok(snapshot);
-      assert.strictEqual(2, snapshot.length);
+      assert.strictEqual(1, snapshot.length);
       assert.strictEqual("test", (snapshot[0] as JSONObject)["category"]);
       assert.strictEqual("event_injection", (snapshot[0] as JSONObject)["name"]);
-      assert.strictEqual("glean", (snapshot[1] as JSONObject)["category"]);
-      assert.strictEqual("restarted", (snapshot[1] as JSONObject)["name"]);
 
       // Check that no errors were recorded for the `glean.restarted` metric.
       const restartedMetric = getGleanRestartedEventMetric([store]);
@@ -400,8 +398,13 @@ describe("EventsDatabase", function() {
     for (let i = 0; i < 10; i++) {
       assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
       assert.strictEqual(`stichting_test_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
-      assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
-      assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+
+      // We no longer keep trailing restarted events, so in this scenario, we need to ignore
+      // the final element of the snapshot since it previously had a restarted event.
+      if (snapshot[(i * 2) + 1]) {
+        assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
+        assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+      }
 
       // Check that no errors were recorded for the `glean.restarted` metric.
       const restartedMetric = getGleanRestartedEventMetric(["store"]);
@@ -455,8 +458,13 @@ describe("EventsDatabase", function() {
     for (let i = 0; i < 10; i++) {
       assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
       assert.strictEqual(`time_travel_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
-      assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
-      assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+
+      // We no longer keep trailing restarted events, so in this scenario, we need to ignore
+      // the final element of the snapshot since it previously had a restarted event.
+      if (snapshot[(i * 2) + 1]) {
+        assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
+        assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+      }
     }
 
     // Time went backwards, so errors must have been recorded.
@@ -509,8 +517,13 @@ describe("EventsDatabase", function() {
     for (let i = 0; i < 10; i++) {
       assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
       assert.strictEqual(`time_travel_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
-      assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
-      assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+
+      // We no longer keep trailing restarted events, so in this scenario, we need to ignore
+      // the final element of the snapshot since it previously had a restarted event.
+      if (snapshot[(i * 2) + 1]) {
+        assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
+        assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+      }
     }
 
     // Time stood still, so an error must have been recorded.
