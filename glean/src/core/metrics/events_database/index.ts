@@ -303,7 +303,8 @@ class EventsDatabase {
    * 1. Sorts event by execution counter and timestamp;
    * 2. Applies offset to events timestamps;
    * 3. Removes the first event if it is a `glean.restarted` event;
-   * 4. Removes reserved extra keys and stringifies all extras values.
+   * 4. Removes reserved extra keys and stringifies all extras values;
+   * 5. Removes all trailing `glean.restarted` events (if they exists);
    *
    * @param pingName The name of the ping for which the payload is being prepared.
    * @param pingData An unsorted list of events.
@@ -314,7 +315,7 @@ class EventsDatabase {
     pingData: RecordedEvent[]
   ): Promise<JSONArray> {
     // Sort events by execution counter and by timestamp.
-    const sortedEvents = pingData.sort((a, b) => {
+    let sortedEvents = pingData.sort((a, b) => {
       const executionCounterA = Number(a.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
       const executionCounterB = Number(b.get().extra?.[GLEAN_EXECUTION_COUNTER_EXTRA_KEY]);
       // Sort by execution counter, in case they are different.
@@ -393,6 +394,9 @@ class EventsDatabase {
       });
     }
 
+    // There is no additional context in trailing `glean.restarted` events, they can be removed.
+    sortedEvents = this.removeTrailingRestartedEvents(sortedEvents);
+
     return sortedEvents.map((e) => e.payload());
   }
 
@@ -401,6 +405,27 @@ class EventsDatabase {
    */
   async clearAll(): Promise<void> {
     await this.eventsStore.delete([]);
+  }
+
+  private isRestartedEvent(event: RecordedEvent): boolean {
+    return !!event?.get()?.extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY];
+  }
+
+  /**
+   * Removes all trailing `glean.restarted` events. We will continue to check
+   * the last element of the array until there are no longer any elements OR
+   * the event is not a `glean.restarted` event.
+   *
+   * @param sortedEvents Before this is called, events should already be sorted
+   *        which includes removing the leading `glean.restarted` event.
+   * @returns The input array without any trailing `glean.restarted` events.
+   */
+  private removeTrailingRestartedEvents(sortedEvents: RecordedEvent[]): RecordedEvent[] {
+    while (!!sortedEvents.length && this.isRestartedEvent(sortedEvents[sortedEvents.length - 1])) {
+      sortedEvents.pop();
+    }
+
+    return sortedEvents;
   }
 }
 
