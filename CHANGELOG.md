@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.1.0...main)
 
+* [#1450](https://github.com/mozilla/glean.js/pull/1450): Update `ts-node` to 10.8.0 to resolve ESM issues when running tests.
 * [#1449](https://github.com/mozilla/glean.js/pull/1449): BUGFIX: Add missing quotes to `prepare-release` script to fix issues with version numbers in Qt sample README & circle ci config.
 * [#1449](https://github.com/mozilla/glean.js/pull/1449): Update Qt sample project docs to include note about problems with different version numbers of Qt commands.
 
