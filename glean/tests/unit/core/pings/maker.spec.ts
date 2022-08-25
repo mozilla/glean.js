@@ -17,6 +17,7 @@ import EventMetricType from "../../../../src/core/metrics/types/event";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
 import { testResetGlean } from "../../../../src/core/testing";
+import type { ExtraMap } from "../../../../src/core/metrics/events_database/recorded_event";
 
 const sandbox = sinon.createSandbox();
 
@@ -288,27 +289,26 @@ describe("PingMaker", function() {
       disabled: false
     });
 
+    const triggerCustomEvent = async (event: EventMetricType<ExtraMap>) => {
+      event.record();
+      await event.testGetValue();
+    };
+
+    const triggerRestartedEvent = async () => {
+      await testResetGlean(testAppId, true, undefined, false);
+    };
+
     // Record events
-    for (let i = 0; i < 6; i++) {
-      if (i === 0 || i === 4) {
-        // Record a non-restarted event
-        event.record();
-        // Wait for recording action to complete.
-        await event.testGetValue();
-      } else {
-        // Record a restarted event (easiest way)
-        //
-        // Un-initialize and re-initialize manually instead of using testResetGlean
-        // in order to have control over the startTime at initialization.
-        await testUninitializeGlean(false);
-        // Move the clock backwards by one hour.
-        //
-        // This will generate incoherent timestamps in events at collection time
-        // and record an `InvalidValue` error for the `glean.restarted` event.
-        Context.startTime.setTime(Context.startTime.getTime() - 1000 * 60 * 60);
-        await testInitializeGlean(testAppId, true);
-      }
-    }
+    await triggerCustomEvent(event);
+
+    await triggerRestartedEvent();
+    await triggerRestartedEvent();
+    await triggerRestartedEvent();
+
+    await triggerCustomEvent(event);
+
+    await triggerRestartedEvent();
+    await triggerRestartedEvent();
 
     await PingMaker.collectAndStorePing("ident", ping);
     const allPings = Object.fromEntries(await Context.pingsDatabase.getAllPings());
