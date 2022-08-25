@@ -408,6 +408,9 @@ class EventsDatabase {
   }
 
   private isRestartedEvent(event: RecordedEvent): boolean {
+    // This extra key will only exist for `glean.restarted` events. If at some
+    // point that is no longer the case, this can be updated to check the event
+    // `name` and `category` instead.
     return !!event?.get()?.extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY];
   }
 
