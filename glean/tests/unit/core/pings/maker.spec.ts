@@ -291,10 +291,12 @@ describe("PingMaker", function() {
 
     const triggerCustomEvent = async (event: EventMetricType<ExtraMap>) => {
       event.record();
+      // Wait for recording action to complete
       await event.testGetValue();
     };
 
     const triggerRestartedEvent = async () => {
+      // Easiest way to simulate a restart and create a `glean.restarted` event
       await testResetGlean(testAppId, true, undefined, false);
     };
 

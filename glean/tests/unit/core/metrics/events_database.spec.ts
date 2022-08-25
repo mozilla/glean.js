@@ -394,16 +394,20 @@ describe("EventsDatabase", function() {
       prevTime = e.timestamp;
     }
 
-    // Make sure the found events are the expected events.
+    // Make sure the found events are the expected events. This array consists of
+    // a user created event followed by a restarted event and repeats.
     for (let i = 0; i < 10; i++) {
-      assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
-      assert.strictEqual(`stichting_test_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
+      const userEvent = snapshot[i * 2] as JSONObject;
+      const restartedEvent = snapshot[(i * 2) + 1] as JSONObject;
+
+      assert.strictEqual("test", userEvent["category"]);
+      assert.strictEqual(`stichting_test_${i}`, userEvent["name"]);
 
       // We no longer keep trailing restarted events, so in this scenario, we need to ignore
       // the final element of the snapshot since it previously had a restarted event.
-      if (snapshot[(i * 2) + 1]) {
-        assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
-        assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+      if (restartedEvent) {
+        assert.strictEqual("glean", restartedEvent["category"]);
+        assert.strictEqual("restarted", restartedEvent["name"]);
       }
 
       // Check that no errors were recorded for the `glean.restarted` metric.
@@ -454,16 +458,20 @@ describe("EventsDatabase", function() {
       prevTime = e.timestamp;
     }
 
-    // Make sure the found events are the expected events.
+    // Make sure the found events are the expected events. This array consists of
+    // a user created event followed by a restarted event and repeats.
     for (let i = 0; i < 10; i++) {
-      assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
-      assert.strictEqual(`time_travel_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
+      const userEvent = snapshot[i * 2] as JSONObject;
+      const restartedEvent = snapshot[(i * 2) + 1] as JSONObject;
+
+      assert.strictEqual("test", userEvent["category"]);
+      assert.strictEqual(`time_travel_${i}`, userEvent["name"]);
 
       // We no longer keep trailing restarted events, so in this scenario, we need to ignore
       // the final element of the snapshot since it previously had a restarted event.
-      if (snapshot[(i * 2) + 1]) {
-        assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
-        assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+      if (restartedEvent) {
+        assert.strictEqual("glean", restartedEvent["category"]);
+        assert.strictEqual("restarted", restartedEvent["name"]);
       }
     }
 
@@ -513,16 +521,20 @@ describe("EventsDatabase", function() {
       prevTime = e.timestamp;
     }
 
-    // Make sure the found events are the expected events.
+    // Make sure the found events are the expected events. This array consists of
+    // a user created event followed by a restarted event and repeats.
     for (let i = 0; i < 10; i++) {
-      assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
-      assert.strictEqual(`time_travel_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
+      const userEvent = snapshot[i * 2] as JSONObject;
+      const restartedEvent = snapshot[(i * 2) + 1] as JSONObject;
+
+      assert.strictEqual("test", userEvent["category"]);
+      assert.strictEqual(`time_travel_${i}`, userEvent["name"]);
 
       // We no longer keep trailing restarted events, so in this scenario, we need to ignore
       // the final element of the snapshot since it previously had a restarted event.
-      if (snapshot[(i * 2) + 1]) {
-        assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
-        assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+      if (restartedEvent) {
+        assert.strictEqual("glean", restartedEvent["category"]);
+        assert.strictEqual("restarted", restartedEvent["name"]);
       }
     }
 
