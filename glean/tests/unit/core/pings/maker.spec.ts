@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import { InternalPingType as PingType} from "../../../../src/core/pings/ping_type";
+import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
 import * as PingMaker from "../../../../src/core/pings/maker";
 import Glean from "../../../../src/core/glean";
 import CoreEvents from "../../../../src/core/events";
@@ -15,8 +15,12 @@ import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
 import EventMetricType from "../../../../src/core/metrics/types/event";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
-import { testResetGlean } from "../../../../src/core/testing";
+import {
+  testInitializeGlean,
+  testResetGlean,
+  testRestartGlean,
+  testUninitializeGlean,
+} from "../../../../src/core/testing";
 import type { ExtraMap } from "../../../../src/core/metrics/events_database/recorded_event";
 
 const sandbox = sinon.createSandbox();
@@ -296,8 +300,7 @@ describe("PingMaker", function() {
     };
 
     const triggerRestartedEvent = async () => {
-      // Easiest way to simulate a restart and create a `glean.restarted` event
-      await testResetGlean(testAppId, true, undefined, false);
+      await testRestartGlean();
     };
 
     // Record events
