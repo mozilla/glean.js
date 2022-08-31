@@ -1,5 +1,23 @@
 # Glean.js automation
 
+## Setup
+
+1. Install dependencies
+
+```
+npm install
+```
+
+2. Link the `@mozilla/glean` package. There is a convenience script for that:
+
+```
+npm run link:glean
+```
+
+> **Note**: If you get an error complaining about permissions of `node_modules` at any point,
+> just re-run these two commands and the issue should resolve.
+
+
 ## Size
 
 The size project contains scripts
