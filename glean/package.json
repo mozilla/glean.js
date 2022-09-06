@@ -113,7 +113,7 @@
     "eslint-plugin-json": "^3.0.0",
     "eslint-plugin-mocha": "^10.0.1",
     "eslint-plugin-notice": "^0.9.10",
-    "fake-indexeddb": "^3.1.7",
+    "fake-indexeddb": "^4.0.0",
     "geckodriver": "^3.0.1",
     "gh-pages": "^3.2.3",
     "jsdom": "19.0.0",
