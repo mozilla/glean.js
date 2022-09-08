@@ -1,0 +1,96 @@
+{
+  // **NOTE**
+  // For the tests to succeed if you are stepping through code, you need to
+  // update the timeout value of the individual test suite you wish to debug.
+  //
+  // For example, if you want to test `tests/unit/core/metrics/timing_distribution.spec.ts`,
+  // at the top of the `describe` callback, you need to add this line.
+  //
+  // `this.timeout(10000000);`
+  //
+  // This allows you to step through your tests and inspect values without
+  // having them fail due to timeout.
+  //
+  //
+  //
+  // Use IntelliSense to learn about possible attributes.
+  // Hover to view descriptions of existing attributes.
+  // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Integration Tests",
+      "cwd": "${workspaceFolder}/glean",
+      "runtimeArgs": [
+        "${workspaceFolder}/glean/node_modules/ts-mocha/bin/ts-mocha",
+        "--experimental-modules",
+        "--experimental-specifier-resolution=node",
+        "--loader=ts-node/esm",
+        "${workspaceFolder}/glean/tests/integration/**/*.spec.ts",
+        "--recursive"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Unit:Core Tests",
+      "cwd": "${workspaceFolder}/glean",
+      "runtimeArgs": [
+        "${workspaceFolder}/glean/node_modules/ts-mocha/bin/ts-mocha",
+        "--experimental-modules",
+        "--experimental-specifier-resolution=node",
+        "--loader=ts-node/esm",
+        "${workspaceFolder}/glean/tests/unit/core/**/*.spec.ts",
+        "--recursive"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Unit:Plugins Tests",
+      "cwd": "${workspaceFolder}/glean",
+      "runtimeArgs": [
+        "${workspaceFolder}/glean/node_modules/ts-mocha/bin/ts-mocha",
+        "--experimental-modules",
+        "--experimental-specifier-resolution=node",
+        "--loader=ts-node/esm",
+        "${workspaceFolder}/glean/tests/unit/plugins/**/*.spec.ts",
+        "--recursive"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Unit:Plugins Tests",
+      "cwd": "${workspaceFolder}/glean",
+      "runtimeArgs": [
+        "${workspaceFolder}/glean/node_modules/ts-mocha/bin/ts-mocha",
+        "--experimental-modules",
+        "--experimental-specifier-resolution=node",
+        "--loader=ts-node/esm",
+        "${workspaceFolder}/glean/tests/unit/platform/**/*.spec.ts",
+        "--recursive"
+      ],
+      "console": "integratedTerminal"
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Individual Test Template",
+      "cwd": "${workspaceFolder}/glean",
+      "runtimeArgs": [
+        "${workspaceFolder}/glean/node_modules/ts-mocha/bin/ts-mocha",
+        "--experimental-modules",
+        "--experimental-specifier-resolution=node",
+        "--loader=ts-node/esm",
+        "${workspaceFolder}/glean/tests/unit/core/metrics/timing_distribution.spec.ts"
+      ],
+      "console": "integratedTerminal"
+    }
+  ]
+}
