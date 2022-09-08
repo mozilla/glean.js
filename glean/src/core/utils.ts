@@ -8,6 +8,7 @@ import { Context } from "./context.js";
 import { ErrorType } from "./error/error_type.js";
 import log, { LoggingLevel } from "./log.js";
 import { MetricValidationError } from "./metrics/metric.js";
+import TimeUnit from "./metrics/time_unit.js";
 
 const LOG_TAG = "core.utils";
 
@@ -54,6 +55,16 @@ export function isJSONValue(v: unknown): v is JSONValue {
  */
 export function isObject(v: unknown): v is Record<string | number | symbol, unknown> {
   return (typeof v === "object" && v !== null && v.constructor === Object);
+}
+
+/**
+ * Checks whether or not `v` is an empty object.
+ *
+ * @param v The value to verify.
+ * @returns A boolean value stating whether `v` is an empty object.
+ */
+export function isEmptyObject(v: unknown): boolean {
+  return Object.keys(v || {}).length === 0;
 }
 
 /**
@@ -252,4 +263,40 @@ export function saturatingAdd(...args: number[]) {
   }
 
   return result;
+}
+
+/**
+ * Generate timestamp for current time in nanoseconds.
+ *
+ * @returns Timestamp of current time in nanoseconds.
+ */
+export function getCurrentTimeInNanoSeconds(): number {
+  const hrTime = process.hrtime();
+  return hrTime[0] * 1000000000 + hrTime[1];
+}
+
+/**
+ * Converts a number from any `TimeUnit` to nanoseconds.
+ *
+ * @param duration Difference between start and stop time stamps
+ * @param timeUnit Time unit for the duration
+ * @returns Duration converted to nanoseconds.
+ */
+export function convertTimeUnitToNanos(duration: number, timeUnit: TimeUnit): number {
+  switch (timeUnit) {
+  case TimeUnit.Nanosecond:
+    return duration;
+  case TimeUnit.Microsecond:
+    return duration * 10 ** 3;
+  case TimeUnit.Millisecond:
+    return duration * 10 ** 6;
+  case TimeUnit.Second:
+    return duration * 10 ** 9;
+  case TimeUnit.Minute:
+    return duration * 10 ** 9 * 60;
+  case TimeUnit.Hour:
+    return duration * 10 ** 9 * 60 * 60;
+  case TimeUnit.Day:
+    return duration * 10 ** 9 * 60 * 60 * 24;
+  }
 }
