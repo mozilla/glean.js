@@ -3,14 +3,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 /**
- * Classic implementation of a binary search with a small tweak for our
- * linear bucketing algorithm. Rather than return -1 if don't find our
- * target, we will return our current mid - 1. By returning our current mid - 1,
- * we have the bucket in which our value should end up in.
+ * Classic implementation of a binary search with a small tweak since we are
+ * using this for our bucketing algorithms.
+ *
+ * Rather than return `-1` if the exact value is not found, we return whichever
+ * value our final `mid` is closest too. This ensures that we put our target
+ * into the correct bucket.
  *
  * @param arr The array of numbers to search.
  * @param target The number that we are looking for.
- * @returns The index of number in the array or -1 if not found.
+ * @returns The index of the bucket our target should be placed in.
  */
 export function binarySearch(arr: number[], target: number): number {
   let left = 0;
@@ -31,5 +33,12 @@ export function binarySearch(arr: number[], target: number): number {
     }
   }
 
-  return mid;
+  // Since we didn't find the exact match, we return whichever
+  // value our `mid` is closer to. This makes sure that we put
+  // the value into the correct bucket.
+  if (mid - left > right - mid) {
+    return mid - 1;
+  } else {
+    return mid;
+  }
 }
