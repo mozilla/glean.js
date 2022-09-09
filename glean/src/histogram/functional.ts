@@ -42,7 +42,7 @@ export class Functional implements Bucketing {
    * @returns The bucket index for the sample
    */
   sampleToBucketIndex(sample: number): number {
-    return Math.log(saturatingAdd(sample, 1)) / Math.log(this.exponent);
+    return Math.floor(Math.log(saturatingAdd(sample, 1)) / Math.log(this.exponent));
   }
 
   /**
@@ -52,7 +52,7 @@ export class Functional implements Bucketing {
    * @returns The minimum value of the bucket
    */
   bucketIndexToBucketMinimum(index: number): number {
-    return Math.pow(this.exponent, index);
+    return Math.floor(Math.pow(this.exponent, index));
   }
 
   /**
