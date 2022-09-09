@@ -15,12 +15,15 @@ import { binarySearch } from "./utils.js";
  * That means values in a bucket `i` are `bucket[i] <= value < bucket[i+1]`.
  * It will always contain an underflow bucket (`< 1`).
  *
+ * **NOTE**
+ * Exported solely for testing purposes.
+ *
  * @param min Minimum number in the distribution
  * @param max Maximum number in the distribution
  * @param count Number of total buckets
  * @returns Computed bucket ranges
  */
-function linearRange(min: number, max: number, count: number): number[] {
+export function linearRange(min: number, max: number, count: number): number[] {
   const ranges = [];
   ranges.push(0);
 
@@ -28,7 +31,7 @@ function linearRange(min: number, max: number, count: number): number[] {
 
   for (let i = 1; i < count; i++) {
     const range = (newMin * (count - 1 - i) + max * (i - 1)) / (count - 2);
-    ranges.push(range);
+    ranges.push(Math.floor(range));
   }
 
   return ranges;
@@ -67,6 +70,10 @@ export class PrecomputedLinear implements Bucketing {
   }
 
   ranges(): number[] {
-    return this.bucketRanges || linearRange(this.min, this.max, this.bucketCount);
+    if (this.bucketRanges.length) {
+      return this.bucketRanges;
+    }
+
+    return linearRange(this.min, this.max, this.bucketCount);
   }
 }

@@ -31,5 +31,5 @@ export function binarySearch(arr: number[], target: number): number {
     }
   }
 
-  return mid - 1;
+  return mid;
 }
