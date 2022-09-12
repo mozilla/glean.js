@@ -34,6 +34,24 @@ const MAX_SAMPLE_TIME = 1000 * 1000 * 1000 * 60 * 10;
 // name as TimerId for readability
 type TimerId = number;
 
+// The internals of Glean are not setup to store complex objects. Everything
+// that gets stored needs to be some sort of JSON parse-able value. We are able
+// to work with this by doing a few things.
+//
+// 1. We store the `startTimes` internally in a `Record`. There is never a point
+//    where we need both the start time and the duration since the duration is
+//    only calculated once the timer is stopped.
+//
+// 2. Every time that a timer is ended, we append that duration to the existing
+//    duration array stored in Glean. This allows us to store a simple, parse-able
+//    object while still having everything we need.
+//
+// 3. When it comes time to provide data to the user about the distribution, we are
+//    able to construct a histogram from those values. At no other point do we need
+//    any data specific to the histogram. The keys of the histogram (buckets) aren't
+//    always a 1:1 match with the actual durations, so trying to store our keys or
+//    any other histogram data just causes more headaches.
+//
 type TimingDistributionInternalRepresentation = number[];
 
 export type TimingDistributionPayloadRepresentation = {
@@ -89,12 +107,6 @@ export function snapshot(hist: Histogram): DistributionData {
   };
 }
 
-/**
- * A timing distribution metric.
- *
- * Timing distributions are used to accumulate and store time measurement,
- * for analyzing distributions of the timing data.
- */
 export class TimingDistributionMetric extends Metric<
   TimingDistributionInternalRepresentation,
   TimingDistributionPayloadRepresentation
@@ -159,12 +171,6 @@ class InternalTimingDistributionMetricType extends MetricType {
     this.startTimes = {};
   }
 
-  /**
-   * Starts a new timer.
-   *
-   * @returns The id given to the new timer, these increase by 1 for each timer. The
-   * ID is managed in `context` so that it can be globally unique.
-   */
   start(): TimerId {
     const startTime = getCurrentTimeInNanoSeconds();
     const id: TimerId = Context.getNextTimingDistributionId();
@@ -192,29 +198,11 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
-  /**
-   * Stops tracking time for the provided metric and associated timer id.
-   *
-   * Adds a count to the corresponding bucket in the timing distribution.
-   * This will record an error if no `start` was called.
-   *
-   * @param id Timer ID to stop
-   */
   stopAndAccumulate(id: TimerId) {
     const stopTime = getCurrentTimeInNanoSeconds();
     this.setStopAndAccumulate(id, stopTime);
   }
 
-  /**
-   * **Test-only API**
-   *
-   * Set stop time for the metric.
-   *
-   * Use `stopAndAccumulate` instead.
-   *
-   * @param id Timer ID to stop
-   * @param stopTime End time for the current timer
-   */
   setStopAndAccumulate(id: TimerId, stopTime: number) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -272,12 +260,6 @@ class InternalTimingDistributionMetricType extends MetricType {
         const transformFn = ((duration: number) => {
           return (old?: JSONValue): TimingDistributionMetric => {
             const values = this.extractDurationValuesFromJsonValue(old);
-
-            // Trying to store the complex Histogram object gives Glean issues and you are
-            // unable to get it back out. We need to store the values in the Histogram, then
-            // reconstruct the histogram each time instead so that we can persist and get values
-            // from Glean without having to rewrite all the underlying logic to handle more
-            // complex objects.
             return new TimingDistributionMetric([...values, duration]);
           };
         })(duration);
@@ -296,34 +278,10 @@ class InternalTimingDistributionMetricType extends MetricType {
     delete this.startTimes[id];
   }
 
-  /**
-   * Accumulates the provided signed samples in the metric.
-   *
-   * This will take care of filtering and reporting errors for any provided
-   * negative sample.
-   *
-   * Please note that this assumes that the provided samples are already in
-   * the "unit" declared by the instance of the metric type (e.g. if the instance
-   * this method was called on is using `TimeUnit.Second`, then `samples` are
-   * assumed to be in that unit).
-   *
-   * Discards any negative value in `samples` and reports an `ErrorType.InvalidValue`
-   * for each of them. Reports an `ErrorType.InvalidOverflow` error for samples that
-   * are longer than `MAX_SAMPLE_TIME`.
-   *
-   * @param samples Holds all the samples for the recorded metric.
-   */
   accumulateSamples(samples: number[]) {
     this.setAccumulateSamples(samples);
   }
 
-  /**
-   * **Test-only API**
-   *
-   * Accumulates the provided signed samples in the metric. Use `accumulateSamples` instead.
-   *
-   * @param samples Signed samples to accumulate in the metric.
-   */
   setAccumulateSamples(samples: number[]) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -384,15 +342,6 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
-  /**
-   * Accumulates the provided samples in the metric.
-   *
-   * **Notes**
-   * Reports an `ErrorType.InvalidOverflow` error for samples that are
-   * longer than `MAX_SAMPLE_TIME`.
-   *
-   * @param samples A list of samples recorded by the metric. Samples must be in nanoseconds.
-   */
   accumulateRawSamplesNanos(samples: number[]) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -437,14 +386,6 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
-  /**
-   * **Test-only API**
-   *
-   * Gets the current stored value as an integer.
-   *
-   * @param ping The ping that the metric is a part of.
-   * @returns Distribution data for the current ping.
-   */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<DistributionData | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let value: TimingDistributionInternalRepresentation | undefined;
@@ -458,14 +399,6 @@ class InternalTimingDistributionMetricType extends MetricType {
     }
   }
 
-  /**
-   * Gets the number of recorded errors for the given metric and error type.
-   *
-   * @param errorType The type of error
-   * @param ping Represents the optional name of the ping to retrieve the
-   *        metric for. Defaults to the first value in `sendInPings`.
-   * @returns The number of errors reported.
-   */
   async testGetNumRecordedErrors(
     errorType: string,
     ping: string = this.sendInPings[0]
@@ -566,11 +499,35 @@ export default class {
   /**
    * Accumulates the provided samples in the metric.
    *
-   * @param samples A list of samples recorded by the metric.
-   *        Samples must be in nanoseconds.
+   * **Notes**
+   * Reports an `ErrorType.InvalidOverflow` error for samples that are
+   * longer than `MAX_SAMPLE_TIME`.
+   *
+   * @param samples A list of samples recorded by the metric. Samples must be in nanoseconds.
    */
   accumulateRawSamplesNanos(samples: number[]): void {
     this.#inner.accumulateRawSamplesNanos(samples);
+  }
+
+  /**
+   * Accumulates the provided signed samples in the metric.
+   *
+   * This will take care of filtering and reporting errors for any provided
+   * negative sample.
+   *
+   * Please note that this assumes that the provided samples are already in
+   * the "unit" declared by the instance of the metric type (e.g. if the instance
+   * this method was called on is using `TimeUnit.Second`, then `samples` are
+   * assumed to be in that unit).
+   *
+   * Discards any negative value in `samples` and reports an `ErrorType.InvalidValue`
+   * for each of them. Reports an `ErrorType.InvalidOverflow` error for samples that
+   * are longer than `MAX_SAMPLE_TIME`.
+   *
+   * @param samples Holds all the samples for the recorded metric.
+   */
+  accumulateSamples(samples: number[]): void {
+    this.#inner.accumulateSamples(samples);
   }
 
   /**
