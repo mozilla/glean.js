@@ -7,12 +7,15 @@ import sinon from "sinon";
 import type { SinonStub } from "sinon";
 import { testResetGlean, testRestartGlean } from "../../../../src/core/testing";
 import TimingDistributionMetricType, {
+  snapshot,
   TimingDistributionMetric,
 } from "../../../../src/core/metrics/types/timing_distribution";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import TimeUnit from "../../../../src/core/metrics/time_unit";
 import Glean from "../../../../src/core/glean";
 import { convertTimeUnitToNanos } from "../../../../src/core/utils";
+import { Histogram } from "../../../../src/histogram/histogram";
+import { Functional } from "../../../../src/histogram/functional";
 
 const sandbox = sinon.createSandbox();
 
@@ -30,6 +33,245 @@ describe("TimingDistributionMetric", function () {
 
   afterEach(function () {
     sandbox.restore();
+  });
+
+  it("can snapshot", function () {
+    const hist = new Histogram(new Functional(2.0, 8.0));
+
+    for (let i = 1; i <= 10; i++) {
+      hist.accumulate(i);
+    }
+
+    const snap = snapshot(hist);
+
+    const expectedJson = {
+      sum: 55,
+      values: {
+        "1": 1,
+        "2": 1,
+        "3": 1,
+        "4": 1,
+        "5": 1,
+        "6": 1,
+        "7": 1,
+        "8": 1,
+        "9": 1,
+        "10": 1,
+      },
+    };
+
+    assert.deepEqual(snap, expectedJson);
+  });
+
+  it("can snapshot sparse", function () {
+    const hist = new Histogram(new Functional(2.0, 8.0));
+
+    hist.accumulate(1024);
+    hist.accumulate(1024);
+    hist.accumulate(1116);
+    hist.accumulate(1448);
+
+    const snap = snapshot(hist);
+
+    const expectedJson = {
+      sum: 4612,
+      values: {
+        "1024": 2,
+        "1116": 1,
+        "1448": 1,
+      },
+    };
+
+    assert.deepEqual(snap, expectedJson);
+  });
+
+  it("serializer should correctly serialize timing distribution", async function () {
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: ["aPing"],
+      },
+      TimeUnit.Nanosecond
+    );
+
+    const id = 100;
+    const startTime = 0;
+    const duration = 60;
+
+    metric.setStart(id, startTime);
+    metric.setStopAndAccumulate(id, duration);
+
+    assert.equal((await metric.testGetValue("aPing"))?.sum, duration);
+  });
+
+  it("set value properly sets the value in all stores", function () {
+    const storesNames = ["aPing", "bPing"];
+
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: storesNames,
+      },
+      TimeUnit.Nanosecond
+    );
+
+    const id = 100;
+    const duration = 1;
+
+    metric.setStart(id, 0);
+    metric.setStopAndAccumulate(id, duration);
+
+    storesNames.forEach(async (store) => {
+      const snapshot = await metric.testGetValue(store);
+
+      assert.equal(snapshot?.sum, duration);
+      assert.equal(snapshot?.values[1], 1);
+    });
+  });
+
+  it("timing distributions must not accumulate negative values", async function () {
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: ["aPing"],
+      },
+      TimeUnit.Nanosecond
+    );
+
+    const id = 100;
+    const duration = 60;
+
+    // Flip around the timestamps, this should result in a negative value which should be
+    // discarded.
+    metric.setStart(id, duration);
+    metric.setStopAndAccumulate(id, 0);
+
+    assert.equal(await metric.testGetValue("aPing"), undefined);
+  });
+
+  it("the accumulate samples api correctly stores timing values", async function () {
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: ["aPing"],
+      },
+      TimeUnit.Second
+    );
+
+    // Accumulate the samples. We intentionally do not report
+    // negative values to not trigger error reporting.
+    metric.setAccumulateSamples([1, 2, 3]);
+
+    const snapshot = await metric.testGetValue("aPing");
+    const secondsToNanos = 1000 * 1000 * 1000;
+    assert.equal(snapshot?.sum, 6 * secondsToNanos);
+
+    // We should get a sample in 3 buckets.
+    // These numbers are a bit magic, but they correspond to
+    // `hist.sample_to_bucket_minimum(i * seconds_to_nanos)` for `i = 1..=3`.
+    assert.equal(1, snapshot?.values[984625593]);
+    assert.equal(1, snapshot?.values[1969251187]);
+    assert.equal(1, snapshot?.values[2784941737]);
+
+    // TODO
+    // check no errors were reported
+  });
+
+  it("the accumulate samples api correctly handles negative values", async function () {
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: ["aPing"],
+      },
+      TimeUnit.Nanosecond
+    );
+
+    // Accumulate the samples.
+    metric.setAccumulateSamples([-1, 1, 2, 3]);
+
+    const snapshot = await metric.testGetValue("aPing");
+
+    // Check that we got the right sum and number of samples.
+    assert.equal(snapshot?.sum, 6);
+
+    // We should get a sample in each of the first 3 buckets.
+    assert.equal(1, snapshot?.values[1]);
+    assert.equal(1, snapshot?.values[2]);
+    assert.equal(1, snapshot?.values[3]);
+
+    // 1 error should be reported.
+    // TODO
+  });
+
+  it("the accumulate samples api correctly handles overflowing values", async function () {
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: ["aPing"],
+      },
+      TimeUnit.Nanosecond
+    );
+
+    // The MAX_SAMPLE_TIME is the same from `metrics/timing_distribution.rs`.
+    const MAX_SAMPLE_TIME = 1000 * 1000 * 1000 * 60 * 10;
+    const overflowingVal = MAX_SAMPLE_TIME + 1;
+    // Accumulate the samples.
+    metric.setAccumulateSamples([overflowingVal, 1, 2, 3]);
+
+    const snapshot = await metric.testGetValue("aPing");
+
+    // Overflowing values are truncated to MAX_SAMPLE_TIME and recorded.
+    assert.equal(snapshot?.sum, MAX_SAMPLE_TIME + 6);
+
+    // We should get a sample in each of the first 3 buckets.
+    assert.equal(1, snapshot?.values[1]);
+    assert.equal(1, snapshot?.values[2]);
+    assert.equal(1, snapshot?.values[3]);
+
+    // TODO
+    // check for errors
+  });
+
+  it("large nanosecond values", async function () {
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: ["aPing"],
+      },
+      TimeUnit.Nanosecond
+    );
+
+    const time = convertTimeUnitToNanos(10, TimeUnit.Second);
+
+    const id = 100;
+    metric.setStart(id, 0);
+    metric.setStopAndAccumulate(id, time);
+
+    const snapshot = await metric.testGetValue("aPing");
+
+    // Check that we got the right sum and number of samples.
+    assert.equal(snapshot?.sum, time);
   });
 
   it("timing distribution internal representation validation works as expected", function () {
@@ -50,13 +292,7 @@ describe("TimingDistributionMetric", function () {
     );
 
     // Valid values
-    assert.doesNotThrow(
-      () =>
-        new TimingDistributionMetric({
-          100: 1,
-          200: 2,
-        })
-    );
+    assert.doesNotThrow(() => new TimingDistributionMetric([100, 200, 200]));
   });
 
   it("cancelling a metric", async function () {
@@ -95,32 +331,6 @@ describe("TimingDistributionMetric", function () {
     metric.stopAndAccumulate(id);
 
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
-  });
-
-  it("timing distribution is started correctly", async function () {
-    fakeNow.onCall(0).callsFake(() => 0);
-    fakeNow.onCall(1).callsFake(() => 100);
-
-    const metric = new TimingDistributionMetricType(
-      {
-        category: "aCategory",
-        disabled: false,
-        lifetime: Lifetime.Ping,
-        name: "aTimingDistribution",
-        sendInPings: ["aPing", "twoPing", "threePing"],
-      },
-      TimeUnit.Nanosecond
-    );
-
-    for (let i = 0; i < 4; i++) {
-      const id = metric.start();
-      metric.stopAndAccumulate(id);
-    }
-
-    const testValue = await metric.testGetValue("aPing");
-
-    assert.strictEqual(Object.keys(testValue?.values || []).length, 4);
-    assert.ok(testValue?.sum || 0 > 0, "The sum of the distribution should be greater than 0.");
   });
 
   it("timing distribution is persisted through restart", async function () {

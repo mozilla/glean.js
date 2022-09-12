@@ -16,8 +16,6 @@ import { constructFunctionalHistogramFromValues } from "../../../histogram/funct
 import {
   convertTimeUnitToNanos,
   getCurrentTimeInNanoSeconds,
-  isEmptyObject,
-  isObject,
   isUndefined,
   testOnlyCheck,
 } from "../../utils.js";
@@ -36,7 +34,7 @@ const MAX_SAMPLE_TIME = 1000 * 1000 * 1000 * 60 * 10;
 // name as TimerId for readability
 type TimerId = number;
 
-type TimingDistributionInternalRepresentation = Record<TimerId, number>;
+type TimingDistributionInternalRepresentation = number[];
 
 export type TimingDistributionPayloadRepresentation = {
   values: Record<TimerId, number>;
@@ -64,14 +62,13 @@ interface DistributionData {
  * @param hist Histogram to get the snapshot of
  * @returns Snapshot of the current histogram
  */
-function snapshot(hist: Histogram): DistributionData {
+export function snapshot(hist: Histogram): DistributionData {
   const snapshotValues = hist.snapshotValues();
 
-  // Only the entries that have a value of `1`
   const utilizedValues: Record<number, number> = {};
   Object.entries(snapshotValues).forEach(([key, value]) => {
     const numericKey = Number(key);
-    if (value === 1 && !isNaN(numericKey)) {
+    if (value > 0 && !isNaN(numericKey)) {
       utilizedValues[numericKey] = value;
     }
   });
@@ -101,8 +98,8 @@ export class TimingDistributionMetric extends Metric<
   }
 
   validate(v: unknown): MetricValidationResult {
-    // Check that object is valid
-    if (isUndefined(v) || !isObject(v) || isEmptyObject(v)) {
+    // Check that array is valid
+    if (isUndefined(v) || !Array.isArray(v)) {
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidType,
@@ -110,22 +107,22 @@ export class TimingDistributionMetric extends Metric<
       };
     }
 
-    // Check that keys are valid
-    const nonNumericKey = Object.keys(v).find((key) => isNaN(+key));
+    // Check that durations are valid
+    const nonNumericKey = (v as number[]).find((key) => isNaN(+key));
     if (nonNumericKey) {
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected all keys to be numbers, got ${nonNumericKey}`,
+        errorMessage: `Expected all durations to be numbers, got ${nonNumericKey}`,
       };
     }
 
-    const negativeKey = Object.keys(v).find((key) => !isNaN(+key) && +key < 0);
-    if (negativeKey) {
+    const negativeDuration = (v as number[]).find((key) => !isNaN(+key) && +key < 0);
+    if (negativeDuration) {
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected all keys to be greater than 0, got ${negativeKey}`,
+        errorMessage: `Expected all durations to be greater than 0, got ${negativeDuration}`,
       };
     }
 
@@ -160,6 +157,19 @@ class InternalTimingDistributionMetricType extends MetricType {
     const startTime = getCurrentTimeInNanoSeconds();
     const id: TimerId = Context.getNextTimingDistributionId();
 
+    this.setStart(id, startTime);
+    return id;
+  }
+
+  /**
+   * **Test-only API**
+   *
+   * Set start time for this metric.
+   *
+   * @param id Current timer's ID
+   * @param startTime Start time fo the current timer
+   */
+  setStart(id: TimerId, startTime: number) {
     Context.dispatcher.launch(async () => {
       // Per Glean book
       // "If the Glean upload is disabled when calling start, the timer is still started"
@@ -168,8 +178,6 @@ class InternalTimingDistributionMetricType extends MetricType {
 
       return Promise.resolve();
     });
-
-    return id;
   }
 
   /**
@@ -182,7 +190,10 @@ class InternalTimingDistributionMetricType extends MetricType {
    */
   stopAndAccumulate(id: TimerId) {
     const stopTime = getCurrentTimeInNanoSeconds();
+    this.setStopAndAccumulate(id, stopTime);
+  }
 
+  setStopAndAccumulate(id: TimerId, stopTime: number) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         delete this.startTimes[id];
@@ -193,7 +204,7 @@ class InternalTimingDistributionMetricType extends MetricType {
       let duration;
 
       const startTime = this.startTimes[id];
-      if (startTime) {
+      if (startTime !== undefined) {
         delete this.startTimes[id];
       } else {
         await Context.errorManager.record(this, ErrorType.InvalidValue, "Timing not running");
@@ -238,17 +249,14 @@ class InternalTimingDistributionMetricType extends MetricType {
       try {
         const transformFn = ((duration: number) => {
           return (old?: JSONValue): TimingDistributionMetric => {
-            const values = this.extractDurationValuesFrom(old);
+            const values = this.extractDurationValuesFromJsonValue(old);
 
             // Trying to store the complex Histogram object gives Glean issues and you are
             // unable to get it back out. We need to store the values in the Histogram, then
             // reconstruct the histogram each time instead so that we can persist and get values
             // from Glean without having to rewrite all the underlying logic to handle more
             // complex objects.
-            const histogramValues = [...values, duration];
-            const histogram = constructFunctionalHistogramFromValues(histogramValues);
-
-            return new TimingDistributionMetric(histogram.values);
+            return new TimingDistributionMetric([...values, duration]);
           };
         })(duration);
 
@@ -284,6 +292,17 @@ class InternalTimingDistributionMetricType extends MetricType {
    * @param samples Holds all the samples for the recorded metric.
    */
   accumulateSamples(samples: number[]) {
+    this.setAccumulateSamples(samples);
+  }
+
+  /**
+   * **Test-only API**
+   *
+   * Accumulates the provided signed samples in the metric. Use `accumulateSamples` instead.
+   *
+   * @param samples Signed samples to accumulate in the metric.
+   */
+  setAccumulateSamples(samples: number[]) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
@@ -295,15 +314,9 @@ class InternalTimingDistributionMetricType extends MetricType {
 
       const transformFn = ((samples: number[]) => {
         return (old?: JSONValue): TimingDistributionMetric => {
-          const histogramValues = this.extractDurationValuesFrom(old);
+          const values = this.extractDurationValuesFromJsonValue(old);
 
-          // Trying to store the complex Histogram object gives Glean issues and you are
-          // unable to get it back out. We need to store the values in the Histogram, then
-          // reconstruct the histogram each time instead so that we can persist and get values
-          // from Glean without having to rewrite all the underlying logic to handle more
-          // complex objects.
-          const histogram = constructFunctionalHistogramFromValues(histogramValues);
-
+          const convertedSamples: number[] = [];
           samples.forEach((sample) => {
             if (sample < 0) {
               numNegativeSamples++;
@@ -319,11 +332,11 @@ class InternalTimingDistributionMetricType extends MetricType {
               }
 
               sample = convertTimeUnitToNanos(sample, this.timeUnit);
-              histogram.accumulate(sample);
+              convertedSamples.push(sample);
             }
           });
 
-          return new TimingDistributionMetric(histogram.values);
+          return new TimingDistributionMetric([...values, ...convertedSamples]);
         };
       })(samples);
 
@@ -361,15 +374,9 @@ class InternalTimingDistributionMetricType extends MetricType {
 
       const transformFn = ((samples: number[]) => {
         return (old?: JSONValue): TimingDistributionMetric => {
-          const histogramValues = this.extractDurationValuesFrom(old);
+          const values = this.extractDurationValuesFromJsonValue(old);
 
-          // Trying to store the complex Histogram object gives Glean issues and you are
-          // unable to get it back out. We need to store the values in the Histogram, then
-          // reconstruct the histogram each time instead so that we can persist and get values
-          // from Glean without having to rewrite all the underlying logic to handle more
-          // complex objects.
-          const histogram = constructFunctionalHistogramFromValues(histogramValues);
-
+          const convertedSamples: number[] = [];
           samples.forEach((sample) => {
             if (sample < minSampleTime) {
               sample = minSampleTime;
@@ -379,10 +386,10 @@ class InternalTimingDistributionMetricType extends MetricType {
             }
 
             // `sample` is already in nanoseconds
-            histogram.accumulate(sample);
+            convertedSamples.push(sample);
           });
 
-          return new TimingDistributionMetric(histogram.values);
+          return new TimingDistributionMetric([...values, ...convertedSamples]);
         };
       })(samples);
 
@@ -407,8 +414,7 @@ class InternalTimingDistributionMetricType extends MetricType {
       });
 
       if (value) {
-        const durations = Object.keys(value || {}).map((key) => Number(key));
-        return snapshot(constructFunctionalHistogramFromValues(durations));
+        return snapshot(constructFunctionalHistogramFromValues(value));
       }
     }
   }
@@ -424,12 +430,10 @@ class InternalTimingDistributionMetricType extends MetricType {
     return 0;
   }
 
-  private extractDurationValuesFrom(jsonValue?: JSONValue): number[] {
+  private extractDurationValuesFromJsonValue(jsonValue?: JSONValue): number[] {
     let values: number[];
     if (jsonValue) {
-      // The previous values are stored as keys, we need to extract the keys
-      // and convert them to numbers before constructing the histogram.
-      values = Object.keys(jsonValue as Record<number, number>).map((key) => Number(key));
+      values = jsonValue as number[];
     } else {
       values = [];
     }
@@ -466,6 +470,18 @@ export default class {
   }
 
   /**
+   * Test-only API
+   *
+   * Set start time for this metric.
+   *
+   * @param id Current timer's ID
+   * @param startTime Start time fo the current timer
+   */
+  setStart(id: TimerId, startTime: number) {
+    this.#inner.setStart(id, startTime);
+  }
+
+  /**
    * Stop tracking time for the provided metric and associated timer id. Add a
    * count to the corresponding bucket in the timing distribution.
    * This will record an error if no `start` was called.
@@ -478,6 +494,10 @@ export default class {
     this.#inner.stopAndAccumulate(id);
   }
 
+  setStopAndAccumulate(id: TimerId, stopTime: number) {
+    this.#inner.setStopAndAccumulate(id, stopTime);
+  }
+
   /**
    * Accumulates the provided samples in the metric.
    *
@@ -486,6 +506,10 @@ export default class {
    */
   accumulateRawSamplesNanos(samples: number[]): void {
     this.#inner.accumulateRawSamplesNanos(samples);
+  }
+
+  setAccumulateSamples(samples: number[]): void {
+    this.#inner.setAccumulateSamples(samples);
   }
 
   /**
