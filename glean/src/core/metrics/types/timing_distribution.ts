@@ -2,13 +2,13 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { CommonMetricData } from "..";
+import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric";
 import type TimeUnit from "../time_unit.js";
 import type { Histogram } from "../../../histogram/histogram.js";
 
-import { MetricType } from "..";
+import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -37,7 +37,13 @@ type TimerId = number;
 type TimingDistributionInternalRepresentation = number[];
 
 export type TimingDistributionPayloadRepresentation = {
+  // A map containing the bucket index mapped to the accumulated count.
+  //
+  // This can contain buckets with a count of `0`.
   values: Record<TimerId, number>;
+
+  // The accumulated sum of all the samples in the distribution.
+  sum: number;
 };
 
 interface DistributionData {
@@ -130,8 +136,10 @@ export class TimingDistributionMetric extends Metric<
   }
 
   payload(): TimingDistributionPayloadRepresentation {
+    const hist = constructFunctionalHistogramFromValues(this._inner as number[]);
     return {
-      values: this._inner,
+      values: hist.values,
+      sum: hist.sum
     };
   }
 }
@@ -141,7 +149,7 @@ class InternalTimingDistributionMetricType extends MetricType {
   private startTimes: Record<TimerId, number>;
 
   constructor(meta: CommonMetricData, timeUnit: TimeUnit) {
-    super("timingDistribution", meta, TimingDistributionMetric);
+    super("timing_distribution", meta, TimingDistributionMetric);
 
     this.timeUnit = timeUnit;
     this.startTimes = {};

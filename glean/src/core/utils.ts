@@ -12,7 +12,7 @@ import TimeUnit from "./metrics/time_unit.js";
 
 const LOG_TAG = "core.utils";
 
-// We will intentionaly leave `null` out even though it is a valid JSON primitive.
+// We will intentionally leave `null` out even though it is a valid JSON primitive.
 export type JSONPrimitive = string | number | boolean;
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
 export type JSONObject = { [member: string]: JSONValue | undefined };
@@ -271,8 +271,19 @@ export function saturatingAdd(...args: number[]) {
  * @returns Timestamp of current time in nanoseconds.
  */
 export function getCurrentTimeInNanoSeconds(): number {
-  const hrTime = process.hrtime();
-  return hrTime[0] * 1000000000 + hrTime[1];
+  // Sadly, `performance.now` is not available on Qt, which
+  // means we should get creative to find a proper clock for that platform.
+  // Fall back to `Date.now` for now, until bug 1690528 is fixed.
+  let now;
+  if (typeof process === "undefined") {
+    now = getMonotonicNow();
+  } else {
+    // in Node, this is the most accurate way to get nanoseconds, so we will use
+    // this when possible
+    const hrTime = process.hrtime();
+    now = hrTime[0] * 1000000000 + hrTime[1];
+  }
+  return now;
 }
 
 /**
