@@ -139,19 +139,19 @@ export class TimingDistributionMetric extends Metric<
     const hist = constructFunctionalHistogramFromValues(this._inner as number[]);
     return {
       values: hist.values,
-      sum: hist.sum
+      sum: hist.sum,
     };
   }
 }
 
 class InternalTimingDistributionMetricType extends MetricType {
-  private timeUnit: TimeUnit;
+  private timeUnit: string;
   private startTimes: Record<TimerId, number>;
 
-  constructor(meta: CommonMetricData, timeUnit: TimeUnit) {
+  constructor(meta: CommonMetricData, timeUnit: string) {
     super("timing_distribution", meta, TimingDistributionMetric);
 
-    this.timeUnit = timeUnit;
+    this.timeUnit = timeUnit as TimeUnit;
     this.startTimes = {};
   }
 
@@ -240,8 +240,8 @@ class InternalTimingDistributionMetricType extends MetricType {
         return;
       }
 
-      const minSampleTime = convertTimeUnitToNanos(1, this.timeUnit);
-      const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit);
+      const minSampleTime = convertTimeUnitToNanos(1, this.timeUnit as TimeUnit);
+      const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit as TimeUnit);
 
       if (duration < minSampleTime) {
         // If measurement is less than the minimum, just truncate. This is
@@ -328,7 +328,7 @@ class InternalTimingDistributionMetricType extends MetricType {
 
       let numNegativeSamples = 0;
       let numTooLongSamples = 0;
-      const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit);
+      const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit as TimeUnit);
 
       const transformFn = ((samples: number[]) => {
         return (old?: JSONValue): TimingDistributionMetric => {
@@ -349,7 +349,7 @@ class InternalTimingDistributionMetricType extends MetricType {
                 sample = maxSampleTime;
               }
 
-              sample = convertTimeUnitToNanos(sample, this.timeUnit);
+              sample = convertTimeUnitToNanos(sample, this.timeUnit as TimeUnit);
               convertedSamples.push(sample);
             }
           });
@@ -396,8 +396,8 @@ class InternalTimingDistributionMetricType extends MetricType {
       }
 
       let numTooLongSamples = 0;
-      const minSampleTime = convertTimeUnitToNanos(1, this.timeUnit);
-      const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit);
+      const minSampleTime = convertTimeUnitToNanos(1, this.timeUnit as TimeUnit);
+      const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit as TimeUnit);
 
       const transformFn = ((samples: number[]) => {
         return (old?: JSONValue): TimingDistributionMetric => {
@@ -502,8 +502,8 @@ class InternalTimingDistributionMetricType extends MetricType {
 export default class {
   #inner: InternalTimingDistributionMetricType;
 
-  constructor(meta: CommonMetricData, timeUnit: TimeUnit) {
-    this.#inner = new InternalTimingDistributionMetricType(meta, timeUnit);
+  constructor(meta: CommonMetricData, timeUnit: string) {
+    this.#inner = new InternalTimingDistributionMetricType(meta, timeUnit as TimeUnit);
   }
 
   /**
