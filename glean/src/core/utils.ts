@@ -266,14 +266,12 @@ export function saturatingAdd(...args: number[]) {
 }
 
 /**
- * Generate timestamp for current time in nanoseconds.
+ * Generate timestamp for current time in nanoseconds. If process
+ * is not defined, we fallback to `getMonotonicNow()`.
  *
  * @returns Timestamp of current time in nanoseconds.
  */
 export function getCurrentTimeInNanoSeconds(): number {
-  // Sadly, `performance.now` is not available on Qt, which
-  // means we should get creative to find a proper clock for that platform.
-  // Fall back to `Date.now` for now, until bug 1690528 is fixed.
   let now;
   if (typeof process === "undefined") {
     now = getMonotonicNow();
