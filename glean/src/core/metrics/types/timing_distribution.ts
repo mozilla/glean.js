@@ -54,6 +54,9 @@ interface DistributionData {
 
   // The accumulated sum of all the samples in the distribution.
   sum: number;
+
+  // The number of entries in the histogram.
+  count: number;
 }
 
 /**
@@ -80,6 +83,7 @@ export function snapshot(hist: Histogram): DistributionData {
   });
 
   return {
+    count: hist.count,
     values: utilizedValues,
     sum: hist.sum,
   };

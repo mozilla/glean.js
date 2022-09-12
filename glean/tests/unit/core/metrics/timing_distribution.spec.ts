@@ -46,6 +46,7 @@ describe("TimingDistributionMetric", function () {
     const snap = snapshot(hist);
 
     const expectedJson = {
+      count: 10,
       sum: 55,
       values: {
         "1": 1,
@@ -75,6 +76,7 @@ describe("TimingDistributionMetric", function () {
     const snap = snapshot(hist);
 
     const expectedJson = {
+      count: 4,
       sum: 4612,
       values: {
         "1024": 2,
@@ -133,6 +135,7 @@ describe("TimingDistributionMetric", function () {
 
       assert.equal(snapshot?.sum, duration);
       assert.equal(snapshot?.values[1], 1);
+      assert.equal(snapshot?.count, 1);
     });
   });
 
