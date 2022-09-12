@@ -186,13 +186,23 @@ class InternalTimingDistributionMetricType extends MetricType {
    * Adds a count to the corresponding bucket in the timing distribution.
    * This will record an error if no `start` was called.
    *
-   * @param id ID to associate with this timing
+   * @param id Timer ID to stop
    */
   stopAndAccumulate(id: TimerId) {
     const stopTime = getCurrentTimeInNanoSeconds();
     this.setStopAndAccumulate(id, stopTime);
   }
 
+  /**
+   * **Test-only API**
+   *
+   * Set stop time for the metric.
+   *
+   * Use `stopAndAccumulate` instead.
+   *
+   * @param id Timer ID to stop
+   * @param stopTime End time for the current timer
+   */
   setStopAndAccumulate(id: TimerId, stopTime: number) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -207,7 +217,7 @@ class InternalTimingDistributionMetricType extends MetricType {
       if (startTime !== undefined) {
         delete this.startTimes[id];
       } else {
-        await Context.errorManager.record(this, ErrorType.InvalidValue, "Timing not running");
+        await Context.errorManager.record(this, ErrorType.InvalidState, "Timing not running");
         return;
       }
 
@@ -362,6 +372,15 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
+  /**
+   * Accumulates the provided samples in the metric.
+   *
+   * **Notes**
+   * Reports an `ErrorType.InvalidOverflow` error for samples that are
+   * longer than `MAX_SAMPLE_TIME`.
+   *
+   * @param samples A list of samples recorded by the metric. Samples must be in nanoseconds.
+   */
   accumulateRawSamplesNanos(samples: number[]) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
@@ -406,6 +425,14 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
+  /**
+   * **Test-only API**
+   *
+   * Gets the current stored value as an integer.
+   *
+   * @param ping The ping that the metric is a part of.
+   * @returns Distribution data for the current ping.
+   */
   async testGetValue(ping: string = this.sendInPings[0]): Promise<DistributionData | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let value: TimingDistributionInternalRepresentation | undefined;
@@ -419,6 +446,14 @@ class InternalTimingDistributionMetricType extends MetricType {
     }
   }
 
+  /**
+   * Gets the number of recorded errors for the given metric and error type.
+   *
+   * @param errorType The type of error
+   * @param ping Represents the optional name of the ping to retrieve the
+   *        metric for. Defaults to the first value in `sendInPings`.
+   * @returns The number of errors reported.
+   */
   async testGetNumRecordedErrors(
     errorType: string,
     ping: string = this.sendInPings[0]
@@ -430,6 +465,14 @@ class InternalTimingDistributionMetricType extends MetricType {
     return 0;
   }
 
+  /**
+   * Takes the previous values and casts as a `number[]` or creates a new empty `number[]`. We store
+   * previous durations as an array of values so that we can always reconstruct our histogram. We
+   * are unable to store complex objects in Glean as they must be JSON parse-able objects.
+   *
+   * @param jsonValue Will always be either undefined or a `number[]`.
+   * @returns An array of previous durations or an empty array if nothing was previously stored.
+   */
   private extractDurationValuesFromJsonValue(jsonValue?: JSONValue): number[] {
     let values: number[];
     if (jsonValue) {
@@ -494,6 +537,16 @@ export default class {
     this.#inner.stopAndAccumulate(id);
   }
 
+  /**
+   * **Test-only API**
+   *
+   * Set stop time for the metric.
+   *
+   * Use `stopAndAccumulate` instead.
+   *
+   * @param id Timer ID to stop
+   * @param stopTime End time for the current timer
+   */
   setStopAndAccumulate(id: TimerId, stopTime: number) {
     this.#inner.setStopAndAccumulate(id, stopTime);
   }
@@ -508,6 +561,15 @@ export default class {
     this.#inner.accumulateRawSamplesNanos(samples);
   }
 
+  /**
+   * **Test-only API**
+   *
+   * Accumulates the provided signed samples in the metric.
+   *
+   * Use `accumulateSamples` instead.
+   *
+   * @param samples Signed samples to accumulate in metric.
+   */
   setAccumulateSamples(samples: number[]): void {
     this.#inner.setAccumulateSamples(samples);
   }

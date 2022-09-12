@@ -16,6 +16,7 @@ import Glean from "../../../../src/core/glean";
 import { convertTimeUnitToNanos } from "../../../../src/core/utils";
 import { Histogram } from "../../../../src/histogram/histogram";
 import { Functional } from "../../../../src/histogram/functional";
+import { ErrorType } from "../../../../src/core/error/error_type";
 
 const sandbox = sinon.createSandbox();
 
@@ -185,8 +186,8 @@ describe("TimingDistributionMetric", function () {
     assert.equal(1, snapshot?.values[1969251187]);
     assert.equal(1, snapshot?.values[2784941737]);
 
-    // TODO
-    // check no errors were reported
+    // No errors should be reported.
+    assert.equal(0, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
   it("the accumulate samples api correctly handles negative values", async function () {
@@ -215,7 +216,7 @@ describe("TimingDistributionMetric", function () {
     assert.equal(1, snapshot?.values[3]);
 
     // 1 error should be reported.
-    // TODO
+    assert.equal(0, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
   it("the accumulate samples api correctly handles overflowing values", async function () {
@@ -246,8 +247,8 @@ describe("TimingDistributionMetric", function () {
     assert.equal(1, snapshot?.values[2]);
     assert.equal(1, snapshot?.values[3]);
 
-    // TODO
-    // check for errors
+    // 1 error should be reported.
+    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow));
   });
 
   it("large nanosecond values", async function () {
@@ -272,6 +273,88 @@ describe("TimingDistributionMetric", function () {
 
     // Check that we got the right sum and number of samples.
     assert.equal(snapshot?.sum, time);
+  });
+
+  it("stopping non existing id records an error", async function () {
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: ["aPing"],
+      },
+      TimeUnit.Nanosecond
+    );
+
+    const id = 3785;
+    metric.setStopAndAccumulate(id, 60);
+
+    // 1 error should be reported.
+    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidState, "aPing"));
+  });
+
+  it("the accumulate raw samples api correctly stores timing values", async function () {
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: ["aPing"],
+      },
+      TimeUnit.Second
+    );
+
+    const secondsToNanos = 1000 * 1000 * 1000;
+    metric.accumulateRawSamplesNanos([secondsToNanos, secondsToNanos * 2, secondsToNanos * 3]);
+
+    const snapshot = await metric.testGetValue("aPing");
+
+    // Check that we got the right sum and number of samples.
+    assert.equal(snapshot?.sum, 6 * secondsToNanos);
+
+    // We should get a sample in 3 buckets.
+    // These numbers are a bit magic, but they correspond to
+    // `hist.sample_to_bucket_minimum(i * seconds_to_nanos)` for `i = 1..=3`.
+    assert.equal(1, snapshot?.values[984625593]);
+    assert.equal(1, snapshot?.values[1969251187]);
+    assert.equal(1, snapshot?.values[2784941737]);
+
+    // No errors should be reported.
+    assert.equal(0, await metric.testGetNumRecordedErrors(ErrorType.InvalidState, "aPing"));
+  });
+
+  it("raw samples api error cases", async function () {
+    const metric = new TimingDistributionMetricType(
+      {
+        category: "aCategory",
+        disabled: false,
+        lifetime: Lifetime.Ping,
+        name: "aTimingDistribution",
+        sendInPings: ["aPing"],
+      },
+      TimeUnit.Nanosecond
+    );
+
+    // 10 minutes in nanoseconds
+    const maxSampleTime = 1000 * 1000 * 1000 * 60 * 10;
+
+    metric.accumulateRawSamplesNanos([0, 1, maxSampleTime + 1]);
+
+    const snapshot = await metric.testGetValue("aPing");
+
+    // Check that we got the right sum and number of samples.
+    assert.equal(snapshot?.sum, 2 + maxSampleTime);
+
+    // We should get a sample in 3 buckets.
+    // These numbers are a bit magic, but they correspond to
+    // `hist.sample_to_bucket_minimum(i * seconds_to_nanos)` for `i = {1, max_sample_time}`.
+    assert.equal(2, snapshot?.values[1]);
+    assert.equal(1, snapshot?.values[599512966122]);
+
+    // 1 error should be reported.
+    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow, "aPing"));
   });
 
   it("timing distribution internal representation validation works as expected", function () {
@@ -528,36 +611,6 @@ describe("TimingDistributionMetric", function () {
       const testCase = testCases[i];
       const result = convertTimeUnitToNanos(testCase.value, testCase.unit);
       assert.strictEqual(result, expected);
-    }
-  });
-
-  it("converts different time units to nanoseconds", function () {
-    const units = [
-      TimeUnit.Nanosecond,
-      TimeUnit.Microsecond,
-      TimeUnit.Millisecond,
-      TimeUnit.Second,
-      TimeUnit.Minute,
-      TimeUnit.Hour,
-      TimeUnit.Day,
-    ];
-
-    for (let i = 0; i < units.length; i++) {
-      const metric = new TimingDistributionMetricType(
-        {
-          category: "aCategory",
-          disabled: false,
-          lifetime: Lifetime.Ping,
-          name: "aTimingDistribution",
-          sendInPings: ["aPing"],
-        },
-        units[i]
-      );
-
-      const id = metric.start();
-      metric.stopAndAccumulate(id);
-      // TODO
-      // need to figure out how to validate this
     }
   });
 });
