@@ -185,10 +185,30 @@ async function runGlean(parserArgs: string[]) {
   const spinner = getStartedSpinner();
   const pythonBin = path.join(getPythonVenvBinariesPath(VIRTUAL_ENVIRONMENT_DIR), getSystemPythonBinName());
   const isOnlineArg = process.env.OFFLINE ? "offline" : "online";
-  const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
+
+  // Trying to pass PYTHON_SCRIPT as a string in the command line arguments
+  // causes issues on Windows machines. We are able to work around this by
+  // writing the script to its own file and then executing that file instead.
+  //
+  // By doing it this way, we don't need to worry about file directory
+  // traversal differences between Mac & Windows, it is always in the
+  // same place.
+  try {
+    fs.writeFileSync("cli_util.py", PYTHON_SCRIPT);
+  } catch (err) {
+    console.error(err);
+    return;
+  }
+
+  const cmd = `${pythonBin} cli_util.py ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
 
   const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
-    exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
+    exec.exec(cmd, (err, stdout, stderr) => {
+      resolve({err, stdout, stderr});
+
+      // after script succeeds, we remove it
+      fs.unlinkSync("cli_util.py");
+    });
   });
 
   stopSpinner(spinner);
@@ -249,7 +269,7 @@ async function run(args: string[]) {
   await runGlean(args.slice(2));
 }
 
-// For discoverability, try to leave this function as the last one on this file.
+// For discover-ability, try to leave this function as the last one on this file.
 run(argv).catch(e => {
   log(LOG_TAG, ["There was an error running Glean.\n", e], LoggingLevel.Error);
   process.exit(1);
