@@ -7,6 +7,7 @@
 import * as exec from "child_process";
 import * as fs from "fs";
 import * as path from "path";
+import * as os from "os";
 import { argv, platform } from "process";
 import { promisify } from "util";
 
@@ -187,27 +188,33 @@ async function runGlean(parserArgs: string[]) {
   const isOnlineArg = process.env.OFFLINE ? "offline" : "online";
 
   // Trying to pass PYTHON_SCRIPT as a string in the command line arguments
-  // causes issues on Windows machines. We are able to work around this by
-  // writing the script to its own file and then executing that file instead.
+  // causes issues on Windows machines. The issue exists because you cannot
+  // pass a multi-line script using the `-c` argument without manually formatting
+  // your script with `\n` characters.
   //
-  // By doing it this way, we don't need to worry about file directory
-  // traversal differences between Mac & Windows, it is always in the
-  // same place.
+  // To workaround this, we can write the script to a file inside of the OS tmpdir
+  // and execute it from there. Then once we are finished with the script, we can
+  // remove the entire directory.
+  let tmpDir = "";
+  const appPrefix = "glean.js";
+  const tempDirectory = os.tmpdir();
   try {
-    fs.writeFileSync("cli_util.py", PYTHON_SCRIPT);
-  } catch (err) {
-    console.error(err);
+    tmpDir = fs.mkdtempSync(path.join(tempDirectory, appPrefix));
+    fs.writeFileSync(path.join(tmpDir, "script.py"), PYTHON_SCRIPT);
+  } catch (error) {
+    console.error("Unable to write utility script to tmp directory");
+    console.error(error);
     return;
   }
 
-  const cmd = `${pythonBin} cli_util.py ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
+  const cmd = `${pythonBin} ${tmpDir}/script.py ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
 
   const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
     exec.exec(cmd, (err, stdout, stderr) => {
       resolve({err, stdout, stderr});
 
-      // After script succeeds, we remove it.
-      fs.unlinkSync("cli_util.py");
+      // Remove the temp directory now that we are finished with it.
+      fs.rmSync(tmpDir, { recursive: true });
     });
   });
 
