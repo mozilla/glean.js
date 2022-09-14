@@ -202,8 +202,11 @@ async function runGlean(parserArgs: string[]) {
     tmpDir = fs.mkdtempSync(path.join(tempDirectory, appPrefix));
     fs.writeFileSync(path.join(tmpDir, "script.py"), PYTHON_SCRIPT);
   } catch (error) {
-    console.error("Unable to write utility script to tmp directory");
-    console.error(error);
+    log(
+      LOG_TAG,
+      ["Unable to write utility script to tmp directory.\n", error],
+      LoggingLevel.Error
+    );
     return;
   }
 
