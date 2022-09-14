@@ -197,10 +197,11 @@ async function runGlean(parserArgs: string[]) {
   // remove the entire directory.
   let tmpDir = "";
   const appPrefix = "glean.js";
+  const scriptName = "script.py";
   const tempDirectory = os.tmpdir();
   try {
     tmpDir = fs.mkdtempSync(path.join(tempDirectory, appPrefix));
-    fs.writeFileSync(path.join(tmpDir, "script.py"), PYTHON_SCRIPT);
+    fs.writeFileSync(path.join(tmpDir, scriptName), PYTHON_SCRIPT);
   } catch (error) {
     log(
       LOG_TAG,
@@ -210,7 +211,7 @@ async function runGlean(parserArgs: string[]) {
     return;
   }
 
-  const cmd = `${pythonBin} ${tmpDir}/script.py ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
+  const cmd = `${pythonBin} ${tmpDir}/${scriptName} ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
 
   const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
     exec.exec(cmd, (err, stdout, stderr) => {
