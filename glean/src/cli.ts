@@ -206,7 +206,7 @@ async function runGlean(parserArgs: string[]) {
     exec.exec(cmd, (err, stdout, stderr) => {
       resolve({err, stdout, stderr});
 
-      // after script succeeds, we remove it
+      // After script succeeds, we remove it.
       fs.unlinkSync("cli_util.py");
     });
   });
