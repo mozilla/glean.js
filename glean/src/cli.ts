@@ -269,7 +269,7 @@ async function run(args: string[]) {
   await runGlean(args.slice(2));
 }
 
-// For discover-ability, try to leave this function as the last one on this file.
+// For discoverability, try to leave this function as the last one on this file.
 run(argv).catch(e => {
   log(LOG_TAG, ["There was an error running Glean.\n", e], LoggingLevel.Error);
   process.exit(1);
