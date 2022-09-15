@@ -208,7 +208,7 @@ async function runGlean(parserArgs: string[]) {
       ["Unable to write utility script to tmp directory.\n", error],
       LoggingLevel.Error
     );
-    return;
+    process.exit(1);
   }
 
   const cmd = `${pythonBin} ${tmpDir}/${scriptName} ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
