@@ -350,7 +350,7 @@ describe("TimingDistributionMetric", function () {
     // Check that we got the right sum and number of samples.
     assert.equal(snapshot?.sum, 2 + maxSampleTime);
 
-    // We should get a sample in 3 buckets.
+    // We should get a sample in 2 buckets.
     // These numbers are a bit magic, but they correspond to
     // `hist.sample_to_bucket_minimum(i * seconds_to_nanos)` for `i = {1, max_sample_time}`.
     assert.equal(2, snapshot?.values[1]);
