@@ -308,7 +308,7 @@ class InternalTimingDistributionMetricType extends MetricType {
       if (numNegativeSamples > 0) {
         await Context.errorManager.record(
           this,
-          ErrorType.InvalidOverflow,
+          ErrorType.InvalidValue,
           `Accumulated ${numNegativeSamples} negative samples`,
           numNegativeSamples
         );

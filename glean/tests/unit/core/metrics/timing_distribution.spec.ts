@@ -220,7 +220,7 @@ describe("TimingDistributionMetric", function () {
     assert.equal(1, snapshot?.values[3]);
 
     // 1 error should be reported.
-    assert.equal(0, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
+    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
   it("the accumulate samples api correctly handles overflowing values", async function () {
