@@ -126,17 +126,7 @@ export class TimingDistributionMetric extends Metric<
       };
     }
 
-    // Check that durations are valid
-    const nonNumericKey = (v as number[]).find((key) => isNaN(+key));
-    if (nonNumericKey) {
-      return {
-        type: MetricValidation.Error,
-        errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected all durations to be numbers, got ${nonNumericKey}`,
-      };
-    }
-
-    const negativeDuration = (v as number[]).find((key) => !isNaN(+key) && +key < 0);
+    const negativeDuration = (v as number[]).find((key) => key < 0);
     if (negativeDuration) {
       return {
         type: MetricValidation.Error,
