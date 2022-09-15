@@ -62,13 +62,9 @@ export class Context {
   // The moment the current Glean.js session started.
   private _startTime: Date;
 
-  // Atomic(ish) IDs for timing distributions
-  private _timingDistributionId: number;
-
   private constructor() {
     this._startTime = new Date();
     this._dispatcher = new Dispatcher();
-    this._timingDistributionId = 0;
   }
 
   static get instance(): Context {
@@ -297,10 +293,5 @@ export class Context {
     }
 
     Context.instance._supportedMetrics[type] = ctor;
-  }
-
-  static getNextTimingDistributionId(): number {
-    Context.instance._timingDistributionId++;
-    return Context.instance._timingDistributionId;
   }
 }

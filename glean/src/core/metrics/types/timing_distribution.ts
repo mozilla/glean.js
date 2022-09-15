@@ -150,17 +150,24 @@ export class TimingDistributionMetric extends Metric<
 class InternalTimingDistributionMetricType extends MetricType {
   private timeUnit: string;
   private startTimes: Record<number, number>;
+  private timerId: number;
 
   constructor(meta: CommonMetricData, timeUnit: string) {
     super("timing_distribution", meta, TimingDistributionMetric);
 
     this.timeUnit = timeUnit as TimeUnit;
     this.startTimes = {};
+    this.timerId = 0;
+  }
+
+  getNextTimerId(): number {
+    this.timerId++;
+    return this.timerId;
   }
 
   start(): number {
     const startTime = getCurrentTimeInNanoSeconds();
-    const id: number = Context.getNextTimingDistributionId();
+    const id = this.getNextTimerId();
 
     this.setStart(id, startTime);
     return id;

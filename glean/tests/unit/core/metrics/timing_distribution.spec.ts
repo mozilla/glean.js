@@ -4,8 +4,7 @@
 
 import assert from "assert";
 import sinon from "sinon";
-import type { SinonStub } from "sinon";
-import { testResetGlean, testRestartGlean } from "../../../../src/core/testing";
+import { testResetGlean } from "../../../../src/core/testing";
 import TimingDistributionMetricType, {
   snapshot,
   TimingDistributionMetric,
@@ -22,14 +21,9 @@ const sandbox = sinon.createSandbox();
 
 describe("TimingDistributionMetric", function () {
   const testAppId = `gleanjs.test.${this.title}`;
-  let fakeNow: SinonStub;
 
   beforeEach(async function () {
     await testResetGlean(testAppId);
-    fakeNow =
-      typeof performance === "undefined"
-        ? sandbox.stub(Date, "now")
-        : sandbox.stub(performance, "now");
   });
 
   afterEach(function () {
@@ -420,54 +414,6 @@ describe("TimingDistributionMetric", function () {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  it("timing distribution is persisted through restart", async function () {
-    fakeNow.onCall(0).callsFake(() => 0);
-    fakeNow.onCall(1).callsFake(() => 100);
-
-    const metric = new TimingDistributionMetricType(
-      {
-        category: "aCategory",
-        disabled: false,
-        lifetime: Lifetime.Ping,
-        name: "aTimingDistribution",
-        sendInPings: ["aPing"],
-      },
-      TimeUnit.Nanosecond
-    );
-
-    const id = metric.start();
-    metric.stopAndAccumulate(id);
-
-    const testValue = await metric.testGetValue("aPing");
-    assert.strictEqual(testValue?.count, 1);
-    assert.ok(!!testValue?.sum, "The sum of the distribution should be greater than 0.");
-
-    await testRestartGlean();
-
-    const testValue2 = await metric.testGetValue("aPing");
-    assert.strictEqual(testValue.count, 1);
-    assert.ok(!!testValue2?.sum, "The sum of the distribution should be greater than 0.");
-  });
-
-  it("unique IDs are persisted through restarts", async function () {
-    const metric = new TimingDistributionMetricType(
-      {
-        category: "aCategory",
-        disabled: false,
-        lifetime: Lifetime.Ping,
-        name: "aTimingDistribution",
-        sendInPings: ["aPing"],
-      },
-      TimeUnit.Nanosecond
-    );
-
-    const id1 = metric.start();
-    await testRestartGlean();
-    const id2 = metric.start();
-
-    assert.notEqual(id1, id2);
-  });
-
   it("value accumulated when upload is not enabled gets removed", async function () {
     const metric = new TimingDistributionMetricType(
       {
@@ -517,9 +463,6 @@ describe("TimingDistributionMetric", function () {
   });
 
   it("recording APIs properly sets the value in all pings", async function () {
-    fakeNow.onCall(0).callsFake(() => 0);
-    fakeNow.onCall(1).callsFake(() => 100);
-
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
