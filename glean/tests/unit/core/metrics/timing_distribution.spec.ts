@@ -439,14 +439,14 @@ describe("TimingDistributionMetric", function () {
     metric.stopAndAccumulate(id);
 
     const testValue = await metric.testGetValue("aPing");
-    assert.strictEqual(Object.keys(testValue?.values || []).length, 1);
-    assert.ok(testValue?.sum || 0 > 0, "The sum of the distribution should be greater than 0.");
+    assert.strictEqual(testValue?.count, 1);
+    assert.ok(!!testValue?.sum, "The sum of the distribution should be greater than 0.");
 
     await testRestartGlean();
 
     const testValue2 = await metric.testGetValue("aPing");
-    assert.strictEqual(Object.keys(testValue2?.values || []).length, 1);
-    assert.ok(testValue2?.sum || 0 > 0, "The sum of the distribution should be greater than 0.");
+    assert.strictEqual(testValue.count, 1);
+    assert.ok(!!testValue2?.sum, "The sum of the distribution should be greater than 0.");
   });
 
   it("unique IDs are persisted through restarts", async function () {
@@ -489,7 +489,7 @@ describe("TimingDistributionMetric", function () {
     metric.stopAndAccumulate(id2);
 
     const testValue = await metric.testGetValue("aPing");
-    assert.equal(Object.keys(testValue?.values || {}).length, 1);
+    assert.equal(testValue?.count, 1);
   });
 
   it("multiple timers can be started, stopped, and cancelled in any order", async function () {
@@ -513,7 +513,7 @@ describe("TimingDistributionMetric", function () {
     metric.cancel(id2);
 
     const testValue = await metric.testGetValue("aPing");
-    assert.equal(Object.keys(testValue?.values || {}).length, 2);
+    assert.equal(testValue?.count, 2);
   });
 
   it("recording APIs properly sets the value in all pings", async function () {
@@ -535,16 +535,16 @@ describe("TimingDistributionMetric", function () {
     metric.stopAndAccumulate(id);
 
     const testValueA = await metric.testGetValue("aPing");
-    assert.strictEqual(Object.keys(testValueA?.values || []).length, 1);
-    assert.ok(testValueA?.sum || 0 > 0, "The sum of the distribution should be greater than 0.");
+    assert.strictEqual(testValueA?.count, 1);
+    assert.ok(!!testValueA?.sum, "The sum of the distribution should be greater than 0.");
 
     const testValueB = await metric.testGetValue("bPing");
-    assert.strictEqual(Object.keys(testValueB?.values || []).length, 1);
-    assert.ok(testValueB?.sum || 0 > 0, "The sum of the distribution should be greater than 0.");
+    assert.strictEqual(testValueB?.count, 1);
+    assert.ok(!!testValueB?.sum, "The sum of the distribution should be greater than 0.");
 
     const testValueC = await metric.testGetValue("cPing");
-    assert.strictEqual(Object.keys(testValueC?.values || []).length, 1);
-    assert.ok(testValueC?.sum || 0 > 0, "The sum of the distribution should be greater than 0.");
+    assert.strictEqual(testValueC?.count, 1);
+    assert.ok(!!testValueC?.sum, "The sum of the distribution should be greater than 0.");
   });
 
   it("recording multiple timings", async function () {
@@ -568,8 +568,8 @@ describe("TimingDistributionMetric", function () {
     ]);
 
     const testValue = await metric.testGetValue("aPing");
-    assert.strictEqual(Object.keys(testValue?.values || []).length, 4);
-    assert.ok(testValue?.sum || 0 > 0, "The sum of the distribution should be greater than 0.");
+    assert.strictEqual(testValue?.count, 4);
+    assert.ok(!!testValue?.sum, "The sum of the distribution should be greater than 0.");
   });
 
   it("converts time units to nanoseconds", function () {
