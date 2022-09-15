@@ -3,6 +3,7 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.1.0...main)
 
 * [#1475](https://github.com/mozilla/glean.js/pull/1475): Implement the Timing Distribution metric type.
+* [#1500](https://github.com/mozilla/glean.js/pull/1500): BUGFIX: Update how we invoke CLI python script to fix `npm run glean` behavior on Windows.
 * [#1457](https://github.com/mozilla/glean.js/pull/1457): Update `ts-node` to 10.8.0 to resolve ESM issues when running tests inside of `webext` sample project.
 * [#1452](https://github.com/mozilla/glean.js/pull/1452): Remove `glean.restarted` trailing events from events list.
 * [#1450](https://github.com/mozilla/glean.js/pull/1450): Update `ts-node` to 10.8.0 to resolve ESM issues when running tests.

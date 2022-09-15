@@ -3,24 +3,24 @@ updates:
   - package-ecosystem: "npm"
     directory: "/glean"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "npm"
     directory: "/automation"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "npm"
     directory: "/samples/browser/webext"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "npm"
     directory: "/samples/browser/web"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "npm"
     directory: "/samples/node"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
   - package-ecosystem: "npm"
     directory: "/glean/tests/unit/platform/utils/webext/sample"
     schedule:
-      interval: "weekly"
+      interval: "monthly"
