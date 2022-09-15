@@ -160,6 +160,7 @@ describe("TimingDistributionMetric", function () {
     metric.setStopAndAccumulate(id, 0);
 
     assert.equal(await metric.testGetValue("aPing"), undefined);
+    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
   it("the accumulate samples api correctly stores timing values", async function () {
