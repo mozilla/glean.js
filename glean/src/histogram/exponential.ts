@@ -90,6 +90,7 @@ export class PrecomputedExponential implements Bucketing {
       return this.bucketRanges;
     }
 
-    return exponentialRange(this.min, this.max, this.bucketCount);
+    this.bucketRanges = exponentialRange(this.min, this.max, this.bucketCount);
+    return this.bucketRanges;
   }
 }

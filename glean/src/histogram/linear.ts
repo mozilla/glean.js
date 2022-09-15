@@ -74,6 +74,7 @@ export class PrecomputedLinear implements Bucketing {
       return this.bucketRanges;
     }
 
-    return linearRange(this.min, this.max, this.bucketCount);
+    this.bucketRanges = linearRange(this.min, this.max, this.bucketCount);
+    return this.bucketRanges;
   }
 }
