@@ -252,10 +252,6 @@ class InternalTimingDistributionMetricType extends MetricType {
         // do nothing, we have a valid duration
       }
 
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
       try {
         const transformFn = ((duration: number) => {
           return (old?: JSONValue): TimingDistributionMetric => {
