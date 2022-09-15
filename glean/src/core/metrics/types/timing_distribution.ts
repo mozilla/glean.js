@@ -31,9 +31,6 @@ const LOG_TAG = "core.metrics.TimingDistributionMetricType";
 // - `millisecond` - ~19 years
 const MAX_SAMPLE_TIME = 1000 * 1000 * 1000 * 60 * 10;
 
-// name as TimerId for readability
-type TimerId = number;
-
 // The internals of Glean are not setup to store complex objects. Everything
 // that gets stored needs to be some sort of JSON parse-able value. We are able
 // to work with this by doing a few things.
@@ -58,7 +55,7 @@ export type TimingDistributionPayloadRepresentation = {
   // A map containing the bucket index mapped to the accumulated count.
   //
   // This can contain buckets with a count of `0`.
-  values: Record<TimerId, number>;
+  values: Record<number, number>;
 
   // The accumulated sum of all the samples in the distribution.
   sum: number;
@@ -162,7 +159,7 @@ export class TimingDistributionMetric extends Metric<
 
 class InternalTimingDistributionMetricType extends MetricType {
   private timeUnit: string;
-  private startTimes: Record<TimerId, number>;
+  private startTimes: Record<number, number>;
 
   constructor(meta: CommonMetricData, timeUnit: string) {
     super("timing_distribution", meta, TimingDistributionMetric);
@@ -171,9 +168,9 @@ class InternalTimingDistributionMetricType extends MetricType {
     this.startTimes = {};
   }
 
-  start(): TimerId {
+  start(): number {
     const startTime = getCurrentTimeInNanoSeconds();
-    const id: TimerId = Context.getNextTimingDistributionId();
+    const id: number = Context.getNextTimingDistributionId();
 
     this.setStart(id, startTime);
     return id;
@@ -187,7 +184,7 @@ class InternalTimingDistributionMetricType extends MetricType {
    * @param id Current timer's ID
    * @param startTime Start time fo the current timer
    */
-  setStart(id: TimerId, startTime: number) {
+  setStart(id: number, startTime: number) {
     Context.dispatcher.launch(async () => {
       // Per Glean book
       // "If the Glean upload is disabled when calling start, the timer is still started"
@@ -198,12 +195,12 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
-  stopAndAccumulate(id: TimerId) {
+  stopAndAccumulate(id: number) {
     const stopTime = getCurrentTimeInNanoSeconds();
     this.setStopAndAccumulate(id, stopTime);
   }
 
-  setStopAndAccumulate(id: TimerId, stopTime: number) {
+  setStopAndAccumulate(id: number, stopTime: number) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         delete this.startTimes[id];
@@ -270,7 +267,7 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
-  cancel(id: TimerId) {
+  cancel(id: number) {
     delete this.startTimes[id];
   }
 
@@ -448,7 +445,7 @@ export default class {
    *
    * @returns The ID to associate with this timing.
    */
-  start(): TimerId {
+  start(): number {
     const id = this.#inner.start();
     return id;
   }
@@ -461,7 +458,7 @@ export default class {
    * @param id Current timer's ID
    * @param startTime Start time fo the current timer
    */
-  setStart(id: TimerId, startTime: number) {
+  setStart(id: number, startTime: number) {
     this.#inner.setStart(id, startTime);
   }
 
@@ -474,7 +471,7 @@ export default class {
    *        concurrent timing of events associated with different ids to
    *        the same timespan metric.
    */
-  stopAndAccumulate(id: TimerId): void {
+  stopAndAccumulate(id: number): void {
     this.#inner.stopAndAccumulate(id);
   }
 
@@ -488,7 +485,7 @@ export default class {
    * @param id Timer ID to stop
    * @param stopTime End time for the current timer
    */
-  setStopAndAccumulate(id: TimerId, stopTime: number) {
+  setStopAndAccumulate(id: number, stopTime: number) {
     this.#inner.setStopAndAccumulate(id, stopTime);
   }
 
@@ -544,11 +541,11 @@ export default class {
    *
    * No error is recorded if no `start` was called.
    *
-   * @param id The `TimerId` to associate with this timing. This allows
+   * @param id The timer ID to associate with this timing. This allows
    * for concurrent timing of events associated with different IDs to the
    * same timing distribution metric.
    */
-  cancel(id: TimerId): void {
+  cancel(id: number): void {
     this.#inner.cancel(id);
   }
 
