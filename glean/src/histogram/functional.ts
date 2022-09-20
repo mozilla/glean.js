@@ -6,12 +6,6 @@ import type { Bucketing } from "./bucketing";
 import { saturatingAdd } from "../core/utils.js";
 import { Histogram } from "./histogram.js";
 
-// The base of the logarithm used to determine bucketing.
-const LOG_BASE = 2.0;
-
-// The buckets per each order of magnitude of the logarithm.
-const BUCKETS_PER_MAGNITUDE = 8.0;
-
 export class Functional implements Bucketing {
   exponent: number;
 
@@ -110,10 +104,16 @@ export class Functional implements Bucketing {
  * circular dependencies.
  *
  * @param values The values to be used to construct the Histogram.
+ * @param logBase The base of the logarithm used to determine bucketing.
+ * @param bucketsPerMagnitude The buckets per each order of magnitude of the logarithm.
  * @returns A new Histogram containing all the values.
  */
-export function constructFunctionalHistogramFromValues(values: number[] = []): Histogram {
-  const histogram = new Histogram(new Functional(LOG_BASE, BUCKETS_PER_MAGNITUDE));
+export function constructFunctionalHistogramFromValues(
+  values: number[] = [],
+  logBase: number,
+  bucketsPerMagnitude: number
+): Histogram {
+  const histogram = new Histogram(new Functional(logBase, bucketsPerMagnitude));
 
   values.forEach((val) => {
     histogram.accumulate(val);

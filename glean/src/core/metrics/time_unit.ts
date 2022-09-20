@@ -23,4 +23,30 @@ enum TimeUnit {
   Day = "day",
 }
 
+/**
+ * Converts a number from any `TimeUnit` to nanoseconds.
+ *
+ * @param duration Difference between start and stop time stamps
+ * @param timeUnit Time unit for the duration
+ * @returns Duration converted to nanoseconds.
+ */
+export function convertTimeUnitToNanos(duration: number, timeUnit: TimeUnit): number {
+  switch (timeUnit) {
+  case TimeUnit.Nanosecond:
+    return duration;
+  case TimeUnit.Microsecond:
+    return duration * 10 ** 3;
+  case TimeUnit.Millisecond:
+    return duration * 10 ** 6;
+  case TimeUnit.Second:
+    return duration * 10 ** 9;
+  case TimeUnit.Minute:
+    return duration * 10 ** 9 * 60;
+  case TimeUnit.Hour:
+    return duration * 10 ** 9 * 60 * 60;
+  case TimeUnit.Day:
+    return duration * 10 ** 9 * 60 * 60 * 24;
+  }
+}
+
 export default TimeUnit;

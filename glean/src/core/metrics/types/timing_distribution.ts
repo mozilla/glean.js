@@ -6,21 +6,25 @@ import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric";
 import type TimeUnit from "../time_unit.js";
-import type { Histogram } from "../../../histogram/histogram.js";
+import type { DistributionData } from "../distributions.js";
 
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 import { constructFunctionalHistogramFromValues } from "../../../histogram/functional.js";
-import {
-  convertTimeUnitToNanos,
-  getCurrentTimeInNanoSeconds,
-  isUndefined,
-  testOnlyCheck,
-} from "../../utils.js";
+import { getCurrentTimeInNanoSeconds, isUndefined, testOnlyCheck } from "../../utils.js";
+import { convertTimeUnitToNanos } from "../time_unit.js";
+import { snapshot } from "../distributions.js";
+import { extractAccumulatedValuesFromJsonValue } from "../distributions.js";
 
 const LOG_TAG = "core.metrics.TimingDistributionMetricType";
+
+// The base of the logarithm used to determine bucketing.
+const LOG_BASE = 2.0;
+
+// The buckets per each order of magnitude of the logarithm.
+const BUCKETS_PER_MAGNITUDE = 8.0;
 
 // Maximum time, which means we retain a maximum of 316 buckets.
 // It is automatically adjusted based on the `timeUnit` parameter
@@ -61,49 +65,6 @@ export type TimingDistributionPayloadRepresentation = {
   sum: number;
 };
 
-interface DistributionData {
-  // A map containing the bucket index mapped to the accumulated count.
-  //
-  // This can contain buckets with a count of `0`.
-  values: Record<number, number>;
-
-  // The accumulated sum of all the samples in the distribution.
-  sum: number;
-
-  // The number of entries in the histogram.
-  count: number;
-}
-
-/**
- * Create a snapshot of the histogram with a time unit.
- *
- * Utility function for testing.
- *
- * **Caution**
- * This cannot use `Histogram.snapshot_values` and needs to use the more
- * specialized snapshot function.
- *
- * @param hist Histogram to get the snapshot of
- * @returns Snapshot of the current histogram
- */
-export function snapshot(hist: Histogram): DistributionData {
-  const snapshotValues = hist.snapshotValues();
-
-  const utilizedValues: Record<number, number> = {};
-  Object.entries(snapshotValues).forEach(([key, value]) => {
-    const numericKey = Number(key);
-    if (value > 0 && !isNaN(numericKey)) {
-      utilizedValues[numericKey] = value;
-    }
-  });
-
-  return {
-    count: hist.count,
-    values: utilizedValues,
-    sum: hist.sum,
-  };
-}
-
 export class TimingDistributionMetric extends Metric<
   TimingDistributionInternalRepresentation,
   TimingDistributionPayloadRepresentation
@@ -139,7 +100,11 @@ export class TimingDistributionMetric extends Metric<
   }
 
   payload(): TimingDistributionPayloadRepresentation {
-    const hist = constructFunctionalHistogramFromValues(this._inner as number[]);
+    const hist = constructFunctionalHistogramFromValues(
+      this._inner as number[],
+      LOG_BASE,
+      BUCKETS_PER_MAGNITUDE
+    );
     return {
       values: hist.values,
       sum: hist.sum,
@@ -249,7 +214,7 @@ class InternalTimingDistributionMetricType extends MetricType {
       try {
         const transformFn = ((duration: number) => {
           return (old?: JSONValue): TimingDistributionMetric => {
-            const values = this.extractDurationValuesFromJsonValue(old);
+            const values = extractAccumulatedValuesFromJsonValue(old);
             return new TimingDistributionMetric([...values, duration]);
           };
         })(duration);
@@ -284,7 +249,7 @@ class InternalTimingDistributionMetricType extends MetricType {
 
       const transformFn = ((samples: number[]) => {
         return (old?: JSONValue): TimingDistributionMetric => {
-          const values = this.extractDurationValuesFromJsonValue(old);
+          const values = extractAccumulatedValuesFromJsonValue(old);
 
           const convertedSamples: number[] = [];
           samples.forEach((sample) => {
@@ -344,7 +309,7 @@ class InternalTimingDistributionMetricType extends MetricType {
 
       const transformFn = ((samples: number[]) => {
         return (old?: JSONValue): TimingDistributionMetric => {
-          const values = this.extractDurationValuesFromJsonValue(old);
+          const values = extractAccumulatedValuesFromJsonValue(old);
 
           const convertedSamples: number[] = [];
           samples.forEach((sample) => {
@@ -384,7 +349,9 @@ class InternalTimingDistributionMetricType extends MetricType {
       });
 
       if (value) {
-        return snapshot(constructFunctionalHistogramFromValues(value));
+        return snapshot(
+          constructFunctionalHistogramFromValues(value, LOG_BASE, BUCKETS_PER_MAGNITUDE)
+        );
       }
     }
   }
@@ -398,25 +365,6 @@ class InternalTimingDistributionMetricType extends MetricType {
     }
 
     return 0;
-  }
-
-  /**
-   * Takes the previous values and casts as a `number[]` or creates a new empty `number[]`. We store
-   * previous durations as an array of values so that we can always reconstruct our histogram. We
-   * are unable to store complex objects in Glean as they must be JSON parse-able objects.
-   *
-   * @param jsonValue Will always be either undefined or a `number[]`.
-   * @returns An array of previous durations or an empty array if nothing was previously stored.
-   */
-  private extractDurationValuesFromJsonValue(jsonValue?: JSONValue): number[] {
-    let values: number[];
-    if (jsonValue) {
-      values = jsonValue as number[];
-    } else {
-      values = [];
-    }
-
-    return values;
   }
 }
 
