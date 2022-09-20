@@ -394,7 +394,7 @@ describe("TimingDistributionMetric", function () {
     assert.strictEqual(await metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to start/accumulate when glean upload is disable is a no-op", async function () {
+  it("attempting to start/accumulate when glean upload is disabled is a no-op", async function () {
     Glean.setUploadEnabled(false);
 
     const metric = new TimingDistributionMetricType(
