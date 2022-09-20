@@ -194,7 +194,7 @@ export function getMonotonicNow(): number {
  *
  * @param metric The metric to record an error to, if necessary,
  * @param value The string to truncate.
- * @param length The lenght to truncate to.
+ * @param length The length to truncate to.
  * @returns A string with at most `length` bytes.
  * @throws In case `value` is not a string.
  */
