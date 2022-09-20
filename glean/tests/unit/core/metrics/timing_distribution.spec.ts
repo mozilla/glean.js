@@ -426,10 +426,15 @@ describe("TimingDistributionMetric", function () {
       TimeUnit.Nanosecond
     );
 
+    // This duration WILL NOT be accumulated because `uploadEnabled` was set to false
+    // when we tried to accumulate.
     const id1 = metric.start();
     Glean.setUploadEnabled(false);
     metric.stopAndAccumulate(id1);
 
+    // This duration WILL be accumulated. Timers that are started while upload is disabled
+    // are still tracked. Since we accumulate after upload is re-enabled, this duration is
+    // accumulated.
     const id2 = metric.start();
     Glean.setUploadEnabled(true);
     metric.stopAndAccumulate(id2);
