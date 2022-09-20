@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { testOnlyCheck } from "../../utils.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
 import type { MetricValidationResult } from "../metric.js";
@@ -12,8 +12,9 @@ import { ErrorType } from "../../error/error_type.js";
 import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.URLMetricType";
+
 // The maximum number of characters a URL Metric may have.
-const URL_MAX_LENGTH = 2048;
+const URL_MAX_LENGTH = 8192;
 
 // This regex only validates that the `scheme` part of the URL is spec compliant
 // and is followed by a ":". After that anything is accepted.
@@ -30,9 +31,8 @@ export class UrlMetric extends Metric<string, string> {
    * Validates that a given value is a valid URL metric value.
    *
    * 1. The URL must be a string.
-   * 2. The URL must have a maximum length of URL_MAX_LENGTH characters.
-   * 3. The URL must not be a data URL.
-   * 4. Every URL must start with a valid scheme.
+   * 2. The URL must not be a data URL.
+   * 3. Every URL must start with a valid scheme.
    *
    * Note: We explicitly do not validate if the URL is fully spec compliant,
    * the above validations are all that is done.
@@ -47,14 +47,6 @@ export class UrlMetric extends Metric<string, string> {
     }
 
     const str = v as string;
-    if (str.length > URL_MAX_LENGTH) {
-      return {
-        type: MetricValidation.Error,
-        errorMessage: `URL length ${str.length} exceeds maximum of ${URL_MAX_LENGTH}`,
-        errorType: ErrorType.InvalidOverflow,
-      };
-    }
-
     if (str.startsWith("data:")) {
       return {
         type: MetricValidation.Error,
@@ -62,7 +54,6 @@ export class UrlMetric extends Metric<string, string> {
         errorType: ErrorType.InvalidValue,
       };
     }
-
 
     if (!URL_VALIDATION_REGEX.test(str)) {
       return {
@@ -98,8 +89,18 @@ class InternalUrlMetricType extends MetricType {
         return;
       }
 
+      let formattedUrl;
+      if (url.length > URL_MAX_LENGTH) {
+        // URL is longer than our max length, so we truncate extra characters
+        // and report an error. BUT, we still pass the truncated URL.
+        formattedUrl = await truncateStringAtBoundaryWithError(this, url, URL_MAX_LENGTH);
+      } else {
+        // do nothing, our original URL does not overflow
+        formattedUrl = url;
+      }
+
       try {
-        const metric = new UrlMetric(url);
+        const metric = new UrlMetric(formattedUrl);
         await Context.metricsDatabase.record(this, metric);
       } catch (e) {
         if (e instanceof MetricValidationError) {
@@ -181,8 +182,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
