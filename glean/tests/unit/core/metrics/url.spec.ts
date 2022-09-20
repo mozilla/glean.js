@@ -115,23 +115,29 @@ describe("UrlMetric", function() {
     assert.strictEqual(await metric.testGetValue("threePing"), "glean://test");
   });
 
-  it("does not record when URL exceeds MAX_URL_LENGTH and records errors", async function () {
+  it("records truncated URL and errors when URL exceeds MAX_URL_LENGTH", async function () {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
       sendInPings: ["aPing"],
       lifetime: Lifetime.Ping,
-      disabled: false
+      disabled: false,
     });
 
-    const testUrl = `glean://${"testing".repeat(2000)}`;
+    // The numbers in this test may seem arbitrary, but they are not. `glean://` is 8 characters
+    // and `abcdefgh` is 8 characters (8 * 1024 = 8192 is our MAX_URL_LENGTH). Whenever the URL
+    // is longer than our MAX_URL_LENGTH, we truncate the URL to our specified length. That
+    // means in this scenario, since we have an extra 8 characters in our `testUrl`, 8
+    // characters get truncated. For our expected value, we have the 8 + (8 * 1023) = 8192.
+
+    const testUrl = `glean://${"abcdefgh".repeat(1024)}`;
     metric.set(testUrl);
     metric.setUrl(new URL(testUrl));
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
-    assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 2
-    );
+    assert.strictEqual(await metric.testGetValue("aPing"), `glean://${"abcdefgh".repeat(1023)}`);
+
+    // This count is 2 because we test both `set` and `setUrl`.
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 2);
   });
 
   it("does not record data URLs and records errors", async function () {
