@@ -29,3 +29,6 @@ export async function testResetGlean(
   await testUninitializeGlean(clearStores);
   await testInitializeGlean(applicationId, uploadEnabled, config);
 }
+
+export * from "./utils.js";
+export * from "./events.js";

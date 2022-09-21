@@ -5,18 +5,23 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import { InternalPingType as PingType} from "../../../../src/core/pings/ping_type";
+import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
 import * as PingMaker from "../../../../src/core/pings/maker";
 import Glean from "../../../../src/core/glean";
 import CoreEvents from "../../../../src/core/events";
 import Plugin from "../../../../src/plugins";
-import type { JSONObject } from "../../../../src/core/utils";
+import type { JSONArray, JSONObject } from "../../../../src/core/utils";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
 import EventMetricType from "../../../../src/core/metrics/types/event";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
-import { testResetGlean } from "../../../../src/core/testing";
+import {
+  testInitializeGlean,
+  testResetGlean,
+  testRestartGlean,
+  testUninitializeGlean,
+} from "../../../../src/core/testing";
+import type { ExtraMap } from "../../../../src/core/metrics/events_database/recorded_event";
 
 const sandbox = sinon.createSandbox();
 
@@ -272,5 +277,48 @@ describe("PingMaker", function() {
     assert.deepStrictEqual(payload.metrics, {
       labeled_counter: { "glean.error.invalid_value": { "glean.restarted": 1 } }
     });
+  });
+
+  it("should delete trailing restarted events", async function() {
+    const ping = new PingType({
+      name: "aPing",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+    const event = new EventMetricType({
+      category: "test",
+      name: "aEvent",
+      sendInPings: ["aPing"],
+      lifetime: Lifetime.Ping,
+      disabled: false
+    });
+
+    const triggerCustomEvent = async (event: EventMetricType<ExtraMap>) => {
+      event.record();
+      // Wait for recording action to complete
+      await event.testGetValue();
+    };
+
+    const triggerRestartedEvent = async () => {
+      await testRestartGlean();
+    };
+
+    // Record events
+    await triggerCustomEvent(event);
+
+    await triggerRestartedEvent();
+    await triggerRestartedEvent();
+    await triggerRestartedEvent();
+
+    await triggerCustomEvent(event);
+
+    await triggerRestartedEvent();
+    await triggerRestartedEvent();
+
+    await PingMaker.collectAndStorePing("ident", ping);
+    const allPings = Object.fromEntries(await Context.pingsDatabase.getAllPings());
+    const eventsArray = allPings["ident"]["payload"]["events"] as JSONArray;
+
+    assert.equal(5, eventsArray.length);
   });
 });

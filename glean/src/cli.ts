@@ -7,6 +7,7 @@
 import * as exec from "child_process";
 import * as fs from "fs";
 import * as path from "path";
+import * as os from "os";
 import { argv, platform } from "process";
 import { promisify } from "util";
 
@@ -185,10 +186,40 @@ async function runGlean(parserArgs: string[]) {
   const spinner = getStartedSpinner();
   const pythonBin = path.join(getPythonVenvBinariesPath(VIRTUAL_ENVIRONMENT_DIR), getSystemPythonBinName());
   const isOnlineArg = process.env.OFFLINE ? "offline" : "online";
-  const cmd = `${pythonBin} -c "${PYTHON_SCRIPT}" ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
+
+  // Trying to pass PYTHON_SCRIPT as a string in the command line arguments
+  // causes issues on Windows machines. The issue exists because you cannot
+  // pass a multi-line script using the `-c` argument without manually formatting
+  // your script with `\n` characters.
+  //
+  // To workaround this, we can write the script to a file inside of the OS tmpdir
+  // and execute it from there. Then once we are finished with the script, we can
+  // remove the entire directory.
+  let tmpDir = "";
+  const appPrefix = "glean.js";
+  const scriptName = "script.py";
+  const tempDirectory = os.tmpdir();
+  try {
+    tmpDir = fs.mkdtempSync(path.join(tempDirectory, appPrefix));
+    fs.writeFileSync(path.join(tmpDir, scriptName), PYTHON_SCRIPT);
+  } catch (error) {
+    log(
+      LOG_TAG,
+      ["Unable to write utility script to tmp directory.\n", error],
+      LoggingLevel.Error
+    );
+    process.exit(1);
+  }
+
+  const cmd = `${pythonBin} ${tmpDir}/${scriptName} ${isOnlineArg} glean_parser ${GLEAN_PARSER_VERSION} ${parserArgs.join(" ")}`;
 
   const {err, stdout, stderr} = await new Promise<{err: exec.ExecException | null, stdout: string, stderr: string}>(resolve => {
-    exec.exec(cmd, (err, stdout, stderr) => resolve({err, stdout, stderr}));
+    exec.exec(cmd, (err, stdout, stderr) => {
+      resolve({err, stdout, stderr});
+
+      // Remove the temp directory now that we are finished with it.
+      fs.rmSync(tmpDir, { recursive: true });
+    });
   });
 
   stopSpinner(spinner);

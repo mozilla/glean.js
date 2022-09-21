@@ -7,20 +7,29 @@ import type { SinonFakeTimers } from "sinon";
 import sinon from "sinon";
 
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import EventsDatabase, { getGleanRestartedEventMetric } from "../../../../src/core/metrics/events_database";
-import { InternalEventMetricType as EventMetricType} from "../../../../src/core/metrics/types/event";
+import EventsDatabase, {
+  getGleanRestartedEventMetric,
+} from "../../../../src/core/metrics/events_database";
+import { InternalEventMetricType as EventMetricType } from "../../../../src/core/metrics/types/event";
 import type { JSONObject } from "../../../../src/core/utils";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/database";
-import { InternalPingType as PingType} from "../../../../src/core/pings/ping_type";
+import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
 import { Context } from "../../../../src/core/context";
 import { RecordedEvent } from "../../../../src/core/metrics/events_database/recorded_event";
-import { EVENTS_PING_NAME, GLEAN_EXECUTION_COUNTER_EXTRA_KEY } from "../../../../src/core/constants";
+import {
+  EVENTS_PING_NAME,
+  GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
+} from "../../../../src/core/constants";
 import { collectPing } from "../../../../src/core/pings/maker";
 import { ErrorType } from "../../../../src/core/error/error_type";
 import { testResetGlean } from "../../../../src/core/testing";
 import type { Event } from "../../../../src/core/metrics/events_database/recorded_event";
-import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
+import {
+  testInitializeGlean,
+  testRestartGlean,
+  testUninitializeGlean,
+} from "../../../../src/core/testing";
 import { WaitableUploader } from "../../../utils";
 import type { PingPayload } from "../../../../src/core/pings/ping_payload";
 
@@ -334,19 +343,14 @@ describe("EventsDatabase", function() {
     }));
 
     // Move the clock forward by one minute to look like Glean was really restarted.
-    Context.startTime.setTime(Context.startTime.getTime() + 1000 * 60);
-    // Fake a re-start.
-    const db2 = new EventsDatabase();
-    await db2.initialize();
+    const db2 = await testRestartGlean();
 
     for (const store of stores) {
       const snapshot = await db2.getPingEvents(store, true);
       assert.ok(snapshot);
-      assert.strictEqual(2, snapshot.length);
+      assert.strictEqual(1, snapshot.length);
       assert.strictEqual("test", (snapshot[0] as JSONObject)["category"]);
       assert.strictEqual("event_injection", (snapshot[0] as JSONObject)["name"]);
-      assert.strictEqual("glean", (snapshot[1] as JSONObject)["category"]);
-      assert.strictEqual("restarted", (snapshot[1] as JSONObject)["name"]);
 
       // Check that no errors were recorded for the `glean.restarted` metric.
       const restartedMetric = getGleanRestartedEventMetric([store]);
@@ -375,10 +379,7 @@ describe("EventsDatabase", function() {
       }));
 
       // Move the clock forward by one minute.
-      Context.startTime.setTime(Context.startTime.getTime() + 1000 * 60);
-      // Fake a re-start.
-      db = new EventsDatabase();
-      await db.initialize();
+      db = await testRestartGlean();
     }
 
     const snapshot = await db.getPingEvents("store", true);
@@ -396,12 +397,21 @@ describe("EventsDatabase", function() {
       prevTime = e.timestamp;
     }
 
-    // Make sure the found events are the expected events.
+    // Make sure the found events are the expected events. This array consists of
+    // a user created event followed by a restarted event and repeats.
     for (let i = 0; i < 10; i++) {
-      assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
-      assert.strictEqual(`stichting_test_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
-      assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
-      assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+      const userEvent = snapshot[i * 2] as JSONObject;
+      const restartedEvent = snapshot[(i * 2) + 1] as JSONObject;
+
+      assert.strictEqual("test", userEvent["category"]);
+      assert.strictEqual(`stichting_test_${i}`, userEvent["name"]);
+
+      // We no longer keep trailing restarted events, so in this scenario, we need to ignore
+      // the final element of the snapshot since it previously had a restarted event.
+      if (restartedEvent) {
+        assert.strictEqual("glean", restartedEvent["category"]);
+        assert.strictEqual("restarted", restartedEvent["name"]);
+      }
 
       // Check that no errors were recorded for the `glean.restarted` metric.
       const restartedMetric = getGleanRestartedEventMetric(["store"]);
@@ -451,12 +461,21 @@ describe("EventsDatabase", function() {
       prevTime = e.timestamp;
     }
 
-    // Make sure the found events are the expected events.
+    // Make sure the found events are the expected events. This array consists of
+    // a user created event followed by a restarted event and repeats.
     for (let i = 0; i < 10; i++) {
-      assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
-      assert.strictEqual(`time_travel_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
-      assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
-      assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+      const userEvent = snapshot[i * 2] as JSONObject;
+      const restartedEvent = snapshot[(i * 2) + 1] as JSONObject;
+
+      assert.strictEqual("test", userEvent["category"]);
+      assert.strictEqual(`time_travel_${i}`, userEvent["name"]);
+
+      // We no longer keep trailing restarted events, so in this scenario, we need to ignore
+      // the final element of the snapshot since it previously had a restarted event.
+      if (restartedEvent) {
+        assert.strictEqual("glean", restartedEvent["category"]);
+        assert.strictEqual("restarted", restartedEvent["name"]);
+      }
     }
 
     // Time went backwards, so errors must have been recorded.
@@ -505,12 +524,21 @@ describe("EventsDatabase", function() {
       prevTime = e.timestamp;
     }
 
-    // Make sure the found events are the expected events.
+    // Make sure the found events are the expected events. This array consists of
+    // a user created event followed by a restarted event and repeats.
     for (let i = 0; i < 10; i++) {
-      assert.strictEqual("test", (snapshot[i * 2] as JSONObject)["category"]);
-      assert.strictEqual(`time_travel_${i}`, (snapshot[i * 2] as JSONObject)["name"]);
-      assert.strictEqual("glean", (snapshot[(i * 2) + 1] as JSONObject)["category"]);
-      assert.strictEqual("restarted", (snapshot[(i * 2) + 1] as JSONObject)["name"]);
+      const userEvent = snapshot[i * 2] as JSONObject;
+      const restartedEvent = snapshot[(i * 2) + 1] as JSONObject;
+
+      assert.strictEqual("test", userEvent["category"]);
+      assert.strictEqual(`time_travel_${i}`, userEvent["name"]);
+
+      // We no longer keep trailing restarted events, so in this scenario, we need to ignore
+      // the final element of the snapshot since it previously had a restarted event.
+      if (restartedEvent) {
+        assert.strictEqual("glean", restartedEvent["category"]);
+        assert.strictEqual("restarted", restartedEvent["name"]);
+      }
     }
 
     // Time stood still, so an error must have been recorded.
@@ -552,10 +580,7 @@ describe("EventsDatabase", function() {
 
     // Move the clock forward by one hour.
     const restartedTimeOffset = 1000 * 60 * 60;
-    Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset);
-    // Product is rebooted.
-    db = new EventsDatabase();
-    await db.initialize();
+    db = await testRestartGlean(restartedTimeOffset);
 
     // New events are recorded.
     await db.record(event, new RecordedEvent({
@@ -622,10 +647,7 @@ describe("EventsDatabase", function() {
 
     // Move the clock forward by one hour.
     const restartedTimeOffset = 1000 * 60 * 60;
-    Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset);
-    // Product is rebooted.
-    db = new EventsDatabase();
-    await db.initialize();
+    db = await testRestartGlean(restartedTimeOffset);
 
     // New set of events are recorded
     await db.record(event, new RecordedEvent({
@@ -640,10 +662,7 @@ describe("EventsDatabase", function() {
     }));
 
     // Move the clock forward by one more hour.
-    Context.startTime.setTime(firstStartTime.getTime() + restartedTimeOffset * 2);
-    // Product is rebooted.
-    db = new EventsDatabase();
-    await db.initialize();
+    db = await testRestartGlean(restartedTimeOffset);
 
     // New set of events are recorded
     await db.record(event, new RecordedEvent({
