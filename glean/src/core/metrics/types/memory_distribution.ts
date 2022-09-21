@@ -117,7 +117,7 @@ class InternalMemoryDistributionMetricType extends MetricType {
       if (sample > MAX_BYTES) {
         await Context.errorManager.record(
           this,
-          ErrorType.InvalidOverflow,
+          ErrorType.InvalidValue,
           "Sample is bigger than 1 terabyte."
         );
         convertedSample = MAX_BYTES;
