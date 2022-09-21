@@ -24,6 +24,7 @@ export const METRIC_TYPES = [
   "string",
   "text",
   "timespan",
+  "timing_distribution",
   "rate",
   "uuid",
   "url",

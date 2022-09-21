@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.2.0...main)
 
+* [#1475](https://github.com/mozilla/glean.js/pull/1475): Implement the Timing Distribution metric type.
+
 # v1.2.0 (2022-09-21)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.1.0...v1.2.0)

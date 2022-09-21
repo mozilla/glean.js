@@ -77,3 +77,9 @@ Ping 053b739c-0b86-4032-ac45-29533d57ddc7 succesfully sent 200.
 
   7 passing (27ms)
 ```
+
+### Debugging Tests
+
+You can also debug your tests and step through the code using the `ts-mocha` package. The configuration needed for VS Code is already set up in the `launch.json` file.
+
+**NOTE**: To successfully debug any test without a timeout, you need to add `this.timeout(10000000);` the specific file you wish to debug in the test suite. You can add this as the first line in the `describe` callback.
