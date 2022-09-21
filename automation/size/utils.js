@@ -20,6 +20,7 @@ export const METRIC_TYPES = [
   "datetime",
   "event",
   "labeled",
+  "memory_distribution",
   "quantity",
   "string",
   "text",
