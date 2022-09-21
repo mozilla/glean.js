@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v1.1.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.2.0...main)
+
+# v1.2.0 (2022-09-21)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.1.0...v1.2.0)
 
 * [#1513](https://github.com/mozilla/glean.js/pull/1513): Bump URL metric character limit to 8k to support longer URLs. URLs that are too long now are truncated to `URL_MAX_LENGTH` and still recorded along with an Overflow error.
 * [#1500](https://github.com/mozilla/glean.js/pull/1500): BUGFIX: Update how we invoke CLI python script to fix `npm run glean` behavior on Windows.

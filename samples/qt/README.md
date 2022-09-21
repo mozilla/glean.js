@@ -37,7 +37,7 @@ pip3 install -r requirements.txt # Install glean_parser
 
 ```bash
 glean_parser translate src/App/metrics.yaml src/App/pings.yaml -f javascript -o src/App/generated \
---option platform=qt --option version="1.1"
+--option platform=qt --option version="1.2"
 ```
 
 5. Build the app:
