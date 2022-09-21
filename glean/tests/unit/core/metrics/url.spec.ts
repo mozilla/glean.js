@@ -115,23 +115,37 @@ describe("UrlMetric", function() {
     assert.strictEqual(await metric.testGetValue("threePing"), "glean://test");
   });
 
-  it("does not record when URL exceeds MAX_URL_LENGTH and records errors", async function () {
+  it("records truncated URL and errors when URL exceeds MAX_URL_LENGTH", async function () {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
       sendInPings: ["aPing"],
       lifetime: Lifetime.Ping,
-      disabled: false
+      disabled: false,
     });
 
-    const testUrl = `glean://${"testing".repeat(2000)}`;
+    // Whenever the URL is longer than our MAX_URL_LENGTH, we truncate the URL to the
+    // MAX_URL_LENGTH.
+    //
+    // This 8-character string was chosen so we could have an even number that is
+    // a divisor of our MAX_URL_LENGTH.
+    const longPathBase = "abcdefgh";
+
+    // Using 2000 creates a string > 16000 characters, well over MAX_URL_LENGTH.
+    const testUrl = `glean://${longPathBase.repeat(2000)}`;
     metric.set(testUrl);
     metric.setUrl(new URL(testUrl));
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
-    assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 2
-    );
+    // "glean://" is 8 characters
+    // "abcdefgh" (longPathBase) is 8 characters
+    // `longPathBase` is repeated 1023 times (8184)
+    // 8 + 8184 = 8192 (MAX_URL_LENGTH)
+    const expected = `glean://${longPathBase.repeat(1023)}`;
+
+    assert.strictEqual(await metric.testGetValue("aPing"), expected);
+
+    // This count is 2 because we test both `set` and `setUrl`.
+    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 2);
   });
 
   it("does not record data URLs and records errors", async function () {
