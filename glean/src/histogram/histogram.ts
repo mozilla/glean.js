@@ -5,6 +5,13 @@
 import type { Bucketing } from "./bucketing.js";
 import { saturatingAdd } from "../core/utils.js";
 
+export enum HistogramType {
+  // A histogram with linear distributed buckets.
+  Linear = "Linear",
+  // A histogram with exponential distributed buckets.
+  Exponential = "Exponential",
+}
+
 /**
  * A histogram.
  *

@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { Bucketing } from "./bucketing.js";
+import { Histogram } from "./histogram.js";
 import { binarySearch } from "./utils.js";
 
 /**
@@ -93,4 +94,34 @@ export class PrecomputedExponential implements Bucketing {
     this.bucketRanges = exponentialRange(this.min, this.max, this.bucketCount);
     return this.bucketRanges;
   }
+}
+
+/**
+ * We are unable to store the complex `Histogram` object in Glean storage. That means
+ * that to persist values, we need to store just the values that are stored in the
+ * histogram instead.
+ *
+ * **NOTE**
+ * This function lives in this class rather than `utils` so that we can avoid any
+ * circular dependencies.
+ *
+ * @param values The values to be used to construct the Histogram.
+ * @param rangeMin Minimum number in the distribution
+ * @param rangeMax Maximum number in the distribution
+ * @param bucketCount Number of total buckets
+ * @returns Exponential histogram with all accumulated values.
+ */
+export function constructExponentialHistogramFromValues(
+  values: number[] = [],
+  rangeMin: number,
+  rangeMax: number,
+  bucketCount: number
+) {
+  const histogram = new Histogram(new PrecomputedExponential(rangeMin, rangeMax, bucketCount));
+
+  values.forEach((val) => {
+    histogram.accumulate(val);
+  });
+
+  return histogram;
 }

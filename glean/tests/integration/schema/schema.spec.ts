@@ -86,6 +86,7 @@ describe("schema", function() {
     const timerId = metrics.timingDistribution.start();
     metrics.timingDistribution.stopAndAccumulate(timerId);
     metrics.memoryDistribution.accumulate(100000);
+    metrics.customDistribution.accumulateSamples([1]);
 
     /* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 

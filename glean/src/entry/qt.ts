@@ -12,6 +12,7 @@ import base from "./base.js";
 import PingType from "../core/pings/ping_type.js";
 import BooleanMetricType from "../core/metrics/types/boolean.js";
 import CounterMetricType from "../core/metrics/types/counter.js";
+import CustomDistributionMetricType from "../core/metrics/types/custom_distribution.js";
 import DatetimeMetricType from "../core/metrics/types/datetime.js";
 import EventMetricType from "../core/metrics/types/event.js";
 import LabeledMetricType from "../core/metrics/types/labeled.js";
@@ -37,6 +38,7 @@ export default {
     PingType,
     BooleanMetricType,
     CounterMetricType,
+    CustomDistributionMetricType,
     DatetimeMetricType,
     EventMetricType,
     LabeledMetricType,

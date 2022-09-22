@@ -17,6 +17,7 @@ const __dirname = dirname(__filename);
 export const METRIC_TYPES = [
   "boolean",
   "counter",
+  "custom_distribution",
   "datetime",
   "event",
   "labeled",
