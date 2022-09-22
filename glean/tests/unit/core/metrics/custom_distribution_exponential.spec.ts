@@ -35,7 +35,7 @@ describe("CustomDistributionMetric - Exponential", function () {
       1,
       100,
       10,
-      HistogramType.Exponential
+      HistogramType.exponential
     );
 
     metric.accumulateSamples([50]);
@@ -58,7 +58,7 @@ describe("CustomDistributionMetric - Exponential", function () {
       1,
       100,
       10,
-      HistogramType.Exponential
+      HistogramType.exponential
     );
 
     metric.accumulateSamples([50]);
@@ -88,7 +88,7 @@ describe("CustomDistributionMetric - Exponential", function () {
       1,
       100,
       10,
-      HistogramType.Exponential
+      HistogramType.exponential
     );
 
     // Accumulate the samples. We intentionally do not report
@@ -126,7 +126,7 @@ describe("CustomDistributionMetric - Exponential", function () {
       1,
       100,
       10,
-      HistogramType.Exponential
+      HistogramType.exponential
     );
 
     // Accumulate the samples.
@@ -156,7 +156,7 @@ describe("CustomDistributionMetric - Exponential", function () {
       1,
       100,
       10,
-      HistogramType.Exponential
+      HistogramType.exponential
     );
 
     metric.accumulateSamples([50]);

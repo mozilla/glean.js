@@ -35,7 +35,7 @@ describe("CustomDistributionMetric - Linear", function () {
       1,
       100,
       100,
-      HistogramType.Linear
+      HistogramType.linear
     );
 
     metric.accumulateSamples([50]);
@@ -58,7 +58,7 @@ describe("CustomDistributionMetric - Linear", function () {
       1,
       100,
       100,
-      HistogramType.Linear
+      HistogramType.linear
     );
 
     metric.accumulateSamples([50]);
@@ -83,7 +83,7 @@ describe("CustomDistributionMetric - Linear", function () {
       1,
       100,
       100,
-      HistogramType.Linear
+      HistogramType.linear
     );
 
     // Accumulate the samples. We intentionally do not report
@@ -121,7 +121,7 @@ describe("CustomDistributionMetric - Linear", function () {
       1,
       100,
       100,
-      HistogramType.Linear
+      HistogramType.linear
     );
 
     // Accumulate the samples.
@@ -151,7 +151,7 @@ describe("CustomDistributionMetric - Linear", function () {
       1,
       100,
       100,
-      HistogramType.Linear
+      HistogramType.linear
     );
 
     metric.accumulateSamples([50]);

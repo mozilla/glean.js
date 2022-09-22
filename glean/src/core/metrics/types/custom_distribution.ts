@@ -94,7 +94,7 @@ export class CustomDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected histogram type to be either Linear or Exponential, got ${obj.rangeMax}`,
+        errorMessage: `Expected histogram type to be either Linear or Exponential, got ${obj.histogramType}`,
       };
     }
 
@@ -303,9 +303,9 @@ function constructHistogramByType(
   histogramType: string
 ) {
   switch (histogramType) {
-  case HistogramType.Exponential:
+  case HistogramType.exponential:
     return constructExponentialHistogramFromValues(values, rangeMin, rangeMax, bucketCount);
-  case HistogramType.Linear:
+  case HistogramType.linear:
     return constructLinearHistogramFromValues(values, rangeMin, rangeMax, bucketCount);
   }
 }

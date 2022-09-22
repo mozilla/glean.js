@@ -7,9 +7,9 @@ import { saturatingAdd } from "../core/utils.js";
 
 export enum HistogramType {
   // A histogram with linear distributed buckets.
-  Linear = "Linear",
+  linear = "linear",
   // A histogram with exponential distributed buckets.
-  Exponential = "Exponential",
+  exponential = "exponential",
 }
 
 /**
