@@ -244,3 +244,37 @@ for_testing:
     send_in_pings:
       - testing
     memory_unit: byte
+  custom_distribution_linear:
+    type: custom_distribution
+    description: |
+      Sample custom distribution metric with a linear histogram.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+    range_min: 1
+    range_max: 100
+    bucket_count: 100
+    histogram_type: linear
+  custom_distribution_exp:
+    type: custom_distribution
+    description: |
+      Sample custom distribution metric with an exponential histogram.
+    bugs:
+      - https://bugzilla.mozilla.org/000000
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+    range_min: 1
+    range_max: 100
+    bucket_count: 10
+    histogram_type: exponential
