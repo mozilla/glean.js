@@ -26,8 +26,8 @@ enum TimeUnit {
 /**
  * Converts a number from any `TimeUnit` to nanoseconds.
  *
- * @param duration Difference between start and stop time stamps
- * @param timeUnit Time unit for the duration
+ * @param duration Difference between start and stop time stamps.
+ * @param timeUnit Time unit for the duration.
  * @returns Duration converted to nanoseconds.
  */
 export function convertTimeUnitToNanos(duration: number, timeUnit: TimeUnit): number {
