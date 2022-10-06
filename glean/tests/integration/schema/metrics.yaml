@@ -235,7 +235,7 @@ for_testing:
     description: |
       Sample memory distribution metric.
     bugs:
-      - https://bugzilla.mozilla.org/000000
+      - https://bugzilla.mozilla.org/1716952
     data_reviews:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
     notification_emails:
