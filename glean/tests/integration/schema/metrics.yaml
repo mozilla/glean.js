@@ -221,9 +221,9 @@ for_testing:
     description: |
       Sample timing distribution metric.
     bugs:
-      - https://bugzilla.mozilla.org/000000
+      - https://bugzilla.mozilla.org/1716954
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1716954
     notification_emails:
       - me@mozilla.com
     expires: never
@@ -249,9 +249,9 @@ for_testing:
     description: |
       Sample custom distribution metric with a linear histogram.
     bugs:
-      - https://bugzilla.mozilla.org/000000
+      - https://bugzilla.mozilla.org/1716951
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1716951
     notification_emails:
       - me@mozilla.com
     expires: never
@@ -266,9 +266,9 @@ for_testing:
     description: |
       Sample custom distribution metric with an exponential histogram.
     bugs:
-      - https://bugzilla.mozilla.org/000000
+      - https://bugzilla.mozilla.org/1716951
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1716951
     notification_emails:
       - me@mozilla.com
     expires: never
