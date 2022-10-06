@@ -11,7 +11,7 @@ import { binarySearch } from "./utils.js";
  * `bucket_count` buckets.
  *
  * This algorithm calculates the bucket sizes using a natural log approach to get `bucket_count` number of buckets,
- * exponentially spaced between `min` and `max`
+ * exponentially spaced between `min` and `max`.
  *
  * Bucket limits are the minimal bucket value.
  * That means values in a bucket `i` are `bucket[i] <= value < bucket[i+1]`.
@@ -20,10 +20,10 @@ import { binarySearch } from "./utils.js";
  * **NOTE**
  * Exported solely for testing purposes.
  *
- * @param min Minimum number in the distribution
- * @param max Maximum number in the distribution
- * @param bucketCount Number of total buckets
- * @returns Computed bucket ranges
+ * @param min The minimum number in the distribution.
+ * @param max The maximum number in the distribution.
+ * @param bucketCount The number of total buckets.
+ * @returns The computed bucket ranges.
  */
 export function exponentialRange(min: number, max: number, bucketCount: number): number[] {
   const logMax = Math.log(max);
@@ -73,8 +73,8 @@ export class PrecomputedExponential implements Bucketing {
    * This uses a binary search to locate the index `i` of the bucket such that:
    * bucket[i] <= sample < bucket[i+1].
    *
-   * @param sample Value that we will find a bucket for
-   * @returns The bucket that the sample will be placed in
+   * @param sample The value that we will find a bucket for.
+   * @returns The bucket that the sample will be placed in.
    */
   sampleToBucketMinimum(sample: number): number {
     const limit = binarySearch(this.ranges(), sample);
@@ -106,10 +106,10 @@ export class PrecomputedExponential implements Bucketing {
  * circular dependencies.
  *
  * @param values The values to be used to construct the Histogram.
- * @param rangeMin Minimum number in the distribution
- * @param rangeMax Maximum number in the distribution
- * @param bucketCount Number of total buckets
- * @returns Exponential histogram with all accumulated values.
+ * @param rangeMin The minimum number in the distribution.
+ * @param rangeMax The maximum number in the distribution.
+ * @param bucketCount The number of total buckets.
+ * @returns An exponential histogram containing all accumulated values.
  */
 export function constructExponentialHistogramFromValues(
   values: number[] = [],

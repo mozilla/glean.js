@@ -87,7 +87,7 @@ describe("schema", function() {
     metrics.timingDistribution.stopAndAccumulate(timerId);
     metrics.memoryDistribution.accumulate(100000);
 
-    // both types of custom distributions
+    // Test both variations of custom distributions.
     metrics.customDistributionExp.accumulateSamples([1]);
     metrics.customDistributionLinear.accumulateSamples([1]);
 

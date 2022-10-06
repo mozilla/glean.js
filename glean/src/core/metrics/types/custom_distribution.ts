@@ -53,7 +53,7 @@ export class CustomDistributionMetric extends Metric<
   validate(v: unknown): MetricValidationResult {
     const obj = v as CustomDistributionInternalRepresentation;
 
-    // Check the object is valid
+    // Check that the object is valid.
     if (isUndefined(obj)) {
       return {
         type: MetricValidation.Error,
@@ -62,7 +62,7 @@ export class CustomDistributionMetric extends Metric<
       };
     }
 
-    // Check the bucket count is greater than 0
+    // Check that the bucket count is greater than 0.
     if (isUndefined(obj.bucketCount) || obj.bucketCount < 0) {
       return {
         type: MetricValidation.Error,
@@ -71,7 +71,7 @@ export class CustomDistributionMetric extends Metric<
       };
     }
 
-    // Check the rangeMin is greater than 0
+    // Check that the rangeMin is greater than 0.
     if (isUndefined(obj.rangeMin) || obj.rangeMin < 0) {
       return {
         type: MetricValidation.Error,
@@ -80,7 +80,7 @@ export class CustomDistributionMetric extends Metric<
       };
     }
 
-    // Check the rangeMax is greater than 0
+    // Check that the rangeMax is greater than 0.
     if (isUndefined(obj.rangeMax) || obj.rangeMax < 0) {
       return {
         type: MetricValidation.Error,
@@ -89,7 +89,7 @@ export class CustomDistributionMetric extends Metric<
       };
     }
 
-    // Check the histogram type is either Linear or Exponential
+    // Check that the histogram type is either Linear or Exponential.
     if (isUndefined(obj.histogramType) || !(obj.histogramType in HistogramType)) {
       return {
         type: MetricValidation.Error,
@@ -239,11 +239,6 @@ export default class {
   /**
    * Accumulates the provided signed samples in the metric.
    *
-   * This is required so that the platform-specific code can provide us with
-   * 64 bit signed integers if no `u64` comparable type is available. This
-   * will take care of filtering and reporting errors for any provided negative
-   * sample.
-   *
    * ## Notes
    * Discards any negative value in `samples` and report an `ErrorType.InvalidValue`
    * for each of them.
@@ -289,10 +284,10 @@ export default class {
  * Generate either a Linear or Exponential histogram based on the type.
  *
  * @param values The values to be used to construct the Histogram.
- * @param rangeMin Minimum number in the distribution
- * @param rangeMax Maximum number in the distribution
- * @param bucketCount Number of total buckets
- * @param histogramType The type of histogram to generate
+ * @param rangeMin The minimum number in the distribution.
+ * @param rangeMax The maximum number in the distribution.
+ * @param bucketCount The number of total buckets.
+ * @param histogramType The type of histogram to generate.
  * @returns A Linear or Exponential histogram with accumulated values.
  */
 function constructHistogramByType(

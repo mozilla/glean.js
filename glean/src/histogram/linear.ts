@@ -19,10 +19,10 @@ import { binarySearch } from "./utils.js";
  * **NOTE**
  * Exported solely for testing purposes.
  *
- * @param min Minimum number in the distribution
- * @param max Maximum number in the distribution
- * @param count Number of total buckets
- * @returns Computed bucket ranges
+ * @param min The minimum number in the distribution.
+ * @param max The maximum number in the distribution.
+ * @param count The number of total buckets.
+ * @returns The computed bucket ranges.
  */
 export function linearRange(min: number, max: number, count: number): number[] {
   const ranges = [];
@@ -57,8 +57,8 @@ export class PrecomputedLinear implements Bucketing {
    * This uses a binary search to locate the index `i` of the bucket such that:
    * bucket[i] <= sample < bucket[i+1].
    *
-   * @param sample Value that we will find a bucket for
-   * @returns The bucket that the sample will be placed in
+   * @param sample The value that we will find a bucket for.
+   * @returns The bucket that the sample will be placed in.
    */
   sampleToBucketMinimum(sample: number): number {
     const limit = binarySearch(this.ranges(), sample);
@@ -90,10 +90,10 @@ export class PrecomputedLinear implements Bucketing {
  * circular dependencies.
  *
  * @param values The values to be used to construct the Histogram.
- * @param rangeMin Minimum number in the distribution
- * @param rangeMax Maximum number in the distribution
- * @param bucketCount Number of total buckets
- * @returns Linear histogram with all accumulated values.
+ * @param rangeMin The minimum number in the distribution.
+ * @param rangeMax The maximum number in the distribution.
+ * @param bucketCount The number of total buckets.
+ * @returns A linear histogram containing all the accumulated values.
  */
 export function constructLinearHistogramFromValues(
   values: number[] = [],
