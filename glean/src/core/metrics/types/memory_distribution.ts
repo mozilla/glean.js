@@ -63,12 +63,12 @@ export class MemoryDistributionMetric extends Metric<
       };
     }
 
-    const negativeDuration = (v as number[]).find((key) => key < 0);
-    if (negativeDuration) {
+    const negativeSample = (v as number[]).find((key) => key < 0);
+    if (negativeSample) {
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected all durations to be greater than 0, got ${negativeDuration}`,
+        errorMessage: `Expected all samples to be greater than 0, got ${negativeSample}`,
       };
     }
 
