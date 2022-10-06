@@ -27,8 +27,8 @@ export interface DistributionData {
  * This cannot use `Histogram.snapshot_values` and needs to use the more
  * specialized snapshot function.
  *
- * @param hist Histogram to get the snapshot of
- * @returns Snapshot of the current histogram
+ * @param hist Histogram to get the snapshot of.
+ * @returns Snapshot of the current histogram.
  */
 export function snapshot(hist: Histogram): DistributionData {
   const snapshotValues = hist.snapshotValues();
