@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import type { Histogram } from "../../../histogram/histogram";
 import type { JSONValue } from "../../utils.js";
 import type { DistributionData } from "../distributions";
 import type { MetricValidationResult } from "../metric.js";
@@ -110,9 +109,8 @@ export class CustomDistributionMetric extends Metric<
       rangeMin,
       rangeMax,
       bucketCount,
-      histogramType
-      // It is safe to explicitly set the type here, it will never be undefined.
-    ) as Histogram;
+      histogramType as HistogramType
+    );
     return {
       sum: hist.sum,
       values: hist.values,
@@ -205,9 +203,8 @@ class InternalCustomDistributionMetricType extends MetricType {
             rangeMin,
             rangeMax,
             bucketCount,
-            histogramType
-            // It is safe to explicitly set the type here, it will never be undefined.
-          ) as Histogram
+            histogramType as HistogramType
+          )
         );
       }
     }
@@ -295,7 +292,7 @@ function constructHistogramByType(
   rangeMin: number,
   rangeMax: number,
   bucketCount: number,
-  histogramType: string
+  histogramType: HistogramType
 ) {
   switch (histogramType) {
   case HistogramType.exponential:
