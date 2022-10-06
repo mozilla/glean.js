@@ -23,10 +23,6 @@ export interface DistributionData {
  *
  * Utility function for testing.
  *
- * **Caution**
- * This cannot use `Histogram.snapshot_values` and needs to use the more
- * specialized snapshot function.
- *
  * @param hist Histogram to get the snapshot of.
  * @returns Snapshot of the current histogram.
  */
@@ -50,11 +46,11 @@ export function snapshot(hist: Histogram): DistributionData {
 
 /**
  * Takes the previous values and casts as a `number[]` or creates a new empty `number[]`. We store
- * previous durations as an array of values so that we can always reconstruct our histogram. We
+ * previous values as an array so that we can always reconstruct our histogram. We
  * are unable to store complex objects in Glean as they must be JSON parse-able objects.
  *
  * @param jsonValue Will always be either undefined or a `number[]`.
- * @returns An array of previous durations or an empty array if nothing was previously stored.
+ * @returns An array of previous values or an empty array if nothing was previously stored.
  */
 export function extractAccumulatedValuesFromJsonValue(jsonValue?: JSONValue): number[] {
   let values: number[];
