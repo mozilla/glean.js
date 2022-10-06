@@ -237,7 +237,7 @@ for_testing:
     bugs:
       - https://bugzilla.mozilla.org/1716952
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=000000#c3
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1716952
     notification_emails:
       - me@mozilla.com
     expires: never
