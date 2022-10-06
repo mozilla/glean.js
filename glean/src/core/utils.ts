@@ -8,7 +8,6 @@ import { Context } from "./context.js";
 import { ErrorType } from "./error/error_type.js";
 import log, { LoggingLevel } from "./log.js";
 import { MetricValidationError } from "./metrics/metric.js";
-import TimeUnit from "./metrics/time_unit.js";
 
 const LOG_TAG = "core.utils";
 
@@ -127,7 +126,7 @@ export function isInteger(v: unknown): v is number {
  * that replaces non alphanumeric characters with dashes.
  *
  * @param applicationId The application if to sanitize.
- * @returns The sanitized applicaiton id.
+ * @returns The sanitized application id.
  */
 export function sanitizeApplicationId(applicationId: string): string {
   return applicationId.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
@@ -282,30 +281,4 @@ export function getCurrentTimeInNanoSeconds(): number {
     now = hrTime[0] * 1000000000 + hrTime[1];
   }
   return now;
-}
-
-/**
- * Converts a number from any `TimeUnit` to nanoseconds.
- *
- * @param duration Difference between start and stop time stamps
- * @param timeUnit Time unit for the duration
- * @returns Duration converted to nanoseconds.
- */
-export function convertTimeUnitToNanos(duration: number, timeUnit: TimeUnit): number {
-  switch (timeUnit) {
-  case TimeUnit.Nanosecond:
-    return duration;
-  case TimeUnit.Microsecond:
-    return duration * 10 ** 3;
-  case TimeUnit.Millisecond:
-    return duration * 10 ** 6;
-  case TimeUnit.Second:
-    return duration * 10 ** 9;
-  case TimeUnit.Minute:
-    return duration * 10 ** 9 * 60;
-  case TimeUnit.Hour:
-    return duration * 10 ** 9 * 60 * 60;
-  case TimeUnit.Day:
-    return duration * 10 ** 9 * 60 * 60 * 24;
-  }
 }

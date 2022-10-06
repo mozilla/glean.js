@@ -85,6 +85,7 @@ describe("schema", function() {
     metrics.url.set("glean://test");
     const timerId = metrics.timingDistribution.start();
     metrics.timingDistribution.stopAndAccumulate(timerId);
+    metrics.memoryDistribution.accumulate(100000);
 
     /* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 

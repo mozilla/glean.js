@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.2.0...main)
 
+* [#1514](https://github.com/mozilla/glean.js/pull/1514): Implement the Memory Distribution metric type.
 * [#1475](https://github.com/mozilla/glean.js/pull/1475): Implement the Timing Distribution metric type.
 
 # v1.2.0 (2022-09-21)

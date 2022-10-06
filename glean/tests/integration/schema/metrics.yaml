@@ -230,3 +230,17 @@ for_testing:
     send_in_pings:
       - testing
     time_unit: nanosecond
+  memory_distribution:
+    type: memory_distribution
+    description: |
+      Sample memory distribution metric.
+    bugs:
+      - https://bugzilla.mozilla.org/1716952
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1716952
+    notification_emails:
+      - me@mozilla.com
+    expires: never
+    send_in_pings:
+      - testing
+    memory_unit: byte

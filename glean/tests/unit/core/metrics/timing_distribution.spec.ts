@@ -6,16 +6,15 @@ import assert from "assert";
 import sinon from "sinon";
 import { testResetGlean } from "../../../../src/core/testing";
 import TimingDistributionMetricType, {
-  snapshot,
   TimingDistributionMetric,
 } from "../../../../src/core/metrics/types/timing_distribution";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import TimeUnit from "../../../../src/core/metrics/time_unit";
+import TimeUnit, { convertTimeUnitToNanos } from "../../../../src/core/metrics/time_unit";
 import Glean from "../../../../src/core/glean";
-import { convertTimeUnitToNanos } from "../../../../src/core/utils";
 import { Histogram } from "../../../../src/histogram/histogram";
 import { Functional } from "../../../../src/histogram/functional";
 import { ErrorType } from "../../../../src/core/error/error_type";
+import { snapshot } from "../../../../src/core/metrics/distributions";
 
 const sandbox = sinon.createSandbox();
 
