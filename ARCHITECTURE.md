@@ -96,7 +96,7 @@ The `entry/` folder contains the main entry points for the Glean.js package per 
 For example, when a user does `import Glean from @mozilla/glean/webext` it's the `entry/webext.ts`
 file that they are getting and not `core/glean.ts`.
 
-The main difference between each platform's files is that a different `Platform` implementation is
+The main difference between each platform's file is that a different `Platform` implementation is
 imported per file.
 
 The Qt/QML entry point is the different one here. QML packages cannot be easily consumed through npm,
