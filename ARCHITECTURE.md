@@ -1,7 +1,7 @@
 # Architecture
 
 This document aims to give a high-level overview of the
-Glean JavaScript SDK architecture (also known as Glean.js).
+Glean JavaScript SDK (aka Glean.js) architecture.
 
 This is a great place to start for newcomers to the project.
 
