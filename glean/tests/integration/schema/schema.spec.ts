@@ -87,6 +87,10 @@ describe("schema", function() {
     metrics.timingDistribution.stopAndAccumulate(timerId);
     metrics.memoryDistribution.accumulate(100000);
 
+    // Test both variations of custom distributions.
+    metrics.customDistributionExp.accumulateSamples([1]);
+    metrics.customDistributionLinear.accumulateSamples([1]);
+
     /* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 
     // Set up the http client to catch the ping we will submit.

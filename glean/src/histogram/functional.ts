@@ -28,12 +28,13 @@ export class Functional implements Bucketing {
 
   /**
    * Maps a sample to a "bucket index" that it belongs in.
+   *
    * A "bucket index" is the consecutive integer index of each bucket, useful as a
    * mathematical concept, even though the internal representation is stored and
    * sent using the minimum value in each bucket.
    *
-   * @param sample Sample to map to a bucket index
-   * @returns The bucket index for the sample
+   * @param sample The sample to map to a bucket index.
+   * @returns The bucket index for the sample.
    */
   sampleToBucketIndex(sample: number): number {
     return Math.floor(Math.log(saturatingAdd(sample, 1)) / Math.log(this.exponent));
@@ -42,8 +43,8 @@ export class Functional implements Bucketing {
   /**
    * Determines the minimum value of a bucket, given a bucket index.
    *
-   * @param index Index to find the min value for
-   * @returns The minimum value of the bucket
+   * @param index The index to find the min value for.
+   * @returns The minimum value of the bucket.
    */
   bucketIndexToBucketMinimum(index: number): number {
     return Math.floor(Math.pow(this.exponent, index));
@@ -56,7 +57,7 @@ export class Functional implements Bucketing {
    * histograms. `snapshotValues` cannot be used with those, due to buckets not being
    * precomputed.
    *
-   * @param values All current histogram values
+   * @param values All the current histogram values.
    * @returns Updated values with anything missing replaced with a default value of 0.
    */
   snapshotOverride(values: Record<number, number>): Record<number, number> {

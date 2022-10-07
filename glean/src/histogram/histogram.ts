@@ -5,6 +5,13 @@
 import type { Bucketing } from "./bucketing.js";
 import { saturatingAdd } from "../core/utils.js";
 
+export enum HistogramType {
+  // A histogram with linear distributed buckets.
+  linear = "linear",
+  // A histogram with exponential distributed buckets.
+  exponential = "exponential",
+}
+
 /**
  * A histogram.
  *
@@ -34,7 +41,7 @@ export class Histogram {
   /**
    * Gets the number of buckets in the Histogram.
    *
-   * @returns `this.count`
+   * @returns The number of buckets in the histogram.
    */
   bucketCount(): number {
     return Object.keys(this.values).length;
@@ -43,12 +50,12 @@ export class Histogram {
   /**
    * Adds a single value to the histogram.
    *
-   * @param sample Value to add to the histogram
+   * @param sample The value to add to the histogram.
    */
   accumulate(sample: number) {
     const bucketMin = this.bucketing.sampleToBucketMinimum(sample);
 
-    // Fill in missing entires with 0s
+    // Fill in missing entires with 0s.
     if (!this.values[bucketMin]) {
       this.values[bucketMin] = 0;
     }
@@ -62,7 +69,7 @@ export class Histogram {
   /**
    * Checks if this histogram recorded any values.
    *
-   * @returns Whether the histogram has any values
+   * @returns Whether the histogram has any values.
    */
   isEmpty(): boolean {
     return this.count === 0;
@@ -76,7 +83,7 @@ export class Histogram {
    * function rather than the default snapshot. This helps handle scenarios like Functional histograms
    * where buckets aren't precomputed, so you cannot get `ranges`.
    *
-   * @returns Snapshot of the stored values
+   * @returns A snapshot of the stored values.
    */
   snapshotValues(): Record<number, number> {
     if (this.bucketing.snapshotOverride) {
