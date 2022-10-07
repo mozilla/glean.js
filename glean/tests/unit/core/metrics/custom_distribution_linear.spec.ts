@@ -29,7 +29,7 @@ describe("CustomDistributionMetric - Linear", function () {
         category: "aCategory",
         disabled: false,
         lifetime: Lifetime.Ping,
-        name: "aMemoryDistribution",
+        name: "aCustomDistribution",
         sendInPings: ["aPing"],
       },
       1,
@@ -52,7 +52,7 @@ describe("CustomDistributionMetric - Linear", function () {
         category: "aCategory",
         disabled: false,
         lifetime: Lifetime.Ping,
-        name: "aMemoryDistribution",
+        name: "aCustomDistribution",
         sendInPings: storesNames,
       },
       1,
@@ -71,13 +71,13 @@ describe("CustomDistributionMetric - Linear", function () {
     });
   });
 
-  it("the accumulate samples api correctly stores memory values", async function () {
+  it("the accumulate samples api correctly stores values", async function () {
     const metric = new CustomDistributionMetricType(
       {
         category: "aCategory",
         disabled: false,
         lifetime: Lifetime.Ping,
-        name: "aMemoryDistribution",
+        name: "aCustomDistribution",
         sendInPings: ["aPing"],
       },
       1,
@@ -115,7 +115,7 @@ describe("CustomDistributionMetric - Linear", function () {
         category: "aCategory",
         disabled: false,
         lifetime: Lifetime.Ping,
-        name: "aMemoryDistribution",
+        name: "aCustomDistribution",
         sendInPings: ["aPing"],
       },
       1,
@@ -145,7 +145,7 @@ describe("CustomDistributionMetric - Linear", function () {
         category: "aCategory",
         disabled: false,
         lifetime: Lifetime.Ping,
-        name: "aMemoryDistribution",
+        name: "aCustomDistribution",
         sendInPings: ["aPing"],
       },
       1,
