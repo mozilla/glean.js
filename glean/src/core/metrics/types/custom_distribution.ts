@@ -57,7 +57,7 @@ export class CustomDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidType,
-        errorMessage: `Expected valid MemoryDistribution object, got ${JSON.stringify(obj)}`,
+        errorMessage: `Expected valid CustomDistribution object, got ${JSON.stringify(obj)}`,
       };
     }
 
