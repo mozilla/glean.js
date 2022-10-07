@@ -1,6 +1,6 @@
 # Architecture
 
-This document aims to give a high level overview of the
+This document aims to give a high-level overview of the
 Glean JavaScript SDK (aka Glean.js) architecture.
 
 This is a great place to start for newcomers to the project.
@@ -11,8 +11,7 @@ the [Glean.js developer documentation](docs/README.md).
 ## Context
 
 The Glean JavaScript SDK is part of [the Glean project](https://docs.telemetry.mozilla.org/concepts/glean/glean.html).
-An end-to-end data collection platform developed by Mozilla and primarily targeting Mozilla products
-across multiple platforms.
+An end-to-end data collection platform developed by Mozilla and primarily targeting Mozilla products across multiple platforms.
 
 Glean provides multiple client SDKs for different programming languages and platforms.
 One of the aspects that guide Glean SDK development is cross-platform consistency and the Glean
@@ -30,8 +29,8 @@ Firefox Desktop SDK in the [mozilla-central](https://hg.mozilla.org/mozilla-cent
 On a very high level a Glean SDK is a library which exposes APIs for users to record
 structured data and submit that data in an (again) structured format to a specific endpoint.
 
-Users cannot simply record arbitrary data though. The Glean SDKs expose specialized metrics APIs for
-different collection needs. The SDK is responsible to validating that the data given by a user is in
+Users cannot simply record arbitrary data, though. The Glean SDKs expose specialized metrics APIs for
+different collection needs. The SDK is responsible for validating that the data given by a user is in
 the correct format and only then recording it (or recording an error in case the data provided is
 not correct).
 
@@ -114,11 +113,9 @@ for all platforms, because each platform provides different APIs for these tasks
 for useless platform specific code not to bloat the size of the library on each platform,
 the `platform/` module contains implementations of identical interfaces in different platforms.
 
-This allows the pattern of only importing the necessary implementation of these modules on each
-platform. It also makes testing easier, because the exact same suite of tests can run for each of
-the platform specific implementation, thus guaranteeing that each modules works exactly the same
-in all platforms.
-
+This allows the pattern of only importing the necessary implementation of these modules on each platform.
+It also makes testing easier, because the exact same suite of tests can be run for each of the platform-specific implementations,
+ thus guaranteeing that each module works exactly the same on all platforms.
 ### `plugins/`
 
 The `plugins/` folder contains the Glean.js' plugins code.

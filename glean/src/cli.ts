@@ -15,11 +15,11 @@ import log, { LoggingLevel } from "./core/log.js";
 
 const LOG_TAG = "CLI";
 
-// The name of the directory which contains / will contain the Python virtual environment
+// The name of the directory which contains/will contain the Python virtual environment
 // used to run the glean-parser.
 //
 // > When a virtual environment is active, the VIRTUAL_ENV environment variable
-// > is set to the path of the virtual environment. This can be used to check if
+// > is set to the virtual environment's path. This can be used to check if
 // > one is running inside a virtual environment.
 //
 // See: https://docs.python.org/3/library/venv.html

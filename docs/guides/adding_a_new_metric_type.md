@@ -123,8 +123,8 @@ awaiting or callbacks.
 
 This is to say: any recording action must be wrapped in a `Glean.dispatcher.launch` block.
 
-Continuing on the String metric type example,
-let's look at how a simple string recording function will look like.
+Continuing with the String metric type example,
+let's look at what a simple string recording function will look like.
 
 ```ts
 function set(value: string): void {
@@ -227,7 +227,7 @@ a new release of Glean.js is made.
 
 ## Other
 
-Even after your are done with all the above steps, you still need to prepare other parts of the Glean
+Even after you are done with all the above steps, you still need to prepare other parts of the Glean
 ecosystem in order for you to be done implementing your new metric type.
 
 ### glean_parser
