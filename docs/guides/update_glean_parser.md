@@ -6,6 +6,6 @@ To update the version of glean_parser used by the Glean.js, run the `bin/update-
 bin/update-glean-parser-version.sh 1.28.3
 ```
 
-This will update the version in all the required places and create a commit with the changes. After that you just need to create a pull request with the changes.
+This will update the version in all the required places and create a commit with the changes. After that, you just need to create a pull request with the changes.
 
 No further action is required.

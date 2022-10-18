@@ -12,15 +12,18 @@ import base from "./base.js";
 import PingType from "../core/pings/ping_type.js";
 import BooleanMetricType from "../core/metrics/types/boolean.js";
 import CounterMetricType from "../core/metrics/types/counter.js";
+import CustomDistributionMetricType from "../core/metrics/types/custom_distribution.js";
 import DatetimeMetricType from "../core/metrics/types/datetime.js";
 import EventMetricType from "../core/metrics/types/event.js";
 import LabeledMetricType from "../core/metrics/types/labeled.js";
+import MemoryDistributionMetricType from "../core/metrics/types/memory_distribution.js";
 import QuantityMetricType from "../core/metrics/types/quantity.js";
 import RateMetricType from "../core/metrics/types/rate.js";
 import StringMetricType from "../core/metrics/types/string.js";
 import StringListMetricType from "../core/metrics/types/string_list.js";
 import TextMetricType from "../core/metrics/types/text.js";
 import TimespanMetricType from "../core/metrics/types/timespan.js";
+import TimingDistributionMetricType from "../core/metrics/types/timing_distribution.js";
 import UUIDMetricType from "../core/metrics/types/uuid.js";
 import URLMetricType from "../core/metrics/types/url.js";
 
@@ -35,14 +38,17 @@ export default {
     PingType,
     BooleanMetricType,
     CounterMetricType,
+    CustomDistributionMetricType,
     DatetimeMetricType,
     EventMetricType,
     LabeledMetricType,
+    MemoryDistributionMetricType,
     QuantityMetricType,
     RateMetricType,
     StringMetricType,
     StringListMetricType,
     TimespanMetricType,
+    TimingDistributionMetricType,
     TextMetricType,
     UUIDMetricType,
     URLMetricType

@@ -11,7 +11,7 @@ import { MetricValidationError } from "./metrics/metric.js";
 
 const LOG_TAG = "core.utils";
 
-// We will intentionaly leave `null` out even though it is a valid JSON primitive.
+// We will intentionally leave `null` out even though it is a valid JSON primitive.
 export type JSONPrimitive = string | number | boolean;
 export type JSONValue = JSONPrimitive | JSONObject | JSONArray;
 export type JSONObject = { [member: string]: JSONValue | undefined };
@@ -54,6 +54,16 @@ export function isJSONValue(v: unknown): v is JSONValue {
  */
 export function isObject(v: unknown): v is Record<string | number | symbol, unknown> {
   return (typeof v === "object" && v !== null && v.constructor === Object);
+}
+
+/**
+ * Checks whether or not `v` is an empty object.
+ *
+ * @param v The value to verify.
+ * @returns A boolean value stating whether `v` is an empty object.
+ */
+export function isEmptyObject(v: unknown): boolean {
+  return Object.keys(v || {}).length === 0;
 }
 
 /**
@@ -116,7 +126,7 @@ export function isInteger(v: unknown): v is number {
  * that replaces non alphanumeric characters with dashes.
  *
  * @param applicationId The application if to sanitize.
- * @returns The sanitized applicaiton id.
+ * @returns The sanitized application id.
  */
 export function sanitizeApplicationId(applicationId: string): string {
   return applicationId.replace(/[^a-z0-9]+/gi, "-").toLowerCase();
@@ -252,4 +262,23 @@ export function saturatingAdd(...args: number[]) {
   }
 
   return result;
+}
+
+/**
+ * Generate timestamp for current time in nanoseconds. If process
+ * is not defined, we fallback to `getMonotonicNow()`.
+ *
+ * @returns Timestamp of current time in nanoseconds.
+ */
+export function getCurrentTimeInNanoSeconds(): number {
+  let now;
+  if (typeof process === "undefined") {
+    now = getMonotonicNow();
+  } else {
+    // in Node, this is the most accurate way to get nanoseconds, so we will use
+    // this when possible
+    const hrTime = process.hrtime();
+    now = hrTime[0] * 1000000000 + hrTime[1];
+  }
+  return now;
 }

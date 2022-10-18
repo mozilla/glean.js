@@ -64,7 +64,7 @@ describe("schema", function() {
     // Disable eslint rules for the recording calls,
     // so that we don't have to build the generated files just for the "lint" CI job.
 
-    /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+    /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
     metrics.boolean.set(false);
     metrics.counter.add(10);
     metrics.datetime.set();
@@ -83,7 +83,19 @@ describe("schema", function() {
     metrics.timespan.setRawNanos(10 * 10**6);
     metrics.uuid.generateAndSet();
     metrics.url.set("glean://test");
-    /* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access */
+
+    metrics.rate.addToNumerator(1);
+    metrics.rate.addToDenominator(2);
+
+    const timerId = metrics.timingDistribution.start();
+    metrics.timingDistribution.stopAndAccumulate(timerId);
+    metrics.memoryDistribution.accumulate(100000);
+
+    // Test both variations of custom distributions.
+    metrics.customDistributionExp.accumulateSamples([1]);
+    metrics.customDistributionLinear.accumulateSamples([1]);
+
+    /* eslint-enable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-assignment */
 
     // Set up the http client to catch the ping we will submit.
     const pingBody = httpClient.waitForPingSubmission("testing");
