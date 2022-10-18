@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v1.2.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.3.0...main)
+
+# v1.3.0 (2022-10-18)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.2.0...v1.3.0)
 
 * [#1544](https://github.com/mozilla/glean.js/pull/1544): Upgrade `glean_parser` version to `6.2.1`.
 * [#1516](https://github.com/mozilla/glean.js/pull/1516): Implement the Custom Distribution metric type.
