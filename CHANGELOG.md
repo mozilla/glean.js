@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.2.0...main)
 
+* [#1544](https://github.com/mozilla/glean.js/pull/1544): Upgrade `glean_parser` version to `6.2.1`.
 * [#1516](https://github.com/mozilla/glean.js/pull/1516): Implement the Custom Distribution metric type.
 * [#1514](https://github.com/mozilla/glean.js/pull/1514): Implement the Memory Distribution metric type.
 * [#1475](https://github.com/mozilla/glean.js/pull/1475): Implement the Timing Distribution metric type.

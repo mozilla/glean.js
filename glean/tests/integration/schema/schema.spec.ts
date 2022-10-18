@@ -83,6 +83,10 @@ describe("schema", function() {
     metrics.timespan.setRawNanos(10 * 10**6);
     metrics.uuid.generateAndSet();
     metrics.url.set("glean://test");
+
+    metrics.rate.addToNumerator(1);
+    metrics.rate.addToDenominator(2);
+
     const timerId = metrics.timingDistribution.start();
     metrics.timingDistribution.stopAndAccumulate(timerId);
     metrics.memoryDistribution.accumulate(100000);
