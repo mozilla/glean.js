@@ -62,7 +62,7 @@
     "test:unit": "run-s test:unit:core test:unit:platform test:unit:plugins",
     "test:unit:core": "npm run test:base -- \"tests/unit/core/**/*.spec.ts\" --recursive",
     "test:unit:plugins": "npm run test:base -- \"tests/unit/plugins/**/*.spec.ts\" --recursive",
-    "test:unit:platform": "npm run test:base -- \"tests/unit/platform/**/*.spec.ts\" --recursive --timeout 0",
+    "test:unit:platform": "npm run test:base -- \"tests/unit/platform/**/*.spec.ts\" --recursive --timeout 0 --exclude tests/unit/platform/utils/webext/sample/node_modules/**/*.spec.ts",
     "pretest:unit:platform": "cd tests/unit/platform/utils/webext/sample/ && npm install && npm run build:xpi",
     "test:base": "node --experimental-modules --experimental-specifier-resolution=node --loader=ts-node/esm node_modules/mocha/lib/cli/cli.js",
     "lint": "run-s lint:eslint lint:circular-deps lint:glinter",
