@@ -116,7 +116,7 @@
     "fake-indexeddb": "^4.0.0",
     "geckodriver": "^3.0.1",
     "gh-pages": "^4.0.0",
-    "jsdom": "20.0.3",
+    "jsdom": "21.1.0",
     "jsdom-global": "3.0.2",
     "jsonschema": "^1.4.0",
     "madge": "^5.0.1",
