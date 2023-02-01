@@ -19,7 +19,7 @@
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
   "devDependencies": {
-    "@octokit/request": "^6.2.2",
+    "@octokit/request": "^6.2.3",
     "browserstack-local": "^1.5.1",
     "geckodriver": "^3.2.0",
     "selenium-webdriver": "^4.4.0",
