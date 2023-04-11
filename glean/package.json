@@ -115,7 +115,7 @@
     "eslint-plugin-notice": "^0.9.10",
     "fake-indexeddb": "^4.0.0",
     "geckodriver": "^3.0.1",
-    "gh-pages": "^4.0.0",
+    "gh-pages": "^5.0.0",
     "jsdom": "22.1.0",
     "jsdom-global": "3.0.2",
     "jsonschema": "^1.4.0",
