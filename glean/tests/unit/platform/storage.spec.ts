@@ -41,8 +41,8 @@ class MockQMLStore extends QMLStore {
         resolve({
           rows: {
             length: rows?.length || 0,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return
-            item: (index: number) => rows[index] || undefined
+            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
+            item: (index: number) => rows[index] || {} as any
           }
         });
       });
