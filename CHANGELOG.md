@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.3.0...main)
 
+* [#1671](https://github.com/mozilla/glean.js/pull/1671): Allow building on Windows machines.
+
 # v1.3.0 (2022-10-18)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.2.0...v1.3.0)
