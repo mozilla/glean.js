@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v1.3.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.4.0...main)
+
+# v1.4.0 (2023-05-10)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.3.0...v1.4.0)
 
 * [#1671](https://github.com/mozilla/glean.js/pull/1671): Allow building on Windows machines.
 * [#1674](https://github.com/mozilla/glean.js/pull/1674): Upgrade `glean_parser` version to `7.2.1`.
