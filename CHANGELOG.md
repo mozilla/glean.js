@@ -3,6 +3,7 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.3.0...main)
 
 * [#1671](https://github.com/mozilla/glean.js/pull/1671): Allow building on Windows machines.
+* [#1674](https://github.com/mozilla/glean.js/pull/1674): Upgrade `glean_parser` version to `7.2.1`.
 
 # v1.3.0 (2022-10-18)
 
