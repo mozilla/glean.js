@@ -13,7 +13,7 @@ To check out a comprehensive list of which metrics are collected by Glean and th
 || Size |
 |--|--|
 |web|**56 KB**|
-|webext|**56 KB**|
+|webext|**55 KB**|
 |node|**55 KB**|
 |QML|**91 KB**|
 <!-- ! -->
@@ -37,7 +37,7 @@ to external consumers.
 |custom_distribution|5.4 KB |5.4 KB |5.4 KB |
 |datetime|1.1 KB |1.1 KB |1.1 KB |
 |event|1008 bytes |1008 bytes |1008 bytes |
-|labeled|362 bytes |375 bytes |361 bytes |
+|labeled|361 bytes |361 bytes |361 bytes |
 |memory_distribution|5.0 KB |5.0 KB |5.0 KB |
 |quantity|1.7 KB |1.7 KB |1.7 KB |
 |string|998 bytes |998 bytes |998 bytes |
