@@ -2,11 +2,12 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import TestPlatform from "../../platform/test/index.js";
 import type { ConfigurationInterface } from "../config.js";
+
+import TestPlatform from "../../platform/test/index.js";
 import { Context } from "../context.js";
-import { testResetEvents } from "../events/utils.js";
-import Glean from "../glean.js";
+import { testResetEvents } from "../events/utils/async.js";
+import Glean from "../glean/async.js";
 
 /**
  * Test-only API

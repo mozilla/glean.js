@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { Context } from "../context.js";
-import EventsDatabase from "../metrics/events_database/index.js";
+import EventsDatabase from "../metrics/events_database/async.js";
 
 /**
  * Test-only API
