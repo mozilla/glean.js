@@ -40,7 +40,7 @@ export function snapshot(hist: Histogram): DistributionData {
   return {
     count: hist.count,
     values: utilizedValues,
-    sum: hist.sum,
+    sum: hist.sum
   };
 }
 
@@ -61,4 +61,25 @@ export function extractAccumulatedValuesFromJsonValue(jsonValue?: JSONValue): nu
   }
 
   return values;
+}
+
+/**
+ * Get a count of all samples with a value less than 0.
+ *
+ * @param samples Samples for a distribution.
+ * @returns Count of samples that had a value less than 0.
+ */
+export function getNumNegativeSamples(samples: number[]): number {
+  return samples.filter((sample) => sample < 0).length;
+}
+
+/**
+ * Get a count of all samples that exceed the max value.
+ *
+ * @param samples Samples for a distribution.
+ * @param max The max allowed value.
+ * @returns Count of samples that exceed the max value.
+ */
+export function getNumTooLongSamples(samples: number[], max: number) {
+  return samples.filter((sample) => sample > max).length;
 }
