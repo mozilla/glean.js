@@ -3,20 +3,22 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { MetricValidationResult } from "../metric.js";
+import type { JSONValue } from "../../utils.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import type { MetricValidationResult } from "../metric.js";
 import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
 import { saturatingAdd, testOnlyCheck, isObject } from "../../utils.js";
-import type { JSONValue } from "../../utils.js";
 import log from "../../log.js";
 import { validatePositiveInteger } from "../utils.js";
 
 const LOG_TAG = "core.metrics.RateMetricType";
 
 export type Rate = {
-  numerator: number,
-  denominator: number
+  numerator: number;
+  denominator: number;
 };
 
 export class RateMetric extends Metric<Rate, Rate> {
@@ -70,47 +72,7 @@ class InternalRateMetricType extends MetricType {
     super("rate", meta, RateMetric);
   }
 
-  /**
-   * Adds a new rate value with the currently stored value.
-   *
-   * @param value The value to merge.
-   */
-  private add(value: Rate): void {
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      try {
-        const transformFn = ((value) => {
-          return (v?: JSONValue): RateMetric => {
-            const metric = new RateMetric(value);
-            if (v) {
-              try {
-                const persistedMetric = new RateMetric(v);
-                metric.set({
-                  numerator: saturatingAdd(metric.numerator, persistedMetric.numerator),
-                  denominator: saturatingAdd(metric.denominator, persistedMetric.denominator),
-                });
-              } catch {
-                log(
-                  LOG_TAG,
-                  `Unexpected value found in storage for metric ${this.name}: ${JSON.stringify(v)}. Overwriting.`
-                );
-              }
-            }
-            return metric;
-          };
-        })(value);
-        await Context.metricsDatabase.transform(this, transformFn);
-      } catch(e) {
-        if (e instanceof MetricValidationError) {
-          await e.recordError(this);
-        }
-      }
-    });
-  }
-
+  /// SHARED ///
   /**
    * Increases the numerator by amount.
    *
@@ -123,17 +85,86 @@ class InternalRateMetricType extends MetricType {
   addToNumerator(amount: number): void {
     this.add({
       denominator: 0,
-      numerator: amount,
+      numerator: amount
     });
   }
 
   addToDenominator(amount: number): void {
     this.add({
       numerator: 0,
-      denominator: amount,
+      denominator: amount
     });
   }
 
+  /**
+   * Adds a new rate value with the currently stored value.
+   *
+   * @param value The value to merge.
+   */
+  private add(value: Rate): void {
+    if (Context.isPlatformSync()) {
+      this.addSync(value);
+    } else {
+      this.addAsync(value);
+    }
+  }
+
+  private transformFn(value: Rate) {
+    return (v?: JSONValue): RateMetric => {
+      const metric = new RateMetric(value);
+      if (v) {
+        try {
+          const persistedMetric = new RateMetric(v);
+          metric.set({
+            numerator: saturatingAdd(metric.numerator, persistedMetric.numerator),
+            denominator: saturatingAdd(metric.denominator, persistedMetric.denominator)
+          });
+        } catch {
+          log(
+            LOG_TAG,
+            `Unexpected value found in storage for metric ${this.name}: ${JSON.stringify(
+              v
+            )}. Overwriting.`
+          );
+        }
+      }
+      return metric;
+    };
+  }
+
+  /// ASYNC ///
+  addAsync(value: Rate) {
+    Context.dispatcher.launch(async () => {
+      if (!this.shouldRecord(Context.uploadEnabled)) {
+        return;
+      }
+
+      try {
+        await Context.metricsDatabase.transform(this, this.transformFn(value));
+      } catch (e) {
+        if (e instanceof MetricValidationError) {
+          await e.recordError(this);
+        }
+      }
+    });
+  }
+
+  /// SYNC ///
+  addSync(value: Rate) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      (Context.metricsDatabase as MetricsDatabaseSync).transform(this, this.transformFn(value));
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<Rate | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: Rate | undefined;
@@ -150,7 +181,7 @@ class InternalRateMetricType extends MetricType {
  *
  * Used to determine the proportion of things via two counts:
  * * A numerator defining the amount of times something happened,
- * * A denominator counting the amount of times someting could have happened.
+ * * A denominator counting the amount of times something could have happened.
  *
  * Both numerator and denominator can only be incremented, not decremented.
  */
@@ -216,7 +247,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
