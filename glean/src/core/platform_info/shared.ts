@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import type { OptionalAsync } from "../types";
+
 // Must be up to date with https://github.com/mozilla/glean/blob/main/glean-core/src/system.rs
 export const enum KnownOperatingSystems {
   Android = "Android",
@@ -32,36 +34,34 @@ export const enum KnownOperatingSystems {
   WebOS = "WebOS"
 }
 
-interface PlatformInfo {
+export interface IPlatformInfo {
   /**
    * Gets and returns the current OS system.
    *
    * @returns The current OS.
    */
-  os(): Promise<KnownOperatingSystems>;
+  os(): OptionalAsync<KnownOperatingSystems>;
 
   /**
    * Gets and returns the current OS system version.
    *
-   * @param fallback A fallback value in case Glean is unable to retrive this value from the environment.
+   * @param fallback A fallback value in case Glean is unable to retrieve this value from the environment.
    * @returns The current OS version.
    */
-  osVersion(fallback?: string): Promise<string>;
+  osVersion(fallback?: string): OptionalAsync<string>;
 
   /**
-   * Gets and returnst the current system architecture.
+   * Gets and returns the current system architecture.
    *
-   * @param fallback A fallback value in case Glean is unable to retrive this value from the environment.
+   * @param fallback A fallback value in case Glean is unable to retrieve this value from the environment.
    * @returns The current system architecture.
    */
-  arch(fallback?: string): Promise<string>;
+  arch(fallback?: string): OptionalAsync<string>;
 
   /**
-   * Gets and returnst the current system / browser locale.
+   * Gets and returns the current system / browser locale.
    *
    * @returns The current system / browser locale.
    */
-  locale(): Promise<string>;
+  locale(): OptionalAsync<string>;
 }
-
-export default PlatformInfo;
