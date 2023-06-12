@@ -2,9 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { StorageIndex } from "../../core/storage/index.js";
-import type Store from "../../core/storage/index.js";
+import type { StorageIndex } from "../../core/storage/shared.js";
+import type Store from "../../core/storage/async.js";
 import type { JSONObject, JSONValue } from "../../core/utils.js";
+
 import { getValueFromNestedObject, updateNestedObject } from "../../core/storage/utils.js";
 import { isObject, isUndefined } from "../../core/utils.js";
 import log, { LoggingLevel } from "../../core/log.js";
@@ -155,7 +156,7 @@ class QMLStore implements Store {
    *        Having this as an argument is necessary for the case when this
    *        function gets called before initialize. In that case `this` is `undefined`
    *        and attempting to call `this.logTag` will throw an error.
-   * @returns The query result if succesfull. A rejection otherwise.
+   * @returns The query result if successful. A rejection otherwise.
    */
   protected _executeQuery(query: string, logTag?: string): Promise<LocalStorage.QueryResult | undefined> {
     const handle = this._dbHandle(logTag);

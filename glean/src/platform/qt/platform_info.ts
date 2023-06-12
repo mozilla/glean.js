@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type PlatformInfo from "../../core/platform_info.js";
-import { KnownOperatingSystems } from "../../core/platform_info.js";
+import type PlatformInfo from "../../core/platform_info/async.js";
+import { KnownOperatingSystems } from "../../core/platform_info/shared.js";
 
 // The `Qt` symbol can be used in this file without TS compiler errors
 // because that symbol is described as a constant in `./types/Qt/index.d.ts`.
