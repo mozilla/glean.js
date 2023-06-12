@@ -2,23 +2,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants.js";
-import type { ConfigurationInterface } from "./config.js";
-import { Configuration } from "./config.js";
-import MetricsDatabase from "./metrics/database.js";
-import PingsDatabase from "./pings/database.js";
-import PingUploadManager from "./upload/manager.js";
-import { isBoolean, isString, sanitizeApplicationId } from "./utils.js";
-import { CoreMetrics } from "./internal_metrics.js";
-import EventsDatabase from "./metrics/events_database/index.js";
-import { DatetimeMetric } from "./metrics/types/datetime.js";
-import CorePings from "./internal_pings.js";
-import { registerPluginToEvent } from "./events/utils.js";
-import ErrorManager from "./error/index.js";
-import type Platform from "../platform/index.js";
-import { Lifetime } from "./metrics/lifetime.js";
-import { Context } from "./context.js";
-import log, { LoggingLevel } from "./log.js";
+import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "../constants.js";
+import type { ConfigurationInterface } from "../config.js";
+import { Configuration } from "../config.js";
+import MetricsDatabase from "../metrics/database/async.js";
+import PingsDatabase from "../pings/database/async.js";
+import PingUploadManager from "../upload/manager/async.js";
+import { isBoolean, isString, sanitizeApplicationId } from "../utils.js";
+import { CoreMetrics } from "../internal_metrics/async.js";
+import EventsDatabase from "../metrics/events_database/async.js";
+import { DatetimeMetric } from "../metrics/types/datetime.js";
+import CorePings from "../internal_pings.js";
+import { registerPluginToEvent } from "../events/utils/async.js";
+import ErrorManager from "../error/async.js";
+import type Platform from "../../platform/async.js";
+import { Lifetime } from "../metrics/lifetime.js";
+import { Context } from "../context.js";
+import log, { LoggingLevel } from "../log.js";
 
 const LOG_TAG = "core.Glean";
 
@@ -123,10 +123,10 @@ namespace Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    await Context.coreMetrics.clientId.setUndispatched(KNOWN_CLIENT_ID);
+    await (Context.coreMetrics as CoreMetrics).clientId.setUndispatched(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await Context.coreMetrics.firstRunDate.setUndispatched(firstRunDate);
+    await (Context.coreMetrics as CoreMetrics).firstRunDate.setUndispatched(firstRunDate);
 
     Context.uploadEnabled = false;
   }
@@ -185,11 +185,7 @@ namespace Glean {
     }
 
     if (!Context.platform) {
-      log(
-        LOG_TAG,
-        "Unable to initialize Glean, platform has not been set.",
-        LoggingLevel.Error
-      );
+      log(LOG_TAG, "Unable to initialize Glean, platform has not been set.", LoggingLevel.Error);
       return;
     }
 
@@ -281,7 +277,7 @@ namespace Glean {
         }
       }
 
-      // We only scan the pendings pings **after** dealing with the upload state.
+      // We only scan the pending pings **after** dealing with the upload state.
       // If upload is disabled, pending pings files are deleted
       // so we need to know that state **before** scanning the pending pings
       // to ensure we don't enqueue pings before their files are deleted.
@@ -365,7 +361,7 @@ namespace Glean {
    * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
    * @param value The value of the header.
-   *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
+   *        This value must satisfy the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
    */
   export function setDebugViewTag(value: string): void {
     if (!Context.initialized) {
@@ -460,7 +456,7 @@ namespace Glean {
         LOG_TAG,
         [
           `IMPOSSIBLE: Attempted to change Glean's targeted platform",
-          "from "${Context.platform.name}" to "${platform.name}". Ignoring.`,
+           "from "${Context.platform.name}" to "${platform.name}". Ignoring.`
         ],
         LoggingLevel.Error
       );
