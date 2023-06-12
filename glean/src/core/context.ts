@@ -2,18 +2,31 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type MetricsDatabase from "./metrics/database.js";
-import type EventsDatabase from "./metrics/events_database/index.js";
-import type PingsDatabase from "./pings/database.js";
-import type ErrorManager from "./error/index.js";
-import type Platform from "../platform/index.js";
-import type { Metric } from "./metrics/metric.js";
-import type { JSONValue } from "./utils.js";
-import Dispatcher from "./dispatcher.js";
-import log, { LoggingLevel } from "./log.js";
+import type MetricsDatabase from "./metrics/database/async.js";
+import type MetricsDatabaseSync from "./metrics/database/sync.js";
+
+import type EventsDatabase from "./metrics/events_database/async.js";
+import type { EventsDatabaseSync } from "./metrics/events_database/sync.js";
+
+import type PingsDatabase from "./pings/database/async.js";
+import type PingsDatabaseSync from "./pings/database/sync.js";
+
+import type ErrorManager from "./error/async.js";
+import type ErrorManagerSync from "./error/sync.js";
+
+import type Platform from "../platform/async.js";
+import type PlatformSync from "../platform/sync.js";
+
+import type { CoreMetrics } from "./internal_metrics/async.js";
+import type { CoreMetricsSync } from "./internal_metrics/sync.js";
+
 import type { Configuration } from "./config.js";
 import type CorePings from "./internal_pings.js";
-import type { CoreMetrics } from "./internal_metrics.js";
+import type { Metric } from "./metrics/metric.js";
+import type { JSONValue } from "./utils.js";
+
+import Dispatcher from "./dispatcher.js";
+import log, { LoggingLevel } from "./log.js";
 
 const LOG_TAG = "core.Context";
 
@@ -32,18 +45,20 @@ const LOG_TAG = "core.Context";
 export class Context {
   private static _instance?: Context;
 
+  // The dispatcher is only used with the non-web (async) implementation.
   private _dispatcher: Dispatcher;
-  private _platform!: Platform;
+
+  private _platform!: Platform | PlatformSync;
   private _corePings!: CorePings;
-  private _coreMetrics!: CoreMetrics;
+  private _coreMetrics!: CoreMetrics | CoreMetricsSync;
 
   // The following group of properties are all set on Glean.initialize
   // Attempting to get them before they are set will log an error.
   private _uploadEnabled!: boolean;
-  private _metricsDatabase!: MetricsDatabase;
-  private _eventsDatabase!: EventsDatabase;
-  private _pingsDatabase!: PingsDatabase;
-  private _errorManager!: ErrorManager;
+  private _metricsDatabase!: MetricsDatabase | MetricsDatabaseSync;
+  private _eventsDatabase!: EventsDatabase | EventsDatabaseSync;
+  private _pingsDatabase!: PingsDatabase | PingsDatabaseSync;
+  private _errorManager!: ErrorManager | ErrorManagerSync;
   private _applicationId!: string;
   private _config!: Configuration;
 
@@ -52,11 +67,11 @@ export class Context {
   // Whether or not Glean is in testing mode.
   private _testing = false;
   // A map of metric types and their constructors.
-  // This map is dynamically filled everytime a metric type is constructed.
+  // This map is dynamically filled every time a metric type is constructed.
   //
   // If a metric is not in this map it cannot be deserialized from the database.
   private _supportedMetrics: {
-    [type: string]: new (v: unknown) => Metric<JSONValue, JSONValue>
+    [type: string]: new (v: unknown) => Metric<JSONValue, JSONValue>;
   } = {};
 
   // The moment the current Glean.js session started.
@@ -93,7 +108,7 @@ export class Context {
       log(
         LOG_TAG,
         [
-          "Attempted to access Context.uploadEnabled before it was set. This may cause unexpected behaviour.",
+          "Attempted to access Context.uploadEnabled before it was set. This may cause unexpected behaviour."
         ],
         LoggingLevel.Trace
       );
@@ -106,12 +121,12 @@ export class Context {
     Context.instance._uploadEnabled = upload;
   }
 
-  static get metricsDatabase(): MetricsDatabase {
+  static get metricsDatabase(): MetricsDatabase | MetricsDatabaseSync {
     if (typeof Context.instance._metricsDatabase === "undefined") {
       log(
         LOG_TAG,
         [
-          "Attempted to access Context.metricsDatabase before it was set. This may cause unexpected behaviour.",
+          "Attempted to access Context.metricsDatabase before it was set. This may cause unexpected behaviour."
         ],
         LoggingLevel.Trace
       );
@@ -120,16 +135,16 @@ export class Context {
     return Context.instance._metricsDatabase;
   }
 
-  static set metricsDatabase(db: MetricsDatabase) {
+  static set metricsDatabase(db: MetricsDatabase | MetricsDatabaseSync) {
     Context.instance._metricsDatabase = db;
   }
 
-  static get eventsDatabase(): EventsDatabase {
+  static get eventsDatabase(): EventsDatabase | EventsDatabaseSync {
     if (typeof Context.instance._eventsDatabase === "undefined") {
       log(
         LOG_TAG,
         [
-          "Attempted to access Context.eventsDatabase before it was set. This may cause unexpected behaviour.",
+          "Attempted to access Context.eventsDatabase before it was set. This may cause unexpected behaviour."
         ],
         LoggingLevel.Trace
       );
@@ -138,16 +153,16 @@ export class Context {
     return Context.instance._eventsDatabase;
   }
 
-  static set eventsDatabase(db: EventsDatabase) {
+  static set eventsDatabase(db: EventsDatabase | EventsDatabaseSync) {
     Context.instance._eventsDatabase = db;
   }
 
-  static get pingsDatabase(): PingsDatabase {
+  static get pingsDatabase(): PingsDatabase | PingsDatabaseSync {
     if (typeof Context.instance._pingsDatabase === "undefined") {
       log(
         LOG_TAG,
         [
-          "Attempted to access Context.pingsDatabase before it was set. This may cause unexpected behaviour.",
+          "Attempted to access Context.pingsDatabase before it was set. This may cause unexpected behaviour."
         ],
         LoggingLevel.Trace
       );
@@ -156,16 +171,16 @@ export class Context {
     return Context.instance._pingsDatabase;
   }
 
-  static set pingsDatabase(db: PingsDatabase) {
+  static set pingsDatabase(db: PingsDatabase | PingsDatabaseSync) {
     Context.instance._pingsDatabase = db;
   }
 
-  static get errorManager(): ErrorManager {
+  static get errorManager(): ErrorManager | ErrorManagerSync {
     if (typeof Context.instance._errorManager === "undefined") {
       log(
         LOG_TAG,
         [
-          "Attempted to access Context.errorManager before it was set. This may cause unexpected behaviour.",
+          "Attempted to access Context.errorManager before it was set. This may cause unexpected behaviour."
         ],
         LoggingLevel.Trace
       );
@@ -174,7 +189,7 @@ export class Context {
     return Context.instance._errorManager;
   }
 
-  static set errorManager(db: ErrorManager) {
+  static set errorManager(db: ErrorManager | ErrorManagerSync) {
     Context.instance._errorManager = db;
   }
 
@@ -183,7 +198,7 @@ export class Context {
       log(
         LOG_TAG,
         [
-          "Attempted to access Context.applicationId before it was set. This may cause unexpected behaviour.",
+          "Attempted to access Context.applicationId before it was set. This may cause unexpected behaviour."
         ],
         LoggingLevel.Trace
       );
@@ -209,7 +224,7 @@ export class Context {
       log(
         LOG_TAG,
         [
-          "Attempted to access Context.config before it was set. This may cause unexpected behaviour.",
+          "Attempted to access Context.config before it was set. This may cause unexpected behaviour."
         ],
         LoggingLevel.Trace
       );
@@ -242,24 +257,24 @@ export class Context {
     Context.instance._corePings = pings;
   }
 
-  static get coreMetrics(): CoreMetrics {
+  static get coreMetrics(): CoreMetrics | CoreMetricsSync {
     return Context.instance._coreMetrics;
   }
 
-  static set coreMetrics(metrics: CoreMetrics) {
+  static set coreMetrics(metrics: CoreMetrics | CoreMetricsSync) {
     Context.instance._coreMetrics = metrics;
   }
 
-  static set platform(platform: Platform) {
+  static set platform(platform: Platform | PlatformSync) {
     Context.instance._platform = platform;
   }
 
-  static get platform(): Platform {
+  static get platform(): Platform | PlatformSync {
     if (typeof Context.instance._platform === "undefined") {
       log(
         LOG_TAG,
         [
-          "Attempted to access Context.platform before it was set. This may cause unexpected behaviour.",
+          "Attempted to access Context.platform before it was set. This may cause unexpected behaviour."
         ],
         LoggingLevel.Trace
       );
@@ -272,7 +287,13 @@ export class Context {
     return !!Context.instance._platform;
   }
 
-  static getSupportedMetric(type: string): (new (v: unknown) => Metric<JSONValue, JSONValue>) | undefined {
+  static isPlatformSync(): boolean {
+    return Context.instance._platform?.name === "web";
+  }
+
+  static getSupportedMetric(
+    type: string
+  ): (new (v: unknown) => Metric<JSONValue, JSONValue>) | undefined {
     return Context.instance._supportedMetrics[type];
   }
 
