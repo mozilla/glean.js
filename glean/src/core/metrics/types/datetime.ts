@@ -3,10 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { MetricValidationResult } from "../metric.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
 import { MetricType } from "../index.js";
 import TimeUnit from "../../metrics/time_unit.js";
 import { Context } from "../../context.js";
-import type { MetricValidationResult } from "../metric.js";
 import { MetricValidationError } from "../metric.js";
 import { Metric, MetricValidation } from "../metric.js";
 import { isNumber, isObject, isString, testOnlyCheck } from "../../utils.js";
@@ -14,7 +16,7 @@ import { isNumber, isObject, isString, testOnlyCheck } from "../../utils.js";
 const LOG_TAG = "core.metrics.DatetimeMetricType";
 
 /**
- * Builds the formatted timezone offset string frim a given timezone.
+ * Builds the formatted timezone offset string from a given timezone.
  *
  * The format of the resulting string is `+02:00`.
  *
@@ -31,13 +33,13 @@ export function formatTimezoneOffset(timezone: number): string {
 
 export type DatetimeInternalRepresentation = {
   // The time unit of the metric type at the time of recording.
-  timeUnit: TimeUnit,
+  timeUnit: TimeUnit;
   // This timezone should be the exact output of `Date.getTimezoneOffset`
   // and as such it should alwaye be in minutes.
-  timezone: number,
+  timezone: number;
   // This date string should be the exact output of `Date.toISOString`
   // and as such it is always in UTC.
-  date: string,
+  date: string;
 };
 
 export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, string> {
@@ -46,7 +48,7 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
   }
 
   static fromDate(v: unknown, timeUnit: TimeUnit): DatetimeMetric {
-    if(!(v instanceof Date)) {
+    if (!(v instanceof Date)) {
       throw new MetricValidationError(`Expected Date object, got ${JSON.stringify(v)}`);
     }
 
@@ -92,9 +94,13 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
       };
     }
 
-    const timeUnitVerification = "timeUnit" in v && isString(v.timeUnit) && Object.values(TimeUnit).includes(v.timeUnit as TimeUnit);
+    const timeUnitVerification =
+      "timeUnit" in v &&
+      isString(v.timeUnit) &&
+      Object.values(TimeUnit).includes(v.timeUnit as TimeUnit);
     const timezoneVerification = "timezone" in v && isNumber(v.timezone);
-    const dateVerification = "date" in v && isString(v.date) && v.date.length === 24 && !isNaN(Date.parse(v.date));
+    const dateVerification =
+      "date" in v && isString(v.date) && v.date.length === 24 && !isNaN(Date.parse(v.date));
     if (!timeUnitVerification || !timezoneVerification || !dateVerification) {
       return {
         type: MetricValidation.Error,
@@ -127,7 +133,7 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
       /* year */ parseInt(extractedDateInfo[0]),
       /* month */ parseInt(extractedDateInfo[1]) - 1,
       /* day */ parseInt(extractedDateInfo[2]),
-      /* hour */ parseInt(extractedDateInfo[3]) - (this.timezone / 60),
+      /* hour */ parseInt(extractedDateInfo[3]) - this.timezone / 60,
       /* minute */ parseInt(extractedDateInfo[4]),
       /* second */ parseInt(extractedDateInfo[5]),
       /* millisecond */ parseInt(extractedDateInfo[6])
@@ -185,8 +191,57 @@ export class InternalDatetimeMetricType extends MetricType {
     this.timeUnit = timeUnit as TimeUnit;
   }
 
+  /// SHARED ///
+  set(value?: Date): void {
+    if (Context.isPlatformSync()) {
+      this.setSync(value);
+    } else {
+      this.setAsync(value);
+    }
+  }
+
+  // TODO
+  // JSDoc
+  // Unit test
+  // Verify this is working the same as before.
+  private truncateDate(value?: Date) {
+    if (!value) {
+      value = new Date();
+    }
+
+    // We always save a milliseconds precision ISO string on the database,
+    // regardless of the time unit. So we zero out information that
+    // is not necessary for the current time unit of this metric.
+    const truncatedDate = value;
+    switch (this.timeUnit) {
+    case TimeUnit.Day:
+      truncatedDate.setMilliseconds(0);
+      truncatedDate.setSeconds(0);
+      truncatedDate.setMinutes(0);
+      truncatedDate.setMilliseconds(0);
+    case TimeUnit.Hour:
+      truncatedDate.setMilliseconds(0);
+      truncatedDate.setSeconds(0);
+      truncatedDate.setMinutes(0);
+    case TimeUnit.Minute:
+      truncatedDate.setMilliseconds(0);
+      truncatedDate.setSeconds(0);
+    case TimeUnit.Second:
+      truncatedDate.setMilliseconds(0);
+    default:
+      break;
+    }
+
+    return truncatedDate;
+  }
+
+  /// ASYNC ///
+  setAsync(value?: Date) {
+    Context.dispatcher.launch(() => this.setUndispatched(value));
+  }
+
   /**
-   * An implemention of `set` that does not dispatch the recording task.
+   * An implementation of `set` that does not dispatch the recording task.
    *
    * # Important
    *
@@ -199,48 +254,35 @@ export class InternalDatetimeMetricType extends MetricType {
       return;
     }
 
-    if (!value) {
-      value = new Date();
-    }
-
-    // We always save a milliseconds precision ISO string on the database,
-    // regardless of the time unit. So we zero out information that
-    // is not necessary for the current time unit of this metric.
-    const truncatedDate = value;
-    switch(this.timeUnit) {
-    case (TimeUnit.Day):
-      truncatedDate.setMilliseconds(0);
-      truncatedDate.setSeconds(0);
-      truncatedDate.setMinutes(0);
-      truncatedDate.setMilliseconds(0);
-    case (TimeUnit.Hour):
-      truncatedDate.setMilliseconds(0);
-      truncatedDate.setSeconds(0);
-      truncatedDate.setMinutes(0);
-    case (TimeUnit.Minute):
-      truncatedDate.setMilliseconds(0);
-      truncatedDate.setSeconds(0);
-    case (TimeUnit.Second):
-      truncatedDate.setMilliseconds(0);
-    default:
-      break;
-    }
-
+    const truncatedDate = this.truncateDate(value);
     try {
-      const metric = DatetimeMetric.fromDate(value, this.timeUnit);
+      const metric = DatetimeMetric.fromDate(truncatedDate, this.timeUnit);
       await Context.metricsDatabase.record(this, metric);
-    } catch(e) {
+    } catch (e) {
       if (e instanceof MetricValidationError) {
         await e.recordError(this);
       }
     }
-
   }
 
-  set(value?: Date): void {
-    Context.dispatcher.launch(() => this.setUndispatched(value));
+  /// SYNC ///
+  setSync(value?: Date) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    const truncatedDate = this.truncateDate(value);
+    try {
+      const metric = DatetimeMetric.fromDate(truncatedDate, this.timeUnit);
+      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
   }
 
+  /// TESTING ///
   /**
    * Test-only API
    *
@@ -252,7 +294,10 @@ export class InternalDatetimeMetricType extends MetricType {
    * @param fn The name of the function that is calling this function. Used for testing purposes.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  private async testGetValueAsDatetimeMetric(ping: string, fn: string): Promise<DatetimeMetric | undefined> {
+  private async testGetValueAsDatetimeMetric(
+    ping: string,
+    fn: string
+  ): Promise<DatetimeMetric | undefined> {
     if (testOnlyCheck(fn, LOG_TAG)) {
       let value: DatetimeInternalRepresentation | undefined;
       await Context.dispatcher.testLaunch(async () => {
@@ -308,7 +353,9 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValueAsString(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+  async testGetValueAsString(
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<string | undefined> {
     return this.#inner.testGetValueAsString(ping);
   }
 
@@ -344,7 +391,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
