@@ -3,9 +3,11 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { MetricValidationResult } from "../metric.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import type { MetricValidationResult } from "../metric.js";
 import { MetricValidationError } from "../metric.js";
 import { Metric, MetricValidation } from "../metric.js";
 import { isBoolean, testOnlyCheck } from "../../utils.js";
@@ -45,7 +47,17 @@ class InternalBooleanMetricType extends MetricType {
     super("boolean", meta, BooleanMetric);
   }
 
+  /// SHARED ///
   set(value: boolean): void {
+    if (Context.isPlatformSync()) {
+      this.setSync(value);
+    } else {
+      this.setAsync(value);
+    }
+  }
+
+  /// ASYNC ///
+  setAsync(value: boolean) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
@@ -54,7 +66,7 @@ class InternalBooleanMetricType extends MetricType {
       try {
         const metric = new BooleanMetric(value);
         await Context.metricsDatabase.record(this, metric);
-      } catch(e) {
+      } catch (e) {
         if (e instanceof MetricValidationError) {
           await e.recordError(this);
         }
@@ -62,6 +74,23 @@ class InternalBooleanMetricType extends MetricType {
     });
   }
 
+  /// SYNC ///
+  setSync(value: boolean) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      const metric = new BooleanMetric(value);
+      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<boolean | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: boolean | undefined;
@@ -119,7 +148,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
