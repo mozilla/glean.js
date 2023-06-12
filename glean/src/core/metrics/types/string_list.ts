@@ -3,12 +3,21 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { MetricValidationResult } from "../metric.js";
+import type { JSONValue } from "../../utils.js";
+import type ErrorManagerSync from "../../error/sync.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import type { MetricValidationResult } from "../metric.js";
+
 import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
-import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
-import type { JSONValue } from "../../utils.js";
+import {
+  testOnlyCheck,
+  truncateStringAtBoundaryWithError,
+  truncateStringAtBoundaryWithErrorSync
+} from "../../utils.js";
+
 import { ErrorType } from "../../error/error_type.js";
 import log from "../../log.js";
 import { validateString } from "../utils.js";
@@ -69,7 +78,50 @@ class InternalStringListMetricType extends MetricType {
     super("string_list", meta, StringListMetric);
   }
 
+  /// SHARED ///
   set(value: string[]): void {
+    if (Context.isPlatformSync()) {
+      this.setSync(value);
+    } else {
+      this.setAsync(value);
+    }
+  }
+
+  add(value: string): void {
+    if (Context.isPlatformSync()) {
+      this.addSync(value);
+    } else {
+      this.addAsync(value);
+    }
+  }
+
+  private addTransformFn(value: string) {
+    return (v?: JSONValue): StringListMetric => {
+      const metric = new StringListMetric([value]);
+      try {
+        v && metric.concat(v);
+      } catch (e) {
+        if (e instanceof MetricValidationError && e.type !== ErrorType.InvalidType) {
+          // We only want to bubble up errors that are not invalid type,
+          // those are only useful if if was the user that passed on an incorrect value
+          // and in this context they would mean there is invalid data in the database.
+          throw e;
+        } else {
+          log(
+            LOG_TAG,
+            `Unexpected value found in storage for metric ${this.name}: ${JSON.stringify(
+              v
+            )}. Overwriting.`
+          );
+        }
+      }
+
+      return metric;
+    };
+  }
+
+  /// ASYNC ///
+  setAsync(value: string[]) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
@@ -89,13 +141,17 @@ class InternalStringListMetricType extends MetricType {
 
         const truncatedList: string[] = [];
         for (let i = 0; i < Math.min(value.length, MAX_LIST_LENGTH); ++i) {
-          const truncatedString = await truncateStringAtBoundaryWithError(this, value[i], MAX_STRING_LENGTH);
+          const truncatedString = await truncateStringAtBoundaryWithError(
+            this,
+            value[i],
+            MAX_STRING_LENGTH
+          );
           truncatedList.push(truncatedString);
         }
 
         metric.set(truncatedList);
         await Context.metricsDatabase.record(this, metric);
-      } catch(e) {
+      } catch (e) {
         if (e instanceof MetricValidationError) {
           await e.recordError(this);
         }
@@ -103,38 +159,21 @@ class InternalStringListMetricType extends MetricType {
     });
   }
 
-  add(value: string): void {
+  addAsync(value: string) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
 
       try {
-        const truncatedValue = await truncateStringAtBoundaryWithError(this, value, MAX_STRING_LENGTH);
-        const transformFn = ((value) => {
-          return (v?: JSONValue): StringListMetric => {
-            const metric = new StringListMetric([value]);
-            try {
-              v && metric.concat(v);
-            } catch(e) {
-              if (e instanceof MetricValidationError && e.type !== ErrorType.InvalidType) {
-                // We only want to bubble up errors that are not invalid type,
-                // those are only useful if if was the user that passed on an incorrect value
-                // and in this context they would mean there is invalid data in the database.
-                throw e;
-              } else {
-                log(
-                  LOG_TAG,
-                  `Unexpected value found in storage for metric ${this.name}: ${JSON.stringify(v)}. Overwriting.`
-                );
-              }
-            }
+        const truncatedValue = await truncateStringAtBoundaryWithError(
+          this,
+          value,
+          MAX_STRING_LENGTH
+        );
 
-            return metric;
-          };
-        })(truncatedValue);
-        await Context.metricsDatabase.transform(this, transformFn);
-      } catch(e) {
+        await Context.metricsDatabase.transform(this, this.addTransformFn(truncatedValue));
+      } catch (e) {
         if (e instanceof MetricValidationError) {
           await e.recordError(this);
         }
@@ -142,6 +181,63 @@ class InternalStringListMetricType extends MetricType {
     });
   }
 
+  /// SYNC ///
+  setSync(value: string[]) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      if (value.length > MAX_LIST_LENGTH) {
+        (Context.errorManager as ErrorManagerSync).record(
+          this,
+          ErrorType.InvalidValue,
+          `String list length of ${value.length} exceeds maximum of ${MAX_LIST_LENGTH}.`
+        );
+      }
+
+      // Create metric here, in order to run the validations and throw in case input in invalid.
+      const metric = new StringListMetric(value);
+
+      const truncatedList: string[] = [];
+      for (let i = 0; i < Math.min(value.length, MAX_LIST_LENGTH); ++i) {
+        const truncatedString = truncateStringAtBoundaryWithErrorSync(
+          this,
+          value[i],
+          MAX_STRING_LENGTH
+        );
+        truncatedList.push(truncatedString);
+      }
+
+      metric.set(truncatedList);
+      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  addSync(value: string) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      const truncatedValue = truncateStringAtBoundaryWithErrorSync(this, value, MAX_STRING_LENGTH);
+
+      (Context.metricsDatabase as MetricsDatabaseSync).transform(
+        this,
+        this.addTransformFn(truncatedValue)
+      );
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string[] | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: string[] | undefined;
@@ -216,8 +312,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
