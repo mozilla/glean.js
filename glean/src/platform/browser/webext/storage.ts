@@ -2,20 +2,21 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import type { StorageIndex } from "../../../core/storage/shared.js";
+import type Store from "../../../core/storage/async.js";
+import type { JSONArray, JSONObject, JSONPrimitive, JSONValue } from "../../../core/utils.js";
+
 import log, { LoggingLevel } from "../../../core/log.js";
-import type { StorageIndex } from "../../../core/storage/index.js";
-import type Store from "../../../core/storage/index.js";
 import {
   updateNestedObject,
   getValueFromNestedObject,
   deleteKeyFromNestedObject
 } from "../../../core/storage/utils.js";
-import type { JSONArray, JSONObject, JSONPrimitive, JSONValue } from "../../../core/utils.js";
 import { isJSONValue, isObject } from "../../../core/utils.js";
 
 const LOG_TAG = "platform.webext.Storage";
 
-type WebExtStoreQuery = { [x: string]: WebExtStoreQuery | JSONPrimitive | JSONArray | null; };
+type WebExtStoreQuery = { [x: string]: WebExtStoreQuery | JSONPrimitive | JSONArray | null };
 
 /**
  * Strips all properties whose values are `null` from a WebExtStoreQuery.
@@ -96,7 +97,7 @@ class WebExtStore implements Store {
    */
   private _buildQuery(index: StorageIndex): WebExtStoreQuery {
     let query = null;
-    for (const key of [ this.rootKey, ...index ].reverse()) {
+    for (const key of [this.rootKey, ...index].reverse()) {
       query = { [key]: query };
     }
 
@@ -109,7 +110,9 @@ class WebExtStore implements Store {
    * @param transformFn The transformation function to apply to the store.
    * @returns The query object with the modified store.
    */
-  private async _buildQueryFromStore(transformFn: (s: JSONObject) => JSONObject): Promise<JSONObject> {
+  private async _buildQueryFromStore(
+    transformFn: (s: JSONObject) => JSONObject
+  ): Promise<JSONObject> {
     const store = await this._getWholeStore();
     return { [this.rootKey]: transformFn(store) };
   }
@@ -124,7 +127,7 @@ class WebExtStore implements Store {
 
     if (isJSONValue(response)) {
       if (isObject(response)) {
-        return getValueFromNestedObject(<JSONObject>response, [ this.rootKey, ...index ]);
+        return getValueFromNestedObject(<JSONObject>response, [this.rootKey, ...index]);
       } else {
         return response;
       }
@@ -140,10 +143,7 @@ class WebExtStore implements Store {
     );
   }
 
-  async update(
-    index: StorageIndex,
-    transformFn: (v?: JSONValue) => JSONValue
-  ): Promise<void> {
+  async update(index: StorageIndex, transformFn: (v?: JSONValue) => JSONValue): Promise<void> {
     if (index.length === 0) {
       throw Error("The index must contain at least one property to update.");
     }
@@ -151,8 +151,8 @@ class WebExtStore implements Store {
     // We need to get the full store object here, change it as requested and then re-save.
     // This is necessary, because if we try to set a key to an inside object on the storage,
     // it will erase any sibling keys that are not mentioned.
-    const query = await this._buildQueryFromStore(
-      store => updateNestedObject(store, index, transformFn)
+    const query = await this._buildQueryFromStore((store) =>
+      updateNestedObject(store, index, transformFn)
     );
     return this.store.set(query);
   }
@@ -163,11 +163,11 @@ class WebExtStore implements Store {
     // This means we need to get the whole store,
     // make the necessary changes to it locally and then reset it.
     try {
-      const query = await this._buildQueryFromStore(
-        store => deleteKeyFromNestedObject(store, index)
+      const query = await this._buildQueryFromStore((store) =>
+        deleteKeyFromNestedObject(store, index)
       );
       return this.store.set(query);
-    } catch(e) {
+    } catch (e) {
       log(
         this.logTag,
         [`Error attempting to delete key ${index.toString()} from storage. Ignoring.`, e],
