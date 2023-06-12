@@ -3,10 +3,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import type { MetricValidationResult } from "../metric.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
+import {
+  testOnlyCheck,
+  truncateStringAtBoundaryWithError,
+  truncateStringAtBoundaryWithErrorSync
+} from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import type { MetricValidationResult } from "../metric.js";
 import { MetricValidationError } from "../metric.js";
 import { Metric } from "../metric.js";
 import { validateString } from "../utils.js";
@@ -47,7 +53,17 @@ class InternalTextMetricType extends MetricType {
     super("text", meta, TextMetric);
   }
 
+  /// SHARED ///
   set(text: string): void {
+    if (Context.isPlatformSync()) {
+      this.setSync(text);
+    } else {
+      this.setAsync(text);
+    }
+  }
+
+  /// ASYNC ///
+  setAsync(text: string) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
@@ -57,7 +73,7 @@ class InternalTextMetricType extends MetricType {
         const truncatedValue = await truncateStringAtBoundaryWithError(this, text, TEXT_MAX_LENGTH);
         const metric = new TextMetric(truncatedValue);
         await Context.metricsDatabase.record(this, metric);
-      } catch(e) {
+      } catch (e) {
         if (e instanceof MetricValidationError) {
           await e.recordError(this);
         }
@@ -65,6 +81,24 @@ class InternalTextMetricType extends MetricType {
     });
   }
 
+  /// SYNC ///
+  setSync(text: string) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      const truncatedValue = truncateStringAtBoundaryWithErrorSync(this, text, TEXT_MAX_LENGTH);
+      const metric = new TextMetric(truncatedValue);
+      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: string | undefined;
@@ -120,8 +154,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
-
