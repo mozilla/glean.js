@@ -3,10 +3,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { MetricValidationResult } from "../metric.js";
+import type ErrorManagerSync from "../../error/sync.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
 import { MetricType } from "../index.js";
 import { testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
-import type { MetricValidationResult } from "../metric.js";
 import { Metric, MetricValidationError } from "../metric.js";
 import { validatePositiveInteger } from "../utils.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -39,8 +42,22 @@ class InternalQuantityMetricType extends MetricType {
     super("quantity", meta, QuantityMetric);
   }
 
+  /// SHARED ///
+  set(value: number): void {
+    if (Context.isPlatformSync()) {
+      this.setSync(value);
+    } else {
+      this.setAsync(value);
+    }
+  }
+
+  /// ASYNC ///
+  setAsync(value: number) {
+    Context.dispatcher.launch(() => this.setUndispatched(value));
+  }
+
   /**
-   * An implemention of `set` that does not dispatch the recording task.
+   * An implementation of `set` that does not dispatch the recording task.
    *
    * # Important
    *
@@ -69,17 +86,43 @@ class InternalQuantityMetricType extends MetricType {
     try {
       const metric = new QuantityMetric(value);
       await Context.metricsDatabase.record(this, metric);
-    } catch(e) {
+    } catch (e) {
       if (e instanceof MetricValidationError) {
         await e.recordError(this);
       }
     }
   }
 
-  set(value: number): void {
-    Context.dispatcher.launch(() => this.setUndispatched(value));
+  /// SYNC ///
+  setSync(value: number) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    if (value < 0) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidValue,
+        `Set negative value ${value}`
+      );
+      return;
+    }
+
+    if (value > Number.MAX_SAFE_INTEGER) {
+      value = Number.MAX_SAFE_INTEGER;
+    }
+
+    try {
+      const metric = new QuantityMetric(value);
+      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
   }
 
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: number | undefined;
@@ -139,7 +182,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
