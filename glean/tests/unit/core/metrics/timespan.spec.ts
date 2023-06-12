@@ -7,7 +7,7 @@ import sinon from "sinon";
 import type { SinonStub } from "sinon";
 
 import { Context } from "../../../../src/core/context";
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import TimeUnit from "../../../../src/core/metrics/time_unit";
 import TimespanMetricType, { InternalTimespanMetricType, TimespanMetric } from "../../../../src/core/metrics/types/timespan";

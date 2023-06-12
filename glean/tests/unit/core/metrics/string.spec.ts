@@ -4,7 +4,7 @@
 
 import assert from "assert";
 
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 import StringMetricType, { MAX_LENGTH_VALUE } from "../../../../src/core/metrics/types/string";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 

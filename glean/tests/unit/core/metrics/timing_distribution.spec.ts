@@ -10,7 +10,7 @@ import TimingDistributionMetricType, {
 } from "../../../../src/core/metrics/types/timing_distribution";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import TimeUnit, { convertTimeUnitToNanos } from "../../../../src/core/metrics/time_unit";
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 import { Histogram } from "../../../../src/histogram/histogram";
 import { Functional } from "../../../../src/histogram/functional";
 import { ErrorType } from "../../../../src/core/error/error_type";

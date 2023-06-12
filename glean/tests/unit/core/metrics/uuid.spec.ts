@@ -5,7 +5,7 @@
 import assert from "assert";
 import { v4 as UUIDv4 } from "uuid";
 
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 import UUIDMetricType from "../../../../src/core/metrics/types/uuid";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";

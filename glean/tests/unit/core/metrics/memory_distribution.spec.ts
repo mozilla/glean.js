@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 import { ErrorType } from "../../../../src/core/error/error_type";
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { convertMemoryUnitToBytes, MemoryUnit } from "../../../../src/core/metrics/memory_unit";
 import MemoryDistributionMetricType, {

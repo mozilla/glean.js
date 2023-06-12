@@ -8,12 +8,12 @@ import { v4 as UUIDv4 } from "uuid";
 
 import { Configuration } from "../../../../src/core/config";
 import { Context } from "../../../../src/core/context";
-import PingUploadManager from "../../../../src/core/upload/manager";
+import PingUploadManager from "../../../../src/core/upload/manager/async";
 import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 import { CounterUploader, WaitableUploader } from "../../../utils";
 import { DELETION_REQUEST_PING_NAME } from "../../../../src/core/constants";
-import PingsDatabase from "../../../../src/core/pings/database";
-import { makePath } from "../../../../src/core/pings/maker";
+import PingsDatabase from "../../../../src/core/pings/database/async";
+import { makePath } from "../../../../src/core/pings/maker/shared";
 import Policy from "../../../../src/core/upload/policy";
 import type { Upload_UploadTask } from "../../../../src/core/upload/task";
 import { UploadTaskTypes } from "../../../../src/core/upload/task";

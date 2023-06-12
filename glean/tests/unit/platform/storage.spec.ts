@@ -6,14 +6,14 @@ import assert from "assert";
 import sqlite3 from "sqlite3";
 import "fake-indexeddb/auto";
 
-import { firefoxDriver, setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
-import type Store from "../../../src/core/storage";
+import type Store from "../../../src/core/storage/async";
+import type { OptionalAsync } from "../../../src/core/types";
+import type { JSONValue } from "../../../src/core/utils";
 
+import { firefoxDriver, setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
 import TestStore from "../../../src/platform/test/storage";
 import QMLStore from "../../../src/platform/qt/storage";
-import WebStore from "../../../src/platform/browser/web/storage";
 import WebExtStore from "../../../src/platform/browser/webext/storage";
-import type { JSONValue } from "../../../src/core/utils";
 import { isUndefined } from "../../../src/core/utils";
 
 /**
@@ -50,11 +50,11 @@ class MockQMLStore extends QMLStore {
   }
 }
 
-// This object will contain the store names and
+// This object will contain all the asynchronous store names and
 // a function that will initialize and return the store when done.
-const stores: {
+const asyncStores: {
   [store: string]: {
-    initializeStore: () => Store | Promise<Store>,
+    initializeStore: () => OptionalAsync<Store>,
     before?: () => Promise<void>,
     afterAll?: () => Promise<void>
   }
@@ -68,14 +68,6 @@ const stores: {
       QMLMockDB.close();
       return Promise.resolve();
     }
-  },
-  "WebStore": {
-    initializeStore: async (): Promise<WebStore> => {
-      const store = new WebStore("test");
-      // Clear the store before starting.
-      await store.delete([]);
-      return store;
-    },
   },
   "WebExtStore": {
     initializeStore: (): WebExtStore => new WebExtStore("test"),
@@ -91,7 +83,7 @@ const stores: {
           // @ts-ignore
           local: {
             // We need to ignore type checks for the following properties because they do not
-            // match perfectly with what is decribed by out web ext types package.
+            // match perfectly with what is described by out web ext types package.
             // Moreover, it will also complain about not defining the `clear` and `remove`
             // methods, but these are not necessary for our tests.
             //
@@ -113,8 +105,8 @@ const stores: {
   }
 };
 
-for (const store in stores) {
-  const currentStore = stores[store];
+for (const store in asyncStores) {
+  const currentStore = asyncStores[store];
 
   describe(`storage/${store}`, function () {
     after(async function () {
@@ -271,3 +263,26 @@ for (const store in stores) {
     });
   });
 }
+
+// TODO
+// Write tests for the synchronous store. `LocalStorage` does not exist by default,
+// so it needs to be mocked instead, like we do for QML.
+//
+// This object will contain all the synchronous store names and
+// a function that will initialize and return the store when done.
+// const syncStores: {
+//   [store: string]: {
+//     initializeStore: () => SynchronousStore;
+//     before?: () => void;
+//     afterAll?: () => void;
+//   };
+// } = {
+//   WebStore: {
+//     initializeStore: (): WebStore => {
+//       const store = new WebStore("test");
+//       // Clear the store before starting.
+//       store.delete([]);
+//       return store;
+//     }
+//   }
+// };
