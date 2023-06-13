@@ -114,7 +114,7 @@
     "eslint-plugin-mocha": "^10.0.1",
     "eslint-plugin-notice": "^0.9.10",
     "fake-indexeddb": "^4.0.0",
-    "geckodriver": "^3.0.1",
+    "geckodriver": "^4.0.4",
     "gh-pages": "^4.0.0",
     "jsdom": "22.1.0",
     "jsdom-global": "3.0.2",
