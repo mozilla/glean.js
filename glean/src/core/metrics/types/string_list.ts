@@ -103,8 +103,8 @@ class InternalStringListMetricType extends MetricType {
       } catch (e) {
         if (e instanceof MetricValidationError && e.type !== ErrorType.InvalidType) {
           // We only want to bubble up errors that are not invalid type,
-          // those are only useful if if was the user that passed on an incorrect value
-          // and in this context they would mean there is invalid data in the database.
+          // those are only useful if it was the user that passed on an incorrect value
+          // and in this context that would mean there is invalid data in the database.
           throw e;
         } else {
           log(

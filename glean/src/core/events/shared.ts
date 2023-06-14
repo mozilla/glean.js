@@ -13,7 +13,7 @@ export class CoreEvent<
   // The expected type of the action result. To be returned by the plugin.
   Result = unknown
 > {
-  // The plugin to be triggered every time this even occurs.
+  // The plugin to be triggered every time this event occurs.
   private plugin?: Plugin<CoreEvent<Context, Result>>;
 
   constructor(readonly name: string) {}

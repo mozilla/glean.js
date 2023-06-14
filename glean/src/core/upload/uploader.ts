@@ -38,7 +38,7 @@ export class UploadResult {
 }
 
 /**
- * Uploader abstract class, actually uploading logic varies per platform.
+ * Uploader abstract class, actual uploading logic varies per platform.
  */
 export abstract class Uploader {
   /**
