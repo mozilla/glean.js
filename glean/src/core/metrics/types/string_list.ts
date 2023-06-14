@@ -51,18 +51,18 @@ export class StringListMetric extends Metric<string[], string[]> {
 
   concat(list: unknown): void {
     const correctedList = this.validateOrThrow(list);
-    const result = [...this._inner, ...correctedList];
+    const result = [...this.inner, ...correctedList];
     if (result.length > MAX_LIST_LENGTH) {
       throw new MetricValidationError(
         `String list length of ${result.length} would exceed maximum of ${MAX_LIST_LENGTH}.`,
         ErrorType.InvalidValue
       );
     }
-    this._inner = result;
+    this.inner = result;
   }
 
   payload(): string[] {
-    return this._inner;
+    return this.inner;
   }
 }
 

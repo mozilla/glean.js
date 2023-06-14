@@ -73,7 +73,7 @@ export class UrlMetric extends Metric<string, string> {
   }
 
   payload(): string {
-    return this._inner;
+    return this.inner;
   }
 }
 

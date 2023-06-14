@@ -27,11 +27,11 @@ export class RateMetric extends Metric<Rate, Rate> {
   }
 
   get numerator(): number {
-    return this._inner.numerator;
+    return this.inner.numerator;
   }
 
   get denominator(): number {
-    return this._inner.denominator;
+    return this.inner.denominator;
   }
 
   validate(v: unknown): MetricValidationResult {
@@ -56,7 +56,7 @@ export class RateMetric extends Metric<Rate, Rate> {
   }
 
   payload(): Rate {
-    return this._inner;
+    return this.inner;
   }
 }
 

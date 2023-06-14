@@ -32,7 +32,7 @@ export class LabeledMetric extends Metric<JSONValue, JSONValue> {
   }
 
   payload(): JSONValue {
-    return this._inner;
+    return this.inner;
   }
 }
 

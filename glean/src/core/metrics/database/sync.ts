@@ -43,7 +43,7 @@ class MetricsDatabaseSync {
       return;
     }
 
-    const store = this._chooseStore(metric.lifetime);
+    const store = this.chooseStore(metric.lifetime);
 
     const storageKey = metric.identifierSync();
 
@@ -59,7 +59,7 @@ class MetricsDatabaseSync {
     metricType: string,
     metricIdentifier: string
   ): boolean {
-    const store = this._chooseStore(lifetime);
+    const store = this.chooseStore(lifetime);
     const value = store.get([ping, metricType, metricIdentifier]);
     return !isUndefined(value);
   }
@@ -70,7 +70,7 @@ class MetricsDatabaseSync {
     metricType: string,
     metricIdentifier: string
   ): number {
-    const store = this._chooseStore(lifetime);
+    const store = this.chooseStore(lifetime);
     const pingStorage = store.get([ping, metricType]);
     if (isUndefined(pingStorage)) {
       return 0;
@@ -80,7 +80,7 @@ class MetricsDatabaseSync {
   }
 
   getMetric<T extends JSONValue>(ping: string, metric: MetricType): T | undefined {
-    const store = this._chooseStore(metric.lifetime);
+    const store = this.chooseStore(metric.lifetime);
     const storageKey = metric.identifierSync();
     const value = store.get([ping, metric.type, storageKey]);
     if (!isUndefined(value) && !validateMetricInternalRepresentation<T>(metric.type, value)) {
@@ -133,7 +133,7 @@ class MetricsDatabaseSync {
   }
 
   clear(lifetime: Lifetime, ping?: string): void {
-    const store = this._chooseStore(lifetime);
+    const store = this.chooseStore(lifetime);
     const storageIndex = ping ? [ping] : [];
     store.delete(storageIndex);
   }
@@ -152,7 +152,7 @@ class MetricsDatabaseSync {
    * @returns The store related to the given lifetime.
    * @throws If the provided lifetime does not have a related store.
    */
-  private _chooseStore(lifetime: Lifetime): SynchronousStore {
+  private chooseStore(lifetime: Lifetime): SynchronousStore {
     switch (lifetime) {
     case Lifetime.User:
       return this.userStore;
@@ -177,7 +177,7 @@ class MetricsDatabaseSync {
    *          in case no data was found or the data that was found, was invalid.
    */
   private getCorrectedPingData(ping: string, lifetime: Lifetime): Metrics {
-    const store = this._chooseStore(lifetime);
+    const store = this.chooseStore(lifetime);
     const data = store.get([ping]);
     if (isUndefined(data)) {
       return {};

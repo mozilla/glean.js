@@ -71,19 +71,19 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
    * @returns A date object.
    */
   get date(): Date {
-    return new Date(this._inner.date);
+    return new Date(this.inner.date);
   }
 
   private get timezone(): number {
-    return this._inner.timezone;
+    return this.inner.timezone;
   }
 
   private get timeUnit(): TimeUnit {
-    return this._inner.timeUnit;
+    return this.inner.timeUnit;
   }
 
   private get dateISOString(): string {
-    return this._inner.date;
+    return this.inner.date;
   }
 
   validate(v: unknown): MetricValidationResult {

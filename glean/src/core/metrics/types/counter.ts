@@ -26,12 +26,12 @@ export class CounterMetric extends Metric<number, number> {
   }
 
   payload(): number {
-    return this._inner;
+    return this.inner;
   }
 
   saturatingAdd(amount: unknown): void {
     const correctAmount = this.validateOrThrow(amount);
-    this._inner = saturatingAdd(this._inner, correctAmount);
+    this.inner = saturatingAdd(this.inner, correctAmount);
   }
 }
 

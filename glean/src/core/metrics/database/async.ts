@@ -42,7 +42,7 @@ class MetricsDatabase {
       return;
     }
 
-    const store = this._chooseStore(metric.lifetime);
+    const store = this.chooseStore(metric.lifetime);
     const storageKey = await metric.identifier();
     for (const ping of metric.sendInPings) {
       const finalTransformFn = (v?: JSONValue): JSONValue => transformFn(v).get();
@@ -56,7 +56,7 @@ class MetricsDatabase {
     metricType: string,
     metricIdentifier: string
   ): Promise<boolean> {
-    const store = this._chooseStore(lifetime);
+    const store = this.chooseStore(lifetime);
     const value = await store.get([ping, metricType, metricIdentifier]);
     return !isUndefined(value);
   }
@@ -67,7 +67,7 @@ class MetricsDatabase {
     metricType: string,
     metricIdentifier: string
   ): Promise<number> {
-    const store = this._chooseStore(lifetime);
+    const store = this.chooseStore(lifetime);
     const pingStorage = await store.get([ping, metricType]);
     if (isUndefined(pingStorage)) {
       return 0;
@@ -77,7 +77,7 @@ class MetricsDatabase {
   }
 
   async getMetric<T extends JSONValue>(ping: string, metric: MetricType): Promise<T | undefined> {
-    const store = this._chooseStore(metric.lifetime);
+    const store = this.chooseStore(metric.lifetime);
     const storageKey = await metric.identifier();
     const value = await store.get([ping, metric.type, storageKey]);
     if (!isUndefined(value) && !validateMetricInternalRepresentation<T>(metric.type, value)) {
@@ -130,7 +130,7 @@ class MetricsDatabase {
   }
 
   async clear(lifetime: Lifetime, ping?: string): Promise<void> {
-    const store = this._chooseStore(lifetime);
+    const store = this.chooseStore(lifetime);
     const storageIndex = ping ? [ping] : [];
     await store.delete(storageIndex);
   }
@@ -149,7 +149,7 @@ class MetricsDatabase {
    * @returns The store related to the given lifetime.
    * @throws If the provided lifetime does not have a related store.
    */
-  private _chooseStore(lifetime: Lifetime): Store {
+  private chooseStore(lifetime: Lifetime): Store {
     switch (lifetime) {
     case Lifetime.User:
       return this.userStore;
@@ -174,7 +174,7 @@ class MetricsDatabase {
    *          in case no data was found or the data that was found, was invalid.
    */
   private async getCorrectedPingData(ping: string, lifetime: Lifetime): Promise<Metrics> {
-    const store = this._chooseStore(lifetime);
+    const store = this.chooseStore(lifetime);
     const data = await store.get([ping]);
     if (isUndefined(data)) {
       return {};

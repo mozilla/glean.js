@@ -31,7 +31,7 @@ export class BooleanMetric extends Metric<boolean, boolean> {
   }
 
   payload(): boolean {
-    return this._inner;
+    return this.inner;
   }
 }
 

@@ -57,7 +57,7 @@ export class MemoryDistributionMetric extends Metric<
   }
 
   get memoryDistribution(): Record<number, number> {
-    return this._inner;
+    return this.inner;
   }
 
   validate(v: unknown): MetricValidationResult {
@@ -84,7 +84,7 @@ export class MemoryDistributionMetric extends Metric<
 
   payload(): MemoryDistributionPayloadRepresentation {
     const hist = constructFunctionalHistogramFromValues(
-      this._inner as number[],
+      this.inner as number[],
       LOG_BASE,
       BUCKETS_PER_MAGNITUDE
     );

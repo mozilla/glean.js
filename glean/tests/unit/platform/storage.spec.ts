@@ -31,7 +31,7 @@ class MockQMLStore extends QMLStore {
     this.initialized = Promise.all([super.initialized, this.delete([])]);
   }
 
-  _executeQuery(query: string): Promise<LocalStorage.QueryResult | undefined> {
+  executeQuery(query: string): Promise<LocalStorage.QueryResult | undefined> {
     return new Promise((resolve, reject) => {
       QMLMockDB.all(query, (err, rows) => {
         if (err) {

@@ -52,7 +52,7 @@ export class CustomDistributionMetric extends Metric<
   }
 
   get customDistribution(): CustomDistributionInternalRepresentation {
-    return this._inner;
+    return this.inner;
   }
 
   validate(v: unknown): MetricValidationResult {
@@ -109,7 +109,7 @@ export class CustomDistributionMetric extends Metric<
   }
 
   payload(): CustomDistributionPayloadRepresentation {
-    const { bucketCount, histogramType, rangeMax, rangeMin, values } = this._inner;
+    const { bucketCount, histogramType, rangeMax, rangeMin, values } = this.inner;
     const hist = constructHistogramByType(
       values,
       rangeMin,

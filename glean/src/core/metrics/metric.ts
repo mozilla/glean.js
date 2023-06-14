@@ -54,10 +54,10 @@ export abstract class Metric<
   InternalRepresentation extends JSONValue,
   PayloadRepresentation extends JSONValue
 > {
-  protected _inner: InternalRepresentation;
+  protected inner: InternalRepresentation;
 
   constructor(v: unknown) {
-    this._inner = this.validateOrThrow(v);
+    this.inner = this.validateOrThrow(v);
   }
 
   /**
@@ -66,7 +66,7 @@ export abstract class Metric<
    * @returns The metric value.
    */
   get(): InternalRepresentation {
-    return this._inner;
+    return this.inner;
   }
 
   /**
@@ -75,7 +75,7 @@ export abstract class Metric<
    * @param v The value to set.
    */
   set(v: InternalRepresentation): void {
-    this._inner = v;
+    this.inner = v;
   }
 
   /**

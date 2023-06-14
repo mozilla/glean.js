@@ -26,7 +26,7 @@ export class QuantityMetric extends Metric<number, number> {
   }
 
   payload(): number {
-    return this._inner;
+    return this.inner;
   }
 }
 
