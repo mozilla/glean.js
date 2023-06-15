@@ -14,7 +14,6 @@ import {
 } from "../../../core/storage/utils.js";
 
 const LOG_TAG = "platform.web.Storage";
-const STORE_NAME = "Gleanjs";
 
 class WebStore implements SynchronousStore {
   private logTag: string;
@@ -27,11 +26,11 @@ class WebStore implements SynchronousStore {
     let result;
 
     try {
-      const json = localStorage.getItem(STORE_NAME) || "{}";
+      const json = localStorage.getItem(this.rootKey) || "{}";
       const obj = JSON.parse(json) as JSONObject;
 
       if (index.length > 0) {
-        result = getValueFromNestedObject(obj, [this.rootKey, ...index]);
+        result = getValueFromNestedObject(obj, index);
       } else {
         result = Object.keys(obj).length === 0 ? undefined : obj;
       }
@@ -43,13 +42,12 @@ class WebStore implements SynchronousStore {
   }
 
   update(index: StorageIndex, transformFn: (v?: JSONValue) => JSONValue): void {
-    // TODO: Fix issue where stores are written to nested objects.
     try {
-      const json = localStorage.getItem(STORE_NAME) || "{}";
+      const json = localStorage.getItem(this.rootKey) || "{}";
       const obj = JSON.parse(json) as JSONObject;
 
-      const updatedObj = updateNestedObject(obj, [this.rootKey, ...index], transformFn);
-      localStorage.setItem(STORE_NAME, JSON.stringify(updatedObj));
+      const updatedObj = updateNestedObject(obj, index, transformFn);
+      localStorage.setItem(this.rootKey, JSON.stringify(updatedObj));
     } catch (err) {
       log(LOG_TAG, ["Unable to update value from local storage.", err], LoggingLevel.Error);
     }
@@ -57,16 +55,15 @@ class WebStore implements SynchronousStore {
 
   delete(index: StorageIndex): void {
     try {
-      const json = localStorage.getItem(STORE_NAME) || "{}";
+      const json = localStorage.getItem(this.rootKey) || "{}";
       const obj = JSON.parse(json) as JSONObject;
 
       if (index.length === 0) {
-        const updatedObj = deleteKeyFromNestedObject(obj, [this.rootKey]);
-        localStorage.setItem(STORE_NAME, JSON.stringify(updatedObj));
+        localStorage.removeItem(this.rootKey);
       } else {
         try {
-          const updatedObj = deleteKeyFromNestedObject(obj, [this.rootKey, ...index]);
-          localStorage.setItem(STORE_NAME, JSON.stringify(updatedObj));
+          const updatedObj = deleteKeyFromNestedObject(obj, index);
+          localStorage.setItem(this.rootKey, JSON.stringify(updatedObj));
         } catch (e) {
           log(
             this.logTag,
