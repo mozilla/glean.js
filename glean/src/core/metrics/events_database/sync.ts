@@ -33,7 +33,6 @@ import {
  *
  * @param sendInPings The list of pings this metric is sent in.
  * @param time The time to record on the `#glean_reference_time` extra key. Defaults to `Context.startTime`.
- * @returns A promise that resolved once recording is complete.
  */
 function recordGleanRestartedEvent(sendInPings: string[], time = Context.startTime): void {
   const metric = getGleanRestartedEventMetric(sendInPings);
