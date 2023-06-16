@@ -376,27 +376,14 @@ namespace Glean {
     }
   }
 
-  // TODO
-  // Do we still need this? Since everything is happening synchronously, there aren't
-  // any tasks that would ever be pending.
   /**
-   * Finishes executing all pending tasks
-   * and shuts down both Glean's dispatcher and the ping uploader.
-   *
-   * If Glean is not initialized this is a no-op.
-   *
-   * # Important
-   *
-   * This is irreversible.
-   * Only a restart will return Glean back to an idle state.
-   *
-   * @returns A promise which resolves once the shutdown is complete.
+   * Calling shutdown on the synchronous implementation is a no-op. Glean's
+   * synchronous implementation does not use the dispatcher, so there is no
+   * action to perform.
    */
   export function shutdown(): void {
-    if (!Context.initialized) {
-      log(LOG_TAG, "Attempted to shutdown Glean, but Glean is not initialized. Ignoring.");
-      return;
-    }
+    log(LOG_TAG, "Calling shutdown for the Glean web implementation is a no-op. Ignoring.");
+    return;
   }
 
   /**
