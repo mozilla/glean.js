@@ -18,8 +18,6 @@ import CoreEvents from "../core/events/async.js";
 const JWE_ALGORITHM = "ECDH-ES";
 const JWE_CONTENT_ENCODING = "A256GCM";
 
-// TODO: Determine if we still need this plugin.
-
 /**
  * A plugin that listens for the `afterPingCollection` event and encrypts **all** outgoing pings
  * with the JWK provided upon initialization.
