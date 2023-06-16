@@ -86,11 +86,11 @@ class PingUploadWorkerSync {
    * @returns The status number of the response or `undefined` if unable to attempt upload.
    */
   private async attemptPingUpload(ping: QueuedPing): Promise<UploadResult> {
-    // TODO
-    // Update this to ignore the API response since we cannot handle
-    // it synchronously.
     try {
       const finalPing = this.buildPingRequest(ping);
+
+      // The POST call has to be asynchronous. Once the API call is triggered,
+      // we rely on the browser's "keepalive" header.
       return this.uploader.post(
         `${this.serverEndpoint}${ping.path}`,
         finalPing.payload,
@@ -124,9 +124,6 @@ class PingUploadWorkerSync {
       const task = getUploadTask();
       switch (task.type) {
       case UploadTaskTypes.Upload:
-        // TODO
-        // Because we cannot await this response always, we need to delete the ping
-        // data BEFORE the ping is sent.
         this.attemptPingUpload(task.ping)
           .then((result) => {
             processUploadResponse(task.ping, result);
