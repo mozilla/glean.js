@@ -69,15 +69,15 @@ export class App {
 export async function runWebTest(driver) {
   try {
     // Loading the sample webpage will record a metric and submit a ping.
-    // If the ping is submitted succesfully an element in the DOM with the id `msg`
-    // will receive the text "Ping submitted succesfully."
+    // If the ping is submitted successfully an element in the DOM with the id `msg`
+    // will receive the text "Ping submitted successfully."
     await driver.get(`http://localhost:${PORT}/`);
     // Give it time to send the ping request.
     const successTextContainer = await driver.findElement(By.id("msg"));
     await driver.wait(
       until.elementTextIs(
         successTextContainer,
-        "Ping submitted succesfully."
+        "Ping submitted successfully."
       ), 11_000); // 1s more than the default upload timeout in Glean.
 
     console.log("Test passed.");
