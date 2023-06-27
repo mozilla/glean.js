@@ -6,7 +6,7 @@ import { ErrorType } from "../core/error/error_type.js";
 import { testResetGlean } from "../core/testing/index.js";
 
 import platform from "../platform/qt/index.js";
-import base from "./base.js";
+import { baseAsync } from "./base/async.js";
 
 // Private Glean types to export.
 import PingType from "../core/pings/ping_type.js";
@@ -28,7 +28,7 @@ import UUIDMetricType from "../core/metrics/types/uuid.js";
 import URLMetricType from "../core/metrics/types/url.js";
 
 export default {
-  ...base(platform),
+  ...baseAsync(platform),
 
   ErrorType,
 

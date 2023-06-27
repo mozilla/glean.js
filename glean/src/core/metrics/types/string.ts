@@ -3,11 +3,17 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { MetricValidationResult } from "../metric.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import type { MetricValidationResult } from "../metric.js";
 import { Metric, MetricValidationError } from "../metric.js";
-import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import {
+  testOnlyCheck,
+  truncateStringAtBoundaryWithError,
+  truncateStringAtBoundaryWithErrorSync
+} from "../../utils.js";
 import { validateString } from "../utils.js";
 
 const LOG_TAG = "core.metrics.StringMetricType";
@@ -23,7 +29,7 @@ export class StringMetric extends Metric<string, string> {
   }
 
   payload(): string {
-    return this._inner;
+    return this.inner;
   }
 }
 
@@ -39,8 +45,22 @@ export class InternalStringMetricType extends MetricType {
     super("string", meta, StringMetric);
   }
 
+  /// SHARED ///
+  set(value: string): void {
+    if (Context.isPlatformSync()) {
+      this.setSync(value);
+    } else {
+      this.setAsync(value);
+    }
+  }
+
+  /// ASYNC ///
+  setAsync(value: string) {
+    Context.dispatcher.launch(() => this.setUndispatched(value));
+  }
+
   /**
-   * An implemention of `set` that does not dispatch the recording task.
+   * An implementation of `set` that does not dispatch the recording task.
    *
    * # Important
    *
@@ -57,17 +77,31 @@ export class InternalStringMetricType extends MetricType {
       const truncatedValue = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_VALUE);
       const metric = new StringMetric(truncatedValue);
       await Context.metricsDatabase.record(this, metric);
-    } catch(e) {
+    } catch (e) {
       if (e instanceof MetricValidationError) {
         await e.recordError(this);
       }
     }
   }
 
-  set(value: string): void {
-    Context.dispatcher.launch(() => this.setUndispatched(value));
+  /// SYNC ///
+  setSync(value: string) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      const truncatedValue = truncateStringAtBoundaryWithErrorSync(this, value, MAX_LENGTH_VALUE);
+      const metric = new StringMetric(truncatedValue);
+      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
   }
 
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: string | undefined;
@@ -131,7 +165,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

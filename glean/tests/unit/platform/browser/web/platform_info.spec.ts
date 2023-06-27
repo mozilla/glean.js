@@ -4,11 +4,11 @@
 
 import assert from "assert";
 
-import { KnownOperatingSystems } from "../../../../../src/core/platform_info";
+import { KnownOperatingSystems } from "../../../../../src/core/platform_info/shared";
 import PlatformInfo from "../../../../../src/platform/browser/web/platform_info";
 
 describe("PlatformInfo/browser/web", function () {
-  it("expected OS is returned for known user agent strings", async function () {
+  it("expected OS is returned for known user agent strings", function () {
     // Examples come from: https://developers.whatismybrowser.com/useragents/explore/operating_system_name/
     const expected: Record<string, string[]> = {
       [KnownOperatingSystems.Windows]: [
@@ -79,7 +79,7 @@ describe("PlatformInfo/browser/web", function () {
         // eslint-disable-next-line @typescript-eslint/no-unsafe-call
         navigator.__defineGetter__("userAgent", () => ua);
         assert.strictEqual(
-          await PlatformInfo.os(),
+          PlatformInfo.os(),
           expectedOS,
           `Expected "${ua}" User-Agent string to yield the "${expectedOS}" OS.`
         );

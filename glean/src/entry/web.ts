@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import platform from "../platform/browser/web/index.js";
-import base from "./base.js";
+import { baseSync } from "./base/sync.js";
 
 export { default as Uploader, UploadResult, UploadResultStatus } from "../core/upload/uploader.js";
-export default base(platform);
+export default baseSync(platform);

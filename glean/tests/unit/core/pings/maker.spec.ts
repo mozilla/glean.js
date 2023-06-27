@@ -6,9 +6,10 @@ import assert from "assert";
 import sinon from "sinon";
 
 import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
-import * as PingMaker from "../../../../src/core/pings/maker";
-import Glean from "../../../../src/core/glean";
-import CoreEvents from "../../../../src/core/events";
+import * as PingMaker from "../../../../src/core/pings/maker/async";
+import { getPingHeaders } from "../../../../src/core/pings/maker/shared";
+import Glean from "../../../../src/core/glean/async";
+import CoreEvents from "../../../../src/core/events/async";
 import Plugin from "../../../../src/plugins";
 import type { JSONArray, JSONObject } from "../../../../src/core/utils";
 import { Context } from "../../../../src/core/context";
@@ -149,10 +150,10 @@ describe("PingMaker", function() {
     assert.deepStrictEqual({
       "X-Debug-ID": "test",
       "X-Source-Tags": "tag1,tag2,tag3"
-    }, PingMaker.getPingHeaders());
+    }, getPingHeaders());
 
     await testResetGlean(testAppId);
-    assert.strictEqual(PingMaker.getPingHeaders(), undefined);
+    assert.strictEqual(getPingHeaders(), undefined);
   });
 
   it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {

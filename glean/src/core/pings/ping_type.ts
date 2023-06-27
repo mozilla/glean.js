@@ -4,7 +4,8 @@
 
 import { DELETION_REQUEST_PING_NAME } from "../constants.js";
 import { generateUUIDv4, testOnlyCheck } from "../utils.js";
-import collectAndStorePing from "../pings/maker.js";
+import collectAndStorePing from "../pings/maker/async.js";
+import collectAndStorePingSync from "../pings/maker/sync.js";
 import type CommonPingData from "./common_ping_data.js";
 import { Context } from "../context.js";
 import log, { LoggingLevel } from "../log.js";
@@ -24,7 +25,6 @@ function isDeletionRequest(name: string): boolean {
   return name === DELETION_REQUEST_PING_NAME;
 }
 
-
 export class InternalPingType implements CommonPingData {
   readonly name: string;
   readonly includeClientId: boolean;
@@ -37,15 +37,59 @@ export class InternalPingType implements CommonPingData {
   private rejectTestPromiseFunction?: PromiseCallback;
   private testCallback?: ValidatorFunction;
 
-  constructor (meta: CommonPingData) {
+  constructor(meta: CommonPingData) {
     this.name = meta.name;
     this.includeClientId = meta.includeClientId;
     this.sendIfEmpty = meta.sendIfEmpty;
     this.reasonCodes = meta.reasonCodes ?? [];
   }
 
+  /// SHARED ///
+  submit(reason?: string): void {
+    if (Context.isPlatformSync()) {
+      this.submitSync(reason);
+    } else {
+      this.submitAsync(reason);
+    }
+  }
+
+  /// ASYNC ///
+  submitAsync(reason?: string) {
+    // **** Read this before changing the following code! ****
+    //
+    // The Dispatcher does not allow dispatched tasks to await on
+    // other dispatched tasks. Unfortunately, this causes a deadlock.
+    // In order to work around that problem, we kick off validation
+    // right before the actual submission takes place, through another
+    // async function (and not through the dispatcher). After validation
+    // is complete, regardless of the outcome, the ping submission is
+    // finally triggered.
+    if (this.testCallback) {
+      this.testCallback(reason)
+        .then(() => {
+          this.internalSubmit(reason, this.resolveTestPromiseFunction);
+        })
+        .catch((e) => {
+          log(
+            LOG_TAG,
+            [`There was an error validating "${this.name}" (${reason ?? "no reason"}):`, e],
+            LoggingLevel.Error
+          );
+          this.internalSubmit(reason, this.rejectTestPromiseFunction);
+        });
+    } else {
+      this.internalSubmit(reason);
+    }
+  }
+
+  private internalSubmit(reason?: string, testResolver?: PromiseCallback): void {
+    Context.dispatcher.launch(async () => {
+      await this.submitUndispatched(reason, testResolver);
+    });
+  }
+
   /**
-   * An implemention of `submit` that does not dispatch the submission task.
+   * An implementation of `submit` that does not dispatch the submission task.
    *
    * # Important
    *
@@ -90,13 +134,8 @@ export class InternalPingType implements CommonPingData {
     }
   }
 
-  private internalSubmit(reason?: string, testResolver?: PromiseCallback): void {
-    Context.dispatcher.launch(async () => {
-      await this.submitUndispatched(reason, testResolver);
-    });
-  }
-
-  submit(reason?: string): void {
+  /// SYNC ///
+  submitSync(reason?: string) {
     // **** Read this before changing the following code! ****
     //
     // The Dispatcher does not allow dispatched tasks to await on
@@ -109,21 +148,56 @@ export class InternalPingType implements CommonPingData {
     if (this.testCallback) {
       this.testCallback(reason)
         .then(() => {
-          this.internalSubmit(reason, this.resolveTestPromiseFunction);
+          this.internalSubmitSync(reason, this.resolveTestPromiseFunction);
         })
-        .catch(e => {
+        .catch((e) => {
           log(
             LOG_TAG,
             [`There was an error validating "${this.name}" (${reason ?? "no reason"}):`, e],
             LoggingLevel.Error
           );
-          this.internalSubmit(reason, this.rejectTestPromiseFunction);
+          this.internalSubmitSync(reason, this.rejectTestPromiseFunction);
         });
     } else {
-      this.internalSubmit(reason);
+      this.internalSubmitSync(reason);
     }
   }
 
+  private internalSubmitSync(reason?: string, testResolver?: PromiseCallback) {
+    if (!Context.initialized) {
+      log(LOG_TAG, "Glean must be initialized before submitting pings.", LoggingLevel.Info);
+      return;
+    }
+
+    if (!Context.uploadEnabled && !isDeletionRequest(this.name)) {
+      log(
+        LOG_TAG,
+        "Glean disabled: not submitting pings. Glean may still submit the deletion-request ping.",
+        LoggingLevel.Info
+      );
+      return;
+    }
+
+    let correctedReason = reason;
+    if (reason && !this.reasonCodes.includes(reason)) {
+      log(LOG_TAG, `Invalid reason code ${reason} from ${this.name}. Ignoring.`, LoggingLevel.Warn);
+      correctedReason = undefined;
+    }
+
+    const identifier = generateUUIDv4();
+    collectAndStorePingSync(identifier, this, correctedReason);
+
+    if (testResolver) {
+      testResolver();
+
+      // Finally clean up!
+      this.resolveTestPromiseFunction = undefined;
+      this.rejectTestPromiseFunction = undefined;
+      this.testCallback = undefined;
+    }
+  }
+
+  /// TESTING ///
   async testBeforeNextSubmit(callbackFn: ValidatorFunction): Promise<void> {
     if (testOnlyCheck("testBeforeNextSubmit", LOG_TAG)) {
       if (this.testCallback) {

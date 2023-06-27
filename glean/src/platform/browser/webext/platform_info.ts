@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type PlatformInfo from "../../../core/platform_info.js";
-import { KnownOperatingSystems } from "../../../core/platform_info.js";
+import type PlatformInfo from "../../../core/platform_info/async.js";
+import { KnownOperatingSystems } from "../../../core/platform_info/shared.js";
 
 const WebExtPlatformInfo: PlatformInfo = {
   async os(): Promise<KnownOperatingSystems> {
@@ -29,7 +29,7 @@ const WebExtPlatformInfo: PlatformInfo = {
 
   async osVersion(): Promise<string> {
     // The only way I found to extract osVersion from the browser was through the userAgent string
-    // and that is unreliable enought that I would rather not do it.
+    // and that is unreliable enough that I would rather not do it.
     //
     // For web extensions, browser type and version are more important anyways.
     return Promise.resolve("Unknown");

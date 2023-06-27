@@ -4,15 +4,15 @@
 
 import { gzipSync, strToU8 } from "fflate";
 
-import type { QueuedPing } from "./manager";
-import type Uploader from "./uploader.js";
-import type { UploadTask } from "./task.js";
-import { GLEAN_VERSION } from "../constants.js";
-import { Context } from "../context.js";
-import log, { LoggingLevel } from "../log.js";
-import Policy from "./policy.js";
-import { UploadResult, UploadResultStatus } from "./uploader.js";
-import { UploadTaskTypes } from "./task.js";
+import type { QueuedPing } from "../manager/shared.js";
+import type Uploader from "../uploader.js";
+import type { UploadTask } from "../task.js";
+import { GLEAN_VERSION } from "../../constants.js";
+import { Context } from "../../context.js";
+import log, { LoggingLevel } from "../../log.js";
+import Policy from "../policy.js";
+import { UploadResult, UploadResultStatus } from "../uploader.js";
+import { UploadTaskTypes } from "../task.js";
 
 const LOG_TAG = "core.Upload.PingUploadWorker";
 
@@ -43,7 +43,7 @@ class PingUploadWorker {
   // and it will need to be resolved from the outside.
   private waitPromiseResolver?: (aborted: boolean) => void;
 
-  constructor (
+  constructor(
     private readonly uploader: Uploader,
     private readonly serverEndpoint: string,
     private readonly policy = new Policy()
@@ -62,14 +62,14 @@ class PingUploadWorker {
    * @returns The updated ping.
    */
   private async buildPingRequest(ping: QueuedPing): Promise<{
-    headers: Record<string, string>,
-    payload: string | Uint8Array
+    headers: Record<string, string>;
+    payload: string | Uint8Array;
   }> {
     let headers = ping.headers || {};
     headers = {
       ...ping.headers,
       "Content-Type": "application/json; charset=utf-8",
-      "Date": (new Date()).toISOString(),
+      Date: new Date().toISOString(),
       "X-Telemetry-Agent": `Glean/${GLEAN_VERSION} (JS on ${await Context.platform.info.os()})`
     };
 
@@ -117,8 +117,8 @@ class PingUploadWorker {
         finalPing.payload,
         finalPing.headers
       );
-    } catch(e) {
-      log(LOG_TAG, [ "Error trying to build or post ping request:", e ], LoggingLevel.Warn);
+    } catch (e) {
+      log(LOG_TAG, ["Error trying to build or post ping request:", e], LoggingLevel.Warn);
       // An unrecoverable failure will make sure the offending ping is removed from the queue and
       // deleted from the database, which is what we want here.
       return new UploadResult(UploadResultStatus.UnrecoverableFailure);
@@ -130,13 +130,13 @@ class PingUploadWorker {
    *
    * @param getUploadTask A function that returns an UploadTask.
    * @param processUploadResponse A function that processes an UploadResponse.
-   * @returns A promise whihc resolves on a Done_UploadTask is received.
+   * @returns A promise which resolves on a Done_UploadTask is received.
    */
   private async workInternal(
     getUploadTask: () => UploadTask,
-    processUploadResponse: (ping: QueuedPing, result: UploadResult) => Promise<void>,
+    processUploadResponse: (ping: QueuedPing, result: UploadResult) => Promise<void>
   ): Promise<void> {
-    while(true) {
+    while (true) {
       const nextTask = getUploadTask();
       switch (nextTask.type) {
       case UploadTaskTypes.Upload:
@@ -149,20 +149,19 @@ class PingUploadWorker {
         }
 
         try {
-          const wasAborted = await new Promise<boolean>(resolve => {
+          const wasAborted = await new Promise<boolean>((resolve) => {
             this.waitPromiseResolver = resolve;
-            this.waitTimeoutId = Context.platform.timer
-              .setTimeout(() => {
-                this.waitPromiseResolver = undefined;
-                this.waitTimeoutId = undefined;
-                resolve(false);
-              }, nextTask.remainingTime);
+            this.waitTimeoutId = Context.platform.timer.setTimeout(() => {
+              this.waitPromiseResolver = undefined;
+              this.waitTimeoutId = undefined;
+              resolve(false);
+            }, nextTask.remainingTime);
           });
 
           if (wasAborted) {
             return;
           }
-        } catch(_) {
+        } catch (_) {
           this.waitPromiseResolver = undefined;
           this.waitTimeoutId = undefined;
           return;
@@ -185,17 +184,17 @@ class PingUploadWorker {
    */
   work(
     getUploadTask: () => UploadTask,
-    processUploadResponse: (ping: QueuedPing, result: UploadResult) => Promise<void>,
+    processUploadResponse: (ping: QueuedPing, result: UploadResult) => Promise<void>
   ): void {
     if (!this.currentJob) {
       this.currentJob = this.workInternal(getUploadTask, processUploadResponse)
         .then(() => {
           this.currentJob = undefined;
         })
-        .catch(error => {
+        .catch((error) => {
           log(
             LOG_TAG,
-            [ "IMPOSSIBLE: Something went wrong while processing ping upload tasks.", error ],
+            ["IMPOSSIBLE: Something went wrong while processing ping upload tasks.", error],
             LoggingLevel.Error
           );
         });

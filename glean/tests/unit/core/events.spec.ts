@@ -4,8 +4,9 @@
 
 import assert from "assert";
 
-import CoreEvents, { CoreEvent } from "../../../src/core/events";
-import { registerPluginToEvent } from "../../../src/core/events/utils";
+import CoreEvents from "../../../src/core/events/async";
+import { CoreEvent } from "../../../src/core/events/shared";
+import { registerPluginToEvent } from "../../../src/core/events/utils/async";
 import type { JSONObject } from "../../../src/core/utils";
 import Plugin from "../../../src/plugins";
 

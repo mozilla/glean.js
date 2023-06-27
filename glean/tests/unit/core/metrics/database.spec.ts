@@ -4,7 +4,8 @@
 
 import assert from "assert";
 
-import Database, { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/database";
+import Database from "../../../../src/core/metrics/database/async";
+import { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/database/shared";
 import { InternalStringMetricType as StringMetricType, StringMetric } from "../../../../src/core/metrics/types/string";
 
 import type { JSONObject, JSONValue } from "../../../../src/core/utils";

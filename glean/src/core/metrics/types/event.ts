@@ -3,10 +3,19 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import type { ExtraMap , Event } from "../events_database/recorded_event.js";
+import type { ExtraMap, Event } from "../events_database/recorded_event.js";
+import type ErrorManagerSync from "../../error/sync.js";
+import type EventsDatabaseSync from "../events_database/sync.js";
+
 import { RecordedEvent } from "../events_database/recorded_event.js";
 import { MetricType } from "../index.js";
-import { getMonotonicNow, isString, testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import {
+  getMonotonicNow,
+  isString,
+  testOnlyCheck,
+  truncateStringAtBoundaryWithError,
+  truncateStringAtBoundaryWithErrorSync
+} from "../../utils.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 import { MetricValidationError } from "../metric.js";
@@ -21,7 +30,9 @@ const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
  * This class exposes Glean-internal properties and methods
  * of the event metric type.
  */
-export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMap> extends MetricType {
+export class InternalEventMetricType<
+  SpecificExtraMap extends ExtraMap = ExtraMap
+> extends MetricType {
   private allowedExtraKeys?: string[];
 
   constructor(meta: CommonMetricData, allowedExtraKeys?: string[]) {
@@ -29,8 +40,31 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
     this.allowedExtraKeys = allowedExtraKeys;
   }
 
+  /// SHARED ///
   /**
-   * An implemention of `record` that does not dispatch the recording task.
+   * Record an event.
+   *
+   * @param extra optional. Used for events where additional richer context is needed.
+   *        The maximum length for string values is 100 bytes.
+   * @param timestamp The event timestamp, defaults to now.
+   */
+  record(extra?: SpecificExtraMap, timestamp: number = getMonotonicNow()): void {
+    if (Context.isPlatformSync()) {
+      this.recordSync(timestamp, extra);
+    } else {
+      this.recordAsync(timestamp, extra);
+    }
+  }
+
+  /// ASYNC ///
+  recordAsync(timestamp: number, extra?: SpecificExtraMap) {
+    Context.dispatcher.launch(async () => {
+      await this.recordUndispatched(extra, timestamp);
+    });
+  }
+
+  /**
+   * An implementation of `record` that does not dispatch the recording task.
    *
    * # Important
    *
@@ -41,10 +75,7 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
    * @param timestamp The event timestamp, defaults to now.
    * @returns A promise that resolves once the event is recorded.
    */
-  async recordUndispatched(
-    extra?: ExtraMap,
-    timestamp: number = getMonotonicNow()
-  ): Promise<void> {
+  async recordUndispatched(extra?: ExtraMap, timestamp: number = getMonotonicNow()): Promise<void> {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
@@ -55,7 +86,7 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
         category: this.category,
         name: this.name,
         timestamp,
-        extra,
+        extra
       });
 
       // Truncate the extra keys, if needed.
@@ -65,12 +96,20 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
         for (const [name, value] of Object.entries(extra)) {
           if (this.allowedExtraKeys.includes(name)) {
             if (isString(value)) {
-              truncatedExtra[name] = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_EXTRA_KEY_VALUE);
+              truncatedExtra[name] = await truncateStringAtBoundaryWithError(
+                this,
+                value,
+                MAX_LENGTH_EXTRA_KEY_VALUE
+              );
             } else {
               truncatedExtra[name] = value;
             }
           } else {
-            await Context.errorManager.record(this, ErrorType.InvalidValue, `Invalid key index: ${name}`);
+            await Context.errorManager.record(
+              this,
+              ErrorType.InvalidValue,
+              `Invalid key index: ${name}`
+            );
             continue;
           }
         }
@@ -78,31 +117,71 @@ export class InternalEventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
 
       metric.set({
         ...metric.get(),
-        extra: truncatedExtra,
+        extra: truncatedExtra
       });
       return Context.eventsDatabase.record(this, metric);
-    } catch(e) {
+    } catch (e) {
       if (e instanceof MetricValidationError) {
         await e.recordError(this);
       }
     }
-
   }
 
-  /**
-   * Record an event.
-   *
-   * @param extra optional. Used for events where additional richer context is needed.
-   *        The maximum length for string values is 100 bytes.
-   */
-  record(extra?: SpecificExtraMap): void {
-    const timestamp = getMonotonicNow();
+  /// SYNC ///
+  recordSync(timestamp: number, extra?: SpecificExtraMap) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
 
-    Context.dispatcher.launch(async () => {
-      await this.recordUndispatched(extra, timestamp);
-    });
+    try {
+      // Create metric here, in order to run the validations and throw in case input in invalid.
+      const metric = new RecordedEvent({
+        category: this.category,
+        name: this.name,
+        timestamp,
+        extra
+      });
+
+      // Truncate the extra keys, if needed.
+      let truncatedExtra: ExtraMap | undefined = undefined;
+      if (extra && this.allowedExtraKeys) {
+        truncatedExtra = {};
+        for (const [name, value] of Object.entries(extra)) {
+          if (this.allowedExtraKeys.includes(name)) {
+            if (isString(value)) {
+              truncatedExtra[name] = truncateStringAtBoundaryWithErrorSync(
+                this,
+                value,
+                MAX_LENGTH_EXTRA_KEY_VALUE
+              );
+            } else {
+              truncatedExtra[name] = value;
+            }
+          } else {
+            (Context.errorManager as ErrorManagerSync).record(
+              this,
+              ErrorType.InvalidValue,
+              `Invalid key index: ${name}`
+            );
+            continue;
+          }
+        }
+      }
+
+      metric.set({
+        ...metric.get(),
+        extra: truncatedExtra
+      });
+
+      (Context.eventsDatabase as EventsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
   }
 
+  /// TESTING ///
   /**
    * Test-only API
    *
@@ -170,7 +249,10 @@ export default class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

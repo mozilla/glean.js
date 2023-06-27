@@ -7,6 +7,8 @@ import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric";
 import type TimeUnit from "../time_unit.js";
 import type { DistributionData } from "../distributions.js";
+import type ErrorManagerSync from "../../error/sync.js";
+import type MetricsDatabaseSync from "../database/sync.js";
 
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
@@ -16,7 +18,11 @@ import { constructFunctionalHistogramFromValues } from "../../../histogram/funct
 import { getCurrentTimeInNanoSeconds, isUndefined, testOnlyCheck } from "../../utils.js";
 import { convertTimeUnitToNanos } from "../time_unit.js";
 import { snapshot } from "../distributions.js";
-import { extractAccumulatedValuesFromJsonValue } from "../distributions.js";
+import {
+  extractAccumulatedValuesFromJsonValue,
+  getNumNegativeSamples,
+  getNumTooLongSamples
+} from "../distributions.js";
 
 const LOG_TAG = "core.metrics.TimingDistributionMetricType";
 
@@ -74,7 +80,7 @@ export class TimingDistributionMetric extends Metric<
   }
 
   get timingDistribution(): Record<number, number> {
-    return this._inner;
+    return this.inner;
   }
 
   validate(v: unknown): MetricValidationResult {
@@ -83,7 +89,7 @@ export class TimingDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidType,
-        errorMessage: `Expected valid TimingDistribution object, got ${JSON.stringify(v)}`,
+        errorMessage: `Expected valid TimingDistribution object, got ${JSON.stringify(v)}`
       };
     }
 
@@ -92,7 +98,7 @@ export class TimingDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected all durations to be greater than 0, got ${negativeDuration}`,
+        errorMessage: `Expected all durations to be greater than 0, got ${negativeDuration}`
       };
     }
 
@@ -101,13 +107,13 @@ export class TimingDistributionMetric extends Metric<
 
   payload(): TimingDistributionPayloadRepresentation {
     const hist = constructFunctionalHistogramFromValues(
-      this._inner as number[],
+      this.inner as number[],
       LOG_BASE,
       BUCKETS_PER_MAGNITUDE
     );
     return {
       values: hist.values,
-      sum: hist.sum,
+      sum: hist.sum
     };
   }
 }
@@ -125,16 +131,25 @@ class InternalTimingDistributionMetricType extends MetricType {
     this.timerId = 0;
   }
 
+  /// SHARED ///
   getNextTimerId(): number {
     this.timerId++;
     return this.timerId;
   }
 
   start(): number {
+    // Per Glean book
+    // "If the Glean upload is disabled when calling start, the timer is still started"
+    // (https://mozilla.github.io/glean/book/reference/metrics/timing_distribution.html)
     const startTime = getCurrentTimeInNanoSeconds();
     const id = this.getNextTimerId();
 
-    this.setStart(id, startTime);
+    if (Context.isPlatformSync()) {
+      this.setStartSync(id, startTime);
+    } else {
+      this.setStart(id, startTime);
+    }
+
     return id;
   }
 
@@ -147,30 +162,114 @@ class InternalTimingDistributionMetricType extends MetricType {
    * @param startTime Start time fo the current timer
    */
   setStart(id: number, startTime: number) {
-    Context.dispatcher.launch(async () => {
-      // Per Glean book
-      // "If the Glean upload is disabled when calling start, the timer is still started"
-      // (https://mozilla.github.io/glean/book/reference/metrics/timing_distribution.html)
-      this.startTimes[id] = startTime;
-
-      return Promise.resolve();
-    });
+    this.setStartAsync(id, startTime);
   }
 
   stopAndAccumulate(id: number) {
     const stopTime = getCurrentTimeInNanoSeconds();
-    this.setStopAndAccumulate(id, stopTime);
+    if (Context.isPlatformSync()) {
+      this.setStopAndAccumulateSync(id, stopTime);
+    } else {
+      this.setStopAndAccumulate(id, stopTime);
+    }
   }
 
   setStopAndAccumulate(id: number, stopTime: number) {
+    this.setStopAndAccumulateAsync(id, stopTime);
+  }
+
+  cancel(id: number) {
+    delete this.startTimes[id];
+  }
+
+  accumulateSamples(samples: number[]) {
+    if (Context.isPlatformSync()) {
+      this.setAccumulateSamplesSync(samples);
+    } else {
+      this.setAccumulateSamples(samples);
+    }
+  }
+
+  setAccumulateSamples(samples: number[]) {
+    this.setAccumulateSamplesAsync(samples);
+  }
+
+  accumulateRawSamplesNanos(samples: number[]) {
+    if (Context.isPlatformSync()) {
+      this.accumulateRawSamplesNanosSync(samples);
+    } else {
+      this.accumulateRawSamplesNanosAsync(samples);
+    }
+  }
+
+  private setStopAndAccumulateTransformFn(duration: number) {
+    return (old?: JSONValue): TimingDistributionMetric => {
+      const values = extractAccumulatedValuesFromJsonValue(old);
+      return new TimingDistributionMetric([...values, duration]);
+    };
+  }
+
+  private setAccumulateSamplesTransformFn(samples: number[], maxSampleTime: number) {
+    return (old?: JSONValue): TimingDistributionMetric => {
+      const values = extractAccumulatedValuesFromJsonValue(old);
+
+      const convertedSamples: number[] = [];
+      samples.forEach((sample) => {
+        if (sample >= 0) {
+          // Check the range prior to converting the incoming unit to
+          // nanoseconds, so we can compare against the constant
+          // MAX_SAMPLE_TIME.
+          if (sample === 0) {
+            sample = 1;
+          } else if (sample > maxSampleTime) {
+            sample = maxSampleTime;
+          }
+
+          sample = convertTimeUnitToNanos(sample, this.timeUnit as TimeUnit);
+          convertedSamples.push(sample);
+        }
+      });
+
+      return new TimingDistributionMetric([...values, ...convertedSamples]);
+    };
+  }
+
+  private accumulateRawSamplesNanosTransformFn(samples: number[], maxSampleTime: number) {
+    const minSampleTime = convertTimeUnitToNanos(1, this.timeUnit as TimeUnit);
+
+    return (old?: JSONValue): TimingDistributionMetric => {
+      const values = extractAccumulatedValuesFromJsonValue(old);
+
+      const convertedSamples: number[] = [];
+      samples.forEach((sample) => {
+        if (sample < minSampleTime) {
+          sample = minSampleTime;
+        } else if (sample > maxSampleTime) {
+          sample = maxSampleTime;
+        }
+
+        // `sample` is already in nanoseconds
+        convertedSamples.push(sample);
+      });
+
+      return new TimingDistributionMetric([...values, ...convertedSamples]);
+    };
+  }
+
+  /// ASYNC ///
+  setStartAsync(id: number, startTime: number) {
+    Context.dispatcher.launch(async () => {
+      this.startTimes[id] = startTime;
+      return Promise.resolve();
+    });
+  }
+
+  setStopAndAccumulateAsync(id: number, stopTime: number) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         delete this.startTimes[id];
         return;
       }
-
-      // Duration is in nanoseconds.
-      let duration;
 
       const startTime = this.startTimes[id];
       if (startTime !== undefined) {
@@ -180,8 +279,8 @@ class InternalTimingDistributionMetricType extends MetricType {
         return;
       }
 
-      duration = stopTime - startTime;
-
+      // Duration is in nanoseconds.
+      let duration = stopTime - startTime;
       if (duration < 0) {
         await Context.errorManager.record(
           this,
@@ -199,27 +298,19 @@ class InternalTimingDistributionMetricType extends MetricType {
         // not recorded as an error.
         duration = minSampleTime;
       } else if (duration > maxSampleTime) {
-        await Context.errorManager
-          .record(
-            this,
-            ErrorType.InvalidState,
-            `Sample is longer than the max for a timeUnit of ${this.timeUnit} (${duration} ns)`
-          )
-          .catch();
+        await Context.errorManager.record(
+          this,
+          ErrorType.InvalidState,
+          `Sample is longer than the max for a timeUnit of ${this.timeUnit} (${duration} ns)`
+        );
         duration = maxSampleTime;
-      } else {
-        // do nothing, we have a valid duration
       }
 
       try {
-        const transformFn = ((duration: number) => {
-          return (old?: JSONValue): TimingDistributionMetric => {
-            const values = extractAccumulatedValuesFromJsonValue(old);
-            return new TimingDistributionMetric([...values, duration]);
-          };
-        })(duration);
-
-        await Context.metricsDatabase.transform(this, transformFn);
+        await Context.metricsDatabase.transform(
+          this,
+          this.setStopAndAccumulateTransformFn(duration)
+        );
       } catch (e) {
         if (e instanceof MetricValidationError) {
           await e.recordError(this);
@@ -229,54 +320,19 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
-  cancel(id: number) {
-    delete this.startTimes[id];
-  }
-
-  accumulateSamples(samples: number[]) {
-    this.setAccumulateSamples(samples);
-  }
-
-  setAccumulateSamples(samples: number[]) {
+  setAccumulateSamplesAsync(samples: number[]) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
 
-      let numNegativeSamples = 0;
-      let numTooLongSamples = 0;
       const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit as TimeUnit);
+      await Context.metricsDatabase.transform(
+        this,
+        this.setAccumulateSamplesTransformFn(samples, maxSampleTime)
+      );
 
-      const transformFn = ((samples: number[]) => {
-        return (old?: JSONValue): TimingDistributionMetric => {
-          const values = extractAccumulatedValuesFromJsonValue(old);
-
-          const convertedSamples: number[] = [];
-          samples.forEach((sample) => {
-            if (sample < 0) {
-              numNegativeSamples++;
-            } else {
-              // Check the range prior to converting the incoming unit to
-              // nanoseconds, so we can compare against the constant
-              // MAX_SAMPLE_TIME.
-              if (sample === 0) {
-                sample = 1;
-              } else if (sample > maxSampleTime) {
-                numTooLongSamples++;
-                sample = maxSampleTime;
-              }
-
-              sample = convertTimeUnitToNanos(sample, this.timeUnit as TimeUnit);
-              convertedSamples.push(sample);
-            }
-          });
-
-          return new TimingDistributionMetric([...values, ...convertedSamples]);
-        };
-      })(samples);
-
-      await Context.metricsDatabase.transform(this, transformFn);
-
+      const numNegativeSamples = getNumNegativeSamples(samples);
       if (numNegativeSamples > 0) {
         await Context.errorManager.record(
           this,
@@ -286,6 +342,7 @@ class InternalTimingDistributionMetricType extends MetricType {
         );
       }
 
+      const numTooLongSamples = getNumTooLongSamples(samples, maxSampleTime);
       if (numTooLongSamples > 0) {
         await Context.errorManager.record(
           this,
@@ -297,39 +354,19 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
-  accumulateRawSamplesNanos(samples: number[]) {
+  accumulateRawSamplesNanosAsync(samples: number[]) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
 
-      let numTooLongSamples = 0;
-      const minSampleTime = convertTimeUnitToNanos(1, this.timeUnit as TimeUnit);
       const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit as TimeUnit);
+      await Context.metricsDatabase.transform(
+        this,
+        this.accumulateRawSamplesNanosTransformFn(samples, maxSampleTime)
+      );
 
-      const transformFn = ((samples: number[]) => {
-        return (old?: JSONValue): TimingDistributionMetric => {
-          const values = extractAccumulatedValuesFromJsonValue(old);
-
-          const convertedSamples: number[] = [];
-          samples.forEach((sample) => {
-            if (sample < minSampleTime) {
-              sample = minSampleTime;
-            } else if (sample > maxSampleTime) {
-              numTooLongSamples++;
-              sample = maxSampleTime;
-            }
-
-            // `sample` is already in nanoseconds
-            convertedSamples.push(sample);
-          });
-
-          return new TimingDistributionMetric([...values, ...convertedSamples]);
-        };
-      })(samples);
-
-      await Context.metricsDatabase.transform(this, transformFn);
-
+      const numTooLongSamples = getNumTooLongSamples(samples, maxSampleTime);
       if (numTooLongSamples > 0) {
         await Context.errorManager.record(
           this,
@@ -341,6 +378,123 @@ class InternalTimingDistributionMetricType extends MetricType {
     });
   }
 
+  /// SYNC ///
+  setStartSync(id: number, startTime: number) {
+    this.startTimes[id] = startTime;
+  }
+
+  setStopAndAccumulateSync(id: number, stopTime: number) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      delete this.startTimes[id];
+      return;
+    }
+
+    const startTime = this.startTimes[id];
+    if (startTime !== undefined) {
+      delete this.startTimes[id];
+    } else {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidState,
+        "Timing not running"
+      );
+      return;
+    }
+
+    // Duration is in nanoseconds.
+    let duration = stopTime - startTime;
+    if (duration < 0) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidValue,
+        "Timer stopped with negative duration"
+      );
+      return;
+    }
+
+    const minSampleTime = convertTimeUnitToNanos(1, this.timeUnit as TimeUnit);
+    const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit as TimeUnit);
+
+    if (duration < minSampleTime) {
+      // If measurement is less than the minimum, just truncate. This is
+      // not recorded as an error.
+      duration = minSampleTime;
+    } else if (duration > maxSampleTime) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidState,
+        `Sample is longer than the max for a timeUnit of ${this.timeUnit} (${duration} ns)`
+      );
+      duration = maxSampleTime;
+    }
+
+    try {
+      (Context.metricsDatabase as MetricsDatabaseSync).transform(
+        this,
+        this.setStopAndAccumulateTransformFn(duration)
+      );
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  setAccumulateSamplesSync(samples: number[]) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit as TimeUnit);
+    (Context.metricsDatabase as MetricsDatabaseSync).transform(
+      this,
+      this.setAccumulateSamplesTransformFn(samples, maxSampleTime)
+    );
+
+    const numNegativeSamples = getNumNegativeSamples(samples);
+    if (numNegativeSamples > 0) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidValue,
+        `Accumulated ${numNegativeSamples} negative samples`,
+        numNegativeSamples
+      );
+    }
+
+    const numTooLongSamples = getNumTooLongSamples(samples, maxSampleTime);
+    if (numTooLongSamples > 0) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidOverflow,
+        `${numTooLongSamples} samples are longer than the maximum of ${maxSampleTime}`,
+        numTooLongSamples
+      );
+    }
+  }
+
+  accumulateRawSamplesNanosSync(samples: number[]) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    const maxSampleTime = convertTimeUnitToNanos(MAX_SAMPLE_TIME, this.timeUnit as TimeUnit);
+    (Context.metricsDatabase as MetricsDatabaseSync).transform(
+      this,
+      this.accumulateRawSamplesNanosTransformFn(samples, maxSampleTime)
+    );
+
+    const numTooLongSamples = getNumTooLongSamples(samples, maxSampleTime);
+    if (numTooLongSamples > 0) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidOverflow,
+        `${numTooLongSamples} samples are longer than the maximum of ${maxSampleTime}`,
+        numTooLongSamples
+      );
+    }
+  }
+
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<DistributionData | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let value: TimingDistributionInternalRepresentation | undefined;

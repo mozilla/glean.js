@@ -2,23 +2,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants.js";
-import type { ConfigurationInterface } from "./config.js";
-import { Configuration } from "./config.js";
-import MetricsDatabase from "./metrics/database.js";
-import PingsDatabase from "./pings/database.js";
-import PingUploadManager from "./upload/manager.js";
-import { isBoolean, isString, sanitizeApplicationId } from "./utils.js";
-import { CoreMetrics } from "./internal_metrics.js";
-import EventsDatabase from "./metrics/events_database/index.js";
-import { DatetimeMetric } from "./metrics/types/datetime.js";
-import CorePings from "./internal_pings.js";
-import { registerPluginToEvent } from "./events/utils.js";
-import ErrorManager from "./error/index.js";
-import type Platform from "../platform/index.js";
-import { Lifetime } from "./metrics/lifetime.js";
-import { Context } from "./context.js";
-import log, { LoggingLevel } from "./log.js";
+import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "../constants.js";
+import type { ConfigurationInterface } from "../config.js";
+import { Configuration } from "../config.js";
+import PingUploadManager from "../upload/manager/sync.js";
+import { isBoolean, isString, sanitizeApplicationId } from "../utils.js";
+import { CoreMetricsSync } from "../internal_metrics/sync.js";
+import { EventsDatabaseSync } from "../metrics/events_database/sync.js";
+import { DatetimeMetric } from "../metrics/types/datetime.js";
+import CorePings from "../internal_pings.js";
+import { registerPluginToEvent } from "../events/utils/sync.js";
+import ErrorManagerSync from "../error/sync.js";
+import type PlatformSync from "../../platform/sync.js";
+import { Lifetime } from "../metrics/lifetime.js";
+import { Context } from "../context.js";
+import log, { LoggingLevel } from "../log.js";
+import MetricsDatabaseSync from "../metrics/database/sync.js";
+import PingsDatabaseSync from "../pings/database/sync.js";
 
 const LOG_TAG = "core.Glean";
 
@@ -40,9 +40,9 @@ namespace Glean {
    *
    * The `uploadEnabled` flag is set to true and the core Glean metrics are recreated.
    */
-  async function onUploadEnabled(): Promise<void> {
+  function onUploadEnabled(): void {
     Context.uploadEnabled = true;
-    await Context.coreMetrics.initialize();
+    (Context.coreMetrics as CoreMetricsSync).initialize();
   }
 
   /**
@@ -56,7 +56,7 @@ namespace Glean {
    *
    * @param at_init Whether or not upload has been disabled during initialization.
    */
-  async function onUploadDisabled(at_init: boolean): Promise<void> {
+  function onUploadDisabled(at_init: boolean): void {
     // It's fine to set this before submitting the deletion request ping,
     // that ping is still sent even if upload is disabled.
     let reason: string;
@@ -69,8 +69,8 @@ namespace Glean {
     // We need to use an undispatched submission to guarantee that the
     // ping is collected before metric are cleared, otherwise we end up
     // with malformed pings.
-    await Context.corePings.deletionRequest.submitUndispatched(reason);
-    await clearMetrics();
+    Context.corePings.deletionRequest.submit(reason);
+    clearMetrics();
   }
 
   /**
@@ -78,11 +78,11 @@ namespace Glean {
    *
    * This function is only supposed to be called when telemetry is disabled.
    */
-  async function clearMetrics(): Promise<void> {
+  function clearMetrics(): void {
     // Clear enqueued upload jobs and clear pending pings queue.
     //
     // The only job that will still be sent is the deletion-request ping.
-    await pingUploader.clearPendingPingsQueue();
+    pingUploader.clearPendingPingsQueue();
 
     // There is only one metric that we want to survive after clearing all
     // metrics: first_run_date. Here, we store its value
@@ -94,7 +94,7 @@ namespace Glean {
     let firstRunDate: Date;
     try {
       firstRunDate = new DatetimeMetric(
-        await Context.metricsDatabase.getMetric(
+        (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
           CLIENT_INFO_STORAGE,
           Context.coreMetrics.firstRunDate
         )
@@ -104,9 +104,9 @@ namespace Glean {
     }
 
     // Clear the databases.
-    await Context.eventsDatabase.clearAll();
-    await Context.metricsDatabase.clearAll();
-    await Context.pingsDatabase.clearAll();
+    (Context.eventsDatabase as EventsDatabaseSync).clearAll();
+    (Context.metricsDatabase as MetricsDatabaseSync).clearAll();
+    (Context.pingsDatabase as PingsDatabaseSync).clearAll();
 
     // We need to briefly set upload_enabled to true here so that `set`
     // is not a no-op.
@@ -123,10 +123,10 @@ namespace Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    await Context.coreMetrics.clientId.setUndispatched(KNOWN_CLIENT_ID);
+    (Context.coreMetrics as CoreMetricsSync).clientId.set(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    await Context.coreMetrics.firstRunDate.setUndispatched(firstRunDate);
+    (Context.coreMetrics as CoreMetricsSync).firstRunDate.set(firstRunDate);
 
     Context.uploadEnabled = false;
   }
@@ -185,15 +185,11 @@ namespace Glean {
     }
 
     if (!Context.platform) {
-      log(
-        LOG_TAG,
-        "Unable to initialize Glean, platform has not been set.",
-        LoggingLevel.Error
-      );
+      log(LOG_TAG, "Unable to initialize Glean, platform has not been set.", LoggingLevel.Error);
       return;
     }
 
-    Context.coreMetrics = new CoreMetrics();
+    Context.coreMetrics = new CoreMetricsSync();
     Context.corePings = new CorePings();
 
     Context.applicationId = sanitizeApplicationId(applicationId);
@@ -206,10 +202,10 @@ namespace Glean {
     if (preInitDebugViewTag) Context.config.debugViewTag = preInitDebugViewTag;
     if (preInitSourceTags) Context.config.sourceTags = preInitSourceTags;
 
-    Context.metricsDatabase = new MetricsDatabase();
-    Context.eventsDatabase = new EventsDatabase();
-    Context.pingsDatabase = new PingsDatabase();
-    Context.errorManager = new ErrorManager();
+    Context.metricsDatabase = new MetricsDatabaseSync();
+    Context.eventsDatabase = new EventsDatabaseSync();
+    Context.pingsDatabase = new PingsDatabaseSync();
+    Context.errorManager = new ErrorManagerSync();
 
     pingUploader = new PingUploadManager(correctConfig, Context.pingsDatabase);
 
@@ -219,74 +215,66 @@ namespace Glean {
       }
     }
 
-    // Initialize the dispatcher and execute init before any other enqueued task.
+    Context.initialized = true;
+
+    Context.uploadEnabled = uploadEnabled;
+
+    // Initialize the events database.
     //
-    // Note: We decide to execute the above tasks outside of the dispatcher task,
-    // because they will throw if configuration is incorrect and we want them to throw.
+    // It's important this happens _after_ the upload state is set,
+    // because initializing the events database may record the execution_counter and
+    // glean.restarted metrics. If the upload state is not defined these metrics cannot be recorded.
     //
-    // The dispatcher will catch and log any exceptions.
-    Context.dispatcher.flushInit(async () => {
-      Context.initialized = true;
+    // This may also submit an 'events' ping,
+    // so it also needs to happen before application lifetime metrics are cleared.
+    Context.eventsDatabase.initialize();
 
-      Context.uploadEnabled = uploadEnabled;
-
-      // Initialize the events database.
+    // The upload enabled flag may have changed since the last run, for
+    // example by the changing of a config file.
+    if (uploadEnabled) {
+      // IMPORTANT!
+      // Any pings we want to send upon initialization should happen before this line.
       //
-      // It's important this happens _after_ the upload state is set,
-      // because initializing the events database may record the execution_counter and
-      // glean.restarted metrics. If the upload state is not defined these metrics cannot be recorded.
+      // Clear application lifetime metrics.
       //
-      // This may also submit an 'events' ping,
-      // so it also needs to happen before application lifetime metrics are cleared.
-      await Context.eventsDatabase.initialize();
+      // If upload is disabled we don't need to do this,
+      // all metrics will be cleared anyways and we want
+      // application lifetime metrics intact in case
+      // we need to send a deletion-request ping.
+      Context.metricsDatabase.clear(Lifetime.Application);
 
-      // The upload enabled flag may have changed since the last run, for
-      // example by the changing of a config file.
-      if (uploadEnabled) {
-        // IMPORTANT!
-        // Any pings we want to send upon initialization should happen before this line.
-        //
-        // Clear application lifetime metrics.
-        //
-        // If upload is disabled we don't need to do this,
-        // all metrics will be cleared anyways and we want
-        // application lifetime metrics intact in case
-        // we need to send a deletion-request ping.
-        await Context.metricsDatabase.clear(Lifetime.Application);
+      // If upload is enabled,
+      // just follow the normal code path to instantiate the core metrics.
+      onUploadEnabled();
+    } else {
+      // If upload is disabled, and we've never run before, only set the
+      // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
+      // ping.
+      // If we have run before, and if the client_id is not equal to
+      // the KNOWN_CLIENT_ID, do the full upload disabled operations to
+      // clear metrics, set the client_id to KNOWN_CLIENT_ID, and send a
+      // deletion request ping.
+      const clientId = Context.metricsDatabase.getMetric(
+        CLIENT_INFO_STORAGE,
+        Context.coreMetrics.clientId
+      );
 
-        // If upload is enabled,
-        // just follow the normal code path to instantiate the core metrics.
-        await onUploadEnabled();
-      } else {
-        // If upload is disabled, and we've never run before, only set the
-        // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
-        // ping.
-        // If we have run before, and if the client_id is not equal to
-        // the KNOWN_CLIENT_ID, do the full upload disabled operations to
-        // clear metrics, set the client_id to KNOWN_CLIENT_ID, and send a
-        // deletion request ping.
-        const clientId = await Context.metricsDatabase.getMetric(
-          CLIENT_INFO_STORAGE,
-          Context.coreMetrics.clientId
-        );
-
-        if (clientId) {
-          if (clientId !== KNOWN_CLIENT_ID) {
-            await onUploadDisabled(true);
-          }
-        } else {
-          // Call `clearMetrics` directly here instead of `onUploadDisabled` to avoid sending
-          // a deletion-request ping for a user that has already done that.
-          await clearMetrics();
+      if (clientId) {
+        if (clientId !== KNOWN_CLIENT_ID) {
+          onUploadDisabled(true);
         }
+      } else {
+        // Call `clearMetrics` directly here instead of `onUploadDisabled` to avoid sending
+        // a deletion-request ping for a user that has already done that.
+        clearMetrics();
       }
+    }
 
-      // We only scan the pendings pings **after** dealing with the upload state.
-      // If upload is disabled, pending pings files are deleted
-      // so we need to know that state **before** scanning the pending pings
-      // to ensure we don't enqueue pings before their files are deleted.
-      await Context.pingsDatabase.scanPendingPings();
-    });
+    // We only scan the pending pings **after** dealing with the upload state.
+    // If upload is disabled, pending pings files are deleted
+    // so we need to know that state **before** scanning the pending pings
+    // to ensure we don't enqueue pings before their files are deleted.
+    Context.pingsDatabase.scanPendingPings();
   }
 
   /**
@@ -326,15 +314,13 @@ namespace Glean {
       return;
     }
 
-    Context.dispatcher.launch(async () => {
-      if (Context.uploadEnabled !== flag) {
-        if (flag) {
-          await onUploadEnabled();
-        } else {
-          await onUploadDisabled(false);
-        }
+    if (Context.uploadEnabled !== flag) {
+      if (flag) {
+        onUploadEnabled();
+      } else {
+        onUploadDisabled(false);
       }
-    });
+    }
   }
 
   /**
@@ -349,12 +335,7 @@ namespace Glean {
       // Cache value to apply during init.
       preInitLogPings = flag;
     } else {
-      Context.dispatcher.launch(() => {
-        Context.config.logPings = flag;
-
-        // The dispatcher requires that dispatched functions return promises.
-        return Promise.resolve();
-      });
+      Context.config.logPings = flag;
     }
   }
 
@@ -365,19 +346,14 @@ namespace Glean {
    * which will redirect them to the ["Ping Debug Viewer"](https://debug-ping-preview.firebaseapp.com/).
    *
    * @param value The value of the header.
-   *        This value must satify the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
+   *        This value must satisfy the regex `^[a-zA-Z0-9-]{1,20}$` otherwise it will be ignored.
    */
   export function setDebugViewTag(value: string): void {
     if (!Context.initialized) {
       // Cache value to apply during init.
       preInitDebugViewTag = value;
     } else {
-      Context.dispatcher.launch(() => {
-        Context.config.debugViewTag = value;
-
-        // The dispatcher requires that dispatched functions return promises.
-        return Promise.resolve();
-      });
+      Context.config.debugViewTag = value;
     }
   }
 
@@ -396,41 +372,18 @@ namespace Glean {
       // Cache value to apply during init.
       preInitSourceTags = value;
     } else {
-      Context.dispatcher.launch(() => {
-        Context.config.sourceTags = value;
-
-        // The dispatcher requires that dispatched functions return promises.
-        return Promise.resolve();
-      });
+      Context.config.sourceTags = value;
     }
   }
 
   /**
-   * Finishes executing all pending tasks
-   * and shuts down both Glean's dispatcher and the ping uploader.
-   *
-   * If Glean is not initialized this is a no-op.
-   *
-   * # Important
-   *
-   * This is irreversible.
-   * Only a restart will return Glean back to an idle state.
-   *
-   * @returns A promise which resolves once the shutdown is complete.
+   * Calling shutdown on the synchronous implementation is a no-op. Glean's
+   * synchronous implementation does not use the dispatcher, so there is no
+   * action to perform.
    */
-  export async function shutdown(): Promise<void> {
-    if (!Context.initialized) {
-      log(LOG_TAG, "Attempted to shutdown Glean, but Glean is not initialized. Ignoring.");
-      return;
-    }
-
-    // Order here matters!
-    //
-    // The dispatcher needs to be shutdown first,
-    // because some of its tasks may enqueue new pings to upload
-    // and we want these uploading tasks to also be executed prior to complete shutdown.
-    await Context.dispatcher.shutdown();
-    await pingUploader.blockOnOngoingUploads();
+  export function shutdown(): void {
+    log(LOG_TAG, "Calling shutdown for the Glean web implementation is a no-op. Ignoring.");
+    return;
   }
 
   /**
@@ -441,7 +394,7 @@ namespace Glean {
    * @param platform The environment to set.
    *        Please check out the available environments in the platform/ module.
    */
-  export function setPlatform(platform: Platform): void {
+  export function setPlatform(platform: PlatformSync): void {
     // Platform can only be set if Glean is uninitialized,
     // because initialize will make sure to recreate any
     // databases in case another platform was set previously.
@@ -460,7 +413,7 @@ namespace Glean {
         LOG_TAG,
         [
           `IMPOSSIBLE: Attempted to change Glean's targeted platform",
-          "from "${Context.platform.name}" to "${platform.name}". Ignoring.`,
+            "from "${Context.platform.name}" to "${platform.name}". Ignoring.`
         ],
         LoggingLevel.Error
       );

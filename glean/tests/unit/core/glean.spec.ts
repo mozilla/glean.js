@@ -6,8 +6,8 @@ import assert from "assert";
 import sinon from "sinon";
 
 import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "../../../src/core/constants";
-import CoreEvents from "../../../src/core/events";
-import Glean from "../../../src/core/glean";
+import CoreEvents from "../../../src/core/events/async";
+import Glean from "../../../src/core/glean/async";
 import StringMetricType from "../../../src/core/metrics/types/string";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import PingType from "../../../src/core/pings/ping_type";
@@ -19,7 +19,7 @@ import Plugin from "../../../src/plugins";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
 import EventMetricType from "../../../src/core/metrics/types/event";
-import { getGleanRestartedEventMetric } from "../../../src/core/metrics/events_database";
+import { getGleanRestartedEventMetric } from "../../../src/core/metrics/events_database/shared";
 import { testInitializeGlean, testUninitializeGlean } from "../../../src/core/testing/utils";
 import { testResetGlean } from "../../../src/core/testing";
 

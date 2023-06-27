@@ -3,10 +3,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
+import type { MetricValidationResult } from "../metric.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
 import { MetricType } from "../index.js";
 import { generateUUIDv4, testOnlyCheck } from "../../utils.js";
 import { Context } from "../../context.js";
-import type { MetricValidationResult } from "../metric.js";
 import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 import { validateString } from "../utils.js";
@@ -34,7 +36,7 @@ export class UUIDMetric extends Metric<string, string> {
       return {
         type: MetricValidation.Error,
         errorMessage: `"${str}" is not a valid UUID`,
-        errorType: ErrorType.InvalidValue,
+        errorType: ErrorType.InvalidValue
       };
     }
 
@@ -42,7 +44,7 @@ export class UUIDMetric extends Metric<string, string> {
   }
 
   payload(): string {
-    return this._inner;
+    return this.inner;
   }
 }
 
@@ -58,8 +60,33 @@ export class InternalUUIDMetricType extends MetricType {
     super("uuid", meta, UUIDMetric);
   }
 
+  /// SHARED ///
+  set(value: string): void {
+    if (Context.isPlatformSync()) {
+      this.setSync(value);
+    } else {
+      this.setAsync(value);
+    }
+  }
+
+  generateAndSet(): string | undefined {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    const value = generateUUIDv4();
+    this.set(value);
+
+    return value;
+  }
+
+  /// ASYNC ///
+  setAsync(value: string) {
+    Context.dispatcher.launch(() => this.setUndispatched(value));
+  }
+
   /**
-   * An implemention of `set` that does not dispatch the recording task.
+   * An implementation of `set` that does not dispatch the recording task.
    *
    * # Important
    *
@@ -80,28 +107,35 @@ export class InternalUUIDMetricType extends MetricType {
     try {
       metric = new UUIDMetric(value);
       await Context.metricsDatabase.record(this, metric);
-    } catch(e) {
-      if(e instanceof MetricValidationError) {
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
         await e.recordError(this);
       }
     }
   }
 
-  set(value: string): void {
-    Context.dispatcher.launch(() => this.setUndispatched(value));
-  }
-
-  generateAndSet(): string | undefined {
+  /// SYNC ///
+  setSync(value: string) {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
-    const value = generateUUIDv4();
-    this.set(value);
+    if (!value) {
+      value = generateUUIDv4();
+    }
 
-    return value;
+    let metric: UUIDMetric;
+    try {
+      metric = new UUIDMetric(value);
+      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
   }
 
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: string | undefined;
@@ -170,7 +204,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

@@ -4,6 +4,8 @@
 
 import type { JSONValue } from "../utils.js";
 import type { MetricType } from "./index.js";
+import type ErrorManagerSync from "../error/sync.js";
+
 import { Context } from "../context.js";
 import { ErrorType } from "../error/error_type.js";
 
@@ -13,8 +15,8 @@ export enum MetricValidation {
 }
 
 export type MetricValidationResult =
-  { type: MetricValidation.Success } |
-  { type: MetricValidation.Error, errorMessage: string, errorType?: ErrorType };
+  | { type: MetricValidation.Success }
+  | { type: MetricValidation.Error; errorMessage: string; errorType?: ErrorType };
 
 export class MetricValidationError extends Error {
   constructor(message?: string, readonly type = ErrorType.InvalidType) {
@@ -29,6 +31,10 @@ export class MetricValidationError extends Error {
 
   async recordError(metric: MetricType) {
     await Context.errorManager.record(metric, this.type, this.message);
+  }
+
+  recordErrorSync(metric: MetricType) {
+    (Context.errorManager as ErrorManagerSync).record(metric, this.type, this.message);
   }
 }
 
@@ -48,10 +54,10 @@ export abstract class Metric<
   InternalRepresentation extends JSONValue,
   PayloadRepresentation extends JSONValue
 > {
-  protected _inner: InternalRepresentation;
+  protected inner: InternalRepresentation;
 
   constructor(v: unknown) {
-    this._inner = this.validateOrThrow(v);
+    this.inner = this.validateOrThrow(v);
   }
 
   /**
@@ -60,7 +66,7 @@ export abstract class Metric<
    * @returns The metric value.
    */
   get(): InternalRepresentation {
-    return this._inner;
+    return this.inner;
   }
 
   /**
@@ -69,7 +75,7 @@ export abstract class Metric<
    * @param v The value to set.
    */
   set(v: InternalRepresentation): void {
-    this._inner = v;
+    this.inner = v;
   }
 
   /**
@@ -97,7 +103,7 @@ export abstract class Metric<
    * that would prevent a metric from being recorded.
    *
    * @param v The value to verify.
-   * @returns Whether or not validation was successfull.
+   * @returns Whether or not validation was successful.
    */
   abstract validate(v: unknown): MetricValidationResult;
 

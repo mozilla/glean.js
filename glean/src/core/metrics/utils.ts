@@ -4,10 +4,10 @@
 
 
 import type { Metric, MetricValidationResult } from "./metric.js";
-import { MetricValidation } from "./metric.js";
 import type { JSONValue } from "../utils.js";
-import { isInteger, isString } from "../utils.js";
 
+import { MetricValidation } from "./metric.js";
+import { isInteger, isString } from "../utils.js";
 import { LabeledMetric } from "./types/labeled.js";
 import { Context } from "../context.js";
 import { ErrorType } from "../error/error_type.js";

@@ -8,6 +8,7 @@ import { Context } from "./context.js";
 import { ErrorType } from "./error/error_type.js";
 import log, { LoggingLevel } from "./log.js";
 import { MetricValidationError } from "./metrics/metric.js";
+import type ErrorManagerSync from "./error/sync.js";
 
 const LOG_TAG = "core.utils";
 
@@ -216,6 +217,34 @@ export async function truncateStringAtBoundaryWithError(metric: MetricType, valu
   const truncated = value.substring(0, length);
   if (truncated !== value) {
     await Context.errorManager.record(
+      metric,
+      ErrorType.InvalidOverflow,
+      `Value length ${value.length} exceeds maximum of ${length}.`
+    );
+  }
+  return truncated;
+}
+
+/**
+ * Truncates a string to a given max length SYNCHRONOUSLY.
+ *
+ * If the string required truncation, records an error through the error
+ * reporting mechanism.
+ *
+ * @param metric The metric to record an error to, if necessary,
+ * @param value The string to truncate.
+ * @param length The length to truncate to.
+ * @returns A string with at most `length` bytes.
+ * @throws In case `value` is not a string.
+ */
+export function truncateStringAtBoundaryWithErrorSync(metric: MetricType, value: unknown, length: number): string {
+  if(!isString(value)) {
+    throw new MetricValidationError(`Expected string, got ${JSON.stringify(value)}`);
+  }
+
+  const truncated = value.substring(0, length);
+  if (truncated !== value) {
+    (Context.errorManager as ErrorManagerSync).record(
       metric,
       ErrorType.InvalidOverflow,
       `Value length ${value.length} exceeds maximum of ${length}.`

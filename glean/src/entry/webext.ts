@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import platform from "../platform/browser/webext/index.js";
-import base from "./base.js";
+import { baseAsync } from "./base/async.js";
 
 export { default as Uploader, UploadResult, UploadResultStatus } from "../core/upload/uploader.js";
-export default base(platform);
+export default baseAsync(platform);

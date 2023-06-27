@@ -8,7 +8,7 @@ import { CompactEncrypt, importJWK, calculateJwkThumbprint } from "jose";
 import Plugin from "./index.js";
 import type { PingPayload } from "../core/pings/ping_payload.js";
 import type { JSONObject } from "../core/utils.js";
-import CoreEvents from "../core/events/index.js";
+import CoreEvents from "../core/events/async.js";
 
 // These are the chosen defaults, because they are the ones expected by Glean's data pipeline.
 //
@@ -30,7 +30,7 @@ const JWE_CONTENT_ENCODING = "A256GCM";
  * }
  * ```
  */
-class PingEncryptionPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
+class PingEncryptionPlugin extends Plugin<(typeof CoreEvents)["afterPingCollection"]> {
   /**
    * Creates a new PingEncryptionPlugin instance.
    *
@@ -48,7 +48,7 @@ class PingEncryptionPlugin extends Plugin<typeof CoreEvents["afterPingCollection
         kid: await calculateJwkThumbprint(this.jwk),
         alg: JWE_ALGORITHM,
         enc: JWE_CONTENT_ENCODING,
-        typ: "JWE",
+        typ: "JWE"
       })
       .encrypt(key);
     return { payload: encodedPayload };

@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { CoreEvent } from "./index.js";
-import CoreEvents from "./index.js";
-import type Plugin from "../../plugins/index.js";
-import log, { LoggingLevel } from "../log.js";
+import type { CoreEvent } from "../shared.js";
+import type Plugin from "../../../plugins/index.js";
+
+import CoreEventsSync from "../sync.js";
+import log, { LoggingLevel } from "../../log.js";
 
 const LOG_TAG = "core.Events.Utils";
 
@@ -18,8 +19,8 @@ const LOG_TAG = "core.Events.Utils";
  */
 export function registerPluginToEvent<E extends CoreEvent>(plugin: Plugin<E>): void {
   const eventName = plugin.event;
-  if (eventName in CoreEvents) {
-    const event = CoreEvents[eventName];
+  if (eventName in CoreEventsSync) {
+    const event = CoreEventsSync[eventName];
     event.registerPlugin(plugin);
     return;
   }
@@ -40,7 +41,7 @@ export function registerPluginToEvent<E extends CoreEvent>(plugin: Plugin<E>): v
  * Deregister plugins registered to all Glean events.
  */
 export function testResetEvents(): void {
-  for (const event in CoreEvents) {
-    CoreEvents[event].deregisterPlugin();
+  for (const event in CoreEventsSync) {
+    CoreEventsSync[event].deregisterPlugin();
   }
 }
