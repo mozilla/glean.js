@@ -16,7 +16,7 @@ benchmark.submit();
 
 // !BIG HACK!
 //
-// Ovewrite the console.info function in order to know when (and if) the benchmark ping was sent.
+// Overwrite the console.info function in order to know when (and if) the benchmark ping was sent.
 // If a success ping message is logged we show that in the document.
 console.info = function () {
   var message = "";
@@ -28,8 +28,8 @@ console.info = function () {
     }
   }
   console.log(message);
-  if (/succesfully sent 200.$/.test(message)) {
+  if (/successfully sent 200.$/.test(message)) {
     var elem = document.getElementById("msg");
-    elem.innerHTML = "Ping submitted succesfully.";
+    elem.innerHTML = "Ping submitted successfully.";
   }
 }
