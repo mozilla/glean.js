@@ -75,3 +75,5 @@ uuid
 virtualenv
 webext
 webpack
+async
+queueing
