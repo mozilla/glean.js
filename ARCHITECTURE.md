@@ -39,11 +39,22 @@ When data is submitted, the Glean SDK is responsible for assembling the correct 
 storage. Each metric can have different [lifetimes](https://mozilla.github.io/glean/book/user/metrics/adding-new-metrics.html#a-lifetime-example)
 and the SDK will manage its storage so that data does not remain in storage after it's lifetime is expired.
 
-The Glean SDK tries to do all of this is the least disruptive way possible to users. All of the
-SDKs tasks are queued and executed asynchronously. The APIs exposed by the Glean SDK will only do
+The Glean SDK tries to do all of this is the least disruptive way possible to users. There are two separate
+implementations for the SDK based on the platform: async (QT, node, web extensions) and sync (browser). The implementation
+is set inside of Glean itself and is not configurable by the user.
+
+### async (Web Extensions, QT, Node)
+
+All of the SDKs tasks are queued and executed asynchronously. The APIs exposed by the Glean SDK will only do
 the en-queuing of tasks, a quick synchronous operation. Internally, the Glean SDK will handle the
 queued tasks asynchronously, catching any errors thrown along the way so that Glean never
 crashes a users application.
+
+### sync (Browser)
+
+All of the SDKs tasks are executed synchronously, immediately as they are called. The APIs exposed by Glean
+are the same as the async implementation, but without queueing of any tasks. Errors will be caught without
+ever crashing the application.
 
 ## Code Map
 
@@ -116,6 +127,13 @@ the `platform/` module contains implementations of identical interfaces in diffe
 This allows the pattern of only importing the necessary implementation of these modules on each platform.
 It also makes testing easier, because the exact same suite of tests can be run for each of the platform-specific implementations,
  thus guaranteeing that each module works exactly the same on all platforms.
+
+The storage module varies for each platform. The storage mechanism used by each platform is as follows:
+- `web` - [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
+- `webext` - [`storage`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage)
+- `QT` - [`QtQuick.LocalStorage`](https://doc.qt.io/qt-6/qtquick-localstorage-qmlmodule.html)
+- `Node` - None, everything is stored in memory
+
 ### `plugins/`
 
 The `plugins/` folder contains the Glean.js' plugins code.
@@ -127,3 +145,15 @@ exposed through the `@mozilla/glean/plugins/*` entry point.
 
 This file is what gets executed when a user that has installed Glean through npm invokes the `glean`
 command. It serves as a wrapper to call `glean_parser` commands more easily from JavaScript projects.
+
+### `async`/`sync` files
+
+There are certain places where we need different implementations for internal services based on the
+platform. In these instances, the service will have its own folder with the following folder structure:
+
+```
+├── service/
+├──── async.ts
+├──── shared.ts # Shared base class defining all available methods AND any reusable helper functions
+└──── sync.ts
+```
