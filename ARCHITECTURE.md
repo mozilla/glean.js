@@ -53,8 +53,8 @@ crashes a users application.
 ### sync (Browser)
 
 All of the SDKs tasks are executed synchronously, immediately as they are called. The APIs exposed by Glean
-are the same as the async implementation, but without queueing of any tasks. Errors will be caught and thrown
-without ever crashing the application.
+are the same as the async implementation, but without queueing of any tasks. Errors will be caught without
+ever crashing the application.
 
 ## Code Map
 
