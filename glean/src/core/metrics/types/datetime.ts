@@ -35,7 +35,7 @@ export type DatetimeInternalRepresentation = {
   // The time unit of the metric type at the time of recording.
   timeUnit: TimeUnit;
   // This timezone should be the exact output of `Date.getTimezoneOffset`
-  // and as such it should alwaye be in minutes.
+  // and as such it should always be in minutes.
   timezone: number;
   // This date string should be the exact output of `Date.toISOString`
   // and as such it is always in UTC.
@@ -56,6 +56,18 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
       timeUnit,
       timezone: v.getTimezoneOffset(),
       date: v.toISOString()
+    });
+  }
+
+  static fromRawDatetime(
+    isoString: string,
+    timezoneOffset: number,
+    timeUnit: TimeUnit
+  ): DatetimeMetric {
+    return new DatetimeMetric({
+      timeUnit,
+      timezone: timezoneOffset,
+      date: isoString
     });
   }
 
@@ -274,6 +286,32 @@ export class InternalDatetimeMetricType extends MetricType {
     const truncatedDate = this.truncateDate(value);
     try {
       const metric = DatetimeMetric.fromDate(truncatedDate, this.timeUnit);
+      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  /**
+   * Set a datetime metric from raw values.
+   *
+   * # Important
+   * This method should **never** be exposed to users. This is used solely
+   * for migrating IDB data to LocalStorage.
+   *
+   * @param isoString Raw isoString.
+   * @param timezone Raw timezone.
+   * @param timeUnit Raw timeUnit.
+   */
+  setSyncRaw(isoString: string, timezone: number, timeUnit: TimeUnit) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      const metric = DatetimeMetric.fromRawDatetime(isoString, timezone, timeUnit);
       (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
     } catch (e) {
       if (e instanceof MetricValidationError) {
