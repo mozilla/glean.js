@@ -294,6 +294,17 @@ export class InternalDatetimeMetricType extends MetricType {
     }
   }
 
+  /**
+   * Set a datetime metric from raw values.
+   *
+   * # Important
+   * This method should **never** be exposed to users. This is used solely
+   * for migrating IDB data to LocalStorage.
+   *
+   * @param isoString Raw isoString.
+   * @param timezone Raw timezone.
+   * @param timeUnit Raw timeUnit.
+   */
   setSyncRaw(isoString: string, timezone: number, timeUnit: TimeUnit) {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;

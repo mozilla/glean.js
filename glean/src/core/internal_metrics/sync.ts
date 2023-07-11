@@ -218,6 +218,7 @@ export class CoreMetricsSync {
 
         const req = store.get("userLifetimeMetrics");
         req.onsuccess = () => {
+          // Pull and set the existing clientId.
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           const clientId = req.result?.["glean_client_info"]?.["uuid"]?.["client_id"] as string;
           if (!!clientId) {
@@ -226,6 +227,7 @@ export class CoreMetricsSync {
             this.initializeClientId();
           }
 
+          // Pull and set the existing firstRunDate.
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           const firstRunDate = req.result?.["glean_client_info"]?.["datetime"]?.[
             "first_run_date"
@@ -244,7 +246,8 @@ export class CoreMetricsSync {
             this.initializeFirstRunDate();
           }
 
-          // Get previous sequence number.
+          // Pull and store the existing sequence number in LocalStorage. This
+          // value is used later to update our ping sequence number.
           // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
           const seq = req.result?.["glean_ping_info"]?.["counter"]?.["submission#sequence"] as number;
           if (!!seq) {

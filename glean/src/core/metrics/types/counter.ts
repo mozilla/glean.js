@@ -142,7 +142,8 @@ export class InternalCounterMetricType extends MetricType {
    * counter metrics from previous storage.
    *
    * # Important
-   * This method should **never** be exposed to users.
+   * This method should **never** be exposed to users. This is used solely
+   * for migrating IDB data to LocalStorage.
    *
    * @param amount The new amount to set the counter to.
    */
