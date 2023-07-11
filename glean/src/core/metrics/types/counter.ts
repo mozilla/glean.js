@@ -33,6 +33,11 @@ export class CounterMetric extends Metric<number, number> {
     const correctAmount = this.validateOrThrow(amount);
     this.inner = saturatingAdd(this.inner, correctAmount);
   }
+
+  set(amount: unknown) {
+    const correctAmount = this.validateOrThrow(amount);
+    this.inner = correctAmount;
+  }
 }
 
 /**
@@ -125,6 +130,29 @@ export class InternalCounterMetricType extends MetricType {
 
     try {
       (Context.metricsDatabase as MetricsDatabaseSync).transform(this, this.transformFn(amount));
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  /**
+   * Synchronously set the value of the metric. Used specifically when migrating
+   * counter metrics from previous storage.
+   *
+   * # Important
+   * This method should **never** be exposed to users.
+   *
+   * @param amount The new amount to set the counter to.
+   */
+  setSync(amount: number) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      (Context.metricsDatabase as MetricsDatabaseSync).transform(this, () => new CounterMetric(amount));
     } catch (e) {
       if (e instanceof MetricValidationError) {
         e.recordErrorSync(this);

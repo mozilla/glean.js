@@ -73,10 +73,19 @@ export function getSequenceNumber(ping: CommonPingData): number {
     disabled: false
   });
 
-  const currentSeqData = (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
-    PING_INFO_STORAGE,
-    seq
-  );
+  let currentSeqData;
+
+  const migrationSeq = localStorage.getItem("MIGRATION_SEQ");
+  if (!!migrationSeq) {
+    currentSeqData = Number(migrationSeq);
+    localStorage.removeItem("MIGRATION_SEQ");
+    seq.setSync(currentSeqData);
+  } else {
+    currentSeqData = (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
+      PING_INFO_STORAGE,
+      seq
+    );
+  }
   seq.add(1);
 
   if (currentSeqData) {
