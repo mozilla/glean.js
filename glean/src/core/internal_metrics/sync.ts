@@ -245,14 +245,6 @@ export class CoreMetricsSync {
           } else {
             this.initializeFirstRunDate();
           }
-
-          // Pull and store the existing sequence number in LocalStorage. This
-          // value is used later to update our ping sequence number.
-          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
-          const seq = req.result?.["glean_ping_info"]?.["counter"]?.["submission#sequence"] as number;
-          if (!!seq) {
-            localStorage.setItem("MIGRATION_SEQ", seq.toString());
-          }
         };
 
         req.onerror = () => {
