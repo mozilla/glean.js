@@ -77,3 +77,4 @@ webext
 webpack
 async
 queueing
+LocalStorage
