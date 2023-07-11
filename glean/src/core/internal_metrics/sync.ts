@@ -126,11 +126,23 @@ export class CoreMetricsSync {
   }
 
   initialize(): void {
+    // If the client had used previous versions of Glean.js before we moved
+    // to LocalStorage as the data store, then we need to move important
+    // user data from IndexedDB to LocalStorage.
+    //
+    // Currently we are interested in migrating two things
+    // 1. The client_id - consistent clientId across all sessions.
+    // 2. The first_run_date - the date when the client was first run.
+
+    // The migration is done only once per client. The flag is set in
+    // LocalStorage to indicate that the migration has been completed.
     const migrationFlag = localStorage.getItem("GLEAN_MIGRATION_FLAG");
     if (migrationFlag !== "1") {
       this.migrateCoreMetricsFromIdb();
       localStorage.setItem("GLEAN_MIGRATION_FLAG", "1");
     } else {
+      // If we do not need to migrate anything, then we can set the metrics
+      // for the first time.
       this.initializeUserLifetimeMetrics();
     }
 
@@ -202,7 +214,18 @@ export class CoreMetricsSync {
   }
 
   /**
-   * Migrates the core metrics from the old IDB storage to LocalStorage on first launch.
+   * Migrates the core metrics from the old IDB storage to LocalStorage
+   * on first launch IF the client had used previous versions of Glean.js -
+   * pre LocalStorage.
+   *
+   * There is no way to access IDB data synchronously, so we rely on listeners
+   * for when specific actions complete. This means that we need to be careful
+   * and ensure that the clientId and firstRunDate are always set.
+   *
+   * Once the migration is complete, running the initialize functions for the
+   * clientId and firstRunDate equate to no-ops. If there is an error anywhere
+   * along the way and the migration is not complete, then the initialize the
+   * two metrics as usual.
    */
   private migrateCoreMetricsFromIdb(): void {
     const dbRequest = window.indexedDB.open("Glean");
@@ -216,6 +239,7 @@ export class CoreMetricsSync {
         const transaction = db?.transaction("Main", "readwrite");
         const store = transaction.objectStore("Main");
 
+        // All the core metrics are stored in the userLifetimeMetrics object.
         const req = store.get("userLifetimeMetrics");
         req.onsuccess = () => {
           // Pull and set the existing clientId.
@@ -251,6 +275,7 @@ export class CoreMetricsSync {
           this.initializeUserLifetimeMetrics();
         };
       } catch (e) {
+        // Fail-safe in case any generic error occurs.
         this.initializeUserLifetimeMetrics();
       }
     };
