@@ -126,8 +126,13 @@ export class CoreMetricsSync {
   }
 
   initialize(): void {
-    this.initializeClientId();
-    this.initializeFirstRunDate();
+    const migrationFlag = localStorage.getItem("GLEAN_MIGRATION_FLAG");
+    if (migrationFlag !== "1") {
+      this.migrateCoreMetricsFromIdb();
+      localStorage.setItem("GLEAN_MIGRATION_FLAG", "1");
+    } else {
+      this.initializeUserLifetimeMetrics();
+    }
 
     this.os.set((Context.platform as PlatformSync).info.os());
     this.osVersion.set((Context.platform as PlatformSync).info.osVersion(Context.config.osVersion));
@@ -186,5 +191,66 @@ export class CoreMetricsSync {
     if (!firstRunDate) {
       this.firstRunDate.set();
     }
+  }
+
+  /**
+   * Initializes the Glean internal user-lifetime metrics.
+   */
+  private initializeUserLifetimeMetrics(): void {
+    this.initializeClientId();
+    this.initializeFirstRunDate();
+  }
+
+  /**
+   * Migrates the core metrics from the old IDB storage to LocalStorage on first launch.
+   */
+  private migrateCoreMetricsFromIdb(): void {
+    const dbRequest = window.indexedDB.open("Glean");
+    dbRequest.onerror = () => {
+      this.initializeUserLifetimeMetrics();
+    };
+
+    dbRequest.onsuccess = () => {
+      try {
+        const db = dbRequest.result;
+        const transaction = db?.transaction("Main", "readwrite");
+        const store = transaction.objectStore("Main");
+
+        const req = store.get("userLifetimeMetrics");
+        req.onsuccess = () => {
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          const clientId = req.result?.["glean_client_info"]?.["uuid"]?.["client_id"] as string;
+          if (!!clientId) {
+            this.clientId.set(clientId);
+          } else {
+            this.initializeClientId();
+          }
+
+          // eslint-disable-next-line @typescript-eslint/no-unsafe-member-access
+          const firstRunDate = req.result?.["glean_client_info"]?.["datetime"]?.[
+            "first_run_date"
+          ] as {
+            date: string;
+            timezone: number;
+            timeUnit: TimeUnit;
+          };
+          if (!!firstRunDate) {
+            this.firstRunDate.setSyncRaw(
+              firstRunDate.date,
+              firstRunDate.timezone,
+              firstRunDate.timeUnit
+            );
+          } else {
+            this.initializeFirstRunDate();
+          }
+        };
+
+        req.onerror = () => {
+          this.initializeUserLifetimeMetrics();
+        };
+      } catch (e) {
+        this.initializeUserLifetimeMetrics();
+      }
+    };
   }
 }
