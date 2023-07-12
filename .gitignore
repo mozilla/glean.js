@@ -130,3 +130,6 @@ automation/size/tmp/
 
 # Browserstack Local generated files
 *.err
+
+# Allow glean/dist for alpha releases to test with.
+!glean/dist
