@@ -2,8 +2,9 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.4.0...main)
 
-* [#1728](https://github.com/mozilla/glean.js/pull/1728): Migrate client_id and first_run_date.
-* [#1695](https://github.com/mozilla/glean.js/pull/1695): Update Glean.js web to use LocalStorage.
+**Update to this version with caution**
+* [#1728](https://github.com/mozilla/glean.js/pull/1728): **BREAKING CHANGE**: Migrate client_id and first_run_date.
+* [#1695](https://github.com/mozilla/glean.js/pull/1695): **BREAKING CHANGE**: Update Glean.js web to use LocalStorage.
 
 # v1.4.0 (2023-05-10)
 
