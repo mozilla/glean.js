@@ -12,10 +12,10 @@ To check out a comprehensive list of which metrics are collected by Glean and th
 <!-- ! -->
 || Size |
 |--|--|
-|web|**56 KB**|
-|webext|**55 KB**|
-|node|**55 KB**|
-|QML|**91 KB**|
+|web|**59 KB**|
+|webext|**61 KB**|
+|node|**61 KB**|
+|QML|**104 KB**|
 <!-- ! -->
 
 > **Note**: The QML bundle contains all the metric types and is not distributed through the
@@ -32,21 +32,21 @@ to external consumers.
 <!-- ! -->
 |Metric Type| web|webext|node|
 |--|--|--|--|
-|boolean|1.6 KB |1.6 KB |1.6 KB |
+|boolean|1.8 KB |1.8 KB |1.8 KB |
 |counter|998 bytes |998 bytes |998 bytes |
-|custom_distribution|5.4 KB |5.4 KB |5.4 KB |
+|custom_distribution|5.8 KB |5.8 KB |5.8 KB |
 |datetime|1.1 KB |1.1 KB |1.1 KB |
 |event|1008 bytes |1008 bytes |1008 bytes |
-|labeled|361 bytes |361 bytes |361 bytes |
-|memory_distribution|5.0 KB |5.0 KB |5.0 KB |
-|quantity|1.7 KB |1.7 KB |1.7 KB |
+|labeled|355 bytes |356 bytes |355 bytes |
+|memory_distribution|6.1 KB |6.1 KB |6.1 KB |
+|quantity|2.1 KB |2.1 KB |2.1 KB |
 |string|998 bytes |998 bytes |998 bytes |
-|text|1.5 KB |1.5 KB |1.5 KB |
-|timespan|3.9 KB |3.9 KB |3.9 KB |
-|timing_distribution|6.6 KB |6.6 KB |6.6 KB |
-|rate|2.3 KB |2.3 KB |2.3 KB |
+|text|1.8 KB |1.8 KB |1.8 KB |
+|timespan|5.3 KB |5.3 KB |5.3 KB |
+|timing_distribution|8.7 KB |8.7 KB |8.7 KB |
+|rate|2.5 KB |2.5 KB |2.5 KB |
 |uuid|1.0 KB |1.0 KB |1.0 KB |
-|url|2.0 KB |2.0 KB |2.0 KB |
+|url|2.2 KB |2.2 KB |2.2 KB |
 <!-- ! -->
 
 ## Plugins

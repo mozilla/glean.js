@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v1.4.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.0-alpha.0...main)
+
+# v2.0.0-alpha.0 (2023-07-12)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.4.0...v2.0.0-alpha.0)
 
 **Update to this version with caution**
 * [#1728](https://github.com/mozilla/glean.js/pull/1728): **BREAKING CHANGE**: Migrate client_id and first_run_date.
