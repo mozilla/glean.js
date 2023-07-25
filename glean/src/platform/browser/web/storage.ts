@@ -12,9 +12,11 @@ import {
   getValueFromNestedObject,
   updateNestedObject
 } from "../../../core/storage/utils.js";
+import { isWindowObjectUnavailable } from "../../../core/utils.js";
 
 const LOG_TAG = "platform.web.Storage";
 
+// If `window.localStorage` is unavailable, we return undefined for all.
 class WebStore implements SynchronousStore {
   private logTag: string;
 
@@ -23,6 +25,10 @@ class WebStore implements SynchronousStore {
   }
 
   get(index: StorageIndex = []): JSONValue | undefined {
+    if (isWindowObjectUnavailable()) {
+      return;
+    }
+
     let result;
 
     try {
@@ -42,6 +48,10 @@ class WebStore implements SynchronousStore {
   }
 
   update(index: StorageIndex, transformFn: (v?: JSONValue) => JSONValue): void {
+    if (isWindowObjectUnavailable()) {
+      return;
+    }
+
     try {
       const json = localStorage.getItem(this.rootKey) || "{}";
       const obj = JSON.parse(json) as JSONObject;
@@ -54,6 +64,10 @@ class WebStore implements SynchronousStore {
   }
 
   delete(index: StorageIndex): void {
+    if (isWindowObjectUnavailable()) {
+      return;
+    }
+
     try {
       const json = localStorage.getItem(this.rootKey) || "{}";
       const obj = JSON.parse(json) as JSONObject;

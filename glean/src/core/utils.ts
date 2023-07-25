@@ -311,3 +311,15 @@ export function getCurrentTimeInNanoSeconds(): number {
   }
   return now;
 }
+
+/**
+ * Checks if the current environment has access to the `window` object. This
+ * check is used to conditional-ize browser code for SSR projects. If the
+ * platform does not have access to the `window` APIs, then we are unable to
+ * store data in the browser.
+ *
+ * @returns Whether or not the current platform has access to the `window` object.
+ */
+export function isWindowObjectUnavailable(): boolean {
+  return typeof window === "undefined";
+}

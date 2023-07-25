@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v1.4.0...main)
 
+* [#1733](https://github.com/mozilla/glean.js/pull/1733): Add SSR support for Glean.js
 * [#1728](https://github.com/mozilla/glean.js/pull/1728): Migrate client_id and first_run_date.
 * [#1695](https://github.com/mozilla/glean.js/pull/1695): Update Glean.js web to use LocalStorage.
 

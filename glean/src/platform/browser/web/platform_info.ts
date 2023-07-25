@@ -7,7 +7,12 @@ import { KnownOperatingSystems } from "../../../core/platform_info/shared.js";
 
 const BrowserPlatformInfo: PlatformInfoSync = {
   os(): KnownOperatingSystems {
-    const ua = navigator.userAgent;
+    let ua;
+    if (!!navigator && !!navigator.userAgent) {
+      ua = navigator.userAgent;
+    } else {
+      ua = KnownOperatingSystems.Unknown;
+    }
 
     if (ua.includes("Windows")) {
       return KnownOperatingSystems.Windows;
