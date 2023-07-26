@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v1.4.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.0-alpha.1...main)
+
+# v2.0.0-alpha.1 (2023-07-26)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.4.0...v2.0.0-alpha.1)
 
 * [#1733](https://github.com/mozilla/glean.js/pull/1733): Add SSR support for Glean.js
 * [#1728](https://github.com/mozilla/glean.js/pull/1728): Migrate client_id and first_run_date.
