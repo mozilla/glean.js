@@ -11,7 +11,7 @@ import { InternalDatetimeMetricType as DatetimeMetricType } from "../metrics/typ
 import { InternalStringMetricType as StringMetricType } from "../metrics/types/string.js";
 import { createMetric } from "../metrics/utils.js";
 import TimeUnit from "../metrics/time_unit.js";
-import { generateUUIDv4 } from "../utils.js";
+import { generateUUIDv4, isWindowObjectUnavailable } from "../utils.js";
 import { Lifetime } from "../metrics/lifetime.js";
 import log, { LoggingLevel } from "../log.js";
 import { Context } from "../context.js";
@@ -126,6 +126,13 @@ export class CoreMetricsSync {
   }
 
   initialize(): void {
+    // The "sync" version of Glean.js is only meant to be used in the browser.
+    // If we cannot access the window object, then we are unable to store
+    // any of the metric data in `localStorage`.
+    if (isWindowObjectUnavailable()) {
+      return;
+    }
+
     // If the client had used previous versions of Glean.js before we moved
     // to LocalStorage as the data store, then we need to move important
     // user data from IndexedDB to LocalStorage.
