@@ -1,0 +1,12 @@
+export declare const GLEAN_SCHEMA_VERSION = 1;
+export declare const GLEAN_VERSION = "2.0.0-alpha.1";
+export declare const PING_INFO_STORAGE = "glean_ping_info";
+export declare const CLIENT_INFO_STORAGE = "glean_client_info";
+export declare const KNOWN_CLIENT_ID = "c0ffeec0-ffee-c0ff-eec0-ffeec0ffeec0";
+export declare const DEFAULT_TELEMETRY_ENDPOINT = "https://incoming.telemetry.mozilla.org";
+export declare const DELETION_REQUEST_PING_NAME = "deletion-request";
+export declare const EVENTS_PING_NAME = "events";
+export declare const GLEAN_MAX_SOURCE_TAGS = 5;
+export declare const GLEAN_REFERENCE_TIME_EXTRA_KEY = "#glean_reference_time";
+export declare const GLEAN_EXECUTION_COUNTER_EXTRA_KEY = "#glean_execution_counter";
+export declare const GLEAN_RESERVED_EXTRA_KEYS: string[];

@@ -1,0 +1,21 @@
+export var KnownOperatingSystems;
+(function (KnownOperatingSystems) {
+    KnownOperatingSystems["Android"] = "Android";
+    KnownOperatingSystems["iOS"] = "iOS";
+    KnownOperatingSystems["Linux"] = "Linux";
+    KnownOperatingSystems["MacOS"] = "Darwin";
+    KnownOperatingSystems["Windows"] = "Windows";
+    KnownOperatingSystems["FreeBSD"] = "FreeBSD";
+    KnownOperatingSystems["NetBSD"] = "NetBSD";
+    KnownOperatingSystems["OpenBSD"] = "OpenBSD";
+    KnownOperatingSystems["Solaris"] = "Solaris";
+    KnownOperatingSystems["Unknown"] = "Unknown";
+    KnownOperatingSystems["ChromeOS"] = "ChromeOS";
+    KnownOperatingSystems["TvOS"] = "TvOS";
+    KnownOperatingSystems["Qnx"] = "QNX";
+    KnownOperatingSystems["Wasm"] = "Wasm";
+    KnownOperatingSystems["SunOS"] = "SunOS";
+    KnownOperatingSystems["AIX"] = "IBM_AIX";
+    KnownOperatingSystems["WatchOS"] = "WatchOS";
+    KnownOperatingSystems["WebOS"] = "WebOS";
+})(KnownOperatingSystems || (KnownOperatingSystems = {}));
