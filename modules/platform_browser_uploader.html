@@ -14,7 +14,7 @@
 <li><a href="platform_browser_uploader.html">platform/browser/uploader</a></li></ul>
 <h1>Module platform/browser/uploader</h1></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/d8b55a02/glean/src/platform/browser/uploader.ts#L5">src/platform/browser/uploader.ts:5</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/f05d13a8/glean/src/platform/browser/uploader.ts#L5">src/platform/browser/uploader.ts:5</a></li></ul></aside>
 <section class="tsd-panel-group">
 <section class="tsd-panel tsd-typography"></section></section>
 <section class="tsd-panel-group tsd-index-group">
@@ -50,21 +50,34 @@
 <li class="tsd-kind-module"><a href="core_constants.html">core/constants</a></li>
 <li class="tsd-kind-module"><a href="core_context.html">core/context</a></li>
 <li class="tsd-kind-module"><a href="core_dispatcher.html">core/dispatcher</a></li>
-<li class="tsd-kind-module"><a href="core_error.html">core/error</a></li>
+<li class="tsd-kind-module"><a href="core_error_async.html">core/error/async</a></li>
 <li class="tsd-kind-module"><a href="core_error_error_type.html">core/error/error_<wbr/>type</a></li>
-<li class="tsd-kind-module"><a href="core_events.html">core/events</a></li>
-<li class="tsd-kind-module"><a href="core_events_utils.html">core/events/utils</a></li>
-<li class="tsd-kind-module"><a href="core_glean.html">core/glean</a>
+<li class="tsd-kind-module"><a href="core_error_shared.html">core/error/shared</a></li>
+<li class="tsd-kind-module"><a href="core_error_sync.html">core/error/sync</a></li>
+<li class="tsd-kind-module"><a href="core_events_async.html">core/events/async</a></li>
+<li class="tsd-kind-module"><a href="core_events_shared.html">core/events/shared</a></li>
+<li class="tsd-kind-module"><a href="core_events_sync.html">core/events/sync</a></li>
+<li class="tsd-kind-module"><a href="core_events_utils_async.html">core/events/utils/async</a></li>
+<li class="tsd-kind-module"><a href="core_events_utils_sync.html">core/events/utils/sync</a></li>
+<li class="tsd-kind-module"><a href="core_glean_async.html">core/glean/async</a>
 <ul>
-<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="core_glean.default.html">default</a></li></ul></li>
-<li class="tsd-kind-module"><a href="core_internal_metrics.html">core/internal_<wbr/>metrics</a></li>
+<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="core_glean_async.default.html">default</a></li></ul></li>
+<li class="tsd-kind-module"><a href="core_glean_sync.html">core/glean/sync</a>
+<ul>
+<li class="tsd-kind-namespace tsd-parent-kind-module"><a href="core_glean_sync.default.html">default</a></li></ul></li>
+<li class="tsd-kind-module"><a href="core_internal_metrics_async.html">core/internal_<wbr/>metrics/async</a></li>
+<li class="tsd-kind-module"><a href="core_internal_metrics_sync.html">core/internal_<wbr/>metrics/sync</a></li>
 <li class="tsd-kind-module"><a href="core_internal_pings.html">core/internal_<wbr/>pings</a></li>
 <li class="tsd-kind-module"><a href="core_log.html">core/log</a></li>
 <li class="tsd-kind-module"><a href="core_metrics.html">core/metrics</a></li>
-<li class="tsd-kind-module"><a href="core_metrics_database.html">core/metrics/database</a></li>
+<li class="tsd-kind-module"><a href="core_metrics_database_async.html">core/metrics/database/async</a></li>
+<li class="tsd-kind-module"><a href="core_metrics_database_shared.html">core/metrics/database/shared</a></li>
+<li class="tsd-kind-module"><a href="core_metrics_database_sync.html">core/metrics/database/sync</a></li>
 <li class="tsd-kind-module"><a href="core_metrics_distributions.html">core/metrics/distributions</a></li>
-<li class="tsd-kind-module"><a href="core_metrics_events_database.html">core/metrics/events_<wbr/>database</a></li>
+<li class="tsd-kind-module"><a href="core_metrics_events_database_async.html">core/metrics/events_<wbr/>database/async</a></li>
 <li class="tsd-kind-module"><a href="core_metrics_events_database_recorded_event.html">core/metrics/events_<wbr/>database/recorded_<wbr/>event</a></li>
+<li class="tsd-kind-module"><a href="core_metrics_events_database_shared.html">core/metrics/events_<wbr/>database/shared</a></li>
+<li class="tsd-kind-module"><a href="core_metrics_events_database_sync.html">core/metrics/events_<wbr/>database/sync</a></li>
 <li class="tsd-kind-module"><a href="core_metrics_lifetime.html">core/metrics/lifetime</a></li>
 <li class="tsd-kind-module"><a href="core_metrics_memory_unit.html">core/metrics/memory_<wbr/>unit</a></li>
 <li class="tsd-kind-module"><a href="core_metrics_metric.html">core/metrics/metric</a></li>
@@ -87,24 +100,39 @@
 <li class="tsd-kind-module"><a href="core_metrics_types_uuid.html">core/metrics/types/uuid</a></li>
 <li class="tsd-kind-module"><a href="core_metrics_utils.html">core/metrics/utils</a></li>
 <li class="tsd-kind-module"><a href="core_pings_common_ping_data.html">core/pings/common_<wbr/>ping_<wbr/>data</a></li>
-<li class="tsd-kind-module"><a href="core_pings_database.html">core/pings/database</a></li>
-<li class="tsd-kind-module"><a href="core_pings_maker.html">core/pings/maker</a></li>
+<li class="tsd-kind-module"><a href="core_pings_database_async.html">core/pings/database/async</a></li>
+<li class="tsd-kind-module"><a href="core_pings_database_shared.html">core/pings/database/shared</a></li>
+<li class="tsd-kind-module"><a href="core_pings_database_sync.html">core/pings/database/sync</a></li>
+<li class="tsd-kind-module"><a href="core_pings_maker_async.html">core/pings/maker/async</a></li>
+<li class="tsd-kind-module"><a href="core_pings_maker_shared.html">core/pings/maker/shared</a></li>
+<li class="tsd-kind-module"><a href="core_pings_maker_sync.html">core/pings/maker/sync</a></li>
 <li class="tsd-kind-module"><a href="core_pings_ping_payload.html">core/pings/ping_<wbr/>payload</a></li>
 <li class="tsd-kind-module"><a href="core_pings_ping_type.html">core/pings/ping_<wbr/>type</a></li>
-<li class="tsd-kind-module"><a href="core_platform_info.html">core/platform_<wbr/>info</a></li>
-<li class="tsd-kind-module"><a href="core_storage.html">core/storage</a></li>
+<li class="tsd-kind-module"><a href="core_platform_info_async.html">core/platform_<wbr/>info/async</a></li>
+<li class="tsd-kind-module"><a href="core_platform_info_shared.html">core/platform_<wbr/>info/shared</a></li>
+<li class="tsd-kind-module"><a href="core_platform_info_sync.html">core/platform_<wbr/>info/sync</a></li>
+<li class="tsd-kind-module"><a href="core_storage_async.html">core/storage/async</a></li>
+<li class="tsd-kind-module"><a href="core_storage_shared.html">core/storage/shared</a></li>
+<li class="tsd-kind-module"><a href="core_storage_sync.html">core/storage/sync</a></li>
 <li class="tsd-kind-module"><a href="core_storage_utils.html">core/storage/utils</a></li>
 <li class="tsd-kind-module"><a href="core_testing.html">core/testing</a></li>
 <li class="tsd-kind-module"><a href="core_testing_events.html">core/testing/events</a></li>
 <li class="tsd-kind-module"><a href="core_testing_utils.html">core/testing/utils</a></li>
-<li class="tsd-kind-module"><a href="core_upload_manager.html">core/upload/manager</a></li>
+<li class="tsd-kind-module"><a href="core_types.html">core/types</a></li>
+<li class="tsd-kind-module"><a href="core_upload_manager_async.html">core/upload/manager/async</a></li>
+<li class="tsd-kind-module"><a href="core_upload_manager_shared.html">core/upload/manager/shared</a></li>
+<li class="tsd-kind-module"><a href="core_upload_manager_sync.html">core/upload/manager/sync</a></li>
 <li class="tsd-kind-module"><a href="core_upload_policy.html">core/upload/policy</a></li>
 <li class="tsd-kind-module"><a href="core_upload_rate_limiter.html">core/upload/rate_<wbr/>limiter</a></li>
 <li class="tsd-kind-module"><a href="core_upload_task.html">core/upload/task</a></li>
 <li class="tsd-kind-module"><a href="core_upload_uploader.html">core/upload/uploader</a></li>
-<li class="tsd-kind-module"><a href="core_upload_worker.html">core/upload/worker</a></li>
+<li class="tsd-kind-module"><a href="core_upload_worker_async.html">core/upload/worker/async</a></li>
+<li class="tsd-kind-module"><a href="core_upload_worker_shared.html">core/upload/worker/shared</a></li>
+<li class="tsd-kind-module"><a href="core_upload_worker_sync.html">core/upload/worker/sync</a></li>
 <li class="tsd-kind-module"><a href="core_utils.html">core/utils</a></li>
-<li class="tsd-kind-module"><a href="entry_base.html">entry/base</a></li>
+<li class="tsd-kind-module"><a href="entry_base_async.html">entry/base/async</a></li>
+<li class="tsd-kind-module"><a href="entry_base_shared.html">entry/base/shared</a></li>
+<li class="tsd-kind-module"><a href="entry_base_sync.html">entry/base/sync</a></li>
 <li class="tsd-kind-module"><a href="entry_node.html">entry/node</a></li>
 <li class="tsd-kind-module"><a href="entry_qt.html">entry/qt</a></li>
 <li class="tsd-kind-module"><a href="entry_web.html">entry/web</a></li>
@@ -115,7 +143,7 @@
 <li class="tsd-kind-module"><a href="histogram_histogram.html">histogram/histogram</a></li>
 <li class="tsd-kind-module"><a href="histogram_linear.html">histogram/linear</a></li>
 <li class="tsd-kind-module"><a href="histogram_utils.html">histogram/utils</a></li>
-<li class="tsd-kind-module"><a href="platform.html">platform</a></li>
+<li class="tsd-kind-module"><a href="platform_async.html">platform/async</a></li>
 <li class="current selected tsd-kind-module"><a href="platform_browser_uploader.html">platform/browser/uploader</a></li>
 <li class="tsd-kind-module"><a href="platform_browser_web.html">platform/browser/web</a></li>
 <li class="tsd-kind-module"><a href="platform_browser_web_platform_info.html">platform/browser/web/platform_<wbr/>info</a></li>
@@ -130,6 +158,7 @@
 <li class="tsd-kind-module"><a href="platform_qt_platform_info.html">platform/qt/platform_<wbr/>info</a></li>
 <li class="tsd-kind-module"><a href="platform_qt_storage.html">platform/qt/storage</a></li>
 <li class="tsd-kind-module"><a href="platform_qt_uploader.html">platform/qt/uploader</a></li>
+<li class="tsd-kind-module"><a href="platform_sync.html">platform/sync</a></li>
 <li class="tsd-kind-module"><a href="platform_test.html">platform/test</a></li>
 <li class="tsd-kind-module"><a href="platform_test_storage.html">platform/test/storage</a></li>
 <li class="tsd-kind-module"><a href="plugins.html">plugins</a></li>
