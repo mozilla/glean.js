@@ -78,4 +78,5 @@ webpack
 async
 queueing
 LocalStorage
+IndexedDB
 ssr
