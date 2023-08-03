@@ -2,16 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "./constants.js";
-import { InternalUUIDMetricType as UUIDMetricType } from "./metrics/types/uuid.js";
-import { InternalDatetimeMetricType as DatetimeMetricType } from "./metrics/types/datetime.js";
-import { InternalStringMetricType as StringMetricType } from "./metrics/types/string.js";
-import { createMetric } from "./metrics/utils.js";
-import TimeUnit from "./metrics/time_unit.js";
-import { generateUUIDv4 } from "./utils.js";
-import { Lifetime } from "./metrics/lifetime.js";
-import log, { LoggingLevel } from "./log.js";
-import { Context } from "./context.js";
+import type Platform from "../../platform/async.js";
+
+import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "../constants.js";
+import { InternalUUIDMetricType as UUIDMetricType } from "../metrics/types/uuid.js";
+import { InternalDatetimeMetricType as DatetimeMetricType } from "../metrics/types/datetime.js";
+import { InternalStringMetricType as StringMetricType } from "../metrics/types/string.js";
+import { createMetric } from "../metrics/utils.js";
+import TimeUnit from "../metrics/time_unit.js";
+import { generateUUIDv4 } from "../utils.js";
+import { Lifetime } from "../metrics/lifetime.js";
+import log, { LoggingLevel } from "../log.js";
+import { Context } from "../context.js";
 
 const LOG_TAG = "core.InternalMetrics";
 
@@ -34,30 +36,32 @@ export class CoreMetrics {
   readonly appDisplayVersion: StringMetricType;
   readonly buildDate: DatetimeMetricType;
 
-
   constructor() {
     this.clientId = new UUIDMetricType({
       name: "client_id",
       category: "",
       sendInPings: ["glean_client_info"],
       lifetime: Lifetime.User,
-      disabled: false,
+      disabled: false
     });
 
-    this.firstRunDate = new DatetimeMetricType({
-      name: "first_run_date",
-      category: "",
-      sendInPings: ["glean_client_info"],
-      lifetime: Lifetime.User,
-      disabled: false,
-    }, TimeUnit.Day);
+    this.firstRunDate = new DatetimeMetricType(
+      {
+        name: "first_run_date",
+        category: "",
+        sendInPings: ["glean_client_info"],
+        lifetime: Lifetime.User,
+        disabled: false
+      },
+      TimeUnit.Day
+    );
 
     this.os = new StringMetricType({
       name: "os",
       category: "",
       sendInPings: ["glean_client_info"],
       lifetime: Lifetime.Application,
-      disabled: false,
+      disabled: false
     });
 
     this.osVersion = new StringMetricType({
@@ -65,7 +69,7 @@ export class CoreMetrics {
       category: "",
       sendInPings: ["glean_client_info"],
       lifetime: Lifetime.Application,
-      disabled: false,
+      disabled: false
     });
 
     this.architecture = new StringMetricType({
@@ -73,7 +77,7 @@ export class CoreMetrics {
       category: "",
       sendInPings: ["glean_client_info"],
       lifetime: Lifetime.Application,
-      disabled: false,
+      disabled: false
     });
 
     this.locale = new StringMetricType({
@@ -81,7 +85,7 @@ export class CoreMetrics {
       category: "",
       sendInPings: ["glean_client_info"],
       lifetime: Lifetime.Application,
-      disabled: false,
+      disabled: false
     });
 
     this.appChannel = new StringMetricType({
@@ -89,7 +93,7 @@ export class CoreMetrics {
       category: "",
       sendInPings: ["glean_client_info"],
       lifetime: Lifetime.Application,
-      disabled: false,
+      disabled: false
     });
 
     this.appBuild = new StringMetricType({
@@ -97,7 +101,7 @@ export class CoreMetrics {
       category: "",
       sendInPings: ["glean_client_info"],
       lifetime: Lifetime.Application,
-      disabled: false,
+      disabled: false
     });
 
     this.appDisplayVersion = new StringMetricType({
@@ -105,24 +109,32 @@ export class CoreMetrics {
       category: "",
       sendInPings: ["glean_client_info"],
       lifetime: Lifetime.Application,
-      disabled: false,
+      disabled: false
     });
 
-    this.buildDate = new DatetimeMetricType({
-      name: "build_date",
-      category: "",
-      sendInPings: ["glean_client_info"],
-      lifetime: Lifetime.Application,
-      disabled: false,
-    }, "second");
+    this.buildDate = new DatetimeMetricType(
+      {
+        name: "build_date",
+        category: "",
+        sendInPings: ["glean_client_info"],
+        lifetime: Lifetime.Application,
+        disabled: false
+      },
+      "second"
+    );
   }
 
   async initialize(): Promise<void> {
     await this.initializeClientId();
     await this.initializeFirstRunDate();
-    await this.os.setUndispatched(await Context.platform.info.os());
-    await this.osVersion.setUndispatched(await Context.platform.info.osVersion(Context.config.osVersion));
-    await this.architecture.setUndispatched(await Context.platform.info.arch(Context.config.architecture));
+
+    await this.os.setUndispatched(await (Context.platform as Platform).info.os());
+    await this.osVersion.setUndispatched(
+      await Context.platform.info.osVersion(Context.config.osVersion)
+    );
+    await this.architecture.setUndispatched(
+      await Context.platform.info.arch(Context.config.architecture)
+    );
     await this.locale.setUndispatched(await Context.platform.info.locale());
     await this.appBuild.setUndispatched(Context.config.appBuild || "Unknown");
     await this.appDisplayVersion.setUndispatched(Context.config.appDisplayVersion || "Unknown");
@@ -136,11 +148,14 @@ export class CoreMetrics {
 
   /**
    * Generates and sets the client_id if it is not set,
-   * or if the current value is currepted.
+   * or if the current value is corrupted.
    */
   private async initializeClientId(): Promise<void> {
     let needNewClientId = false;
-    const clientIdData = await Context.metricsDatabase.getMetric(CLIENT_INFO_STORAGE, this.clientId);
+    const clientIdData = await Context.metricsDatabase.getMetric(
+      CLIENT_INFO_STORAGE,
+      this.clientId
+    );
     if (clientIdData) {
       try {
         const currentClientId = createMetric("uuid", clientIdData);

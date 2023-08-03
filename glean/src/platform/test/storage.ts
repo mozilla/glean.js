@@ -2,13 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import type { StorageIndex } from "../../core/storage/shared.js";
+import type Store from "../../core/storage/async.js";
+
 import log, { LoggingLevel } from "../../core/log.js";
-import type { StorageIndex } from "../../core/storage/index.js";
-import type Store from "../../core/storage/index.js";
 import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "../../core/storage/utils.js";
 import type { JSONObject, JSONValue } from "../../core/utils.js";
 
-const LOG_TAG = "plaftom.test.Storage";
+const LOG_TAG = "platform.test.Storage";
 
 // Enable storing the data outside of `MockStore` instances to simulate the
 // behaviour of the other persistent storages.

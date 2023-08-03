@@ -6,7 +6,7 @@ import assert from "assert";
 import { Context } from "../../../../src/core/context";
 import { ErrorType } from "../../../../src/core/error/error_type";
 
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import StringListMetricType, { MAX_LIST_LENGTH, MAX_STRING_LENGTH } from "../../../../src/core/metrics/types/string_list";
 import { testResetGlean } from "../../../../src/core/testing";

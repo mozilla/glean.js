@@ -2,84 +2,89 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type PlatformInfo from "../../../core/platform_info.js";
-import { KnownOperatingSystems } from "../../../core/platform_info.js";
+import type PlatformInfoSync from "../../../core/platform_info/sync.js";
+import { KnownOperatingSystems } from "../../../core/platform_info/shared.js";
 
-const BrowserPlatformInfo: PlatformInfo = {
-  os(): Promise<KnownOperatingSystems> {
-    const ua = navigator.userAgent;
+const BrowserPlatformInfo: PlatformInfoSync = {
+  os(): KnownOperatingSystems {
+    let ua;
+    if (!!navigator && !!navigator.userAgent) {
+      ua = navigator.userAgent;
+    } else {
+      ua = KnownOperatingSystems.Unknown;
+    }
 
     if (ua.includes("Windows")) {
-      return Promise.resolve(KnownOperatingSystems.Windows);
+      return KnownOperatingSystems.Windows;
     }
 
     if (/tvOS/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.TvOS);
+      return KnownOperatingSystems.TvOS;
     }
 
     if (/Watch( OS)?/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.WatchOS);
+      return KnownOperatingSystems.WatchOS;
     }
 
     if (/iPhone|iPad|iOS/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.iOS);
+      return KnownOperatingSystems.iOS;
     }
 
     if (/Mac OS X|macOS/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.MacOS);
+      return KnownOperatingSystems.MacOS;
     }
 
     if (/Android/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.Android);
+      return KnownOperatingSystems.Android;
     }
 
     if (/CrOS/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.ChromeOS);
+      return KnownOperatingSystems.ChromeOS;
     }
 
     if (/WebOS/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.WebOS);
+      return KnownOperatingSystems.WebOS;
     }
 
     if (/Linux/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.Linux);
+      return KnownOperatingSystems.Linux;
     }
 
     if (/OpenBSD/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.OpenBSD);
+      return KnownOperatingSystems.OpenBSD;
     }
 
     if (/FreeBSD/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.FreeBSD);
+      return KnownOperatingSystems.FreeBSD;
     }
 
     if (/NetBSD/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.NetBSD);
+      return KnownOperatingSystems.NetBSD;
     }
 
     if (/SunOS/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.SunOS);
+      return KnownOperatingSystems.SunOS;
     }
 
     if (/AIX/i.test(ua)) {
-      return Promise.resolve(KnownOperatingSystems.AIX);
+      return KnownOperatingSystems.AIX;
     }
 
-    return Promise.resolve(KnownOperatingSystems.Unknown);
+    return KnownOperatingSystems.Unknown;
   },
 
-  async osVersion(): Promise<string> {
+  osVersion(): string {
     // It would be very unreliable to try and extract OS version information from the UA string.
-    return Promise.resolve("Unknown");
+    return "Unknown";
   },
 
-  async arch(): Promise<string> {
+  arch(): string {
     // It would be very unreliable to try and extract architecture information from the UA string.
-    return Promise.resolve("Unknown");
+    return "Unknown";
   },
 
-  async locale(): Promise<string> {
-    return Promise.resolve(navigator.language || "und");
+  locale(): string {
+    return navigator.language || "und";
   }
 };
 

@@ -6,6 +6,8 @@ import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import type { DistributionData } from "../distributions";
 import type { MetricValidationResult } from "../metric.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+import type ErrorManagerSync from "../../error/sync.js";
 
 import { Context } from "../../context.js";
 import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
@@ -14,7 +16,11 @@ import { ErrorType } from "../../error/error_type.js";
 import { HistogramType } from "../../../histogram/histogram.js";
 import { constructExponentialHistogramFromValues } from "../../../histogram/exponential.js";
 import { constructLinearHistogramFromValues } from "../../../histogram/linear.js";
-import { extractAccumulatedValuesFromJsonValue, snapshot } from "../distributions.js";
+import {
+  extractAccumulatedValuesFromJsonValue,
+  getNumNegativeSamples,
+  snapshot
+} from "../distributions.js";
 import { isUndefined, testOnlyCheck } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.CustomDistributionMetricType";
@@ -46,7 +52,7 @@ export class CustomDistributionMetric extends Metric<
   }
 
   get customDistribution(): CustomDistributionInternalRepresentation {
-    return this._inner;
+    return this.inner;
   }
 
   validate(v: unknown): MetricValidationResult {
@@ -57,7 +63,7 @@ export class CustomDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidType,
-        errorMessage: `Expected valid CustomDistribution object, got ${JSON.stringify(obj)}`,
+        errorMessage: `Expected valid CustomDistribution object, got ${JSON.stringify(obj)}`
       };
     }
 
@@ -66,7 +72,7 @@ export class CustomDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected bucket count to be greater than 0, got ${obj.bucketCount}`,
+        errorMessage: `Expected bucket count to be greater than 0, got ${obj.bucketCount}`
       };
     }
 
@@ -75,7 +81,7 @@ export class CustomDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected histogram rangeMin to be greater than 0, got ${obj.rangeMin}`,
+        errorMessage: `Expected histogram rangeMin to be greater than 0, got ${obj.rangeMin}`
       };
     }
 
@@ -84,7 +90,7 @@ export class CustomDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected histogram rangeMax to be greater than 0, got ${obj.rangeMax}`,
+        errorMessage: `Expected histogram rangeMax to be greater than 0, got ${obj.rangeMax}`
       };
     }
 
@@ -93,17 +99,17 @@ export class CustomDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected histogram type to be either Linear or Exponential, got ${obj.histogramType}`,
+        errorMessage: `Expected histogram type to be either Linear or Exponential, got ${obj.histogramType}`
       };
     }
 
     return {
-      type: MetricValidation.Success,
+      type: MetricValidation.Success
     };
   }
 
   payload(): CustomDistributionPayloadRepresentation {
-    const { bucketCount, histogramType, rangeMax, rangeMin, values } = this._inner;
+    const { bucketCount, histogramType, rangeMax, rangeMin, values } = this.inner;
     const hist = constructHistogramByType(
       values,
       rangeMin,
@@ -113,7 +119,7 @@ export class CustomDistributionMetric extends Metric<
     );
     return {
       sum: hist.sum,
-      values: hist.values,
+      values: hist.values
     };
   }
 }
@@ -139,39 +145,47 @@ class InternalCustomDistributionMetricType extends MetricType {
     this.histogramType = histogramType;
   }
 
+  /// SHARED ///
   accumulateSamples(samples: number[]) {
+    if (Context.isPlatformSync()) {
+      this.setSync(samples);
+    } else {
+      this.setAsync(samples);
+    }
+  }
+
+  private transformFn(samples: number[]) {
+    return (old?: JSONValue): CustomDistributionMetric => {
+      const values = extractAccumulatedValuesFromJsonValue(old);
+
+      const convertedSamples: number[] = [];
+      samples.forEach((sample) => {
+        if (sample >= 0) {
+          convertedSamples.push(sample);
+        }
+      });
+
+      return new CustomDistributionMetric({
+        values: [...values, ...convertedSamples],
+        rangeMin: this.rangeMin,
+        rangeMax: this.rangeMax,
+        bucketCount: this.bucketCount,
+        histogramType: this.histogramType
+      });
+    };
+  }
+
+  /// ASYNC ///
+  setAsync(samples: number[]) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
 
-      let numNegativeSamples = 0;
       try {
-        const transformFn = ((samples: number[]) => {
-          return (old?: JSONValue): CustomDistributionMetric => {
-            const values = extractAccumulatedValuesFromJsonValue(old);
+        await Context.metricsDatabase.transform(this, this.transformFn(samples));
 
-            const convertedSamples: number[] = [];
-            samples.forEach((sample) => {
-              if (sample < 0) {
-                numNegativeSamples++;
-              } else {
-                convertedSamples.push(sample);
-              }
-            });
-
-            return new CustomDistributionMetric({
-              values: [...values, ...convertedSamples],
-              rangeMin: this.rangeMin,
-              rangeMax: this.rangeMax,
-              bucketCount: this.bucketCount,
-              histogramType: this.histogramType,
-            });
-          };
-        })(samples);
-
-        await Context.metricsDatabase.transform(this, transformFn);
-
+        const numNegativeSamples = getNumNegativeSamples(samples);
         if (numNegativeSamples > 0) {
           await Context.errorManager.record(
             this,
@@ -188,6 +202,32 @@ class InternalCustomDistributionMetricType extends MetricType {
     });
   }
 
+  /// SYNC ///
+  setSync(samples: number[]) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      (Context.metricsDatabase as MetricsDatabaseSync).transform(this, this.transformFn(samples));
+
+      const numNegativeSamples = getNumNegativeSamples(samples);
+      if (numNegativeSamples > 0) {
+        (Context.errorManager as ErrorManagerSync).record(
+          this,
+          ErrorType.InvalidValue,
+          `Accumulated ${numNegativeSamples} negative samples`,
+          numNegativeSamples
+        );
+      }
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<DistributionData | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let value: CustomDistributionInternalRepresentation | undefined;

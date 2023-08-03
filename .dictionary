@@ -75,3 +75,8 @@ uuid
 virtualenv
 webext
 webpack
+async
+queueing
+LocalStorage
+IndexedDB
+ssr

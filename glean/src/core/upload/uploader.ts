@@ -19,7 +19,7 @@ export const enum UploadResultStatus {
   //
   // A possible cause might be a malformed URL.
   UnrecoverableFailure,
-  // Request was successfull.
+  // Request was successful.
   //
   // This can still indicate an error, depending on the status code.
   Success,
@@ -38,7 +38,7 @@ export class UploadResult {
 }
 
 /**
- * Uploader abstract class, actualy uploading logic varies per platform.
+ * Uploader abstract class, actual uploading logic varies per platform.
  */
 export abstract class Uploader {
   /**

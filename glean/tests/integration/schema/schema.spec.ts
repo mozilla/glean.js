@@ -6,7 +6,7 @@ import https from "https";
 import { validate } from "jsonschema";
 
 import type { JSONObject } from "../../../src/core/utils";
-import Glean from "../../../src/core/glean";
+import Glean from "../../../src/core/glean/async";
 import { WaitableUploader } from "../../utils";
 
 // Generated files.

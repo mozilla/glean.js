@@ -4,7 +4,8 @@
 
 // Qt does not have its implementations yet, we use pieces of
 // the `TestPlatform` so that the sample will still work.
-import type Platform from "../index.js";
+import type Platform from "../async.js";
+
 import uploader from "./uploader.js";
 import info from "./platform_info.js";
 import Storage from "./storage.js";

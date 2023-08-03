@@ -106,6 +106,38 @@ This API's design should have been discussed and decided upon during the metric 
 
 Still, metric type classes will always have at least one recording function and one testing function.
 
+The Glean file generation is very particular with which files get bundled. This means
+that the implementation for both `async` and `sync` metric recording exists in the same file. Each
+metric file will have a set of marks `/// <something> ///` to denote which type of function should
+live in that block. The common marks are: `SHARED`, `ASYNC`, `SYNC`, and `TESTING`.
+Each function that lives under `SHARED` needs to conditionally check if the current platform is
+synchronous.
+
+For example:
+
+```ts
+/// SHARED ///
+function set(value: string): void {
+  if (Context.isPlatformSync()) {
+    this.setSync(value);
+  } else {
+    this.setAsync(value);
+  }
+}
+
+/// ASYNC ///
+function setAsync(value: string): void {
+  Context.dispatcher.launch(async () => {
+    // Transform and record the metric.
+  });
+}
+
+/// SYNC ///
+function setSync(value: string): void {
+  // Transform and record the metric.
+}
+```
+
 > **Note** The `type` property on the `InternalMetricType` subclass is a constant. It will be used
 > to determine in which section of the ping the recorded metrics for this type should be placed.
 > It's value is the name of the section for this metric type on the ping payload.
@@ -115,6 +147,8 @@ Still, metric type classes will always have at least one recording function and 
 #### Recording functions
 
 _Functions that call Glean.js' database and store concrete values of a metric type._
+
+##### async
 
 Database calls are all asynchronous, but Glean.js' external API must **never** return promises.
 Therefore, Glean.js has an internal dispatcher. Asynchronous tasks are dispatched and the dispatcher
@@ -138,6 +172,25 @@ function set(value: string): void {
 
     await Glean.metricsDatabase.record(this, value);
   });
+}
+```
+
+##### sync
+
+Database calls are synchronous and nothing is sent to the dispatcher. You do not need to wrap
+the call inside of any callback, you can call it directly. You do need to cast the `metricsDatabase`
+to its synchronous type when calling.
+
+```ts
+function set(value: string): void {
+  // !IMPORTANT! Always check whether or not metrics should be recorded before recording.
+  //
+  // Metrics must not be recorded in case: upload is disabled or the metric is expired.
+  if (!this.shouldRecord()) {
+    return;
+  }
+
+  (Glean.metricsDatabase as MetricsDatabaseSync).record(this, value);
 }
 ```
 

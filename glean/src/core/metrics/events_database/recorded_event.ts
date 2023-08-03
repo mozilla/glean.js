@@ -60,11 +60,11 @@ export class RecordedEvent extends Metric<Event, Event> {
    * @param value The value of the key.
    */
   addExtra(key: string, value: ExtraValues): void {
-    if (!this._inner.extra) {
-      this._inner.extra = {};
+    if (!this.inner.extra) {
+      this.inner.extra = {};
     }
 
-    this._inner.extra[key] = value;
+    this.inner.extra[key] = value;
   }
 
   /**

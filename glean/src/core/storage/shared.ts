@@ -2,7 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { JSONValue } from "../utils.js";
+import type { OptionalAsync } from "../types";
+import type { JSONValue } from "../utils";
 
 /**
  * The storage index in the ordered list of keys to navigate on the store
@@ -25,7 +26,7 @@ import type { JSONValue } from "../utils.js";
  */
 export type StorageIndex = string[];
 
-interface Store {
+export interface IStore {
   /**
    * Gets the value recorded to the given index on the store.
    *
@@ -35,7 +36,7 @@ interface Store {
    *          In case nothing has been recorded on the given index, returns `undefined`.
    * @throws In case an value which is not valid JSON is found.
    */
-  get(index?: StorageIndex): Promise<JSONValue | undefined>;
+  get(index?: StorageIndex): OptionalAsync<JSONValue | undefined>;
 
   /**
    * Updates a specific entry from the store.
@@ -68,10 +69,7 @@ interface Store {
    *
    * @throws In case the index is an empty array.
    */
-  update(
-    index: StorageIndex,
-    transformFn: (v?: JSONValue) => JSONValue
-  ): Promise<void>;
+  update(index: StorageIndex, transformFn: (v?: JSONValue) => JSONValue): OptionalAsync<void>;
 
   /**
    * Deletes a specific entry from the store.
@@ -79,7 +77,5 @@ interface Store {
    * @param index The index of the entry we want to delete.
    *        If given an empty array as index, will delete all entries on the store.
    */
-  delete(index: StorageIndex): Promise<void>;
+  delete(index: StorageIndex): OptionalAsync<void>;
 }
-
-export default Store;

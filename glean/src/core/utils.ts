@@ -8,6 +8,7 @@ import { Context } from "./context.js";
 import { ErrorType } from "./error/error_type.js";
 import log, { LoggingLevel } from "./log.js";
 import { MetricValidationError } from "./metrics/metric.js";
+import type ErrorManagerSync from "./error/sync.js";
 
 const LOG_TAG = "core.utils";
 
@@ -225,6 +226,34 @@ export async function truncateStringAtBoundaryWithError(metric: MetricType, valu
 }
 
 /**
+ * Truncates a string to a given max length SYNCHRONOUSLY.
+ *
+ * If the string required truncation, records an error through the error
+ * reporting mechanism.
+ *
+ * @param metric The metric to record an error to, if necessary,
+ * @param value The string to truncate.
+ * @param length The length to truncate to.
+ * @returns A string with at most `length` bytes.
+ * @throws In case `value` is not a string.
+ */
+export function truncateStringAtBoundaryWithErrorSync(metric: MetricType, value: unknown, length: number): string {
+  if(!isString(value)) {
+    throw new MetricValidationError(`Expected string, got ${JSON.stringify(value)}`);
+  }
+
+  const truncated = value.substring(0, length);
+  if (truncated !== value) {
+    (Context.errorManager as ErrorManagerSync).record(
+      metric,
+      ErrorType.InvalidOverflow,
+      `Value length ${value.length} exceeds maximum of ${length}.`
+    );
+  }
+  return truncated;
+}
+
+/**
  * Decorator factory that will only allow a function to be called when Glean is in testing mode.
  *
  * @param name The name of the function that is being called. Used for logging purposes only.
@@ -281,4 +310,16 @@ export function getCurrentTimeInNanoSeconds(): number {
     now = hrTime[0] * 1000000000 + hrTime[1];
   }
   return now;
+}
+
+/**
+ * Checks if the current environment has access to the `window` object. This
+ * check is used to conditional-ize browser code for SSR projects. If the
+ * platform does not have access to the `window` APIs, then we are unable to
+ * store data in the browser.
+ *
+ * @returns Whether or not the current platform has access to the `window` object.
+ */
+export function isWindowObjectUnavailable(): boolean {
+  return typeof window === "undefined";
 }

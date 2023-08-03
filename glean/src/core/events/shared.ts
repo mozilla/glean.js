@@ -5,18 +5,15 @@
 import type Plugin from "../../plugins/index.js";
 import log, { LoggingLevel } from "../log.js";
 
-import type { PingPayload } from "../pings/ping_payload.js";
-import type { JSONObject } from "../utils.js";
-
 const LOG_TAG = "core.Events";
 
 export class CoreEvent<
-   // An array of arguments that the event will provide as context to the plugin action.
-   Context extends unknown[] = unknown[],
-   // The expected type of the action result. To be returned by the plugin.
-   Result = unknown
+  // An array of arguments that the event will provide as context to the plugin action.
+  Context extends unknown[] = unknown[],
+  // The expected type of the action result. To be returned by the plugin.
+  Result = unknown
 > {
-  // The plugin to be triggered eveytime this even occurs.
+  // The plugin to be triggered every time this event occurs.
   private plugin?: Plugin<CoreEvent<Context, Result>>;
 
   constructor(readonly name: string) {}
@@ -70,19 +67,3 @@ export class CoreEvent<
     }
   }
 }
-
-/**
- * Glean internal events.
- */
-const CoreEvents: {
-  afterPingCollection: CoreEvent<[PingPayload], Promise<JSONObject>>,
-  [unused: string]: CoreEvent
-} = {
-  // Event that is triggered immediatelly after a ping is collect and before it is recorded.
-  //
-  //  - Context: The `PingPayload` of the recently collected ping.
-  //  - Result: The modified payload as a JSON object.
-  afterPingCollection: new CoreEvent<[PingPayload], Promise<JSONObject>>("afterPingCollection")
-};
-
-export default CoreEvents;

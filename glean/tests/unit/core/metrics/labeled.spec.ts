@@ -12,6 +12,7 @@ import BooleanMetricType from "../../../../src/core/metrics/types/boolean";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import LabeledMetricType from "../../../../src/core/metrics/types/labeled";
 import StringMetricType from "../../../../src/core/metrics/types/string";
+import type PingsDatabase from "../../../../src/core/pings/database/async";
 import PingType from "../../../../src/core/pings/ping_type";
 import { testResetGlean } from "../../../../src/core/testing";
 import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
@@ -62,7 +63,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
+    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -115,7 +116,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
+    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -292,7 +293,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
+    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -340,7 +341,7 @@ describe("LabeledMetric", function() {
     ping.submit();
     await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
+    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.

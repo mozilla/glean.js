@@ -2,17 +2,14 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type Store from "../../storage/index.js";
+import type Store from "../../storage/async.js";
+import type { Event } from "./recorded_event.js";
 import type { JSONArray, JSONValue } from "../../utils.js";
-import { isString } from "../../utils.js";
+import type { InternalEventMetricType as EventMetricType } from "../types/event.js";
+
 import { isUndefined } from "../../utils.js";
-import { InternalEventMetricType as EventMetricType } from "../types/event.js";
 import log, { LoggingLevel } from "../../log.js";
-import { InternalCounterMetricType as CounterMetricType } from "../types/counter.js";
-import { Lifetime } from "../lifetime.js";
 import { Context } from "../../context.js";
-import { generateReservedMetricIdentifiers } from "../database.js";
-import type { ExtraValues , Event } from "./recorded_event.js";
 import { RecordedEvent } from "./recorded_event.js";
 import {
   EVENTS_PING_NAME,
@@ -20,65 +17,15 @@ import {
   GLEAN_REFERENCE_TIME_EXTRA_KEY
 } from "../../constants.js";
 import { ErrorType } from "../../error/error_type.js";
+import {
+  createDateObject,
+  EVENT_DATABASE_LOG_TAG,
+  getExecutionCounterMetric,
+  getGleanRestartedEventMetric,
+  removeTrailingRestartedEvents
+} from "./shared.js";
 
-const LOG_TAG = "core.Metric.EventsDatabase";
-
-/**
- * Attempts to create a date object from a string.
- *
- * Throws if unsuccessful.
- *
- * @param str The string to generate a date from.
- * @returns The Date object created.
- */
-function createDateObject(str?: ExtraValues): Date {
-  if (!isString(str)) {
-    str = "";
-  }
-
-  const date = new Date(str);
-  // Date object will not throw errors when we attempt to create an invalid date.
-  if (isNaN(date.getTime())) {
-    throw new Error(`Error attempting to generate Date object from string: ${str}`);
-  }
-  return date;
-}
-
-/**
- * Creates an execution counter metric.
- *
- * @param sendInPings The list of pings this metric is sent in.
- *        Note: The 'events' ping should not contain glean.restarted events,
- *        so this ping will be filtered out from the 'sendInPings' array.
- * @returns A metric type instance.
- */
-function getExecutionCounterMetric(sendInPings: string[]): CounterMetricType {
-  return new CounterMetricType({
-    ...generateReservedMetricIdentifiers("execution_counter"),
-    sendInPings: sendInPings.filter(name => name !== EVENTS_PING_NAME),
-    lifetime: Lifetime.Ping,
-    disabled: false
-  });
-}
-
-/**
- * Creates an `glean.restarted` event metric.
- *
- * @param sendInPings The list of pings this metric is sent in.
- *        Note: The 'events' ping should not contain glean.restarted events,
- *        so this ping will be filtered out from the 'sendInPings' array.
- * @returns A metric type instance.
- */
-export function getGleanRestartedEventMetric(sendInPings: string[]): EventMetricType {
-  return new EventMetricType({
-    category: "glean",
-    name: "restarted",
-    sendInPings: sendInPings.filter(name => name !== EVENTS_PING_NAME),
-    lifetime: Lifetime.Ping,
-    disabled: false
-  }, [ GLEAN_REFERENCE_TIME_EXTRA_KEY ]);
-}
-
+/// UTILS ///
 /**
  * Records a `glean.restarted` event metric.
  *
@@ -101,44 +48,16 @@ async function recordGleanRestartedEvent(
   );
 }
 
-/**
- * The events database is an abstraction layer on top of the underlying storage.
- *
- * Event data is saved to the database in the following format:
- *
- * {
- *  "pingName": {
- *    [
- *      {
- *        "timestamp": 0,
- *        "category": "something",
- *        "name": "other",
- *        "extra": {...}
- *      },
- *      ...
- *    ]
- *  }
- * }
- *
- * Events only support `Ping` lifetime.
- */
+// See `IEventsDatabase` for method documentation.
 class EventsDatabase {
   private eventsStore: Store;
   private initialized = false;
 
   constructor() {
-    this.eventsStore = new Context.platform.Storage("events");
+    this.eventsStore = new Context.platform.Storage("events") as Store;
   }
 
-  private async getAvailableStoreNames(): Promise<string[]> {
-    const data = await this.eventsStore.get([]);
-    if (isUndefined(data)) {
-      return [];
-    }
-
-    return Object.keys(data);
-  }
-
+  /// PUBLIC ///
   async initialize(): Promise<void> {
     if (this.initialized) {
       return;
@@ -147,7 +66,7 @@ class EventsDatabase {
     const storeNames = await this.getAvailableStoreNames();
     // Submit the events ping in case there are _any_ events unsubmitted from the previous run
     if (storeNames.includes(EVENTS_PING_NAME)) {
-      const storedEvents = (await this.eventsStore.get([EVENTS_PING_NAME]) as JSONArray) ?? [];
+      const storedEvents = ((await this.eventsStore.get([EVENTS_PING_NAME])) as JSONArray) ?? [];
       if (storedEvents.length > 0) {
         await Context.corePings.events.submitUndispatched("startup");
       }
@@ -161,12 +80,6 @@ class EventsDatabase {
     this.initialized = true;
   }
 
-  /**
-   * Records a given event.
-   *
-   * @param metric The metric to record to.
-   * @param value The value we want to record to the given metric.
-   */
   async record(metric: EventMetricType, value: RecordedEvent): Promise<void> {
     if (metric.disabled) {
       return;
@@ -175,7 +88,10 @@ class EventsDatabase {
     for (const ping of metric.sendInPings) {
       const executionCounter = getExecutionCounterMetric([ping]);
 
-      let currentExecutionCount = await Context.metricsDatabase.getMetric<number>(ping, executionCounter);
+      let currentExecutionCount = await Context.metricsDatabase.getMetric<number>(
+        ping,
+        executionCounter
+      );
       // There might not be an execution counter stored in case:
       //
       // 1. The ping was already sent during this session and the events storage was cleared;
@@ -205,30 +121,52 @@ class EventsDatabase {
     }
   }
 
-  /**
-   * Gets the vector of currently stored events for the given event metric in
-   * the given store.
-   *
-   * This doesn't clear the stored value.
-   *
-   * @param ping the ping from which we want to retrieve this metrics value from.
-   * @param metric the metric we're looking for.
-   * @returns an array of `RecordedEvent` containing the found events or `undefined`
-   *          if no recorded event was found.
-   */
-  async getEvents(
-    ping: string,
-    metric: EventMetricType
-  ): Promise<Event[] | undefined> {
+  async getEvents(ping: string, metric: EventMetricType): Promise<Event[] | undefined> {
     const events = await this.getAndValidatePingData(ping);
     if (events.length === 0) {
       return;
     }
 
-    return events
-      // Only report events for the requested metric.
-      .filter((e) => (e.get().category === metric.category) && (e.get().name === metric.name))
-      .map(e => e.withoutReservedExtras());
+    return (
+      events
+        // Only report events for the requested metric.
+        .filter((e) => e.get().category === metric.category && e.get().name === metric.name)
+        .map((e) => e.withoutReservedExtras())
+    );
+  }
+
+  async getPingEvents(
+    ping: string,
+    clearPingLifetimeData: boolean
+  ): Promise<JSONArray | undefined> {
+    const pingData = await this.getAndValidatePingData(ping);
+
+    if (clearPingLifetimeData && Object.keys(pingData).length > 0) {
+      await this.eventsStore.delete([ping]);
+    }
+
+    if (pingData.length === 0) {
+      return;
+    }
+
+    const payload = await this.prepareEventsPayload(ping, pingData);
+    if (payload.length > 0) {
+      return payload;
+    }
+  }
+
+  async clearAll(): Promise<void> {
+    await this.eventsStore.delete([]);
+  }
+
+  /// PRIVATE ///
+  private async getAvailableStoreNames(): Promise<string[]> {
+    const data = await this.eventsStore.get([]);
+    if (isUndefined(data)) {
+      return [];
+    }
+
+    return Object.keys(data);
   }
 
   /**
@@ -253,7 +191,7 @@ class EventsDatabase {
     // We expect arrays!
     if (!Array.isArray(data)) {
       log(
-        LOG_TAG,
+        EVENT_DATABASE_LOG_TAG,
         `Unexpected value found for ping ${ping}: ${JSON.stringify(data)}. Clearing.`,
         LoggingLevel.Error
       );
@@ -266,35 +204,13 @@ class EventsDatabase {
         const event = new RecordedEvent(e);
         return [...result, event];
       } catch {
-        log(LOG_TAG, `Unexpected data found in events storage: ${JSON.stringify(e)}. Ignoring.`);
+        log(
+          EVENT_DATABASE_LOG_TAG,
+          `Unexpected data found in events storage: ${JSON.stringify(e)}. Ignoring.`
+        );
         return result;
       }
     }, [] as RecordedEvent[]);
-  }
-
-  /**
-   * Gets all of the events related to a given ping.
-   *
-   * @param ping The name of the ping to retrieve.
-   * @param clearPingLifetimeData Whether or not to clear the ping lifetime metrics retrieved.
-   * @returns An object containing all the metrics recorded to the given ping,
-   *          `undefined` in case the ping doesn't contain any recorded metrics.
-   */
-  async getPingEvents(ping: string, clearPingLifetimeData: boolean): Promise<JSONArray | undefined> {
-    const pingData = await this.getAndValidatePingData(ping);
-
-    if (clearPingLifetimeData && Object.keys(pingData).length > 0) {
-      await this.eventsStore.delete([ping]);
-    }
-
-    if (pingData.length === 0) {
-      return;
-    }
-
-    const payload = await this.prepareEventsPayload(ping, pingData);
-    if (payload.length > 0) {
-      return payload;
-    }
   }
 
   /**
@@ -329,7 +245,9 @@ class EventsDatabase {
 
     let lastRestartDate: Date;
     try {
-      lastRestartDate = createDateObject(sortedEvents[0].get().extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
+      lastRestartDate = createDateObject(
+        sortedEvents[0].get().extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]
+      );
       // Drop the first `restarted` event.
       sortedEvents.shift();
     } catch {
@@ -342,7 +260,9 @@ class EventsDatabase {
     let restartedOffset = 0;
     for (const [index, event] of sortedEvents.entries()) {
       try {
-        const nextRestartDate = createDateObject(event.get().extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]);
+        const nextRestartDate = createDateObject(
+          event.get().extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY]
+        );
         const dateOffset = nextRestartDate.getTime() - lastRestartDate.getTime();
         lastRestartDate = nextRestartDate;
 
@@ -395,40 +315,9 @@ class EventsDatabase {
     }
 
     // There is no additional context in trailing `glean.restarted` events, they can be removed.
-    sortedEvents = this.removeTrailingRestartedEvents(sortedEvents);
+    sortedEvents = removeTrailingRestartedEvents(sortedEvents);
 
     return sortedEvents.map((e) => e.payload());
-  }
-
-  /**
-   * Clears all persisted events data.
-   */
-  async clearAll(): Promise<void> {
-    await this.eventsStore.delete([]);
-  }
-
-  private isRestartedEvent(event: RecordedEvent): boolean {
-    // This extra key will only exist for `glean.restarted` events. If at some
-    // point that is no longer the case, this can be updated to check the event
-    // `name` and `category` instead.
-    return !!event?.get()?.extra?.[GLEAN_REFERENCE_TIME_EXTRA_KEY];
-  }
-
-  /**
-   * Removes all trailing `glean.restarted` events. We will continue to check
-   * the last element of the array until there are no longer any elements OR
-   * the event is not a `glean.restarted` event.
-   *
-   * @param sortedEvents Before this is called, events should already be sorted
-   *        which includes removing the leading `glean.restarted` event.
-   * @returns The input array without any trailing `glean.restarted` events.
-   */
-  private removeTrailingRestartedEvents(sortedEvents: RecordedEvent[]): RecordedEvent[] {
-    while (!!sortedEvents.length && this.isRestartedEvent(sortedEvents[sortedEvents.length - 1])) {
-      sortedEvents.pop();
-    }
-
-    return sortedEvents;
   }
 }
 

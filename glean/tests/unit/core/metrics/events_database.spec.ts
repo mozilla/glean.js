@@ -7,13 +7,12 @@ import type { SinonFakeTimers } from "sinon";
 import sinon from "sinon";
 
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import EventsDatabase, {
-  getGleanRestartedEventMetric,
-} from "../../../../src/core/metrics/events_database";
+import EventsDatabase from "../../../../src/core/metrics/events_database/async";
+import { getGleanRestartedEventMetric } from "../../../../src/core/metrics/events_database/shared";
 import { InternalEventMetricType as EventMetricType } from "../../../../src/core/metrics/types/event";
 import type { JSONObject } from "../../../../src/core/utils";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
-import { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/database";
+import { generateReservedMetricIdentifiers } from "../../../../src/core/metrics/database/shared";
 import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
 import { Context } from "../../../../src/core/context";
 import { RecordedEvent } from "../../../../src/core/metrics/events_database/recorded_event";
@@ -21,7 +20,7 @@ import {
   EVENTS_PING_NAME,
   GLEAN_EXECUTION_COUNTER_EXTRA_KEY,
 } from "../../../../src/core/constants";
-import { collectPing } from "../../../../src/core/pings/maker";
+import { collectPing } from "../../../../src/core/pings/maker/async";
 import { ErrorType } from "../../../../src/core/error/error_type";
 import { testResetGlean } from "../../../../src/core/testing";
 import type { Event } from "../../../../src/core/metrics/events_database/recorded_event";

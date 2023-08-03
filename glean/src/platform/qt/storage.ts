@@ -2,9 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { StorageIndex } from "../../core/storage/index.js";
-import type Store from "../../core/storage/index.js";
+import type { StorageIndex } from "../../core/storage/shared.js";
+import type Store from "../../core/storage/async.js";
 import type { JSONObject, JSONValue } from "../../core/utils.js";
+
 import { getValueFromNestedObject, updateNestedObject } from "../../core/storage/utils.js";
 import { isObject, isUndefined } from "../../core/utils.js";
 import log, { LoggingLevel } from "../../core/log.js";
@@ -109,7 +110,7 @@ class QMLStore implements Store {
     private name: string = DATABASE_NAME
   ) {
     const logTag = `${LOG_TAG}.${tableName}`;
-    this.initialized = this._executeQuery(
+    this.initialized = this.executeQuery(
       `CREATE TABLE IF NOT EXISTS ${tableName}(key VARCHAR(255), value VARCHAR(255));`,
       logTag
     );
@@ -117,7 +118,7 @@ class QMLStore implements Store {
     this.logTag = logTag;
   }
 
-  private _createKeyFromIndex(index: StorageIndex) {
+  private createKeyFromIndex(index: StorageIndex) {
     return index.join(SEPARATOR);
   }
 
@@ -130,7 +131,7 @@ class QMLStore implements Store {
    *        and attempting to call `this.logTag` will throw an error.
    * @returns The database handle or `undefined`.
    */
-  private _dbHandle(logTag?: string): LocalStorage.DatabaseHandle | undefined {
+  private getDbHandle(logTag?: string): LocalStorage.DatabaseHandle | undefined {
     try {
       const handle = LocalStorage.LocalStorage.openDatabaseSync(
         this.name, "1.0", `${this.name} Storage`, ESTIMATED_DATABASE_SIZE
@@ -155,10 +156,10 @@ class QMLStore implements Store {
    *        Having this as an argument is necessary for the case when this
    *        function gets called before initialize. In that case `this` is `undefined`
    *        and attempting to call `this.logTag` will throw an error.
-   * @returns The query result if succesfull. A rejection otherwise.
+   * @returns The query result if successful. A rejection otherwise.
    */
-  protected _executeQuery(query: string, logTag?: string): Promise<LocalStorage.QueryResult | undefined> {
-    const handle = this._dbHandle(logTag);
+  protected executeQuery(query: string, logTag?: string): Promise<LocalStorage.QueryResult | undefined> {
+    const handle = this.getDbHandle(logTag);
     if (!handle) {
       return Promise.reject();
     }
@@ -180,30 +181,30 @@ class QMLStore implements Store {
     });
   }
 
-  protected async _executeOnceInitialized(query: string): Promise<LocalStorage.QueryResult | undefined> {
+  protected async executeOnceInitialized(query: string): Promise<LocalStorage.QueryResult | undefined> {
     await this.initialized;
-    return this._executeQuery(query);
+    return this.executeQuery(query);
   }
 
-  private async _getFullResultObject(index: StorageIndex): Promise<JSONObject | undefined> {
-    const key = this._createKeyFromIndex(index);
-    const result = await this._executeOnceInitialized(
+  private async getFullResultObject(index: StorageIndex): Promise<JSONObject | undefined> {
+    const key = this.createKeyFromIndex(index);
+    const result = await this.executeOnceInitialized(
       `SELECT * FROM ${this.tableName} WHERE key LIKE "${key}%"`
     );
     return queryResultToJSONObject(result);
   }
 
-  private async _getWholeStore(): Promise<JSONObject | undefined> {
-    const result = await this._executeOnceInitialized(`SELECT * FROM ${this.tableName}`);
+  private async getWholeStore(): Promise<JSONObject | undefined> {
+    const result = await this.executeOnceInitialized(`SELECT * FROM ${this.tableName}`);
     return queryResultToJSONObject(result);
   }
 
   async get(index: StorageIndex = []): Promise<JSONValue | undefined> {
     if (index.length === 0) {
-      return this._getWholeStore();
+      return this.getWholeStore();
     }
 
-    const obj = (await this._getFullResultObject(index)) || {};
+    const obj = (await this.getFullResultObject(index)) || {};
     try {
       return getValueFromNestedObject(obj, index);
     } catch(e) {
@@ -215,18 +216,18 @@ class QMLStore implements Store {
     index: StorageIndex,
     transformFn: (v?: JSONValue | undefined) => JSONValue
   ): Promise<void> {
-    const result = (await this._getFullResultObject(index)) || {};
+    const result = (await this.getFullResultObject(index)) || {};
     const transformedResult = updateNestedObject(result, index, transformFn);
     const updates = getKeyValueArrayFromNestedObject(transformedResult);
     for (const update of updates) {
       const [ key, value ] = update;
       const escapedValue = value.replace("'", "''");
-      const updateResult = await this._executeOnceInitialized(
+      const updateResult = await this.executeOnceInitialized(
         `UPDATE ${this.tableName} SET value='${escapedValue}' WHERE key='${key}'`
       );
 
       if (!updateResult?.rows.length) {
-        await this._executeOnceInitialized(
+        await this.executeOnceInitialized(
           `INSERT INTO ${this.tableName}(key, value) VALUES('${key}', '${escapedValue}');`
         );
       }
@@ -234,8 +235,8 @@ class QMLStore implements Store {
   }
 
   async delete(index: StorageIndex): Promise<void> {
-    const key = this._createKeyFromIndex(index);
-    await this._executeOnceInitialized(
+    const key = this.createKeyFromIndex(index);
+    await this.executeOnceInitialized(
       `DELETE FROM ${this.tableName} WHERE key LIKE "${key}%"`
     );
   }

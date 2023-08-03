@@ -8,13 +8,14 @@ import sinon from "sinon";
 import PingType, { InternalPingType } from "../../../../src/core/pings/ping_type";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
 import type { JSONObject } from "../../../../src/core/utils";
 import TestPlatform from "../../../../src/platform/test";
 import { testResetGlean } from "../../../../src/core/testing";
 import { testUninitializeGlean } from "../../../../src/core/testing/utils";
+import type PingsDatabase from "../../../../src/core/pings/database/async";
 
 const sandbox = sinon.createSandbox();
 
@@ -59,7 +60,7 @@ describe("PingType", function() {
     counter.add();
 
     await submitSync(ping);
-    const storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
+    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
@@ -79,11 +80,11 @@ describe("PingType", function() {
     });
 
     await submitSync(ping1);
-    let storedPings = await Context.pingsDatabase["store"].get();
+    let storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get();
     assert.strictEqual(storedPings, undefined);
 
     await submitSync(ping2);
-    storedPings = await Context.pingsDatabase["store"].get() as JSONObject;
+    storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
@@ -96,7 +97,7 @@ describe("PingType", function() {
       sendIfEmpty: false,
     });
     await submitSync(ping);
-    const storedPings = await Context.pingsDatabase["store"].get();
+    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get();
     assert.strictEqual(storedPings, undefined);
   });
 

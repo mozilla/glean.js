@@ -5,6 +5,8 @@
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
 import { saturatingAdd, isUndefined, testOnlyCheck } from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
@@ -24,12 +26,12 @@ export class CounterMetric extends Metric<number, number> {
   }
 
   payload(): number {
-    return this._inner;
+    return this.inner;
   }
 
   saturatingAdd(amount: unknown): void {
     const correctAmount = this.validateOrThrow(amount);
-    this._inner = saturatingAdd(this._inner, correctAmount);
+    this.inner = saturatingAdd(this.inner, correctAmount);
   }
 }
 
@@ -45,8 +47,42 @@ export class InternalCounterMetricType extends MetricType {
     super("counter", meta, CounterMetric);
   }
 
+  /// SHARED ///
+  add(amount?: number): void {
+    if (Context.isPlatformSync()) {
+      this.addSync(amount);
+    } else {
+      this.addAsync(amount);
+    }
+  }
+
+  private transformFn(amount: number) {
+    return (v?: JSONValue): CounterMetric => {
+      const metric = new CounterMetric(amount);
+      if (v) {
+        try {
+          // Throws an error if v in not valid input.
+          metric.saturatingAdd(v);
+        } catch {
+          log(
+            LOG_TAG,
+            `Unexpected value found in storage for metric ${this.name}: ${JSON.stringify(
+              v
+            )}. Overwriting.`
+          );
+        }
+      }
+      return metric;
+    };
+  }
+
+  /// ASYNC ///
+  addAsync(amount?: number) {
+    Context.dispatcher.launch(async () => this.addUndispatched(amount));
+  }
+
   /**
-   * An implemention of `add` that does not dispatch the recording task.
+   * An implementation of `add` that does not dispatch the recording task.
    *
    * # Important
    *
@@ -64,36 +100,39 @@ export class InternalCounterMetricType extends MetricType {
     }
 
     try {
-      const transformFn = ((amount) => {
-        return (v?: JSONValue): CounterMetric => {
-          const metric = new CounterMetric(amount);
-          if (v) {
-            try {
-              // Throws an error if v in not valid input.
-              metric.saturatingAdd(v);
-            } catch {
-              log(
-                LOG_TAG,
-                `Unexpected value found in storage for metric ${this.name}: ${JSON.stringify(v)}. Overwriting.`
-              );
-            }
-          }
-          return metric;
-        };
-      })(amount);
-
-      await Context.metricsDatabase.transform(this, transformFn);
-    } catch(e) {
+      await Context.metricsDatabase.transform(this, this.transformFn(amount));
+    } catch (e) {
       if (e instanceof MetricValidationError) {
         await e.recordError(this);
       }
     }
   }
 
-  add(amount?: number): void {
-    Context.dispatcher.launch(async () => this.addUndispatched(amount));
+  /// SYNC ///
+  /**
+   * A synchronous implementation of add.
+   *
+   * @param amount The amount we want to add.
+   */
+  addSync(amount?: number) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    if (isUndefined(amount)) {
+      amount = 1;
+    }
+
+    try {
+      (Context.metricsDatabase as MetricsDatabaseSync).transform(this, this.transformFn(amount));
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
   }
 
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: number | undefined;
@@ -159,7 +198,10 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): Promise<number> {
+  async testGetNumRecordedErrors(
+    errorType: string,
+    ping: string = this.#inner.sendInPings[0]
+  ): Promise<number> {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

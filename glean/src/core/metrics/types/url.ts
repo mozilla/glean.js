@@ -3,10 +3,16 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import type { CommonMetricData } from "../index.js";
-import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import type { MetricValidationResult } from "../metric.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
+import {
+  testOnlyCheck,
+  truncateStringAtBoundaryWithError,
+  truncateStringAtBoundaryWithErrorSync
+} from "../../utils.js";
 import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import type { MetricValidationResult } from "../metric.js";
 import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
 import { validateString } from "../utils.js";
@@ -51,7 +57,7 @@ export class UrlMetric extends Metric<string, string> {
       return {
         type: MetricValidation.Error,
         errorMessage: "URL metric does not support data URLs",
-        errorType: ErrorType.InvalidValue,
+        errorType: ErrorType.InvalidValue
       };
     }
 
@@ -59,7 +65,7 @@ export class UrlMetric extends Metric<string, string> {
       return {
         type: MetricValidation.Error,
         errorMessage: `"${str}" does not start with a valid URL scheme`,
-        errorType: ErrorType.InvalidValue,
+        errorType: ErrorType.InvalidValue
       };
     }
 
@@ -67,7 +73,7 @@ export class UrlMetric extends Metric<string, string> {
   }
 
   payload(): string {
-    return this._inner;
+    return this.inner;
   }
 }
 
@@ -81,6 +87,20 @@ export class UrlMetric extends Metric<string, string> {
 class InternalUrlMetricType extends MetricType {
   constructor(meta: CommonMetricData) {
     super("url", meta, UrlMetric);
+  }
+
+  /// SHARED ///
+  setUrl(url: URL): void {
+    if (Context.isPlatformSync()) {
+      this.setSync(url.toString());
+    } else {
+      this.setAsync(url.toString());
+    }
+  }
+
+  /// ASYNC ///
+  setAsync(url: string) {
+    this.set(url);
   }
 
   set(url: string): void {
@@ -110,10 +130,33 @@ class InternalUrlMetricType extends MetricType {
     });
   }
 
-  setUrl(url: URL): void {
-    this.set(url.toString());
+  /// SYNC ///
+  setSync(url: string) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    let formattedUrl;
+    if (url.length > URL_MAX_LENGTH) {
+      // URL is longer than our max length, so we truncate extra characters
+      // and report an error. BUT, we still pass the truncated URL.
+      formattedUrl = truncateStringAtBoundaryWithErrorSync(this, url, URL_MAX_LENGTH);
+    } else {
+      // do nothing, our original URL does not overflow
+      formattedUrl = url;
+    }
+
+    try {
+      const metric = new UrlMetric(formattedUrl);
+      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
   }
 
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let metric: string | undefined;

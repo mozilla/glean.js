@@ -4,8 +4,8 @@
 
 import os from "os";
 
-import type PlatformInfo from "../../core/platform_info.js";
-import { KnownOperatingSystems } from "../../core/platform_info.js";
+import type PlatformInfo from "../../core/platform_info/async.js";
+import { KnownOperatingSystems } from "../../core/platform_info/shared.js";
 
 const NodePlatformInfo: PlatformInfo = {
   async os(): Promise<KnownOperatingSystems> {

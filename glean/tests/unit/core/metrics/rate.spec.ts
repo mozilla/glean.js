@@ -5,7 +5,7 @@
 import assert from "assert";
 import { ErrorType } from "../../../../src/core/error/error_type";
 
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import RateMetricType from "../../../../src/core/metrics/types/rate";
 import { Context } from "../../../../src/core/context";

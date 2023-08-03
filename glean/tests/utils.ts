@@ -8,7 +8,7 @@ import type { JSONObject } from "../src/core/utils";
 import { isString } from "../src/core/utils";
 import Uploader from "../src/core/upload/uploader";
 import { UploadResultStatus, UploadResult } from "../src/core/upload/uploader";
-import Glean from "../src/core/glean";
+import Glean from "../src/core/glean/async.js";
 
 /**
  * Decoded, unzips and parses the ping payload into a JSON object.

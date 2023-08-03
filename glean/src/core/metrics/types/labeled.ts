@@ -8,6 +8,9 @@ import type BooleanMetricType from "./boolean.js";
 import type StringMetricType from "./string.js";
 import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric.js";
+import type ErrorManagerSync from "../../error/sync.js";
+import type MetricsDatabaseSync from "../database/sync.js";
+
 import { Metric, MetricValidation } from "../metric.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -29,7 +32,7 @@ export class LabeledMetric extends Metric<JSONValue, JSONValue> {
   }
 
   payload(): JSONValue {
-    return this._inner;
+    return this.inner;
   }
 }
 
@@ -69,10 +72,7 @@ const LABEL_REGEX = /^[a-z_][a-z0-9_-]{0,29}(\.[a-z_][a-z0-9_-]{0,29})*$/;
  * @param label the label
  * @returns a string representing the complete metric id including the label.
  */
-export function combineIdentifierAndLabel(
-  metricName: string,
-  label: string
-): string {
+export function combineIdentifierAndLabel(metricName: string, label: string): string {
   return `${metricName}/${label}`;
 }
 
@@ -118,7 +118,8 @@ export async function getValidDynamicLabel(metric: MetricType): Promise<string> 
       metric.lifetime,
       ping,
       metric.type,
-      metric.baseIdentifier());
+      metric.baseIdentifier()
+    );
   }
 
   let hitError = false;
@@ -140,13 +141,73 @@ export async function getValidDynamicLabel(metric: MetricType): Promise<string> 
     );
   }
 
-  return (hitError)
-    ? combineIdentifierAndLabel(metric.baseIdentifier(), OTHER_LABEL)
-    : key;
+  return hitError ? combineIdentifierAndLabel(metric.baseIdentifier(), OTHER_LABEL) : key;
 }
 
-type SupportedLabeledTypes =
-  CounterMetricType | BooleanMetricType | StringMetricType;
+/**
+ * Checks if the dynamic label stored in the metric data is
+ * valid. If not, record an error and store data in the "__other__"
+ * label.
+ *
+ * @param metric the metric to record to.
+ * @returns a valid label that can be used to store data.
+ */
+export function getValidDynamicLabelSync(metric: MetricType): string {
+  // Note that we assume `metric.dynamicLabel` to always be available within this function.
+  // This is a safe assumptions because we should only call `getValidDynamicLabel` if we have
+  // a dynamic label.
+  if (metric.dynamicLabel === undefined) {
+    throw new Error("This point should never be reached.");
+  }
+
+  const key = combineIdentifierAndLabel(metric.baseIdentifier(), metric.dynamicLabel);
+
+  for (const ping of metric.sendInPings) {
+    if (
+      (Context.metricsDatabase as MetricsDatabaseSync).hasMetric(
+        metric.lifetime,
+        ping,
+        metric.type,
+        key
+      )
+    ) {
+      return key;
+    }
+  }
+
+  let numUsedKeys = 0;
+  for (const ping of metric.sendInPings) {
+    numUsedKeys += (Context.metricsDatabase as MetricsDatabaseSync).countByBaseIdentifier(
+      metric.lifetime,
+      ping,
+      metric.type,
+      metric.baseIdentifier()
+    );
+  }
+
+  let hitError = false;
+  if (numUsedKeys >= MAX_LABELS) {
+    hitError = true;
+  } else if (metric.dynamicLabel.length > MAX_LABEL_LENGTH) {
+    hitError = true;
+    (Context.errorManager as ErrorManagerSync).record(
+      metric,
+      ErrorType.InvalidLabel,
+      `Label length ${metric.dynamicLabel.length} exceeds maximum of ${MAX_LABEL_LENGTH}.`
+    );
+  } else if (!LABEL_REGEX.test(metric.dynamicLabel)) {
+    hitError = true;
+    (Context.errorManager as ErrorManagerSync).record(
+      metric,
+      ErrorType.InvalidLabel,
+      `Label must be snake_case, got '${metric.dynamicLabel}'.`
+    );
+  }
+
+  return hitError ? combineIdentifierAndLabel(metric.baseIdentifier(), OTHER_LABEL) : key;
+}
+
+type SupportedLabeledTypes = CounterMetricType | BooleanMetricType | StringMetricType;
 
 class LabeledMetricType<T extends SupportedLabeledTypes> {
   // Define an index signature to make the Proxy aware of the expected return type.
@@ -158,7 +219,7 @@ class LabeledMetricType<T extends SupportedLabeledTypes> {
     meta: CommonMetricData,
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     submetric: new (...args: any) => T,
-    labels?: string[],
+    labels?: string[]
   ) {
     return new Proxy(this, {
       get: (_target: LabeledMetricType<T>, label: string): T => {

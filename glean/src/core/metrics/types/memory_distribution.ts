@@ -7,6 +7,8 @@ import type { MemoryUnit } from "../memory_unit.js";
 import type { MetricValidationResult } from "../metric.js";
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
+import type ErrorManagerSync from "../../error/sync.js";
+import type MetricsDatabaseSync from "../database/sync.js";
 
 import { MetricType } from "../index.js";
 import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
@@ -14,7 +16,12 @@ import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 import { isUndefined, testOnlyCheck } from "../../utils.js";
 import { constructFunctionalHistogramFromValues } from "../../../histogram/functional.js";
-import { extractAccumulatedValuesFromJsonValue, snapshot } from "../distributions.js";
+import {
+  extractAccumulatedValuesFromJsonValue,
+  getNumNegativeSamples,
+  getNumTooLongSamples,
+  snapshot
+} from "../distributions.js";
 import { convertMemoryUnitToBytes } from "../memory_unit.js";
 
 const LOG_TAG = "core.metrics.MemoryDistributionMetricType";
@@ -50,7 +57,7 @@ export class MemoryDistributionMetric extends Metric<
   }
 
   get memoryDistribution(): Record<number, number> {
-    return this._inner;
+    return this.inner;
   }
 
   validate(v: unknown): MetricValidationResult {
@@ -59,7 +66,7 @@ export class MemoryDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidType,
-        errorMessage: `Expected valid MemoryDistribution object, got ${JSON.stringify(v)}`,
+        errorMessage: `Expected valid MemoryDistribution object, got ${JSON.stringify(v)}`
       };
     }
 
@@ -68,7 +75,7 @@ export class MemoryDistributionMetric extends Metric<
       return {
         type: MetricValidation.Error,
         errorType: ErrorType.InvalidValue,
-        errorMessage: `Expected all samples to be greater than 0, got ${negativeSample}`,
+        errorMessage: `Expected all samples to be greater than 0, got ${negativeSample}`
       };
     }
 
@@ -77,13 +84,13 @@ export class MemoryDistributionMetric extends Metric<
 
   payload(): MemoryDistributionPayloadRepresentation {
     const hist = constructFunctionalHistogramFromValues(
-      this._inner as number[],
+      this.inner as number[],
       LOG_BASE,
       BUCKETS_PER_MAGNITUDE
     );
     return {
       values: hist.values,
-      sum: hist.sum,
+      sum: hist.sum
     };
   }
 }
@@ -97,7 +104,52 @@ class InternalMemoryDistributionMetricType extends MetricType {
     this.memoryUnit = memoryUnit as MemoryUnit;
   }
 
+  /// SHARED ///
   accumulate(sample: number): void {
+    if (Context.isPlatformSync()) {
+      this.accumulateSync(sample);
+    } else {
+      this.accumulateAsync(sample);
+    }
+  }
+
+  private accumulateTransformFn(sample: number) {
+    return (old?: JSONValue): MemoryDistributionMetric => {
+      const values = extractAccumulatedValuesFromJsonValue(old);
+      return new MemoryDistributionMetric([...values, sample]);
+    };
+  }
+
+  accumulateSamples(samples: number[]): void {
+    if (Context.isPlatformSync()) {
+      this.accumulateSamplesSync(samples);
+    } else {
+      this.accumulateSamplesAsync(samples);
+    }
+  }
+
+  private accumulateSamplesTransformFn(samples: number[]) {
+    return (old?: JSONValue): MemoryDistributionMetric => {
+      const values = extractAccumulatedValuesFromJsonValue(old);
+
+      const convertedSamples: number[] = [];
+      samples.forEach((sample) => {
+        if (sample >= 0) {
+          sample = convertMemoryUnitToBytes(sample, this.memoryUnit as MemoryUnit);
+          if (sample > MAX_BYTES) {
+            sample = MAX_BYTES;
+          }
+
+          convertedSamples.push(sample);
+        }
+      });
+
+      return new MemoryDistributionMetric([...values, ...convertedSamples]);
+    };
+  }
+
+  /// ASYNC ///
+  accumulateAsync(sample: number) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
@@ -124,14 +176,7 @@ class InternalMemoryDistributionMetricType extends MetricType {
       }
 
       try {
-        const transformFn = ((sample: number) => {
-          return (old?: JSONValue): MemoryDistributionMetric => {
-            const values = extractAccumulatedValuesFromJsonValue(old);
-            return new MemoryDistributionMetric([...values, sample]);
-          };
-        })(convertedSample);
-
-        await Context.metricsDatabase.transform(this, transformFn);
+        await Context.metricsDatabase.transform(this, this.accumulateTransformFn(convertedSample));
       } catch (e) {
         if (e instanceof MetricValidationError) {
           await e.recordError(this);
@@ -140,40 +185,15 @@ class InternalMemoryDistributionMetricType extends MetricType {
     });
   }
 
-  accumulateSamples(samples: number[]): void {
+  accumulateSamplesAsync(samples: number[]) {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
       }
 
-      let numNegativeSamples = 0;
-      let numTooLongSamples = 0;
+      await Context.metricsDatabase.transform(this, this.accumulateSamplesTransformFn(samples));
 
-      const transformFn = ((samples: number[]) => {
-        return (old?: JSONValue): MemoryDistributionMetric => {
-          const values = extractAccumulatedValuesFromJsonValue(old);
-
-          const convertedSamples: number[] = [];
-          samples.forEach((sample) => {
-            if (sample < 0) {
-              numNegativeSamples++;
-            } else {
-              sample = convertMemoryUnitToBytes(sample, this.memoryUnit as MemoryUnit);
-              if (sample > MAX_BYTES) {
-                numTooLongSamples++;
-                sample = MAX_BYTES;
-              }
-
-              convertedSamples.push(sample);
-            }
-          });
-
-          return new MemoryDistributionMetric([...values, ...convertedSamples]);
-        };
-      })(samples);
-
-      await Context.metricsDatabase.transform(this, transformFn);
-
+      const numNegativeSamples = getNumNegativeSamples(samples);
       if (numNegativeSamples > 0) {
         await Context.errorManager.record(
           this,
@@ -183,6 +203,7 @@ class InternalMemoryDistributionMetricType extends MetricType {
         );
       }
 
+      const numTooLongSamples = getNumTooLongSamples(samples, MAX_BYTES);
       if (numTooLongSamples > 0) {
         await Context.errorManager.record(
           this,
@@ -194,6 +215,76 @@ class InternalMemoryDistributionMetricType extends MetricType {
     });
   }
 
+  /// SYNC ///
+  accumulateSync(sample: number) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    if (sample < 0) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidValue,
+        "Accumulated a negative sample"
+      );
+      return;
+    }
+
+    let convertedSample = convertMemoryUnitToBytes(sample, this.memoryUnit as MemoryUnit);
+
+    if (sample > MAX_BYTES) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidValue,
+        "Sample is bigger than 1 terabyte."
+      );
+      convertedSample = MAX_BYTES;
+    }
+
+    try {
+      (Context.metricsDatabase as MetricsDatabaseSync).transform(
+        this,
+        this.accumulateTransformFn(convertedSample)
+      );
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordErrorSync(this);
+      }
+    }
+  }
+
+  accumulateSamplesSync(samples: number[]) {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    (Context.metricsDatabase as MetricsDatabaseSync).transform(
+      this,
+      this.accumulateSamplesTransformFn(samples)
+    );
+
+    const numNegativeSamples = getNumNegativeSamples(samples);
+    if (numNegativeSamples > 0) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidValue,
+        `Accumulated ${numNegativeSamples} negative samples`,
+        numNegativeSamples
+      );
+    }
+
+    const numTooLongSamples = getNumTooLongSamples(samples, MAX_BYTES);
+    if (numTooLongSamples > 0) {
+      (Context.errorManager as ErrorManagerSync).record(
+        this,
+        ErrorType.InvalidValue,
+        `Accumulated ${numTooLongSamples} larger than 1TB`,
+        numTooLongSamples
+      );
+    }
+  }
+
+  /// TESTING ///
   async testGetValue(ping: string = this.sendInPings[0]): Promise<DistributionData | undefined> {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
       let value: MemoryDistributionInternalRepresentation | undefined;

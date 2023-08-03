@@ -6,8 +6,9 @@ import assert from "assert";
 import type { SinonFakeTimers } from "sinon";
 import sinon from "sinon";
 
-import type { Observer} from "../../../../src/core/pings/database";
-import Database, { isValidPingInternalRepresentation } from "../../../../src/core/pings/database";
+import type { Observer } from "../../../../src/core/pings/database/shared";
+import { isValidPingInternalRepresentation } from "../../../../src/core/pings/database/shared";
+import Database from "../../../../src/core/pings/database/async";
 import type { JSONObject } from "../../../../src/core/utils";
 import { testResetGlean } from "../../../../src/core/testing";
 import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
@@ -15,7 +16,7 @@ import { InternalCounterMetricType as CounterMetricType } from "../../../../src/
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { stopGleanUploader } from "../../../utils";
 import { Context } from "../../../../src/core/context";
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 
 const sandbox = sinon.createSandbox();
 const now = new Date();

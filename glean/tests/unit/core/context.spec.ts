@@ -6,10 +6,10 @@ import assert from "assert";
 
 import { Context } from "../../../src/core/context";
 import Dispatcher from "../../../src/core/dispatcher";
-import Glean from "../../../src/core/glean";
-import MetricsDatabase from "../../../src/core/metrics/database";
-import EventsDatabase from "../../../src/core/metrics/events_database";
-import PingsDatabase from "../../../src/core/pings/database";
+import Glean from "../../../src/core/glean/async";
+import MetricsDatabase from "../../../src/core/metrics/database/async";
+import EventsDatabase from "../../../src/core/metrics/events_database/async";
+import PingsDatabase from "../../../src/core/pings/database/async";
 import { testResetGlean } from "../../../src/core/testing";
 import { testUninitializeGlean } from "../../../src/core/testing/utils";
 import { sanitizeApplicationId } from "../../../src/core/utils";

@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import Glean from "../../../../src/core/glean";
+import Glean from "../../../../src/core/glean/async";
 import DatetimeMetricType, { InternalDatetimeMetricType, DatetimeMetric } from "../../../../src/core/metrics/types/datetime";
 
 import TimeUnit from "../../../../src/core/metrics/time_unit";

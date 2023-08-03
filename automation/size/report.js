@@ -87,9 +87,9 @@ ${bulletPoints.join("\n")}
 ${tableRows.join("\n")}
   `;
 
-  if (process.env.DRY_RUN) {
-    console.log(report);
-  } else {
+  console.log(report);
+
+  if (!process.env.DRY_RUN) {
     if (!process.env.GITHUB_TOKEN) {
       throw new Error("No Github token configured!")
     }

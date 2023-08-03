@@ -2,18 +2,24 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { GLEAN_SCHEMA_VERSION, GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "../constants.js";
-import type { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
-import type CommonPingData from "./common_ping_data.js";
-import { InternalCounterMetricType as CounterMetricType, CounterMetric } from "../metrics/types/counter.js";
-import { InternalDatetimeMetricType as DatetimeMetricType, DatetimeMetric } from "../metrics/types/datetime.js";
-import TimeUnit from "../metrics/time_unit.js";
-import CoreEvents from "../events/index.js";
-import { Lifetime } from "../metrics/lifetime.js";
-import { Context } from "../context.js";
-import log, { LoggingLevel } from "../log.js";
+import type { ClientInfo, PingInfo, PingPayload } from "../../pings/ping_payload.js";
+import type CommonPingData from "../common_ping_data.js";
+import type MetricsDatabaseSync from "../../metrics/database/sync.js";
+import type { EventsDatabaseSync } from "../../metrics/events_database/sync.js";
+import type PingsDatabaseSync from "../database/sync.js";
+import type { StartTimeMetricData } from "./shared.js";
 
-const LOG_TAG = "core.Pings.Maker";
+import { GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "../../constants.js";
+import { CounterMetric } from "../../metrics/types/counter.js";
+import { InternalCounterMetricType as CounterMetricType } from "../../metrics/types/counter.js";
+import { DatetimeMetric } from "../../metrics/types/datetime.js";
+import { InternalDatetimeMetricType as DatetimeMetricType } from "../../metrics/types/datetime.js";
+import TimeUnit from "../../metrics/time_unit.js";
+import CoreEventsSync from "../../events/sync.js";
+import { Lifetime } from "../../metrics/lifetime.js";
+import { Context } from "../../context.js";
+import log, { LoggingLevel } from "../../log.js";
+import { PINGS_MAKER_LOG_TAG, getPingHeaders, makePath } from "./shared.js";
 
 /**
  * Gets the start time metric and its currently stored data.
@@ -21,18 +27,24 @@ const LOG_TAG = "core.Pings.Maker";
  * @param ping The ping for which we want to get the times.
  * @returns An object containing the start time metric and its value.
  */
-async function getStartTimeMetricAndData(ping: CommonPingData): Promise<{startTimeMetric: DatetimeMetricType, startTime: DatetimeMetric}> {
-  const startTimeMetric = new DatetimeMetricType({
-    category: "",
-    name: `${ping.name}#start`,
-    sendInPings: [PING_INFO_STORAGE],
-    lifetime: Lifetime.User,
-    disabled: false
-  }, TimeUnit.Minute);
+function getStartTimeMetricAndData(ping: CommonPingData): StartTimeMetricData {
+  const startTimeMetric = new DatetimeMetricType(
+    {
+      category: "",
+      name: `${ping.name}#start`,
+      sendInPings: [PING_INFO_STORAGE],
+      lifetime: Lifetime.User,
+      disabled: false
+    },
+    TimeUnit.Minute
+  );
 
   // "startTime" is the time the ping was generated the last time.
   // If not available, we use the date the Glean object was initialized.
-  const startTimeData = await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, startTimeMetric);
+  const startTimeData = (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
+    PING_INFO_STORAGE,
+    startTimeMetric
+  );
   let startTime: DatetimeMetric;
   if (startTimeData) {
     startTime = new DatetimeMetric(startTimeData);
@@ -42,7 +54,7 @@ async function getStartTimeMetricAndData(ping: CommonPingData): Promise<{startTi
 
   return {
     startTimeMetric,
-    startTime,
+    startTime
   };
 }
 
@@ -52,7 +64,7 @@ async function getStartTimeMetricAndData(ping: CommonPingData): Promise<{startTi
  * @param ping The ping for which we want to get the sequence number.
  * @returns The current number (before incrementing).
  */
-export async function getSequenceNumber(ping: CommonPingData): Promise<number> {
+export function getSequenceNumber(ping: CommonPingData): number {
   const seq = new CounterMetricType({
     category: "",
     name: `${ping.name}#sequence`,
@@ -61,8 +73,11 @@ export async function getSequenceNumber(ping: CommonPingData): Promise<number> {
     disabled: false
   });
 
-  const currentSeqData = await Context.metricsDatabase.getMetric(PING_INFO_STORAGE, seq);
-  await seq.addUndispatched(1);
+  const currentSeqData = (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
+    PING_INFO_STORAGE,
+    seq
+  );
+  seq.add(1);
 
   if (currentSeqData) {
     // Creating a new counter metric validates that the metric stored is actually a number.
@@ -71,9 +86,9 @@ export async function getSequenceNumber(ping: CommonPingData): Promise<number> {
     try {
       const metric = new CounterMetric(currentSeqData);
       return metric.payload();
-    } catch(e) {
+    } catch (e) {
       log(
-        LOG_TAG,
+        PINGS_MAKER_LOG_TAG,
         `Unexpected value found for sequence number in ping ${ping.name}. Ignoring.`,
         LoggingLevel.Warn
       );
@@ -90,12 +105,12 @@ export async function getSequenceNumber(ping: CommonPingData): Promise<number> {
  * @param ping The ping for which we want to get the times.
  * @returns An object containing start and times in their payload format.
  */
-export async function getStartEndTimes(ping: CommonPingData): Promise<{ startTime: string, endTime: string }> {
-  const { startTimeMetric, startTime } = await getStartTimeMetricAndData(ping);
+export function getStartEndTimes(ping: CommonPingData): { startTime: string; endTime: string } {
+  const { startTimeMetric, startTime } = getStartTimeMetricAndData(ping);
 
   // Update the start time with the current time.
   const endTimeData = new Date();
-  await startTimeMetric.setUndispatched(endTimeData);
+  startTimeMetric.set(endTimeData);
   const endTime = DatetimeMetric.fromDate(endTimeData, TimeUnit.Minute);
 
   return {
@@ -111,9 +126,9 @@ export async function getStartEndTimes(ping: CommonPingData): Promise<{ startTim
  * @param reason The reason for submitting this ping.
  * @returns The final `ping_info` section in its payload format.
  */
-export async function buildPingInfoSection(ping: CommonPingData, reason?: string): Promise<PingInfo> {
-  const seq = await getSequenceNumber(ping);
-  const { startTime, endTime } = await getStartEndTimes(ping);
+export function buildPingInfoSection(ping: CommonPingData, reason?: string): PingInfo {
+  const seq = getSequenceNumber(ping);
+  const { startTime, endTime } = getStartEndTimes(ping);
 
   const pingInfo: PingInfo = {
     seq,
@@ -134,16 +149,19 @@ export async function buildPingInfoSection(ping: CommonPingData, reason?: string
  * @param ping The ping to build the `client_info` section for.
  * @returns The final `client_info` section in its payload format.
  */
-export async function buildClientInfoSection(ping: CommonPingData): Promise<ClientInfo> {
-  let clientInfo = await Context.metricsDatabase.getPingMetrics(CLIENT_INFO_STORAGE, true);
+export function buildClientInfoSection(ping: CommonPingData): ClientInfo {
+  let clientInfo = (Context.metricsDatabase as MetricsDatabaseSync).getPingMetrics(
+    CLIENT_INFO_STORAGE,
+    true
+  );
   if (!clientInfo) {
     // TODO: Watch Bug 1685705 and change behaviour in here accordingly.
-    log(LOG_TAG, "Empty client info data. Will submit anyways.", LoggingLevel.Warn);
+    log(PINGS_MAKER_LOG_TAG, "Empty client info data. Will submit anyways.", LoggingLevel.Warn);
     clientInfo = {};
   }
 
   let finalClientInfo: ClientInfo = {
-    "telemetry_sdk_build": GLEAN_VERSION
+    telemetry_sdk_build: GLEAN_VERSION
   };
   for (const metricType in clientInfo) {
     finalClientInfo = { ...finalClientInfo, ...clientInfo[metricType] };
@@ -157,35 +175,6 @@ export async function buildClientInfoSection(ping: CommonPingData): Promise<Clie
 }
 
 /**
- * Gathers all the headers to be included to the final ping request.
- *
- * This guarantees that if headers are disabled after the ping collection,
- * ping submission will still contain the desired headers.
- *
- * The current headers gathered here are:
- * - [X-Debug-ID]
- * - [X-Source-Tags]
- *
- * @returns An object containing all the headers and their values
- *          or `undefined` in case no custom headers were set.
- */
-export function getPingHeaders(): Record<string, string> | undefined {
-  const headers: Record<string, string> = {};
-
-  if (Context.config.debugViewTag) {
-    headers["X-Debug-ID"] = Context.config.debugViewTag;
-  }
-
-  if (Context.config.sourceTags) {
-    headers["X-Source-Tags"] = Context.config.sourceTags.toString();
-  }
-
-  if (Object.keys(headers).length > 0) {
-    return headers;
-  }
-}
-
-/**
  * Collects a snapshot for the given ping from storage and attach required meta information.
  *
  * @param ping The ping to collect for.
@@ -193,43 +182,36 @@ export function getPingHeaders(): Record<string, string> | undefined {
  * @returns A fully assembled JSON representation of the ping payload.
  *          If there is no data stored for the ping, `undefined` is returned.
  */
-export async function collectPing(ping: CommonPingData, reason?: string): Promise<PingPayload | undefined> {
+export function collectPing(ping: CommonPingData, reason?: string): PingPayload | undefined {
   // !IMPORTANT! Events data needs to be collected BEFORE other metrics,
   // because events collection may result in recording of error metrics.
-  const eventsData = await Context.eventsDatabase.getPingEvents(ping.name, true);
-  const metricsData = await Context.metricsDatabase.getPingMetrics(ping.name, true);
+  const eventsData = (Context.eventsDatabase as EventsDatabaseSync).getPingEvents(ping.name, true);
+  const metricsData = (Context.metricsDatabase as MetricsDatabaseSync).getPingMetrics(
+    ping.name,
+    true
+  );
   if (!metricsData && !eventsData) {
     if (!ping.sendIfEmpty) {
-      log(LOG_TAG, `Storage for ${ping.name} empty. Bailing out.`, LoggingLevel.Info);
+      log(PINGS_MAKER_LOG_TAG, `Storage for ${ping.name} empty. Bailing out.`, LoggingLevel.Info);
       return;
     }
-    log(LOG_TAG, `Storage for ${ping.name} empty. Ping will still be sent.`, LoggingLevel.Info);
+    log(
+      PINGS_MAKER_LOG_TAG,
+      `Storage for ${ping.name} empty. Ping will still be sent.`,
+      LoggingLevel.Info
+    );
   }
 
   const metrics = metricsData ? { metrics: metricsData } : {};
   const events = eventsData ? { events: eventsData } : {};
-  const pingInfo = await buildPingInfoSection(ping, reason);
-  const clientInfo = await buildClientInfoSection(ping);
+  const pingInfo = buildPingInfoSection(ping, reason);
+  const clientInfo = buildClientInfoSection(ping);
   return {
     ...metrics,
     ...events,
     ping_info: pingInfo,
-    client_info: clientInfo,
+    client_info: clientInfo
   };
-}
-
-/**
- * Build a pings submition path.
- *
- * @param identifier The pings UUID identifier.
- * @param ping  The ping to build a path for.
- * @returns The final submission path.
- */
-export function makePath(identifier: string, ping: CommonPingData): string {
-  // We are sure that the applicationId is not `undefined` at this point,
-  // this function is only called when submitting a ping
-  // and that function return early when Glean is not initialized.
-  return `/submit/${Context.applicationId}/${ping.name}/${GLEAN_SCHEMA_VERSION}/${identifier}`;
 }
 
 /**
@@ -242,23 +224,28 @@ export function makePath(identifier: string, ping: CommonPingData): string {
  * @param identifier The pings UUID identifier.
  * @param ping The ping to submit.
  * @param reason An optional reason code to include in the ping.
- * @returns A promise that is resolved once collection and storing is done.
  */
-export async function collectAndStorePing(identifier: string, ping: CommonPingData, reason?: string): Promise<void> {
-  const collectedPayload = await collectPing(ping, reason);
+export function collectAndStorePing(
+  identifier: string,
+  ping: CommonPingData,
+  reason?: string
+): void {
+  const collectedPayload = collectPing(ping, reason);
   if (!collectedPayload) {
     return;
   }
 
   let modifiedPayload;
   try {
-    modifiedPayload = await CoreEvents.afterPingCollection.trigger(collectedPayload);
-  } catch(e) {
+    modifiedPayload = CoreEventsSync.afterPingCollection.trigger(collectedPayload);
+  } catch (e) {
     log(
-      LOG_TAG,
+      PINGS_MAKER_LOG_TAG,
       [
         `Error while attempting to modify ping payload for the "${ping.name}" ping using`,
-        `the ${JSON.stringify(CoreEvents.afterPingCollection.registeredPluginIdentifier)} plugin.`,
+        `the ${JSON.stringify(
+          CoreEventsSync.afterPingCollection.registeredPluginIdentifier
+        )} plugin.`,
         "Ping will not be submitted. See more logs below.\n\n",
         e
       ],
@@ -269,11 +256,13 @@ export async function collectAndStorePing(identifier: string, ping: CommonPingDa
   }
 
   if (Context.config.logPings) {
-    log(LOG_TAG, JSON.stringify(collectedPayload, null, 2), LoggingLevel.Info);
+    log(PINGS_MAKER_LOG_TAG, JSON.stringify(collectedPayload, null, 2), LoggingLevel.Info);
   }
+
   const finalPayload = modifiedPayload ? modifiedPayload : collectedPayload;
   const headers = getPingHeaders();
-  return Context.pingsDatabase.recordPing(
+
+  (Context.pingsDatabase as PingsDatabaseSync).recordPing(
     makePath(identifier, ping),
     identifier,
     finalPayload,
