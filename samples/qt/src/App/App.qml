@@ -5,8 +5,8 @@
 import QtQuick 2.0
 import QtQuick.Controls 2.0
 
-import org.mozilla.Glean 1.4
-import generated 1.4
+import org.mozilla.Glean 2.0
+import generated 2.0
 
 Rectangle {
   id: screen

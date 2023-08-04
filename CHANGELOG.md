@@ -1,8 +1,17 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v1.4.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.0...main)
 
-* [#1733](https://github.com/mozilla/glean.js/pull/1733): Add SSR support for Glean.js
+# v2.0.0 (2023-08-03)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v1.4.0...v2.0.0)
+
+**Important**
+
+This version of Glean.js migrates the browser implementation from using IndexedDB to using LocalStorage. The storage change means that all Glean.js actions run synchronously.
+
+* [#1748](https://github.com/mozilla/glean.js/pull/1748): Update glean_parser version to the latest.
+* [#1733](https://github.com/mozilla/glean.js/pull/1733): Add SSR support for Glean.js.
 * [#1728](https://github.com/mozilla/glean.js/pull/1728): Migrate client_id and first_run_date.
 * [#1695](https://github.com/mozilla/glean.js/pull/1695): Update Glean.js web to use LocalStorage.
 
