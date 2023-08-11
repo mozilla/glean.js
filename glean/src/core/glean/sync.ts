@@ -2,8 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "../constants.js";
 import type { ConfigurationInterface } from "../config.js";
+import type PlatformSync from "../../platform/sync.js";
+
+import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "../constants.js";
 import { Configuration } from "../config.js";
 import PingUploadManager from "../upload/manager/sync.js";
 import { isBoolean, isString, sanitizeApplicationId } from "../utils.js";
@@ -13,7 +15,6 @@ import { DatetimeMetric } from "../metrics/types/datetime.js";
 import CorePings from "../internal_pings.js";
 import { registerPluginToEvent } from "../events/utils/sync.js";
 import ErrorManagerSync from "../error/sync.js";
-import type PlatformSync from "../../platform/sync.js";
 import { Lifetime } from "../metrics/lifetime.js";
 import { Context } from "../context.js";
 import log, { LoggingLevel } from "../log.js";
@@ -42,7 +43,15 @@ namespace Glean {
    */
   function onUploadEnabled(): void {
     Context.uploadEnabled = true;
-    (Context.coreMetrics as CoreMetricsSync).initialize();
+  }
+
+  /**
+   * Initialize core metrics: client_id, first_run_date, os, etc.
+   *
+   * @param migrateFromLegacy Whether or not to migrate data from legacy storage.
+   */
+  function initializeCoreMetrics(migrateFromLegacy?: boolean): void {
+    (Context.coreMetrics as CoreMetricsSync).initialize(migrateFromLegacy);
   }
 
   /**
@@ -246,6 +255,7 @@ namespace Glean {
       // If upload is enabled,
       // just follow the normal code path to instantiate the core metrics.
       onUploadEnabled();
+      initializeCoreMetrics(config?.migrateFromLegacyStorage);
     } else {
       // If upload is disabled, and we've never run before, only set the
       // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
@@ -317,6 +327,7 @@ namespace Glean {
     if (Context.uploadEnabled !== flag) {
       if (flag) {
         onUploadEnabled();
+        initializeCoreMetrics(Context.config.migrateFromLegacyStorage);
       } else {
         onUploadDisabled(false);
       }

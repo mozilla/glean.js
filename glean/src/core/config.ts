@@ -56,6 +56,9 @@ export interface ConfigurationInterface {
   readonly osVersion?: string,
   // The build date, provided by glean_parser
   readonly buildDate?: Date,
+  // Migrate from legacy storage (IndexedDB) to the new one (LocalStorage).
+  // This should only be true for older projects that have existing data in IndexedDB.
+  readonly migrateFromLegacyStorage?: boolean,
 }
 
 // Important: the `Configuration` should only be used internally by the Glean singleton.
@@ -68,6 +71,7 @@ export class Configuration implements ConfigurationInterface {
   readonly osVersion?: string;
   readonly buildDate?: Date;
   readonly maxEvents: number;
+  readonly migrateFromLegacyStorage?: boolean;
 
   // Debug configuration.
   debug: DebugOptions;
@@ -82,6 +86,7 @@ export class Configuration implements ConfigurationInterface {
     this.osVersion = config?.osVersion;
     this.buildDate = config?.buildDate;
     this.maxEvents = config?.maxEvents || DEFAULT_MAX_EVENTS;
+    this.migrateFromLegacyStorage = config?.migrateFromLegacyStorage;
 
     this.debug = {};
 
