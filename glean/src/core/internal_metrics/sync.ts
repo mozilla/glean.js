@@ -125,7 +125,7 @@ export class CoreMetricsSync {
     );
   }
 
-  initialize(): void {
+  initialize(migrateFromLegacyStorage?: boolean): void {
     // The "sync" version of Glean.js is only meant to be used in the browser.
     // If we cannot access the window object, then we are unable to store
     // any of the metric data in `localStorage`.
@@ -140,11 +140,9 @@ export class CoreMetricsSync {
     // Currently we are interested in migrating two things
     // 1. The client_id - consistent clientId across all sessions.
     // 2. The first_run_date - the date when the client was first run.
-
-    // The migration is done only once per client. The flag is set in
-    // LocalStorage to indicate that the migration has been completed.
-    const migrationFlag = localStorage.getItem("GLEAN_MIGRATION_FLAG");
-    if (migrationFlag !== "1") {
+    if (!!migrateFromLegacyStorage && localStorage.getItem("GLEAN_MIGRATION_FLAG") !== "1") {
+      // The migration is done only once per client. The flag is set in
+      // LocalStorage to indicate that the migration has been completed.
       this.migrateCoreMetricsFromIdb();
       localStorage.setItem("GLEAN_MIGRATION_FLAG", "1");
     } else {
