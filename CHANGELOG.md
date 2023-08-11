@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.1...main)
+
+# v2.0.1 (2023-08-11)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.0...v2.0.1)
 
 * [#1751](https://github.com/mozilla/glean.js/pull/1751): Add a migration flag to initialize. If not explicitly set in the `config` object the migration from IndexedDB to LocalStorage will not occur. **The only projects that should ever set this flag are those that have used Glean.js in production with a version <v2.0.0 and have upgraded.**
 
