@@ -1,23 +1,20 @@
-import logo from './logo.svg';
-import './App.css';
+import "./App.css";
+import { buttonClick } from "./glean/generated/appEvents";
 
 function App() {
+  const onButtonClick = () => {
+    buttonClick.record({
+      label: "CTA"
+    });
+
+    const consoleWarn = document.getElementById("console-warn");
+    consoleWarn.classList.add("visible");
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className="main">
+      <button onClick={onButtonClick}>Submit click event!</button>
+      <p id='console-warn'>A ping should have been submitted, please check the console for logs.</p>
     </div>
   );
 }
