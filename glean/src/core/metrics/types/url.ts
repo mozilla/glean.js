@@ -90,6 +90,14 @@ class InternalUrlMetricType extends MetricType {
   }
 
   /// SHARED ///
+  set(url: string): void {
+    if (Context.isPlatformSync()) {
+      this.setSync(url);
+    } else {
+      this.setAsync(url);
+    }
+  }
+
   setUrl(url: URL): void {
     if (Context.isPlatformSync()) {
       this.setSync(url.toString());
@@ -100,10 +108,6 @@ class InternalUrlMetricType extends MetricType {
 
   /// ASYNC ///
   setAsync(url: string) {
-    this.set(url);
-  }
-
-  set(url: string): void {
     Context.dispatcher.launch(async () => {
       if (!this.shouldRecord(Context.uploadEnabled)) {
         return;
