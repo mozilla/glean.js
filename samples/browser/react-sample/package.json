@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
-    "@mozilla/glean": "^2.0.1",
     "@testing-library/jest-dom": "^5.17.0",
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
@@ -17,6 +16,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
+    "link:glean": "cd ../../../glean && npm i && npm run build && npm link && cd ../samples/browser/react-sample && npm link @mozilla/glean",
     "glean": "glean translate src/glean/metrics.yaml -f javascript -o src/glean/generated"
   },
   "eslintConfig": {
