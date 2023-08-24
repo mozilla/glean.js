@@ -80,6 +80,3 @@ queueing
 LocalStorage
 IndexedDB
 ssr
-ESLint
-minify
-minified
