@@ -27,7 +27,7 @@ const LOG_TAG = "CLI";
 const VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV || path.join(process.cwd(), ".venv");
 
 // The version of glean_parser to install from PyPI.
-const GLEAN_PARSER_VERSION = "8.1.1";
+const GLEAN_PARSER_VERSION = "8.1";
 
 // This script runs a given Python module as a "main" module, like
 // `python -m module`. However, it first checks that the installed
@@ -51,20 +51,43 @@ except ImportError:
     found_version = None
 else:
     found_version = getattr(module, '__version__')
-if found_version != expected_version:
-    if not offline:
-        subprocess.check_call([
-            sys.executable,
-            '-m',
-            'pip',
-            'install',
-            '--upgrade',
-            f'{module_name}=={expected_version}'
-        ])
+
+if not offline:
+    # When running in online mode, we always install.
+    # If it is installed this is essentially a no-op,
+    # otherwise it installs/upgrades.
+    if 'git' in expected_version:
+        target=expected_version
     else:
-        print(f'Using Python environment at {sys.executable},')
-        print(f'expected glean_parser version {expected_version}, found {found_version}.')
+        target=f'{module_name}~={expected_version}'
+
+    subprocess.check_call([
+        sys.executable,
+        '-m',
+        'pip',
+        'install',
+        '--upgrade',
+        target
+    ])
+else:
+    error_text = f'''
+    Using Python environment at {sys.executable},
+    expected glean_parser version ~={expected_version}, found {found_version}.
+    '''
+
+    if found_version is None:
+        print(error_text)
         sys.exit(1)
+    else:
+        # We check MAJOR.MINOR only
+        expected_ver = expected_version.split('.')
+        expected_maj, expected_min = int(expected_ver[0]), int(expected_ver[1])
+        current_ver = found_version.split('.')
+        current_maj, current_min = int(current_ver[0]), int(current_ver[1])
+
+        if current_maj > expected_maj or current_maj < expected_maj or (current_maj == expected_maj and current_min < expected_min):
+            print(error_text)
+            sys.exit(1)
 try:
     subprocess.check_call([
         sys.executable,
