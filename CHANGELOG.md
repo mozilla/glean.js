@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.1...main)
 
+* [#1755](https://github.com/mozilla/glean.js/pull/1755): Add sync check to `set` function for the URL metric.
+
 # v2.0.1 (2023-08-11)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.0...v2.0.1)
