@@ -755,6 +755,8 @@ describe("EventsDatabase", function() {
     // Restore timer APIs for WaitableUploader to work
     clock.restore();
 
+    await testResetGlean(testAppId, true, { maxEvents: 500 });
+
     const event = new EventMetricType({
       category: "test",
       name: "event",
@@ -779,6 +781,8 @@ describe("EventsDatabase", function() {
   it("send the 'events' ping on initialize and correctly handle pre init events", async function () {
     // Restore timer APIs for WaitableUploader to work
     clock.restore();
+
+    await testResetGlean(testAppId, true, { maxEvents: 500 });
 
     const previousRunEvent = new EventMetricType({
       category: "test",
@@ -809,7 +813,7 @@ describe("EventsDatabase", function() {
     const httpClient = new WaitableUploader();
     const waitForEventsPings = httpClient.waitForBatchPingSubmission(EVENTS_PING_NAME, 2);
     // Initialization should trigger a startup ping
-    await testInitializeGlean(testAppId, true, { httpClient });
+    await testInitializeGlean(testAppId, true, { httpClient, maxEvents: 500 });
     // Send another 'events' ping after init, it should contain the preInit events
     await Context.corePings.events.submitUndispatched();
 

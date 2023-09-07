@@ -41,7 +41,7 @@ events:
     from the previous application run in storage.
     It is also sent when maximum capacity is hit
     i.e. when a given number of events is in storage.
-    Maximum capacity defaults to 500,
+    Maximum capacity defaults to 1,
     but may be changed through the `maxEvents` configuration option.
   include_client_id: true
   bugs:
@@ -56,7 +56,7 @@ events:
       The events ping is always sent if there are any pending events at startup,
       because event timestamps are not as reliable across application runs.
     max_capacity: |
-      The maximum number of events was reached (default 500 events).
+      The maximum number of events was reached (default 1 event).
     inactive: |
       The ping was submitted when becoming inactive. In earlier versions, this
       was called `background`.
