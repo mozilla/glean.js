@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.1...main)
 
+* [#1768](https://github.com/mozilla/glean.js/pull/1768): Add support for `GLEAN_PYTHON` and `GLEAN_PIP` environment variables.
 * [#1755](https://github.com/mozilla/glean.js/pull/1755): Add sync check to `set` function for the URL metric.
 * [#1766](https://github.com/mozilla/glean.js/pull/1766): Update default `maxEvents` count to 1. This means an events ping will be sent after each recorded event unless the `maxEvents` count is explicitly set to a larger number.
 
