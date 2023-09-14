@@ -46,7 +46,7 @@ to external consumers.
 |timing_distribution|8.7 KB |8.7 KB |8.7 KB |
 |rate|2.5 KB |2.5 KB |2.5 KB |
 |uuid|1.0 KB |1.0 KB |1.0 KB |
-|url|2.2 KB |2.2 KB |2.2 KB |
+|url|2.3 KB |2.3 KB |2.3 KB |
 <!-- ! -->
 
 ## Plugins

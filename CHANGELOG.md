@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.2...main)
+
+# v2.0.2 (2023-09-14)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.1...v2.0.2)
 
 * [#1768](https://github.com/mozilla/glean.js/pull/1768): Add support for `GLEAN_PYTHON` and `GLEAN_PIP` environment variables.
 * [#1755](https://github.com/mozilla/glean.js/pull/1755): Add sync check to `set` function for the URL metric.
