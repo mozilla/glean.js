@@ -58,7 +58,7 @@
   "scripts": {
     "test": "run-s test:unit test:integration",
     "test:integration": "npm run test:base -- \"tests/integration/**/*.spec.ts\" --recursive",
-    "pretest:integration": "../bin/parser-for-schema-testing.sh",
+    "pretest:integration": "../bin/parser-for-schema-testing.sh && ../bin/python-env-vars-test.sh",
     "test:unit": "run-s test:unit:core test:unit:platform test:unit:plugins",
     "test:unit:core": "npm run test:base -- \"tests/unit/core/**/*.spec.ts\" --recursive",
     "test:unit:plugins": "npm run test:base -- \"tests/unit/plugins/**/*.spec.ts\" --recursive",
