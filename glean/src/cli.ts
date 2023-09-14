@@ -27,7 +27,7 @@ const LOG_TAG = "CLI";
 const VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV || path.join(process.cwd(), ".venv");
 
 // The version of glean_parser to install from PyPI.
-const GLEAN_PARSER_VERSION = "8.1.1";
+const GLEAN_PARSER_VERSION = "8.1";
 
 // This script runs a given Python module as a "main" module, like
 // `python -m module`. However, it first checks that the installed
@@ -51,20 +51,43 @@ except ImportError:
     found_version = None
 else:
     found_version = getattr(module, '__version__')
-if found_version != expected_version:
-    if not offline:
-        subprocess.check_call([
-            sys.executable,
-            '-m',
-            'pip',
-            'install',
-            '--upgrade',
-            f'{module_name}=={expected_version}'
-        ])
+
+if not offline:
+    # When running in online mode, we always install.
+    # If it is installed this is essentially a no-op,
+    # otherwise it installs/upgrades.
+    if 'git' in expected_version:
+        target=expected_version
     else:
-        print(f'Using Python environment at {sys.executable},')
-        print(f'expected glean_parser version {expected_version}, found {found_version}.')
+        target=f'{module_name}~={expected_version}'
+
+    subprocess.check_call([
+        sys.executable,
+        '-m',
+        'pip',
+        'install',
+        '--upgrade',
+        target
+    ])
+else:
+    error_text = f'''
+    Using Python environment at {sys.executable},
+    expected glean_parser version ~={expected_version}, found {found_version}.
+    '''
+
+    if found_version is None:
+        print(error_text)
         sys.exit(1)
+    else:
+        # We check MAJOR.MINOR only
+        expected_ver = expected_version.split('.')
+        expected_maj, expected_min = int(expected_ver[0]), int(expected_ver[1])
+        current_ver = found_version.split('.')
+        current_maj, current_min = int(current_ver[0]), int(current_ver[1])
+
+        if current_maj > expected_maj or current_maj < expected_maj or (current_maj == expected_maj and current_min < expected_min):
+            print(error_text)
+            sys.exit(1)
 try:
     subprocess.check_call([
         sys.executable,
@@ -84,6 +107,15 @@ except:
  */
 function getSystemPythonBinName(): string {
   return (platform === "win32") ? "python.exe" : "python3";
+}
+
+/**
+ * Gets the name of the Python pip binary, based on the host OS.
+ *
+ * @returns the name of the Python pip binary.
+ */
+function getPipBinName(): string {
+  return (platform === "win32") ? "pip3.exe" : "pip3";
 }
 
 /**
@@ -114,8 +146,8 @@ function getPythonVenvBinariesPath(venvRoot: string): string {
 async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
   log(LOG_TAG, `Checking for a virtual environment at ${venvPath}`);
 
-  const venvPython =
-    path.join(getPythonVenvBinariesPath(venvPath), getSystemPythonBinName());
+  const pythonBinary = process.env.GLEAN_PYTHON ?? getSystemPythonBinName();
+  const venvPython = path.join(getPythonVenvBinariesPath(venvPath), pythonBinary);
 
   const access = promisify(fs.access);
 
@@ -138,12 +170,14 @@ async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
 async function createPythonVenv(venvPath: string): Promise<boolean> {
   log(LOG_TAG, `Creating a virtual environment at ${venvPath}`);
 
-  const pipFilename = (platform === "win32") ? "pip3.exe" : "pip3";
+  const pipFilename = process.env.GLEAN_PIP ?? getPipBinName();
   const venvPip =
     path.join(getPythonVenvBinariesPath(VIRTUAL_ENVIRONMENT_DIR), pipFilename);
 
   const pipCmd = `${venvPip} install wheel`;
-  const venvCmd = `${getSystemPythonBinName()} -m venv ${VIRTUAL_ENVIRONMENT_DIR}`;
+
+  const pythonBinary = process.env.GLEAN_PYTHON ?? getSystemPythonBinName();
+  const venvCmd = `${pythonBinary} -m venv ${VIRTUAL_ENVIRONMENT_DIR}`;
 
   for (const cmd of [venvCmd, pipCmd]) {
     const spinner = getStartedSpinner();
@@ -184,7 +218,10 @@ async function setup() {
  */
 async function runGlean(parserArgs: string[]) {
   const spinner = getStartedSpinner();
-  const pythonBin = path.join(getPythonVenvBinariesPath(VIRTUAL_ENVIRONMENT_DIR), getSystemPythonBinName());
+
+  const pythonBinary = process.env.GLEAN_PYTHON ?? getSystemPythonBinName();
+  const pythonBin = path.join(getPythonVenvBinariesPath(VIRTUAL_ENVIRONMENT_DIR), pythonBinary);
+
   const isOnlineArg = process.env.OFFLINE ? "offline" : "online";
 
   // Trying to pass PYTHON_SCRIPT as a string in the command line arguments

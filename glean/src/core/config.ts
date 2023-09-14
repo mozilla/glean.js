@@ -11,9 +11,9 @@ import { Context } from "./context.js";
 
 const LOG_TAG = "core.Config";
 
-// The default maximum number of events Glean will store before submitting the events ping.
-// If the maximum is hit, the events ping is sent immediately.
-const DEFAULT_MAX_EVENTS = 500;
+// By default we want to send the events ping after every event is recorded. Unless the user
+// explicitly sets a higher value, we will send the events ping after every event.
+const DEFAULT_MAX_EVENTS = 1;
 
 /**
  * Lists Glean's debug options.
