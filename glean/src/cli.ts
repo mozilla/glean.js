@@ -110,6 +110,15 @@ function getSystemPythonBinName(): string {
 }
 
 /**
+ * Gets the name of the Python pip binary, based on the host OS.
+ *
+ * @returns the name of the Python pip binary.
+ */
+function getPipBinName(): string {
+  return (platform === "win32") ? "pip3.exe" : "pip3";
+}
+
+/**
  * Gets the full path to the directory containing the python
  * binaries in the virtual environment.
  *
@@ -137,8 +146,8 @@ function getPythonVenvBinariesPath(venvRoot: string): string {
 async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
   log(LOG_TAG, `Checking for a virtual environment at ${venvPath}`);
 
-  const venvPython =
-    path.join(getPythonVenvBinariesPath(venvPath), getSystemPythonBinName());
+  const pythonBinary = process.env.GLEAN_PYTHON ?? getSystemPythonBinName();
+  const venvPython = path.join(getPythonVenvBinariesPath(venvPath), pythonBinary);
 
   const access = promisify(fs.access);
 
@@ -161,12 +170,14 @@ async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
 async function createPythonVenv(venvPath: string): Promise<boolean> {
   log(LOG_TAG, `Creating a virtual environment at ${venvPath}`);
 
-  const pipFilename = (platform === "win32") ? "pip3.exe" : "pip3";
+  const pipFilename = process.env.GLEAN_PIP ?? getPipBinName();
   const venvPip =
     path.join(getPythonVenvBinariesPath(VIRTUAL_ENVIRONMENT_DIR), pipFilename);
 
   const pipCmd = `${venvPip} install wheel`;
-  const venvCmd = `${getSystemPythonBinName()} -m venv ${VIRTUAL_ENVIRONMENT_DIR}`;
+
+  const pythonBinary = process.env.GLEAN_PYTHON ?? getSystemPythonBinName();
+  const venvCmd = `${pythonBinary} -m venv ${VIRTUAL_ENVIRONMENT_DIR}`;
 
   for (const cmd of [venvCmd, pipCmd]) {
     const spinner = getStartedSpinner();
@@ -207,7 +218,10 @@ async function setup() {
  */
 async function runGlean(parserArgs: string[]) {
   const spinner = getStartedSpinner();
-  const pythonBin = path.join(getPythonVenvBinariesPath(VIRTUAL_ENVIRONMENT_DIR), getSystemPythonBinName());
+
+  const pythonBinary = process.env.GLEAN_PYTHON ?? getSystemPythonBinName();
+  const pythonBin = path.join(getPythonVenvBinariesPath(VIRTUAL_ENVIRONMENT_DIR), pythonBinary);
+
   const isOnlineArg = process.env.OFFLINE ? "offline" : "online";
 
   // Trying to pass PYTHON_SCRIPT as a string in the command line arguments
