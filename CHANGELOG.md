@@ -1,6 +1,12 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.2...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.3...main)
+
+# v2.0.3 (2023-09-27)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.2...v2.0.3)
+
+* [#1770](https://github.com/mozilla/glean.js/pull/1770): Allow debugging in browser console via `window.Glean`.
 
 # v2.0.2 (2023-09-14)
 
