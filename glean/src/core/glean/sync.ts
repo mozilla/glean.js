@@ -434,4 +434,21 @@ namespace Glean {
   }
 }
 
+// Declare global variables for debugging in the browser.
+declare global {
+  interface Window {
+    Glean: {
+      setLogPings: (flag: boolean) => void;
+      setDebugViewTag: (value: string) => void;
+      setSourceTags: (value: string[]) => void;
+    }
+  }
+}
+
+window.Glean = {
+  setLogPings: Glean.setLogPings,
+  setDebugViewTag: Glean.setDebugViewTag,
+  setSourceTags: Glean.setSourceTags
+};
+
 export default Glean;
