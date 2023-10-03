@@ -74,6 +74,30 @@ export async function runWebTest(driver) {
     await driver.get(`http://localhost:${PORT}/`);
     // Give it time to send the ping request.
     const successTextContainer = await driver.findElement(By.id("msg"));
+
+    const areGleanWindowVarsSet = await driver.executeScript(() => {
+      // Verify that all Glean `window` vars are properly set.
+      if (
+        window &&
+        window.Glean &&
+        window.Glean.setDebugViewTag &&
+        window.Glean.setLogPings &&
+        window.Glean.setSourceTags
+      ) {
+        return true;
+      }
+
+      // One of our expected values wasn't set, so the test should fail.
+      return false;
+    }).catch(() => {
+      // In case `window` isn't available or something unexpected happens.
+      return false;
+    });
+    
+    if (!areGleanWindowVarsSet) {
+      throw new Error("`window.Glean` variables are not set.");
+    }
+
     await driver.wait(
       until.elementTextIs(
         successTextContainer,

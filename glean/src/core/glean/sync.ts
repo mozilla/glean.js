@@ -445,10 +445,13 @@ declare global {
   }
 }
 
-window.Glean = {
-  setLogPings: Glean.setLogPings,
-  setDebugViewTag: Glean.setDebugViewTag,
-  setSourceTags: Glean.setSourceTags
-};
+// Only set `Glean` values whenever running inside of a browser.
+if (typeof window !== "undefined") {
+  window.Glean = {
+    setLogPings: Glean.setLogPings,
+    setDebugViewTag: Glean.setDebugViewTag,
+    setSourceTags: Glean.setSourceTags
+  };
+}
 
 export default Glean;

@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.3...main)
 
+* [#1772](https://github.com/mozilla/glean.js/pull/1772): Fix bug where `window.Glean` functions were getting set on non-browser properties.
+
 # v2.0.3 (2023-09-27)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.2...v2.0.3)
