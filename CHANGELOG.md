@@ -3,6 +3,7 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.3...main)
 
 * [#1772](https://github.com/mozilla/glean.js/pull/1772): Fix bug where `window.Glean` functions were getting set on non-browser properties.
+* [#1784](https://github.com/mozilla/glean.js/pull/1784): Store `window.Glean` debugging values in `sessionStorage`. This will set debug options on page init while the current session is still active.
 
 # v2.0.3 (2023-09-27)
 

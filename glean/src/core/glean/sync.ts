@@ -8,7 +8,7 @@ import type PlatformSync from "../../platform/sync.js";
 import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "../constants.js";
 import { Configuration } from "../config.js";
 import PingUploadManager from "../upload/manager/sync.js";
-import { isBoolean, isString, sanitizeApplicationId } from "../utils.js";
+import { extractBooleanFromString, isBoolean, isString, isUndefined, sanitizeApplicationId } from "../utils.js";
 import { CoreMetricsSync } from "../internal_metrics/sync.js";
 import { EventsDatabaseSync } from "../metrics/events_database/sync.js";
 import { DatetimeMetric } from "../metrics/types/datetime.js";
@@ -22,6 +22,44 @@ import MetricsDatabaseSync from "../metrics/database/sync.js";
 import PingsDatabaseSync from "../pings/database/sync.js";
 
 const LOG_TAG = "core.Glean";
+
+enum DebugOption {
+  DebugTag = "DebugTag",
+  SourceTags = "SourceTags",
+  LogPings = "LogPings"
+}
+type DebugOptionValue = keyof typeof DebugOption;
+
+/**
+ * Set the value of a debug option in SessionStorage.
+ *
+ * @param option The debug option key to set.
+ * @param value The value of the debug option.
+ */
+const setDebugOptionInSessionStorage = (option: DebugOptionValue, value: boolean | string | string[]) => {
+  const key = `Glean.${option.toString()}`;
+
+  switch(option) {
+  case DebugOption.DebugTag:
+    sessionStorage.setItem(key, value as string);
+    break;
+  case DebugOption.LogPings:
+    sessionStorage.setItem(key, (value as boolean).toString());
+    break;
+  case DebugOption.SourceTags:
+    sessionStorage.setItem(key, (value as string[]).join(","));
+  }
+};
+
+/**
+ * Get a debug option value from SessionStorage using the key.
+ *
+ * @param option The debug option key to fetch the value of.
+ * @returns The stringified value.
+ */
+const getDebugOptionFromSessionStorage = (option: DebugOptionValue): string | undefined => {
+  return sessionStorage.getItem(`Glean.${option.toString()}`) || undefined;
+};
 
 namespace Glean {
   // An instance of the ping uploader.
@@ -141,6 +179,31 @@ namespace Glean {
   }
 
   /**
+   * Fetch debug options from SessionStorage and set the Glean preInit debug options.
+   */
+  function setDebugOptionsFromSessionStorage() {
+    // If we cannot access browser APIs, we do nothing.
+    if (isUndefined(window) || isUndefined(window.sessionStorage)) {
+      return;
+    }
+
+    const logPings = getDebugOptionFromSessionStorage(DebugOption.LogPings);
+    if (!isUndefined(logPings)) {
+      preInitLogPings = extractBooleanFromString(logPings);
+    }
+
+    const debugViewTag = getDebugOptionFromSessionStorage(DebugOption.DebugTag);
+    if (!isUndefined(debugViewTag)) {
+      preInitDebugViewTag = debugViewTag;
+    }
+
+    const sourceTags = getDebugOptionFromSessionStorage(DebugOption.SourceTags);
+    if (!isUndefined(sourceTags)) {
+      preInitSourceTags = sourceTags.split(",");
+    }
+  }
+
+  /**
    * Initialize  This method should only be called once, subsequent calls will be no-op.
    *
    * @param applicationId The application ID (will be sanitized during initialization).
@@ -206,6 +269,9 @@ namespace Glean {
     // The configuration constructor will throw in case config has any incorrect prop.
     const correctConfig = new Configuration(config);
     Context.config = correctConfig;
+
+    // Pre-set debug options for Glean from browser SessionStorage values.
+    setDebugOptionsFromSessionStorage();
 
     if (preInitLogPings) Context.config.logPings = preInitLogPings;
     if (preInitDebugViewTag) Context.config.debugViewTag = preInitDebugViewTag;
@@ -446,11 +512,20 @@ declare global {
 }
 
 // Only set `Glean` values whenever running inside of a browser.
-if (typeof window !== "undefined") {
+if (!isUndefined(window) && !isUndefined(window.sessionStorage)) {
   window.Glean = {
-    setLogPings: Glean.setLogPings,
-    setDebugViewTag: Glean.setDebugViewTag,
-    setSourceTags: Glean.setSourceTags
+    setLogPings: (flag: boolean) => {
+      setDebugOptionInSessionStorage(DebugOption.LogPings, flag);
+      Glean.setLogPings(flag);
+    },
+    setDebugViewTag: (value: string) => {
+      setDebugOptionInSessionStorage(DebugOption.DebugTag, value);
+      Glean.setDebugViewTag(value);
+    },
+    setSourceTags: (value: string[]) => {
+      setDebugOptionInSessionStorage(DebugOption.SourceTags, value);
+      Glean.setSourceTags(value);
+    }
   };
 }
 
