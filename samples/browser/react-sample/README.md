@@ -21,7 +21,7 @@ npm run link:glean
 3. Create the Glean generated files
 
 ```bash
-npm run glean
+npm run build:glean
 ```
 
 4. Run the sample project (runs on http://localhost:3000)

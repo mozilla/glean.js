@@ -13,7 +13,7 @@
     "build": "react-scripts build",
     "eject": "react-scripts eject",
     "link:glean": "cd ../../../glean && npm i && npm run build && npm link && cd ../samples/browser/react-sample && npm link @mozilla/glean",
-    "glean": "glean translate src/glean/metrics.yaml -f javascript -o src/glean/generated"
+    "build:glean": "glean translate src/glean/metrics.yaml -f javascript -o src/glean/generated"
   },
   "eslintConfig": {
     "extends": [
