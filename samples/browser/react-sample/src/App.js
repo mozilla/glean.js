@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
+
 import { useEffect } from "react";
 import "./App.css";
 import useGlean from "./glean/useGlean";
@@ -19,7 +23,7 @@ function App() {
   };
 
   return (
-    <div className="main">
+    <div className='main'>
       <button onClick={onButtonClick}>Submit click event!</button>
       <p id='console-warn'>A ping should have been submitted, please check the console for logs.</p>
     </div>
