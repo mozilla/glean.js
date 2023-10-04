@@ -1,9 +1,16 @@
+import { useEffect } from "react";
 import "./App.css";
-import { buttonClick } from "./glean/generated/appEvents";
+import useGlean from "./glean/useGlean";
 
 function App() {
+  const metrics = useGlean();
+
+  useEffect(() => {
+    metrics.pageLoad.record();
+  }, [metrics]);
+
   const onButtonClick = () => {
-    buttonClick.record({
+    metrics.buttonClick.record({
       label: "CTA"
     });
 
