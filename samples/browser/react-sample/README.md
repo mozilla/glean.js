@@ -18,7 +18,7 @@ npm install
 npm run link:glean
 ```
 
-3. Create the Glean generated files
+3. Generate the metrics API from the bundled `metrics.yaml` file. This will produce JavaScript files in `src/glean/generated`:
 
 ```bash
 npm run build:glean
