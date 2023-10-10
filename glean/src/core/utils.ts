@@ -123,6 +123,23 @@ export function isInteger(v: unknown): v is number {
 }
 
 /**
+ * Convert a boolean stringified value to a proper boolean.
+ *
+ * @param v The value to convert.
+ * @returns A boolean representing the string or undefined if the string was not a boolean value.
+ */
+export function extractBooleanFromString(v: string): boolean | undefined {
+  if (v.toLowerCase() === "true") {
+    return true;
+  } else if (v.toLowerCase() === "false") {
+    return false;
+  }
+
+  // The string is not a boolean value, so we do not return a boolean.
+  return undefined;
+}
+
+/**
  * Generates a pipeline-friendly string
  * that replaces non alphanumeric characters with dashes.
  *

@@ -12,7 +12,7 @@ To check out a comprehensive list of which metrics are collected by Glean and th
 <!-- ! -->
 || Size |
 |--|--|
-|web|**60 KB**|
+|web|**61 KB**|
 |webext|**61 KB**|
 |node|**61 KB**|
 |QML|**104 KB**|
