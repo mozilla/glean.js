@@ -8,7 +8,7 @@ import type PlatformSync from "../../platform/sync.js";
 import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "../constants.js";
 import { Configuration } from "../config.js";
 import PingUploadManager from "../upload/manager/sync.js";
-import { extractBooleanFromString, isBoolean, isString, isUndefined, sanitizeApplicationId } from "../utils.js";
+import { extractBooleanFromString, isBoolean, isString, sanitizeApplicationId } from "../utils.js";
 import { CoreMetricsSync } from "../internal_metrics/sync.js";
 import { EventsDatabaseSync } from "../metrics/events_database/sync.js";
 import { DatetimeMetric } from "../metrics/types/datetime.js";
@@ -39,7 +39,7 @@ type DebugOptionValue = keyof typeof DebugOption;
 const setDebugOptionInSessionStorage = (option: DebugOptionValue, value: boolean | string | string[]) => {
   const key = `Glean.${option.toString()}`;
 
-  switch(option) {
+  switch (option) {
   case DebugOption.DebugTag:
     sessionStorage.setItem(key, value as string);
     break;
@@ -48,6 +48,7 @@ const setDebugOptionInSessionStorage = (option: DebugOptionValue, value: boolean
     break;
   case DebugOption.SourceTags:
     sessionStorage.setItem(key, (value as string[]).join(","));
+    break;
   }
 };
 
@@ -183,22 +184,22 @@ namespace Glean {
    */
   function setDebugOptionsFromSessionStorage() {
     // If we cannot access browser APIs, we do nothing.
-    if (isUndefined(window) || isUndefined(window.sessionStorage)) {
+    if (typeof window === "undefined" || typeof window.sessionStorage === "undefined") {
       return;
     }
 
     const logPings = getDebugOptionFromSessionStorage(DebugOption.LogPings);
-    if (!isUndefined(logPings)) {
+    if (logPings) {
       preInitLogPings = extractBooleanFromString(logPings);
     }
 
     const debugViewTag = getDebugOptionFromSessionStorage(DebugOption.DebugTag);
-    if (!isUndefined(debugViewTag)) {
+    if (debugViewTag) {
       preInitDebugViewTag = debugViewTag;
     }
 
     const sourceTags = getDebugOptionFromSessionStorage(DebugOption.SourceTags);
-    if (!isUndefined(sourceTags)) {
+    if (sourceTags) {
       preInitSourceTags = sourceTags.split(",");
     }
   }
@@ -512,7 +513,7 @@ declare global {
 }
 
 // Only set `Glean` values whenever running inside of a browser.
-if (!isUndefined(window) && !isUndefined(window.sessionStorage)) {
+if (typeof window !== "undefined" && typeof window.sessionStorage !== "undefined") {
   window.Glean = {
     setLogPings: (flag: boolean) => {
       setDebugOptionInSessionStorage(DebugOption.LogPings, flag);
