@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.4...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.5...main)
+
+# v2.0.5 (2023-10-16)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.4...v2.0.5)
 
 * [#1788](https://github.com/mozilla/glean.js/pull/1788): Fix `window` is undefined error when setting up browser debugging.
 
