@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.5...main)
 
+* [#1792](https://github.com/mozilla/glean.js/pull/1792): Update `glean_parser` to `v10.0.1`.
+
 # v2.0.5 (2023-10-16)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.4...v2.0.5)
