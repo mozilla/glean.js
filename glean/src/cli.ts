@@ -27,7 +27,7 @@ const LOG_TAG = "CLI";
 const VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV || path.join(process.cwd(), ".venv");
 
 // The version of glean_parser to install from PyPI.
-const GLEAN_PARSER_VERSION = "8.1";
+const GLEAN_PARSER_VERSION = "10.0.1";
 
 // This script runs a given Python module as a "main" module, like
 // `python -m module`. However, it first checks that the installed
