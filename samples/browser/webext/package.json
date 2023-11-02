@@ -18,7 +18,7 @@
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.2",
+    "@types/mocha": "^10.0.3",
     "@types/node": "^20.8.10",
     "mocha": "^10.2.0",
     "ts-loader": "^9.4.4",
