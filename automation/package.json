@@ -14,7 +14,8 @@
     "size:docs": "node --experimental-json-modules size/docs.js",
     "compat:glean": "glean translate compat/metrics.yaml compat/pings.yaml -f javascript -o compat/generated",
     "compat:test": "npm run compat:glean && node --experimental-json-modules compat/tests/local.test.js",
-    "compat:test:browserstack": "npm run compat:glean && node --experimental-json-modules compat/tests/browserstack.test.js"
+    "compat:test:browserstack": "npm run compat:glean && node --experimental-json-modules compat/tests/browserstack.test.js",
+    "postinstall": "patch-package"
   },
   "author": "The Glean Team <glean-team@mozilla.com>",
   "license": "MPL-2.0",
@@ -22,7 +23,8 @@
     "@octokit/request": "^8.1.4",
     "browserstack-local": "^1.5.5",
     "geckodriver": "^4.2.1",
-    "selenium-webdriver": "^4.4.0",
+    "patch-package": "^8.0.0",
+    "selenium-webdriver": "^4.13.0",
     "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
