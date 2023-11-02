@@ -23,7 +23,7 @@
     "browserstack-local": "^1.5.4",
     "geckodriver": "^4.2.1",
     "selenium-webdriver": "^4.4.0",
-    "webpack": "^5.88.2",
+    "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^4.15.1"
   }
