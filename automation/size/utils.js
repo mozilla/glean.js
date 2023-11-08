@@ -82,8 +82,6 @@ export function executeCmd(cmd) {
  * Note: This function will use whatever `@mozilla/glean` package is linked at its runtime.
  *
  * @param {string} platform The platform to build for, supported platforms are: `web`, `webext` and `node`.
- *        The Qt build always has the same size because it always includes everything in it,
- *        so it is not supported here.
  * @param {[string]} metrics An array of metric types. Supported metrics types are listed in `METRIC_TYPES`.
  *        If not provided the final bundle won't contain any additional metric types.
  * @param {[string]} plugins An array of plugins. Supported plugins are listed in `PLUGINS`.
@@ -145,19 +143,4 @@ export async function getCustomLibSize(platform, metrics = [], plugins = []) {
       }
     );
   });
-}
-
-/**
- * Gets the size of the Qt bundle directly from the Glean folder.
- *
- * Note: this function assumes the Qt bundle has been built over there.
- *
- * @returns The size in bytes of the Qt bundle.
- */
-export function getQtBundleSize() {
-  // The Qt bundle size is special, because the Qt build is not part of the @mozilla/glean npm package.
-  // It is already bundled and distributed with each new release on the Github releases page.
-  //
-  // In Qt, the bundle always contains all metric types and plugins, so there is no min/max.
-  return fs.statSync(path.resolve(__dirname, "../../glean/dist/qt/org/mozilla/Glean/glean.lib.js")).size;
 }

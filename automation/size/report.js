@@ -9,13 +9,10 @@ import {
   PLUGINS,
   getCustomLibSize,
   formatBytes,
-  executeCmd,
-  getQtBundleSize
+  executeCmd
 } from "./utils.js";
 
 async function buildStatsMap() {
-
-  const qtBundleStats = getQtBundleSize();
   return [
     {
       name: "Web Extension",
@@ -31,11 +28,6 @@ async function buildStatsMap() {
       name: "Node.js",
       max: await getCustomLibSize("node", METRIC_TYPES, PLUGINS),
       min: await getCustomLibSize("node")
-    },
-    {
-      name: "Qt/QML",
-      max: qtBundleStats,
-      min: qtBundleStats
     }
   ];
 }
