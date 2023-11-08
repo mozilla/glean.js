@@ -227,10 +227,6 @@ The `MetricType` class is the default export on each metric type file. It expose
 users will interact with and contains the `InternalMetricType` instance as a [private field](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Classes/Private_class_fields).
 It is a wrapper around the `InternalMetricType`.
 
-Once you are done implementing the `MetricType` class for your new metric type,
-make sure to manually expose it for Qt platforms by adding it to
-[the Qt entry point file](https://github.com/mozilla/glean.js/blob/main/glean/src/entry/qt.ts).
-
 ## Testing
 
 Tests for metric type implementations live under the `glean/tests/unit/core/metrics/types` folder. Create a new

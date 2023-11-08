@@ -40,10 +40,10 @@ storage. Each metric can have different [lifetimes](https://mozilla.github.io/gl
 and the SDK will manage its storage so that data does not remain in storage after it's lifetime is expired.
 
 The Glean SDK tries to do all of this is the least disruptive way possible to users. There are two separate
-implementations for the SDK based on the platform: async (QT, node, web extensions) and sync (browser). The implementation
+implementations for the SDK based on the platform: async (node, web extensions) and sync (browser). The implementation
 is set inside of Glean itself and is not configurable by the user.
 
-### async (Web Extensions, QT, Node)
+### async (Web Extensions, Node)
 
 All of the SDKs tasks are queued and executed asynchronously. The APIs exposed by the Glean SDK will only do
 the en-queuing of tasks, a quick synchronous operation. Internally, the Glean SDK will handle the
@@ -110,13 +110,6 @@ file that they are getting and not `core/glean.ts`.
 The main difference between each platform's file is that a different `Platform` implementation is
 imported per file.
 
-The Qt/QML entry point is the different one here. QML packages cannot be easily consumed through npm,
-so the QML entry point imports all of Glean's modules and exposes it through this entry point. That is
-what is done on the `qt.ts` file. The `qt.js` file is the file QML users actually interact with,
-it includes specific QML semantics and is copied to the final destination folder of the QML package
-as-is after Glean.js is compiled for the QML target. (See `bin/prepare-qml-module.sh` for more
-context.)
-
 ### `platform/`
 
 Some modules such as storage and uploader, cannot be written in such a way that works
@@ -131,7 +124,6 @@ It also makes testing easier, because the exact same suite of tests can be run f
 The storage module varies for each platform. The storage mechanism used by each platform is as follows:
 - `web` - [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
 - `webext` - [`storage`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage)
-- `QT` - [`QtQuick.LocalStorage`](https://doc.qt.io/qt-6/qtquick-localstorage-qmlmodule.html)
 - `Node` - None, everything is stored in memory
 
 ### `plugins/`
