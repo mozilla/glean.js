@@ -88,7 +88,7 @@
         "--experimental-modules",
         "--experimental-specifier-resolution=node",
         "--loader=ts-node/esm",
-        "${workspaceFolder}/glean/tests/unit/core/metrics/timing_distribution.spec.ts"
+        "${file}"
       ],
       "console": "integratedTerminal"
     }
