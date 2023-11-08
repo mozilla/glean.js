@@ -45,12 +45,6 @@ run $SED -i.bak -E \
     "${WORKSPACE_ROOT}/${FILE}"
 run rm "${WORKSPACE_ROOT}/${FILE}.bak"
 
-FILE=samples/qt/requirements.txt
-run $SED -i.bak -E \
-    -e "s/glean_parser==[0-9.]+/glean_parser==${NEW_VERSION}/" \
-    "${WORKSPACE_ROOT}/${FILE}"
-run rm "${WORKSPACE_ROOT}/${FILE}.bak"
-
 echo "glean_parser updated to v${NEW_VERSION}"
 echo
 echo "Changed files:"
