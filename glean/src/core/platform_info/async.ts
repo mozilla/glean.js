@@ -7,8 +7,8 @@ import type { IPlatformInfo, KnownOperatingSystems } from "../platform_info/shar
 // See `IPlatformInfo` for method documentation.
 interface PlatformInfo extends IPlatformInfo {
   os(): Promise<KnownOperatingSystems>;
-  osVersion(fallback?: string): Promise<string>;
-  arch(fallback?: string): Promise<string>;
+  osVersion(): Promise<string>;
+  arch(): Promise<string>;
   locale(): Promise<string>;
 }
 

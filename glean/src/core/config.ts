@@ -45,15 +45,6 @@ export interface ConfigurationInterface {
   plugins?: Plugin[],
   // The HTTP client implementation to use for uploading pings.
   httpClient?: Uploader,
-  // Qt-only fields
-  //
-  // These values are not easily accessible from QML,
-  // so we expose them as init fields for the caller to fill them out.
-  //
-  // The architecture of the device (e.g. "arm", "x86").
-  readonly architecture?: string,
-  // The user-visible version of the operating system (e.g. "1.2.3").
-  readonly osVersion?: string,
   // The build date, provided by glean_parser
   readonly buildDate?: Date,
   // Migrate from legacy storage (IndexedDB) to the new one (LocalStorage).
@@ -67,8 +58,6 @@ export class Configuration implements ConfigurationInterface {
   readonly appBuild?: string;
   readonly appDisplayVersion?: string;
   readonly serverEndpoint: string;
-  readonly architecture?: string;
-  readonly osVersion?: string;
   readonly buildDate?: Date;
   readonly maxEvents: number;
   readonly migrateFromLegacyStorage?: boolean;
@@ -82,8 +71,6 @@ export class Configuration implements ConfigurationInterface {
     this.channel = config?.channel;
     this.appBuild = config?.appBuild;
     this.appDisplayVersion = config?.appDisplayVersion;
-    this.architecture = config?.architecture;
-    this.osVersion = config?.osVersion;
     this.buildDate = config?.buildDate;
     this.maxEvents = config?.maxEvents || DEFAULT_MAX_EVENTS;
     this.migrateFromLegacyStorage = config?.migrateFromLegacyStorage;

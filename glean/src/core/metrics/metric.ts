@@ -21,12 +21,7 @@ export type MetricValidationResult =
 export class MetricValidationError extends Error {
   constructor(message?: string, readonly type = ErrorType.InvalidType) {
     super(message);
-    try {
-      this.name = "MetricValidationError";
-    } catch {
-      // This fails in Qt.
-      // See https://bugreports.qt.io/browse/QTBUG-101298
-    }
+    this.name = "MetricValidationError";
   }
 
   async recordError(metric: MetricType) {
