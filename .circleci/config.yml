@@ -213,9 +213,30 @@ jobs:
       - run:
           name: NPM Authentication
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > glean/.npmrc
-      - run:
-          name: Publish to npm
-          command: export PATH=.:$PATH && (cd glean && npm publish --access public)
+      # This conditional matches the tag that contains 'pre', used
+      # to mark prerelease builds. Since CircleCI conditionals do
+      # not directly support 'else's, we need another conditional.
+      - when:
+          condition:
+            matches:
+              pattern: "^v.*-pre.*$"
+              value: << pipeline.git.tag >>
+          steps:
+            - run:
+                name: Publish to npm (prerelease)
+                command: export PATH=.:$PATH && (cd glean && npm publish --access public --tag prerelease)
+      # This conditional matches 'release': we won't tag the npm
+      # release in this case, because no 'pre' is found in the tag.
+      - when:
+          condition:
+            not:
+              matches:
+                pattern: "^v.*-pre.*$"
+                value: << pipeline.git.tag >>
+          steps:
+            - run:
+                name: Publish to npm
+                command: export PATH=.:$PATH && (cd glean && npm publish --access public)
       - run:
           name: Get ghr release tool
           command: |
