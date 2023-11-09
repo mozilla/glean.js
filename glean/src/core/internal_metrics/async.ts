@@ -129,12 +129,8 @@ export class CoreMetrics {
     await this.initializeFirstRunDate();
 
     await this.os.setUndispatched(await (Context.platform as Platform).info.os());
-    await this.osVersion.setUndispatched(
-      await Context.platform.info.osVersion(Context.config.osVersion)
-    );
-    await this.architecture.setUndispatched(
-      await Context.platform.info.arch(Context.config.architecture)
-    );
+    await this.osVersion.setUndispatched(await Context.platform.info.osVersion());
+    await this.architecture.setUndispatched(await Context.platform.info.arch());
     await this.locale.setUndispatched(await Context.platform.info.locale());
     await this.appBuild.setUndispatched(Context.config.appBuild || "Unknown");
     await this.appDisplayVersion.setUndispatched(Context.config.appDisplayVersion || "Unknown");

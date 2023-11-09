@@ -27,7 +27,3 @@ as Chromium based browsers.
 ## Node.js
 
 > TODO: see [Bug 1752548](https://bugzilla.mozilla.org/show_bug.cgi?id=1752548)
-
-## Qt/QML
-
-> TODO: see [Bug 1752550](https://bugzilla.mozilla.org/show_bug.cgi?id=1752550)

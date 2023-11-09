@@ -9,7 +9,6 @@ import { fileURLToPath } from "url";
 import {
   getCustomLibSize,
   formatBytes,
-  getQtBundleSize,
   METRIC_TYPES,
   PLUGINS,
   PLATFORMS
@@ -67,8 +66,7 @@ try {
     const minSizesTable =
     `\n|| Size |\n`
     + `|--|--|\n`
-    + `${PLATFORMS.map(platform => `|${platform}|**${sizes[platform].baseSize}**|`).join("\n")}\n`
-    + `|QML|**${formatBytes(getQtBundleSize())}**|\n`;
+    + `${PLATFORMS.map(platform => `|${platform}|**${sizes[platform].baseSize}**|`).join("\n")}\n`;
 
     const createSizesTableHeader = title => {
       return `\n|${title}| ${PLATFORMS.map(platform => `${platform}|`).join("")}\n`

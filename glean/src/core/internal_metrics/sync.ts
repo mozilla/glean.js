@@ -152,10 +152,8 @@ export class CoreMetricsSync {
     }
 
     this.os.set((Context.platform as PlatformSync).info.os());
-    this.osVersion.set((Context.platform as PlatformSync).info.osVersion(Context.config.osVersion));
-    this.architecture.set(
-      (Context.platform as PlatformSync).info.arch(Context.config.architecture)
-    );
+    this.osVersion.set((Context.platform as PlatformSync).info.osVersion());
+    this.architecture.set((Context.platform as PlatformSync).info.arch());
     this.locale.set((Context.platform as PlatformSync).info.locale());
     this.appBuild.set(Context.config.appBuild || "Unknown");
     this.appDisplayVersion.set(Context.config.appDisplayVersion || "Unknown");

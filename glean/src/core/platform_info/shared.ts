@@ -45,18 +45,16 @@ export interface IPlatformInfo {
   /**
    * Gets and returns the current OS system version.
    *
-   * @param fallback A fallback value in case Glean is unable to retrieve this value from the environment.
    * @returns The current OS version.
    */
-  osVersion(fallback?: string): OptionalAsync<string>;
+  osVersion(): OptionalAsync<string>;
 
   /**
    * Gets and returns the current system architecture.
    *
-   * @param fallback A fallback value in case Glean is unable to retrieve this value from the environment.
    * @returns The current system architecture.
    */
-  arch(fallback?: string): OptionalAsync<string>;
+  arch(): OptionalAsync<string>;
 
   /**
    * Gets and returns the current system / browser locale.

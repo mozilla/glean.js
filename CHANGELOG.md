@@ -10,6 +10,8 @@
 
 * [#1788](https://github.com/mozilla/glean.js/pull/1788): Fix `window` is undefined error when setting up browser debugging.
 
+* [#1810](https://github.com/mozilla/glean.js/pull/1810): **BREAKING CHANGE**: Drop support for QT.
+
 # v2.0.4 (2023-10-10)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.3...v2.0.4)
