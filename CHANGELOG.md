@@ -3,14 +3,13 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.5...main)
 
 * [#1792](https://github.com/mozilla/glean.js/pull/1792): Update `glean_parser` to `v10.0.1`.
+* [#1810](https://github.com/mozilla/glean.js/pull/1810): **BREAKING CHANGE**: Drop support for QT.
 
 # v2.0.5 (2023-10-16)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.4...v2.0.5)
 
 * [#1788](https://github.com/mozilla/glean.js/pull/1788): Fix `window` is undefined error when setting up browser debugging.
-
-* [#1810](https://github.com/mozilla/glean.js/pull/1810): **BREAKING CHANGE**: Drop support for QT.
 
 # v2.0.4 (2023-10-10)
 
