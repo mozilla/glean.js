@@ -8,7 +8,7 @@ import type { JSONObject } from "../src/core/utils";
 import { isString } from "../src/core/utils";
 import Uploader from "../src/core/upload/uploader";
 import { UploadResultStatus, UploadResult } from "../src/core/upload/uploader";
-import Glean from "../src/core/glean/async.js";
+import Glean from "../src/core/glean.js";
 
 /**
  * Decoded, unzips and parses the ping payload into a JSON object.
@@ -29,11 +29,17 @@ export function unzipPingPayload(payload: Uint8Array | string): JSONObject {
 
 /**
  * Disables the uploading on the Glean singleton,
- * so that it doesn't interefe with tests.
+ * so that it doesn't interfere with tests.
  */
 export function stopGleanUploader(): void {
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  Glean.pingUploader["worker"]["work"] = () => {};
+  Glean.pingUploader.blockUploads();
+}
+
+/**
+ * Enables the uploading on the Glean singleton.
+ */
+export function resumeGleanUploader(): void {
+  Glean.pingUploader.resumeUploads();
 }
 
 /**
