@@ -15,7 +15,6 @@ To check out a comprehensive list of which metrics are collected by Glean and th
 |web|**61 KB**|
 |webext|**61 KB**|
 |node|**61 KB**|
-|QML|**104 KB**|
 <!-- ! -->
 
 > **Note**: The QML bundle contains all the metric types and is not distributed through the
