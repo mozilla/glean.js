@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { StorageIndex } from "../../core/storage/shared.js";
-import type Store from "../../core/storage/async.js";
+import type { StorageIndex } from "../../core/storage.js";
+import type Store from "../../core/storage.js";
 
 import log, { LoggingLevel } from "../../core/log.js";
-import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "../../core/storage/utils.js";
+import { updateNestedObject, getValueFromNestedObject, deleteKeyFromNestedObject } from "../../core/storage.js";
 import type { JSONObject, JSONValue } from "../../core/utils.js";
 
 const LOG_TAG = "platform.test.Storage";
@@ -28,28 +28,28 @@ class MockStore implements Store {
     this.rootKey = rootKey;
   }
 
-  get(index: StorageIndex = []): Promise<JSONValue | undefined> {
+  get(index: StorageIndex = []): JSONValue | undefined {
     try {
       const value = getValueFromNestedObject(globalStore, [ this.rootKey, ...index ]);
-      return Promise.resolve(value);
+      return value;
     } catch(e) {
-      return Promise.reject(e);
+      throw e;
     }
   }
 
   update(
     index: StorageIndex,
     transformFn: (v?: JSONValue) => JSONValue
-  ): Promise<void> {
+  ): void {
     try {
       globalStore = updateNestedObject(globalStore, [ this.rootKey, ...index ], transformFn);
-      return Promise.resolve();
+      return;
     } catch(e) {
-      return Promise.reject(e);
+      throw e;
     }
   }
 
-  delete(index: StorageIndex): Promise<void> {
+  delete(index: StorageIndex): void {
     try {
       globalStore = deleteKeyFromNestedObject(globalStore, [ this.rootKey, ...index ]);
     } catch (e) {
@@ -59,7 +59,7 @@ class MockStore implements Store {
         LoggingLevel.Warn
       );
     }
-    return Promise.resolve();
+    return;
   }
 }
 export default MockStore;

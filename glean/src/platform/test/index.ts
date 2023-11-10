@@ -2,11 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type Platform from "../async.js";
-import type PlatformInfo from "../../core/platform_info/async.js";
+import type Platform from "../index.js";
+import type PlatformInfo from "../../core/platform_info.js";
 
 import MockStorage from "../test/storage.js";
-import { KnownOperatingSystems } from "../../core/platform_info/shared.js";
+import { KnownOperatingSystems } from "../../core/platform_info.js";
 import Uploader from "../../core/upload/uploader.js";
 import { UploadResultStatus, UploadResult } from "../../core/upload/uploader.js";
 
@@ -19,20 +19,20 @@ class MockUploader extends Uploader {
 }
 
 const MockPlatformInfo: PlatformInfo = {
-  os(): Promise<KnownOperatingSystems> {
-    return Promise.resolve(KnownOperatingSystems.Unknown);
+  os(): KnownOperatingSystems {
+    return KnownOperatingSystems.Unknown;
   },
 
-  osVersion(): Promise<string> {
-    return Promise.resolve("Unknown");
+  osVersion(): string {
+    return "Unknown";
   },
 
-  arch(): Promise<string> {
-    return Promise.resolve("Unknown");
+  arch(): string {
+    return "Unknown";
   },
 
-  locale(): Promise<string> {
-    return Promise.resolve("Unknown");
+  locale(): string {
+    return "Unknown";
   },
 };
 
