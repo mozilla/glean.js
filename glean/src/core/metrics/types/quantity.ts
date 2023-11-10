@@ -4,8 +4,6 @@
 
 import type { CommonMetricData } from "../index.js";
 import type { MetricValidationResult } from "../metric.js";
-import type ErrorManagerSync from "../../error/sync.js";
-import type MetricsDatabaseSync from "../database/sync.js";
 
 import { MetricType } from "../index.js";
 import { testOnlyCheck } from "../../utils.js";
@@ -42,36 +40,13 @@ class InternalQuantityMetricType extends MetricType {
     super("quantity", meta, QuantityMetric);
   }
 
-  /// SHARED ///
   set(value: number): void {
-    if (Context.isPlatformSync()) {
-      this.setSync(value);
-    } else {
-      this.setAsync(value);
-    }
-  }
-
-  /// ASYNC ///
-  setAsync(value: number) {
-    Context.dispatcher.launch(() => this.setUndispatched(value));
-  }
-
-  /**
-   * An implementation of `set` that does not dispatch the recording task.
-   *
-   * # Important
-   *
-   * This method should **never** be exposed to users.
-   *
-   * @param value The string we want to set to.
-   */
-  async setUndispatched(value: number): Promise<void> {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
     if (value < 0) {
-      await Context.errorManager.record(
+      Context.errorManager.record(
         this,
         ErrorType.InvalidValue,
         `Set negative value ${value}`
@@ -85,51 +60,18 @@ class InternalQuantityMetricType extends MetricType {
 
     try {
       const metric = new QuantityMetric(value);
-      await Context.metricsDatabase.record(this, metric);
+      Context.metricsDatabase.record(this, metric);
     } catch (e) {
       if (e instanceof MetricValidationError) {
-        await e.recordError(this);
-      }
-    }
-  }
-
-  /// SYNC ///
-  setSync(value: number) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    if (value < 0) {
-      (Context.errorManager as ErrorManagerSync).record(
-        this,
-        ErrorType.InvalidValue,
-        `Set negative value ${value}`
-      );
-      return;
-    }
-
-    if (value > Number.MAX_SAFE_INTEGER) {
-      value = Number.MAX_SAFE_INTEGER;
-    }
-
-    try {
-      const metric = new QuantityMetric(value);
-      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
+        e.recordError(this);
       }
     }
   }
 
   /// TESTING ///
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
+  testGetValue(ping: string = this.sendInPings[0]): number | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: number | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<number>(ping, this);
-      });
-      return metric;
+      return Context.metricsDatabase.getMetric<number>(ping, this);
     }
   }
 }
@@ -168,7 +110,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<number | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): number | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -182,10 +124,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

@@ -6,8 +6,6 @@ import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import type { DistributionData } from "../distributions";
 import type { MetricValidationResult } from "../metric.js";
-import type MetricsDatabaseSync from "../database/sync.js";
-import type ErrorManagerSync from "../../error/sync.js";
 
 import { Context } from "../../context.js";
 import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
@@ -145,12 +143,27 @@ class InternalCustomDistributionMetricType extends MetricType {
     this.histogramType = histogramType;
   }
 
-  /// SHARED ///
   accumulateSamples(samples: number[]) {
-    if (Context.isPlatformSync()) {
-      this.setSync(samples);
-    } else {
-      this.setAsync(samples);
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      Context.metricsDatabase.transform(this, this.transformFn(samples));
+
+      const numNegativeSamples = getNumNegativeSamples(samples);
+      if (numNegativeSamples > 0) {
+        Context.errorManager.record(
+          this,
+          ErrorType.InvalidValue,
+          `Accumulated ${numNegativeSamples} negative samples`,
+          numNegativeSamples
+        );
+      }
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordError(this);
+      }
     }
   }
 
@@ -175,65 +188,10 @@ class InternalCustomDistributionMetricType extends MetricType {
     };
   }
 
-  /// ASYNC ///
-  setAsync(samples: number[]) {
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      try {
-        await Context.metricsDatabase.transform(this, this.transformFn(samples));
-
-        const numNegativeSamples = getNumNegativeSamples(samples);
-        if (numNegativeSamples > 0) {
-          await Context.errorManager.record(
-            this,
-            ErrorType.InvalidValue,
-            `Accumulated ${numNegativeSamples} negative samples`,
-            numNegativeSamples
-          );
-        }
-      } catch (e) {
-        if (e instanceof MetricValidationError) {
-          await e.recordError(this);
-        }
-      }
-    });
-  }
-
-  /// SYNC ///
-  setSync(samples: number[]) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    try {
-      (Context.metricsDatabase as MetricsDatabaseSync).transform(this, this.transformFn(samples));
-
-      const numNegativeSamples = getNumNegativeSamples(samples);
-      if (numNegativeSamples > 0) {
-        (Context.errorManager as ErrorManagerSync).record(
-          this,
-          ErrorType.InvalidValue,
-          `Accumulated ${numNegativeSamples} negative samples`,
-          numNegativeSamples
-        );
-      }
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
-      }
-    }
-  }
-
   /// TESTING ///
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<DistributionData | undefined> {
+  testGetValue(ping: string = this.sendInPings[0]): DistributionData | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let value: CustomDistributionInternalRepresentation | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        value = await Context.metricsDatabase.getMetric(ping, this);
-      });
+      const value: CustomDistributionInternalRepresentation | undefined = Context.metricsDatabase.getMetric(ping, this);
 
       if (value) {
         const { bucketCount, histogramType, rangeMax, rangeMin, values } = value;
@@ -293,9 +251,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<DistributionData | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): DistributionData | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -309,10 +265,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

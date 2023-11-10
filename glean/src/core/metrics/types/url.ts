@@ -4,18 +4,13 @@
 
 import type { CommonMetricData } from "../index.js";
 import type { MetricValidationResult } from "../metric.js";
-import type MetricsDatabaseSync from "../database/sync.js";
 
-import {
-  testOnlyCheck,
-  truncateStringAtBoundaryWithError,
-  truncateStringAtBoundaryWithErrorSync
-} from "../../utils.js";
-import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
-import { MetricValidationError, MetricValidation, Metric } from "../metric.js";
 import { ErrorType } from "../../error/error_type.js";
+import { Metric, MetricValidationError, MetricValidation } from "../metric.js";
+import { MetricType } from "../index.js";
 import { validateString } from "../utils.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.URLMetricType";
 
@@ -89,53 +84,7 @@ class InternalUrlMetricType extends MetricType {
     super("url", meta, UrlMetric);
   }
 
-  /// SHARED ///
   set(url: string): void {
-    if (Context.isPlatformSync()) {
-      this.setSync(url);
-    } else {
-      this.setAsync(url);
-    }
-  }
-
-  setUrl(url: URL): void {
-    if (Context.isPlatformSync()) {
-      this.setSync(url.toString());
-    } else {
-      this.setAsync(url.toString());
-    }
-  }
-
-  /// ASYNC ///
-  setAsync(url: string) {
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      let formattedUrl;
-      if (url.length > URL_MAX_LENGTH) {
-        // URL is longer than our max length, so we truncate extra characters
-        // and report an error. BUT, we still pass the truncated URL.
-        formattedUrl = await truncateStringAtBoundaryWithError(this, url, URL_MAX_LENGTH);
-      } else {
-        // do nothing, our original URL does not overflow
-        formattedUrl = url;
-      }
-
-      try {
-        const metric = new UrlMetric(formattedUrl);
-        await Context.metricsDatabase.record(this, metric);
-      } catch (e) {
-        if (e instanceof MetricValidationError) {
-          await e.recordError(this);
-        }
-      }
-    });
-  }
-
-  /// SYNC ///
-  setSync(url: string) {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
@@ -144,7 +93,7 @@ class InternalUrlMetricType extends MetricType {
     if (url.length > URL_MAX_LENGTH) {
       // URL is longer than our max length, so we truncate extra characters
       // and report an error. BUT, we still pass the truncated URL.
-      formattedUrl = truncateStringAtBoundaryWithErrorSync(this, url, URL_MAX_LENGTH);
+      formattedUrl = truncateStringAtBoundaryWithError(this, url, URL_MAX_LENGTH);
     } else {
       // do nothing, our original URL does not overflow
       formattedUrl = url;
@@ -152,22 +101,22 @@ class InternalUrlMetricType extends MetricType {
 
     try {
       const metric = new UrlMetric(formattedUrl);
-      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+      Context.metricsDatabase.record(this, metric);
     } catch (e) {
       if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
+        e.recordError(this);
       }
     }
   }
 
+  setUrl(url: URL): void {
+    this.set(url.toString());
+  }
+
   /// TESTING ///
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
+  testGetValue(ping: string = this.sendInPings[0]): string | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: string | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
-      });
-      return metric;
+      return Context.metricsDatabase.getMetric<string>(ping, this);
     }
   }
 }
@@ -215,7 +164,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): string | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -229,10 +178,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }
