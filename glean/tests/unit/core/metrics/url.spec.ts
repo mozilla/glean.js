@@ -6,7 +6,7 @@ import assert from "assert";
 import { Context } from "../../../../src/core/context";
 import { ErrorType } from "../../../../src/core/error/error_type";
 
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import UrlMetricType from "../../../../src/core/metrics/types/url";
 import { testResetGlean } from "../../../../src/core/testing";
@@ -14,11 +14,11 @@ import { testResetGlean } from "../../../../src/core/testing";
 describe("UrlMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", function() {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
@@ -27,10 +27,10 @@ describe("UrlMetric", function() {
       disabled: false
     });
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", function() {
     Glean.setUploadEnabled(false);
 
     const metric = new UrlMetricType({
@@ -42,10 +42,10 @@ describe("UrlMetric", function() {
     });
 
     metric.set("glean://test");
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("ping payload is correct", async function() {
+  it("ping payload is correct", function() {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
@@ -55,9 +55,9 @@ describe("UrlMetric", function() {
     });
 
     metric.set("glean://test");
-    assert.strictEqual(await metric.testGetValue("aPing"), "glean://test");
+    assert.strictEqual(metric.testGetValue("aPing"), "glean://test");
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "url": {
         "aCategory.aUrlMetric": "glean://test"
@@ -65,7 +65,7 @@ describe("UrlMetric", function() {
     });
   });
 
-  it("payload is URI encoded", async function () {
+  it("payload is URI encoded", function () {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
@@ -75,9 +75,9 @@ describe("UrlMetric", function() {
     });
 
     metric.set("https://mozilla.org/?x=шеллы");
-    assert.strictEqual(await metric.testGetValue("aPing"), "https://mozilla.org/?x=шеллы");
+    assert.strictEqual(metric.testGetValue("aPing"), "https://mozilla.org/?x=шеллы");
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "url": {
         "aCategory.aUrlMetric": "https://mozilla.org/?x=шеллы"
@@ -85,7 +85,7 @@ describe("UrlMetric", function() {
     });
   });
 
-  it("set properly sets the value in all pings", async function() {
+  it("set properly sets the value in all pings", function() {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
@@ -95,12 +95,12 @@ describe("UrlMetric", function() {
     });
 
     metric.set("glean://test");
-    assert.strictEqual(await metric.testGetValue("aPing"), "glean://test");
-    assert.strictEqual(await metric.testGetValue("twoPing"), "glean://test");
-    assert.strictEqual(await metric.testGetValue("threePing"), "glean://test");
+    assert.strictEqual(metric.testGetValue("aPing"), "glean://test");
+    assert.strictEqual(metric.testGetValue("twoPing"), "glean://test");
+    assert.strictEqual(metric.testGetValue("threePing"), "glean://test");
   });
 
-  it("setUrl properly sets the value in all pings", async function() {
+  it("setUrl properly sets the value in all pings", function() {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
@@ -110,12 +110,12 @@ describe("UrlMetric", function() {
     });
 
     metric.setUrl(new URL("glean://test"));
-    assert.strictEqual(await metric.testGetValue("aPing"), "glean://test");
-    assert.strictEqual(await metric.testGetValue("twoPing"), "glean://test");
-    assert.strictEqual(await metric.testGetValue("threePing"), "glean://test");
+    assert.strictEqual(metric.testGetValue("aPing"), "glean://test");
+    assert.strictEqual(metric.testGetValue("twoPing"), "glean://test");
+    assert.strictEqual(metric.testGetValue("threePing"), "glean://test");
   });
 
-  it("records truncated URL and errors when URL exceeds MAX_URL_LENGTH", async function () {
+  it("records truncated URL and errors when URL exceeds MAX_URL_LENGTH", function () {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
@@ -142,13 +142,13 @@ describe("UrlMetric", function() {
     // 8 + 8184 = 8192 (MAX_URL_LENGTH)
     const expected = `glean://${longPathBase.repeat(1023)}`;
 
-    assert.strictEqual(await metric.testGetValue("aPing"), expected);
+    assert.strictEqual(metric.testGetValue("aPing"), expected);
 
     // This count is 2 because we test both `set` and `setUrl`.
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 2);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 2);
   });
 
-  it("does not record data URLs and records errors", async function () {
+  it("does not record data URLs and records errors", function () {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
@@ -160,13 +160,11 @@ describe("UrlMetric", function() {
     metric.set("data:application/json");
     metric.setUrl(new URL("data:application/json"));
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
-    assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 2
-    );
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 2);
   });
 
-  it("url schema validation works as designed and records errors", async function () {
+  it("url schema validation works as designed and records errors", function () {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
@@ -211,20 +209,20 @@ describe("UrlMetric", function() {
 
     for (const incorrect of incorrects) {
       metric.set(incorrect);
-      assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+      assert.strictEqual(metric.testGetValue("aPing"), undefined);
     }
     assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), incorrects.length
+      metric.testGetNumRecordedErrors(ErrorType.InvalidValue), incorrects.length
     );
 
 
     for (const correct of corrects) {
       metric.set(correct);
-      assert.strictEqual(await metric.testGetValue("aPing"), correct);
+      assert.strictEqual(metric.testGetValue("aPing"), correct);
     }
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new UrlMetricType({
       category: "aCategory",
       name: "aUrlMetric",
@@ -237,7 +235,7 @@ describe("UrlMetric", function() {
     // @ts-ignore
     metric.set({ "not": "string" });
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });

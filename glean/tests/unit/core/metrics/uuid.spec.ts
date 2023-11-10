@@ -5,7 +5,7 @@
 import assert from "assert";
 import { v4 as UUIDv4 } from "uuid";
 
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import UUIDMetricType from "../../../../src/core/metrics/types/uuid";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { Context } from "../../../../src/core/context";
@@ -15,11 +15,11 @@ import { testResetGlean } from "../../../../src/core/testing";
 describe("UUIDMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", function() {
     const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
@@ -28,10 +28,10 @@ describe("UUIDMetric", function() {
       disabled: false
     });
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", function() {
     Glean.setUploadEnabled(false);
 
     const metric = new UUIDMetricType({
@@ -43,10 +43,10 @@ describe("UUIDMetric", function() {
     });
 
     metric.generateAndSet();
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to set an invalid uuid is a no-op", async function() {
+  it("attempting to set an invalid uuid is a no-op", function() {
     const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
@@ -56,11 +56,11 @@ describe("UUIDMetric", function() {
     });
 
     metric.set("not valid");
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1);
   });
 
-  it("ping payload is correct", async function() {
+  it("ping payload is correct", function() {
     const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
@@ -71,9 +71,9 @@ describe("UUIDMetric", function() {
 
     const expected = UUIDv4();
     metric.set(expected);
-    assert.strictEqual(await metric.testGetValue("aPing"), expected);
+    assert.strictEqual(metric.testGetValue("aPing"), expected);
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "uuid": {
         "aCategory.aUUIDMetric": expected
@@ -81,7 +81,7 @@ describe("UUIDMetric", function() {
     });
   });
 
-  it("set properly sets the value in all pings", async function() {
+  it("set properly sets the value in all pings", function() {
     const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
@@ -92,12 +92,12 @@ describe("UUIDMetric", function() {
 
     const expected = UUIDv4();
     metric.set(expected);
-    assert.strictEqual(await metric.testGetValue("aPing"), expected);
-    assert.strictEqual(await metric.testGetValue("twoPing"), expected);
-    assert.strictEqual(await metric.testGetValue("threePing"), expected);
+    assert.strictEqual(metric.testGetValue("aPing"), expected);
+    assert.strictEqual(metric.testGetValue("twoPing"), expected);
+    assert.strictEqual(metric.testGetValue("threePing"), expected);
   });
 
-  it("uuid is generated and stored", async function() {
+  it("uuid is generated and stored", function() {
     const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
@@ -107,10 +107,10 @@ describe("UUIDMetric", function() {
     });
 
     const value = metric.generateAndSet();
-    assert.strictEqual(value, await metric.testGetValue("aPing"));
+    assert.strictEqual(value, metric.testGetValue("aPing"));
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new UUIDMetricType({
       category: "aCategory",
       name: "aUUIDMetric",
@@ -123,7 +123,7 @@ describe("UUIDMetric", function() {
     // @ts-ignore
     metric.set({ "not": "string" });
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });

@@ -12,10 +12,8 @@ import BooleanMetricType from "../../../../src/core/metrics/types/boolean";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import LabeledMetricType from "../../../../src/core/metrics/types/labeled";
 import StringMetricType from "../../../../src/core/metrics/types/string";
-import type PingsDatabase from "../../../../src/core/pings/database/async";
 import PingType from "../../../../src/core/pings/ping_type";
 import { testResetGlean } from "../../../../src/core/testing";
-import { testInitializeGlean, testUninitializeGlean } from "../../../../src/core/testing/utils";
 import type { JSONObject } from "../../../../src/core/utils";
 import { stopGleanUploader } from "../../../utils";
 
@@ -24,8 +22,8 @@ const sandbox = sinon.createSandbox();
 describe("LabeledMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
     // Disable ping uploading for it not to interfere with this tests.
     stopGleanUploader();
   });
@@ -34,7 +32,7 @@ describe("LabeledMetric", function() {
     sandbox.restore();
   });
 
-  it("test labeled counter type", async function() {
+  it("test labeled counter type", function() {
     const ping = new PingType({
       name: "test",
       includeClientId: true,
@@ -55,15 +53,14 @@ describe("LabeledMetric", function() {
     labeledCounterMetric["label1"].add(1);
     labeledCounterMetric["label2"].add(2);
 
-    assert.strictEqual(await labeledCounterMetric["label1"].testGetValue(), 1);
-    assert.strictEqual(await labeledCounterMetric["label2"].testGetValue(), 2);
+    assert.strictEqual(labeledCounterMetric["label1"].testGetValue(), 1);
+    assert.strictEqual(labeledCounterMetric["label2"].testGetValue(), 2);
 
     // TODO: bug 1691033 will allow us to change the code below this point,
     // once a custom uploader for testing will be available.
     ping.submit();
-    await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
+    const storedPings = Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -79,7 +76,7 @@ describe("LabeledMetric", function() {
     );
   });
 
-  it("test __other__ label with predefined labels", async function() {
+  it("test __other__ label with predefined labels", function() {
     const ping = new PingType({
       name: "test",
       includeClientId: true,
@@ -105,18 +102,17 @@ describe("LabeledMetric", function() {
     labeledCounterMetric["also_not_there"].add(1);
     labeledCounterMetric["not_me"].add(1);
 
-    assert.strictEqual(await labeledCounterMetric["foo"].testGetValue(), 3);
-    assert.strictEqual(await labeledCounterMetric["bar"].testGetValue(), 1);
-    assert.strictEqual(await labeledCounterMetric["baz"].testGetValue(), undefined);
+    assert.strictEqual(labeledCounterMetric["foo"].testGetValue(), 3);
+    assert.strictEqual(labeledCounterMetric["bar"].testGetValue(), 1);
+    assert.strictEqual(labeledCounterMetric["baz"].testGetValue(), undefined);
     // The rest all lands in the __other__ bucket
-    assert.strictEqual(await labeledCounterMetric["not_there"].testGetValue(), 3);
+    assert.strictEqual(labeledCounterMetric["not_there"].testGetValue(), 3);
 
     // TODO: bug 1691033 will allow us to change the code below this point,
     // once a custom uploader for testing will be available.
     ping.submit();
-    await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
+    const storedPings = Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -132,7 +128,7 @@ describe("LabeledMetric", function() {
     );
   });
 
-  it("test __other__ label without predefined labels", async function() {
+  it("test __other__ label without predefined labels", function() {
     const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
@@ -150,44 +146,14 @@ describe("LabeledMetric", function() {
     // Go back and record in one of the real labels again.
     labeledCounterMetric["label_0"].add(1);
 
-    assert.strictEqual(await labeledCounterMetric["label_0"].testGetValue(), 2);
+    assert.strictEqual(labeledCounterMetric["label_0"].testGetValue(), 2);
     for (let i = 1; i <= 15; i++) {
-      assert.strictEqual(await labeledCounterMetric[`label_${i}`].testGetValue(), 1);
+      assert.strictEqual(labeledCounterMetric[`label_${i}`].testGetValue(), 1);
     }
-    assert.strictEqual(await labeledCounterMetric["__other__"].testGetValue(), 5);
+    assert.strictEqual(labeledCounterMetric["__other__"].testGetValue(), 5);
   });
 
-  it("test __other__ label without predefined labels before Glean initialization", async function() {
-    const labeledCounterMetric = new LabeledMetricType(
-      {
-        category: "telemetry",
-        name: "labeled_counter_metric",
-        sendInPings: ["metrics"],
-        lifetime: Lifetime.Application,
-        disabled: false
-      },
-      CounterMetricType
-    );
-
-    // Make sure Glean isn't initialized, so that tasks get enqueued.
-    await testUninitializeGlean();
-
-    for (let i = 0; i <= 20; i++) {
-      labeledCounterMetric[`label_${i}`].add(1);
-    }
-    // Go back and record in one of the real labels again.
-    labeledCounterMetric["label_0"].add(1);
-
-    await testInitializeGlean("gleanjs.unit.test", true);
-
-    assert.strictEqual(await labeledCounterMetric["label_0"].testGetValue(), 2);
-    for (let i = 1; i <= 15; i++) {
-      assert.strictEqual(await labeledCounterMetric[`label_${i}`].testGetValue(), 1);
-    }
-    assert.strictEqual(await labeledCounterMetric["__other__"].testGetValue(), 5);
-  });
-
-  it("Ensure invalid labels on labeled counter go to __other__", async function() {
+  it("Ensure invalid labels on labeled counter go to __other__", function() {
     const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
@@ -204,14 +170,14 @@ describe("LabeledMetric", function() {
     labeledCounterMetric["with/slash"].add(1);
     labeledCounterMetric["this_string_has_more_than_thirty_characters"].add(1);
 
-    assert.strictEqual(await labeledCounterMetric["__other__"].testGetValue(), 4);
+    assert.strictEqual(labeledCounterMetric["__other__"].testGetValue(), 4);
     assert.strictEqual(
-      await labeledCounterMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
+      labeledCounterMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
       4
     );
   });
 
-  it("Ensure invalid labels on labeled boolean go to __other__", async function() {
+  it("Ensure invalid labels on labeled boolean go to __other__", function() {
     const labeledBooleanMetric = new LabeledMetricType(
       {
         category: "telemetry",
@@ -228,14 +194,14 @@ describe("LabeledMetric", function() {
     labeledBooleanMetric["with/slash"].set(true);
     labeledBooleanMetric["this_string_has_more_than_thirty_characters"].set(true);
 
-    assert.strictEqual(await labeledBooleanMetric["__other__"].testGetValue(), true);
+    assert.strictEqual(labeledBooleanMetric["__other__"].testGetValue(), true);
     assert.strictEqual(
-      await labeledBooleanMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
+      labeledBooleanMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
       4
     );
   });
 
-  it("Ensure invalid labels on labeled string go to __other__", async function() {
+  it("Ensure invalid labels on labeled string go to __other__", function() {
     const labeledStringMetric = new LabeledMetricType(
       {
         category: "telemetry",
@@ -252,14 +218,14 @@ describe("LabeledMetric", function() {
     labeledStringMetric["with/slash"].set("foo");
     labeledStringMetric["this_string_has_more_than_thirty_characters"].set("foo");
 
-    assert.strictEqual(await labeledStringMetric["__other__"].testGetValue(), "foo");
+    assert.strictEqual(labeledStringMetric["__other__"].testGetValue(), "foo");
     assert.strictEqual(
-      await labeledStringMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
+      labeledStringMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
       4
     );
   });
 
-  it("test labeled string metric type", async function() {
+  it("test labeled string metric type", function() {
     const ping = new PingType({
       name: "test",
       includeClientId: true,
@@ -280,20 +246,19 @@ describe("LabeledMetric", function() {
     labeledStringMetric["label1"].set("foo");
     labeledStringMetric["label2"].set("bar");
 
-    assert.strictEqual(await labeledStringMetric["label1"].testGetValue(), "foo");
-    assert.strictEqual(await labeledStringMetric["label2"].testGetValue(), "bar");
-    assert.strictEqual(await labeledStringMetric["__other__"].testGetValue(), undefined);
+    assert.strictEqual(labeledStringMetric["label1"].testGetValue(), "foo");
+    assert.strictEqual(labeledStringMetric["label2"].testGetValue(), "bar");
+    assert.strictEqual(labeledStringMetric["__other__"].testGetValue(), undefined);
     assert.strictEqual(
-      await labeledStringMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
+      labeledStringMetric["__other__"].testGetNumRecordedErrors(ErrorType.InvalidLabel),
       0
     );
 
     // TODO: bug 1691033 will allow us to change the code below this point,
     // once a custom uploader for testing will be available.
     ping.submit();
-    await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
+    const storedPings = Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -309,7 +274,7 @@ describe("LabeledMetric", function() {
     );
   });
 
-  it("test labeled boolean metric type", async function() {
+  it("test labeled boolean metric type", function() {
     const ping = new PingType({
       name: "test",
       includeClientId: true,
@@ -330,18 +295,17 @@ describe("LabeledMetric", function() {
     metric["label1"].set(false);
     metric["label2"].set(true);
 
-    let value = await metric["label1"].testGetValue();
+    let value = metric["label1"].testGetValue();
     assert.strictEqual(value, false);
 
-    value = await metric["label2"].testGetValue();
+    value = metric["label2"].testGetValue();
     assert.strictEqual(value, true);
 
     // TODO: bug 1691033 will allow us to change the code below this point,
     // once a custom uploader for testing will be available.
     ping.submit();
-    await Context.dispatcher.testBlockOnQueue();
 
-    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
+    const storedPings = Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
 
     // TODO: bug 1682282 will validate the payload schema.
@@ -357,7 +321,7 @@ describe("LabeledMetric", function() {
     );
   });
 
-  it("dynamic labels regex mismatch", async function() {
+  it("dynamic labels regex mismatch", function() {
     const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
@@ -383,10 +347,10 @@ describe("LabeledMetric", function() {
       labeledCounterMetric[label].add(1);
     }
 
-    assert.strictEqual(await labeledCounterMetric["__other__"].testGetValue(), labelsNotMatching.length);
+    assert.strictEqual(labeledCounterMetric["__other__"].testGetValue(), labelsNotMatching.length);
   });
 
-  it("dynamic labels regex allowed", async function() {
+  it("dynamic labels regex allowed", function() {
     const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
@@ -410,13 +374,13 @@ describe("LabeledMetric", function() {
 
     for (const label of labelsMatching) {
       labeledCounterMetric[label].add(1);
-      assert.strictEqual(await labeledCounterMetric[label].testGetValue(), 1);
+      assert.strictEqual(labeledCounterMetric[label].testGetValue(), 1);
     }
 
-    assert.strictEqual(await labeledCounterMetric["__other__"].testGetValue(), undefined);
+    assert.strictEqual(labeledCounterMetric["__other__"].testGetValue(), undefined);
   });
 
-  it("seen labels get reloaded across initializations", async function() {
+  it("seen labels get reloaded across initializations", function() {
     const labeledCounterMetric = new LabeledMetricType(
       {
         category: "telemetry",
@@ -431,20 +395,20 @@ describe("LabeledMetric", function() {
     for (let i = 1; i <= 16; i++) {
       const label = `label_${i}`;
       labeledCounterMetric[label].add(1);
-      assert.strictEqual(await labeledCounterMetric[label].testGetValue(), 1);
+      assert.strictEqual(labeledCounterMetric[label].testGetValue(), 1);
     }
 
     // Reset glean without clearing the storage.
-    await testResetGlean(testAppId, true, undefined, false);
+    testResetGlean(testAppId, true, undefined, false);
 
     // Try to store another label.
     labeledCounterMetric["new_label"].add(40);
 
     // Check that the old data is still there.
     for (let i = 1; i <= 16; i++) {
-      assert.strictEqual(await labeledCounterMetric[`label_${i}`].testGetValue(), 1);
+      assert.strictEqual(labeledCounterMetric[`label_${i}`].testGetValue(), 1);
     }
     // The new label lands in the __other__ bucket, due to too many labels.
-    assert.strictEqual(await labeledCounterMetric["__other__"].testGetValue(), 40);
+    assert.strictEqual(labeledCounterMetric["__other__"].testGetValue(), 40);
   });
 });

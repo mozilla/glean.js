@@ -4,7 +4,7 @@
 
 import assert from "assert";
 
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import EventMetricType from "../../../../src/core/metrics/types/event";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { ErrorType } from "../../../../src/core/error/error_type";
@@ -13,11 +13,11 @@ import { testResetGlean } from "../../../../src/core/testing";
 describe("EventMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
-  it("the API records to its storage engine", async function () {
+  it("the API records to its storage engine", function () {
     const click = new EventMetricType({
       category: "ui",
       name: "click",
@@ -30,7 +30,7 @@ describe("EventMetric", function() {
     click.record({"object_id": "buttonA", "other": "foo"});
     click.record({"object_id": "buttonB", "other": "bar"});
 
-    const snapshot = await click.testGetValue();
+    const snapshot = click.testGetValue();
     assert.ok(snapshot);
 
     const firstEvent = snapshot.find((e) => e.extra && e.extra["object_id"] == "buttonA");
@@ -50,7 +50,7 @@ describe("EventMetric", function() {
     assert.ok(firstEvent.timestamp <= secondEvent.timestamp);
   });
 
-  it("the API records when category is empty", async function () {
+  it("the API records when category is empty", function () {
     const click = new EventMetricType({
       category: "",
       name: "click",
@@ -62,7 +62,7 @@ describe("EventMetric", function() {
     click.record({"object_id": "buttonA"});
     click.record({"object_id": "buttonB"});
 
-    const snapshot = await click.testGetValue();
+    const snapshot = click.testGetValue();
     assert.ok(snapshot);
 
     const firstEvent = snapshot.find((e) => e.extra && e.extra["object_id"] == "buttonA");
@@ -78,7 +78,7 @@ describe("EventMetric", function() {
     assert.ok(firstEvent.timestamp <= secondEvent.timestamp);
   });
 
-  it("disabled events must not record data", async function () {
+  it("disabled events must not record data", function () {
     const click = new EventMetricType({
       category: "ui",
       name: "click",
@@ -89,11 +89,11 @@ describe("EventMetric", function() {
 
     click.record();
 
-    const snapshot = await click.testGetValue();
+    const snapshot = click.testGetValue();
     assert.strictEqual(snapshot, undefined);
   });
 
-  it("events should not record when upload is disabled", async function () {
+  it("events should not record when upload is disabled", function () {
     const click = new EventMetricType({
       category: "ui",
       name: "click",
@@ -103,21 +103,21 @@ describe("EventMetric", function() {
     }, ["test_name"]);
 
     click.record({"test_name": "event1"});
-    let snapshot = await click.testGetValue();
+    let snapshot = click.testGetValue();
     assert.strictEqual(snapshot?.length, 1);
 
     Glean.setUploadEnabled(false);
     click.record({"test_name": "event2"});
-    snapshot = await click.testGetValue();
+    snapshot = click.testGetValue();
     assert.strictEqual(snapshot, undefined);
 
     Glean.setUploadEnabled(true);
     click.record({"test_name": "event3"});
-    snapshot = await click.testGetValue();
+    snapshot = click.testGetValue();
     assert.strictEqual(snapshot?.length, 1);
   });
 
-  it("long extra values record an error", async function () {
+  it("long extra values record an error", function () {
     const metric = new EventMetricType({
       category: "telemetry",
       name: "test_event",
@@ -127,10 +127,10 @@ describe("EventMetric", function() {
     }, ["label"]);
 
     metric.record({ label: "01234567890".repeat(20) });
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1);
   });
 
-  it("attempting to record with an invalid key index records an error", async function () {
+  it("attempting to record with an invalid key index records an error", function () {
     const metric = new EventMetricType({
       category: "telemetry",
       name: "test_event",
@@ -140,10 +140,10 @@ describe("EventMetric", function() {
     }, ["label"]);
 
     metric.record({ nonRegisteredLabel: "01234567890" });
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1);
   });
 
-  it("records properly without optional arguments", async function () {
+  it("records properly without optional arguments", function () {
     const pings = ["store1", "store2"];
 
     const metric = new EventMetricType({
@@ -157,7 +157,7 @@ describe("EventMetric", function() {
     metric.record();
 
     for (const p of pings) {
-      const events = await metric.testGetValue(p);
+      const events = metric.testGetValue(p);
       assert.ok(events);
       assert.strictEqual(1, events.length);
       assert.strictEqual("telemetry", events[0].category);
@@ -166,7 +166,7 @@ describe("EventMetric", function() {
     }
   });
 
-  it("records properly with optional arguments", async function () {
+  it("records properly with optional arguments", function () {
     const pings = ["store1", "store2"];
 
     const metric = new EventMetricType({
@@ -184,7 +184,7 @@ describe("EventMetric", function() {
     metric.record(extras);
 
     for (const p of pings) {
-      const events = await metric.testGetValue(p);
+      const events = metric.testGetValue(p);
       assert.ok(events);
       assert.strictEqual(1, events.length);
       assert.strictEqual("telemetry", events[0].category);
@@ -198,7 +198,7 @@ describe("EventMetric", function() {
 
   it.skip("bug 1690253: send an event ping when it fills up");
 
-  it("extra keys must be recorded and truncated if needed", async function () {
+  it("extra keys must be recorded and truncated if needed", function () {
     const testEvent = new EventMetricType({
       category: "ui",
       name: "testEvent",
@@ -215,7 +215,7 @@ describe("EventMetric", function() {
 
     testEvent.record(extra);
 
-    const recordedEvents = await testEvent.testGetValue();
+    const recordedEvents = testEvent.testGetValue();
     assert.ok(recordedEvents);
     assert.strictEqual(1, recordedEvents.length);
     const event = recordedEvents[0];
@@ -230,7 +230,7 @@ describe("EventMetric", function() {
     );
   });
 
-  it("all types of event keys are recorded correctly", async function () {
+  it("all types of event keys are recorded correctly", function () {
     const event = new EventMetricType<{
       "string"?: string,
       "boolean"?: boolean,
@@ -256,7 +256,7 @@ describe("EventMetric", function() {
     // Record again without extras
     event.record();
 
-    const snapshot = await event.testGetValue();
+    const snapshot = event.testGetValue();
     assert.ok(snapshot);
     assert.strictEqual(snapshot.length, 3);
 
@@ -276,7 +276,7 @@ describe("EventMetric", function() {
     assert.ok(!extras3);
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new EventMetricType({
       category: "telemetry",
       name: "test",
@@ -294,7 +294,7 @@ describe("EventMetric", function() {
     // @ts-ignore
     metric.record({ "key1": { "not": "valid" }});
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });

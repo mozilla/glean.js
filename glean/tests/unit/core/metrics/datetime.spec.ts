@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import DatetimeMetricType, { InternalDatetimeMetricType, DatetimeMetric } from "../../../../src/core/metrics/types/datetime";
 
 import TimeUnit from "../../../../src/core/metrics/time_unit";
@@ -23,8 +23,8 @@ describe("DatetimeMetric", function() {
     sandbox.restore();
   });
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
   it("datetime internal representation validation works as expected", function () {
@@ -56,7 +56,7 @@ describe("DatetimeMetric", function() {
     assert.doesNotThrow(() => new DatetimeMetric({ timeUnit: "hour", timezone: 300, date: "2021-01-04T16:00:00.000Z" }));
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", function() {
     const metric = new DatetimeMetricType({
       category: "aCategory",
       name: "aDatetimeMetric",
@@ -65,10 +65,10 @@ describe("DatetimeMetric", function() {
       disabled: false
     }, "millisecond");
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", function() {
     Glean.setUploadEnabled(false);
 
     const metric = new DatetimeMetricType({
@@ -80,11 +80,11 @@ describe("DatetimeMetric", function() {
     }, "millisecond");
 
     metric.set();
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("ping payload is correct", async function() {
-    // Monkeypatch this functions to have a deterministic return value anywhere in the world.
+  it("ping payload is correct", function() {
+    // Monkey-patch this functions to have a deterministic return value anywhere in the world.
     sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
     sandbox.stub(Date.prototype, "toISOString").callsFake(() => "1995-05-25T03:15:45.385Z");
 
@@ -97,9 +97,9 @@ describe("DatetimeMetric", function() {
     }, "minute");
 
     metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
-    assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15+05:00");
+    assert.strictEqual(metric.testGetValueAsString("aPing"), "1995-05-25T08:15+05:00");
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "datetime": {
         "aCategory.aDatetimeMetric": "1995-05-25T08:15+05:00"
@@ -107,8 +107,8 @@ describe("DatetimeMetric", function() {
     });
   });
 
-  it("set properly sets the value in all pings", async function() {
-    // Monkeypatch this functions to have a deterministic return value anywhere in the world.
+  it("set properly sets the value in all pings", function() {
+    // Monkey-patch this functions to have a deterministic return value anywhere in the world.
     sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
     sandbox.stub(Date.prototype, "toISOString")
       .onFirstCall().returns("1995-05-25T03:15:45.385Z")
@@ -124,25 +124,25 @@ describe("DatetimeMetric", function() {
     }, "millisecond");
 
     metric.set(new Date(1995, 4, 25, 8, 15, 45, 385));
-    assert.strictEqual(await metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385+05:00");
-    assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1995-05-25T08:15:45.385+05:00");
-    assert.strictEqual(await metric.testGetValueAsString("threePing"), "1995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(metric.testGetValueAsString("aPing"), "1995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(metric.testGetValueAsString("twoPing"), "1995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(metric.testGetValueAsString("threePing"), "1995-05-25T08:15:45.385+05:00");
 
     // A date prior to the UNIX epoch
     metric.set(new Date(1895, 4, 25, 8, 15, 45, 385));
-    assert.strictEqual(await metric.testGetValueAsString("aPing"), "1895-05-25T08:15:45.385+05:00");
-    assert.strictEqual(await metric.testGetValueAsString("twoPing"), "1895-05-25T08:15:45.385+05:00");
-    assert.strictEqual(await metric.testGetValueAsString("threePing"), "1895-05-25T08:15:45.385+05:00");
+    assert.strictEqual(metric.testGetValueAsString("aPing"), "1895-05-25T08:15:45.385+05:00");
+    assert.strictEqual(metric.testGetValueAsString("twoPing"), "1895-05-25T08:15:45.385+05:00");
+    assert.strictEqual(metric.testGetValueAsString("threePing"), "1895-05-25T08:15:45.385+05:00");
 
     // A date following 2038 (the extent of signed 32-bits after UNIX epoch)
     metric.set(new Date(2995, 4, 25, 8, 15, 45, 385));
-    assert.strictEqual(await metric.testGetValueAsString("aPing"), "2995-05-25T08:15:45.385+05:00");
-    assert.strictEqual(await metric.testGetValueAsString("twoPing"), "2995-05-25T08:15:45.385+05:00");
-    assert.strictEqual(await metric.testGetValueAsString("threePing"), "2995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(metric.testGetValueAsString("aPing"), "2995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(metric.testGetValueAsString("twoPing"), "2995-05-25T08:15:45.385+05:00");
+    assert.strictEqual(metric.testGetValueAsString("threePing"), "2995-05-25T08:15:45.385+05:00");
   });
 
-  it("truncation works", async function() {
-    // Monkeypatch this functions to have a deterministic return value anywhere in the world.
+  it("truncation works", function() {
+    // Monkey-patch this functions to have a deterministic return value anywhere in the world.
     sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
     sandbox.stub(Date.prototype, "toISOString").callsFake(() => "1985-07-03T07:09:14.001Z");
 
@@ -188,12 +188,12 @@ describe("DatetimeMetric", function() {
       }, testCase.unit);
 
       metric.set(date);
-      assert.strictEqual(await metric.testGetValueAsString("aPing"), testCase.expected);
+      assert.strictEqual(metric.testGetValueAsString("aPing"), testCase.expected);
     }
   });
 
-  it("get from different timezone than recording timezone keeps the original time intact", async function() {
-    // Monkeypatch this functions to have a deterministic return value anywhere in the world.
+  it("get from different timezone than recording timezone keeps the original time intact", function() {
+    // Monkey-patch this functions to have a deterministic return value anywhere in the world.
     sandbox.stub(Date.prototype, "getTimezoneOffset").callsFake(() => -300);
 
     // Use the internal method here so we can manually record.
@@ -210,17 +210,17 @@ describe("DatetimeMetric", function() {
       timezone: 60,
       date: "2021-01-07T14:41:26.312Z"
     });
-    await Context.metricsDatabase.record(metric, concreteMetric);
+    Context.metricsDatabase.record(metric, concreteMetric);
 
-    // 1. The monkeypatched timezone it -300 (+05:00)
+    // 1. The monkey-patched timezone it -300 (+05:00)
     // 2. The timezone manually set on the metric above is 60 (-01:00)
     // 3. `date` is in UTC
     // 4. This means that the real time at the time of recording is 13:41
-    const recorded = await metric.testGetValueAsString("aPing");
+    const recorded = metric.testGetValueAsString("aPing");
     assert.strictEqual(recorded, "2021-01-07T13:41:26.312-01:00");
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new DatetimeMetricType({
       category: "aCategory",
       name: "aDatetimeMetric",
@@ -233,7 +233,7 @@ describe("DatetimeMetric", function() {
     // @ts-ignore
     metric.set("not date");
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });

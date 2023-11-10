@@ -15,15 +15,15 @@ const sandbox = sinon.createSandbox();
 describe("CustomDistributionMetric - Exponential", function () {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function () {
-    await testResetGlean(testAppId);
+  beforeEach(function () {
+    testResetGlean(testAppId);
   });
 
   afterEach(function () {
     sandbox.restore();
   });
 
-  it("serializer should correctly serialize custom distribution", async function () {
+  it("serializer should correctly serialize custom distribution", function () {
     const metric = new CustomDistributionMetricType(
       {
         category: "aCategory",
@@ -40,7 +40,7 @@ describe("CustomDistributionMetric - Exponential", function () {
 
     metric.accumulateSamples([50]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
     assert.equal(snapshot?.sum, 50);
   });
 
@@ -63,8 +63,8 @@ describe("CustomDistributionMetric - Exponential", function () {
 
     metric.accumulateSamples([50]);
 
-    storesNames.forEach(async (store) => {
-      const snapshot = await metric.testGetValue(store);
+    storesNames.forEach((store) => {
+      const snapshot = metric.testGetValue(store);
 
       // Check that we got the right sum of samples.
       assert.equal(snapshot?.sum, 50);
@@ -76,7 +76,7 @@ describe("CustomDistributionMetric - Exponential", function () {
     });
   });
 
-  it("the accumulate samples api correctly stores values", async function () {
+  it("the accumulate samples api correctly stores values", function () {
     const metric = new CustomDistributionMetricType(
       {
         category: "aCategory",
@@ -95,7 +95,7 @@ describe("CustomDistributionMetric - Exponential", function () {
     // negative values to not trigger error reporting.
     metric.accumulateSamples([1, 2, 3]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
 
     // Check that we got the right sum of samples.
     assert.equal(snapshot?.sum, 6);
@@ -111,10 +111,10 @@ describe("CustomDistributionMetric - Exponential", function () {
     assert.equal(1, snapshot?.values[3]);
 
     // No errors should be reported.
-    assert.equal(0, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
+    assert.equal(0, metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
-  it("the accumulate samples api correctly handles negative values", async function () {
+  it("the accumulate samples api correctly handles negative values", function () {
     const metric = new CustomDistributionMetricType(
       {
         category: "aCategory",
@@ -132,7 +132,7 @@ describe("CustomDistributionMetric - Exponential", function () {
     // Accumulate the samples.
     metric.accumulateSamples([-1, 1, 2, 3]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
 
     // Check that we got the right sum of samples.
     assert.equal(snapshot?.sum, 6);
@@ -141,10 +141,10 @@ describe("CustomDistributionMetric - Exponential", function () {
     assert.equal(snapshot?.count, 3);
 
     // 1 error should be reported.
-    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
+    assert.equal(1, metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
-  it("json snapshotting works", async function () {
+  it("json snapshotting works", function () {
     const metric = new CustomDistributionMetricType(
       {
         category: "aCategory",
@@ -169,7 +169,7 @@ describe("CustomDistributionMetric - Exponential", function () {
       },
     };
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
     assert.deepStrictEqual(snapshot, expectedJson);
   });
 });

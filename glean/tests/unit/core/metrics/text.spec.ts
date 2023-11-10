@@ -6,7 +6,7 @@ import assert from "assert";
 import { Context } from "../../../../src/core/context";
 import { ErrorType } from "../../../../src/core/error/error_type";
 
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import TextMetricType, { TEXT_MAX_LENGTH } from "../../../../src/core/metrics/types/text";
 import { testResetGlean } from "../../../../src/core/testing";
@@ -14,11 +14,11 @@ import { testResetGlean } from "../../../../src/core/testing";
 describe("TextMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", function() {
     const metric = new TextMetricType({
       category: "aCategory",
       name: "aTextMetric",
@@ -27,10 +27,10 @@ describe("TextMetric", function() {
       disabled: false
     });
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", function() {
     Glean.setUploadEnabled(false);
 
     const metric = new TextMetricType({
@@ -42,10 +42,10 @@ describe("TextMetric", function() {
     });
 
     metric.set("some value");
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("ping payload is correct", async function() {
+  it("ping payload is correct", function() {
     const metric = new TextMetricType({
       category: "aCategory",
       name: "aTextMetric",
@@ -62,9 +62,9 @@ describe("TextMetric", function() {
 
     for (const value of validValues) {
       metric.set(value);
-      assert.strictEqual(await metric.testGetValue("aPing"), value);
+      assert.strictEqual(metric.testGetValue("aPing"), value);
 
-      const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+      const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
       assert.deepStrictEqual(snapshot, {
         "text": {
           "aCategory.aTextMetric": value
@@ -73,7 +73,7 @@ describe("TextMetric", function() {
     }
   });
 
-  it("set properly sets the value in all pings", async function() {
+  it("set properly sets the value in all pings", function() {
     const metric = new TextMetricType({
       category: "aCategory",
       name: "aTextMetric",
@@ -83,12 +83,12 @@ describe("TextMetric", function() {
     });
 
     metric.set("some value");
-    assert.strictEqual(await metric.testGetValue("aPing"), "some value");
-    assert.strictEqual(await metric.testGetValue("twoPing"), "some value");
-    assert.strictEqual(await metric.testGetValue("threePing"), "some value");
+    assert.strictEqual(metric.testGetValue("aPing"), "some value");
+    assert.strictEqual(metric.testGetValue("twoPing"), "some value");
+    assert.strictEqual(metric.testGetValue("threePing"), "some value");
   });
 
-  it("truncates when text exceeds maximum length and records errors", async function () {
+  it("truncates when text exceeds maximum length and records errors", function () {
     const metric = new TextMetricType({
       category: "aCategory",
       name: "aTextMetric",
@@ -101,13 +101,13 @@ describe("TextMetric", function() {
     metric.set(testText);
     const truncated = testText.substr(0, TEXT_MAX_LENGTH);
 
-    assert.strictEqual(await metric.testGetValue("aPing"), truncated);
+    assert.strictEqual(metric.testGetValue("aPing"), truncated);
     assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1
+      metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1
     );
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new TextMetricType({
       category: "aCategory",
       name: "aTextMetric",
@@ -120,7 +120,7 @@ describe("TextMetric", function() {
     // @ts-ignore
     metric.set({ "not": "string" });
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });
