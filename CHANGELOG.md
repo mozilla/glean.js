@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.5...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0-pre.0...main)
+
+# v3.0.0-pre.0 (2023-11-10)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v2.0.5...v3.0.0-pre.0)
 
 * [#1810](https://github.com/mozilla/glean.js/pull/1810): **BREAKING CHANGE**: Drop support for QT.
 * [#1811](https://github.com/mozilla/glean.js/pull/1811): Update `glean_parser` to `v10.0.3`.
