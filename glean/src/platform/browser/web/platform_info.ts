@@ -2,10 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type PlatformInfoSync from "../../../core/platform_info/sync.js";
-import { KnownOperatingSystems } from "../../../core/platform_info/shared.js";
+import type PlatformInfo from "../../../core/platform_info.js";
+import { KnownOperatingSystems } from "../../../core/platform_info.js";
 
-const BrowserPlatformInfo: PlatformInfoSync = {
+const BrowserPlatformInfo: PlatformInfo = {
   os(): KnownOperatingSystems {
     let ua;
     if (!!navigator && !!navigator.userAgent) {
