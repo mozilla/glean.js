@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 export default (platform, entry) => {
-  const target = ["webext", "web"].includes(platform) ? "web" : null;
+  const target = platform === "web" ? "web" : null;
 
   return {
     target,

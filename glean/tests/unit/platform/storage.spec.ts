@@ -9,9 +9,7 @@ import type Store from "../../../src/core/storage/async";
 import type { OptionalAsync } from "../../../src/core/types";
 import type { JSONValue } from "../../../src/core/utils";
 
-import { firefoxDriver, setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
 import TestStore from "../../../src/platform/test/storage";
-import WebExtStore from "../../../src/platform/browser/webext/storage";
 import { isUndefined } from "../../../src/core/utils";
 
 
@@ -26,40 +24,6 @@ const asyncStores: {
 } = {
   "TestStore": {
     initializeStore: (): TestStore => new TestStore("unused")
-  },
-  "WebExtStore": {
-    initializeStore: (): WebExtStore => new WebExtStore("test"),
-    before: async () => {
-      await setupFirefox();
-      // Browser needs to be global so that WebExtStore will be built and able to use it.
-      global.browser = {
-        storage: {
-          // We need to ignore type checks because TS will complain about
-          // not defining the `remove` method, which is not necessary for our tests.
-          //
-          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
-          local: {
-            // We need to ignore type checks for the following properties because they do not
-            // match perfectly with what is described by out web ext types package.
-            // Moreover, it will also complain about not defining the `clear` and `remove`
-            // methods, but these are not necessary for our tests.
-            //
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            get: webExtensionAPIProxyBuilder(firefoxDriver, ["storage", "local", "get"]),
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            set: webExtensionAPIProxyBuilder(firefoxDriver, ["storage", "local", "set"]),
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            clear: webExtensionAPIProxyBuilder(firefoxDriver, ["storage", "local", "clear"])
-          }
-        }
-      };
-      await browser.storage.local.clear();
-    },
-    afterAll: async () => await firefoxDriver.quit()
   }
 };
 

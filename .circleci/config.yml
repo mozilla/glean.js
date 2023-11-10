@@ -101,29 +101,6 @@ jobs:
           name: Build docs
           command: npm --prefix ./glean run build:docs
 
-  sample-webext-test:
-    docker:
-      - image: cimg/python:<< pipeline.parameters.python-version >>
-    steps:
-      - checkout
-      - install-node
-      - run:
-          name: Install JavaScript dependencies for Glean
-          command: npm --prefix ./glean install
-      - run:
-          name: Install Typescript dependencies for the TS web extension sample
-          command: |
-            npm --prefix ./samples/browser/webext install
-            npm --prefix ./samples/browser/webext run link:glean
-      - run:
-          name: Build the TS web extension sample
-          command: |
-            npm --prefix ./samples/browser/webext run build
-      - run:
-          name: Run TS web extension sample test
-          command: |
-            export PATH=.:$PATH && npm --prefix ./samples/browser/webext run test
-
   browser-compat-smoke-tests:
     docker:
       - image: cimg/python:<< pipeline.parameters.python-version >>
@@ -235,16 +212,12 @@ workflows:
       - test:
           requires:
             - build
-      - sample-webext-test:
-          requires:
-            - test
       - hold:
           type: approval
           requires:
             - lint
             - build
             - test
-            - sample-webext-test
           filters:
             branches:
               ignore:

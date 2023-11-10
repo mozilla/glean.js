@@ -37,10 +37,6 @@ Runs all necessary lints on the code. This includes:
 
 Runs unit and integration test on the `@mozilla/glean` library.
 
-### `sample-webext-test`
-
-Runs unit tests on the Glean.js sample apps.
-
 ### `check-size`
 
 _Requires approval_.

@@ -19,7 +19,3 @@ All of the listed versions are explicitly tested.
 
 The Opera and Brave browsers are not explicitly tested, however are unofficially supported
 as Chromium based browsers.
-
-## Web Extensions
-
-> TODO: see [Bug 1752549](https://bugzilla.mozilla.org/show_bug.cgi?id=1752549)
