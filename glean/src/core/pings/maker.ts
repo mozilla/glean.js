@@ -2,24 +2,70 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { ClientInfo, PingInfo, PingPayload } from "../../pings/ping_payload.js";
-import type CommonPingData from "../common_ping_data.js";
-import type MetricsDatabaseSync from "../../metrics/database/sync.js";
-import type { EventsDatabaseSync } from "../../metrics/events_database/sync.js";
-import type PingsDatabaseSync from "../database/sync.js";
-import type { StartTimeMetricData } from "./shared.js";
+import type { ClientInfo, PingInfo, PingPayload } from "../pings/ping_payload.js";
+import type CommonPingData from "./common_ping_data.js";
 
-import { GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE } from "../../constants.js";
-import { CounterMetric } from "../../metrics/types/counter.js";
-import { InternalCounterMetricType as CounterMetricType } from "../../metrics/types/counter.js";
-import { DatetimeMetric } from "../../metrics/types/datetime.js";
-import { InternalDatetimeMetricType as DatetimeMetricType } from "../../metrics/types/datetime.js";
-import TimeUnit from "../../metrics/time_unit.js";
-import CoreEventsSync from "../../events/sync.js";
-import { Lifetime } from "../../metrics/lifetime.js";
-import { Context } from "../../context.js";
-import log, { LoggingLevel } from "../../log.js";
-import { PINGS_MAKER_LOG_TAG, getPingHeaders, makePath } from "./shared.js";
+import { Context } from "../context.js";
+import log, { LoggingLevel } from "../log.js";
+import TimeUnit from "../metrics/time_unit.js";
+import { Lifetime } from "../metrics/lifetime.js";
+import { CounterMetric } from "../metrics/types/counter.js";
+import { InternalCounterMetricType as CounterMetricType } from "../metrics/types/counter.js";
+import { DatetimeMetric } from "../metrics/types/datetime.js";
+import { InternalDatetimeMetricType as DatetimeMetricType } from "../metrics/types/datetime.js";
+import { GLEAN_VERSION, PING_INFO_STORAGE, CLIENT_INFO_STORAGE, GLEAN_SCHEMA_VERSION } from "../constants.js";
+
+const PINGS_MAKER_LOG_TAG = "core.Pings.Maker";
+
+/// INTERFACES ///
+export interface StartTimeMetricData {
+  startTimeMetric: DatetimeMetricType;
+  startTime: DatetimeMetric;
+}
+
+/// HELPERS ///
+/**
+ * Build a pings submission path.
+ *
+ * @param identifier The pings UUID identifier.
+ * @param ping  The ping to build a path for.
+ * @returns The final submission path.
+ */
+export function makePath(identifier: string, ping: CommonPingData): string {
+  // We are sure that the applicationId is not `undefined` at this point,
+  // this function is only called when submitting a ping
+  // and that function return early when Glean is not initialized.
+  return `/submit/${Context.applicationId}/${ping.name}/${GLEAN_SCHEMA_VERSION}/${identifier}`;
+}
+
+/**
+ * Gathers all the headers to be included to the final ping request.
+ *
+ * This guarantees that if headers are disabled after the ping collection,
+ * ping submission will still contain the desired headers.
+ *
+ * The current headers gathered here are:
+ * - [X-Debug-ID]
+ * - [X-Source-Tags]
+ *
+ * @returns An object containing all the headers and their values
+ *          or `undefined` in case no custom headers were set.
+ */
+export function getPingHeaders(): Record<string, string> | undefined {
+  const headers: Record<string, string> = {};
+
+  if (Context.config.debugViewTag) {
+    headers["X-Debug-ID"] = Context.config.debugViewTag;
+  }
+
+  if (Context.config.sourceTags) {
+    headers["X-Source-Tags"] = Context.config.sourceTags.toString();
+  }
+
+  if (Object.keys(headers).length > 0) {
+    return headers;
+  }
+}
 
 /**
  * Gets the start time metric and its currently stored data.
@@ -41,10 +87,11 @@ function getStartTimeMetricAndData(ping: CommonPingData): StartTimeMetricData {
 
   // "startTime" is the time the ping was generated the last time.
   // If not available, we use the date the Glean object was initialized.
-  const startTimeData = (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
+  const startTimeData = Context.metricsDatabase.getMetric(
     PING_INFO_STORAGE,
     startTimeMetric
   );
+
   let startTime: DatetimeMetric;
   if (startTimeData) {
     startTime = new DatetimeMetric(startTimeData);
@@ -73,7 +120,7 @@ export function getSequenceNumber(ping: CommonPingData): number {
     disabled: false
   });
 
-  const currentSeqData = (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
+  const currentSeqData = Context.metricsDatabase.getMetric(
     PING_INFO_STORAGE,
     seq
   );
@@ -150,7 +197,7 @@ export function buildPingInfoSection(ping: CommonPingData, reason?: string): Pin
  * @returns The final `client_info` section in its payload format.
  */
 export function buildClientInfoSection(ping: CommonPingData): ClientInfo {
-  let clientInfo = (Context.metricsDatabase as MetricsDatabaseSync).getPingMetrics(
+  let clientInfo = Context.metricsDatabase.getPingMetrics(
     CLIENT_INFO_STORAGE,
     true
   );
@@ -185,8 +232,8 @@ export function buildClientInfoSection(ping: CommonPingData): ClientInfo {
 export function collectPing(ping: CommonPingData, reason?: string): PingPayload | undefined {
   // !IMPORTANT! Events data needs to be collected BEFORE other metrics,
   // because events collection may result in recording of error metrics.
-  const eventsData = (Context.eventsDatabase as EventsDatabaseSync).getPingEvents(ping.name, true);
-  const metricsData = (Context.metricsDatabase as MetricsDatabaseSync).getPingMetrics(
+  const eventsData = Context.eventsDatabase.getPingEvents(ping.name, true);
+  const metricsData = Context.metricsDatabase.getPingMetrics(
     ping.name,
     true
   );
@@ -235,37 +282,16 @@ export function collectAndStorePing(
     return;
   }
 
-  let modifiedPayload;
-  try {
-    modifiedPayload = CoreEventsSync.afterPingCollection.trigger(collectedPayload);
-  } catch (e) {
-    log(
-      PINGS_MAKER_LOG_TAG,
-      [
-        `Error while attempting to modify ping payload for the "${ping.name}" ping using`,
-        `the ${JSON.stringify(
-          CoreEventsSync.afterPingCollection.registeredPluginIdentifier
-        )} plugin.`,
-        "Ping will not be submitted. See more logs below.\n\n",
-        e
-      ],
-      LoggingLevel.Error
-    );
-
-    return;
-  }
-
   if (Context.config.logPings) {
     log(PINGS_MAKER_LOG_TAG, JSON.stringify(collectedPayload, null, 2), LoggingLevel.Info);
   }
 
-  const finalPayload = modifiedPayload ? modifiedPayload : collectedPayload;
   const headers = getPingHeaders();
 
-  (Context.pingsDatabase as PingsDatabaseSync).recordPing(
+  Context.pingsDatabase.recordPing(
     makePath(identifier, ping),
     identifier,
-    finalPayload,
+    collectedPayload,
     headers
   );
 }
