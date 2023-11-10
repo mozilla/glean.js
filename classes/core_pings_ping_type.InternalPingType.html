@@ -29,7 +29,7 @@
 <ul class="tsd-hierarchy">
 <li><a href="../interfaces/core_pings_common_ping_data.default.html" class="tsd-signature-type tsd-kind-interface">default</a></li></ul></section><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L28">src/core/pings/ping_type.ts:28</a></li></ul></aside>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L28">src/core/pings/ping_type.ts:28</a></li></ul></aside>
 <section class="tsd-panel-group tsd-index-group">
 <section class="tsd-panel tsd-index-panel">
 <details class="tsd-index-content tsd-index-accordion" open><summary class="tsd-accordion-summary tsd-index-summary">
@@ -43,6 +43,7 @@
 <h3 class="tsd-index-heading">Properties</h3>
 <div class="tsd-index-list"><a href="core_pings_ping_type.InternalPingType.html#includeClientId" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>include<wbr/>Client<wbr/>Id</span></a>
 <a href="core_pings_ping_type.InternalPingType.html#name" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>name</span></a>
+<a href="core_pings_ping_type.InternalPingType.html#preciseTimestamps" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>precise<wbr/>Timestamps?</span></a>
 <a href="core_pings_ping_type.InternalPingType.html#reasonCodes" class="tsd-index-link"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>reason<wbr/>Codes</span></a>
 <a href="core_pings_ping_type.InternalPingType.html#rejectTestPromiseFunction" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>reject<wbr/>Test<wbr/>Promise<wbr/>Function?</span></a>
 <a href="core_pings_ping_type.InternalPingType.html#resolveTestPromiseFunction" class="tsd-index-link tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>resolve<wbr/>Test<wbr/>Promise<wbr/>Function?</span></a>
@@ -73,7 +74,7 @@
 <h5><span class="tsd-kind-parameter">meta</span>: <a href="../interfaces/core_pings_common_ping_data.default.html" class="tsd-signature-type tsd-kind-interface">default</a></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <a href="core_pings_ping_type.InternalPingType.html" class="tsd-signature-type tsd-kind-class">InternalPingType</a></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L40">src/core/pings/ping_type.ts:40</a></li></ul></aside></li></ul></section></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L43">src/core/pings/ping_type.ts:43</a></li></ul></aside></li></ul></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Properties</h2>
 <section class="tsd-panel tsd-member"><a id="includeClientId" class="tsd-anchor"></a>
@@ -81,40 +82,46 @@
 <div class="tsd-signature"><span class="tsd-kind-property">include<wbr/>Client<wbr/>Id</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/core_pings_common_ping_data.default.html">default</a>.<a href="../interfaces/core_pings_common_ping_data.default.html#includeClientId">includeClientId</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L30">src/core/pings/ping_type.ts:30</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L30">src/core/pings/ping_type.ts:30</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="name" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>name</span><a href="#name" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">name</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/core_pings_common_ping_data.default.html">default</a>.<a href="../interfaces/core_pings_common_ping_data.default.html#name">name</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L29">src/core/pings/ping_type.ts:29</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L29">src/core/pings/ping_type.ts:29</a></li></ul></aside></section>
+<section class="tsd-panel tsd-member"><a id="preciseTimestamps" class="tsd-anchor"></a>
+<h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagOptional">Optional</code> <code class="tsd-tag ts-flagReadonly">Readonly</code> <span>precise<wbr/>Timestamps</span><a href="#preciseTimestamps" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
+<div class="tsd-signature"><span class="tsd-kind-property">precise<wbr/>Timestamps</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
+<p>Implementation of <a href="../interfaces/core_pings_common_ping_data.default.html">default</a>.<a href="../interfaces/core_pings_common_ping_data.default.html#preciseTimestamps">preciseTimestamps</a></p>
+<ul>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L35">src/core/pings/ping_type.ts:35</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="reasonCodes" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>reason<wbr/>Codes</span><a href="#reasonCodes" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">reason<wbr/>Codes</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">string</span><span class="tsd-signature-symbol">[]</span></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/core_pings_common_ping_data.default.html">default</a>.<a href="../interfaces/core_pings_common_ping_data.default.html#reasonCodes">reasonCodes</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L32">src/core/pings/ping_type.ts:32</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L32">src/core/pings/ping_type.ts:32</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="rejectTestPromiseFunction" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagOptional">Optional</code> <span>reject<wbr/>Test<wbr/>Promise<wbr/>Function</span><a href="#rejectTestPromiseFunction" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">reject<wbr/>Test<wbr/>Promise<wbr/>Function</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type ">PromiseCallback</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L37">src/core/pings/ping_type.ts:37</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L40">src/core/pings/ping_type.ts:40</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="resolveTestPromiseFunction" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagOptional">Optional</code> <span>resolve<wbr/>Test<wbr/>Promise<wbr/>Function</span><a href="#resolveTestPromiseFunction" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">resolve<wbr/>Test<wbr/>Promise<wbr/>Function</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type ">PromiseCallback</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L36">src/core/pings/ping_type.ts:36</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L39">src/core/pings/ping_type.ts:39</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member"><a id="sendIfEmpty" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagReadonly">Readonly</code> <span>send<wbr/>If<wbr/>Empty</span><a href="#sendIfEmpty" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">send<wbr/>If<wbr/>Empty</span><span class="tsd-signature-symbol">:</span> <span class="tsd-signature-type">boolean</span></div><aside class="tsd-sources">
 <p>Implementation of <a href="../interfaces/core_pings_common_ping_data.default.html">default</a>.<a href="../interfaces/core_pings_common_ping_data.default.html#sendIfEmpty">sendIfEmpty</a></p>
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L31">src/core/pings/ping_type.ts:31</a></li></ul></aside></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L31">src/core/pings/ping_type.ts:31</a></li></ul></aside></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="testCallback" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <code class="tsd-tag ts-flagOptional">Optional</code> <span>test<wbr/>Callback</span><a href="#testCallback" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <div class="tsd-signature"><span class="tsd-kind-property">test<wbr/>Callback</span><span class="tsd-signature-symbol">?:</span> <span class="tsd-signature-type ">ValidatorFunction</span></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L38">src/core/pings/ping_type.ts:38</a></li></ul></aside></section></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L41">src/core/pings/ping_type.ts:41</a></li></ul></aside></section></section>
 <section class="tsd-panel-group tsd-member-group">
 <h2>Methods</h2>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="internalSubmit" class="tsd-anchor"></a>
@@ -131,7 +138,7 @@
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">testResolver</span>: <span class="tsd-signature-type ">PromiseCallback</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L85">src/core/pings/ping_type.ts:85</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L91">src/core/pings/ping_type.ts:91</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member tsd-is-private"><a id="internalSubmitSync" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><code class="tsd-tag ts-flagPrivate">Private</code> <span>internal<wbr/>Submit<wbr/>Sync</span><a href="#internalSubmitSync" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures tsd-is-private">
@@ -146,7 +153,7 @@
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">testResolver</span>: <span class="tsd-signature-type ">PromiseCallback</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L166">src/core/pings/ping_type.ts:166</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L172">src/core/pings/ping_type.ts:172</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="submit" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>submit</span><a href="#submit" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -159,7 +166,7 @@
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">reason</span>: <span class="tsd-signature-type">string</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L48">src/core/pings/ping_type.ts:48</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L54">src/core/pings/ping_type.ts:54</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="submitAsync" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>submit<wbr/>Async</span><a href="#submitAsync" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -172,7 +179,7 @@
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">reason</span>: <span class="tsd-signature-type">string</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L57">src/core/pings/ping_type.ts:57</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L63">src/core/pings/ping_type.ts:63</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="submitSync" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>submit<wbr/>Sync</span><a href="#submitSync" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -185,7 +192,7 @@
 <h5><code class="tsd-tag ts-flagOptional">Optional</code> <span class="tsd-kind-parameter">reason</span>: <span class="tsd-signature-type">string</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type">void</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L138">src/core/pings/ping_type.ts:138</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L144">src/core/pings/ping_type.ts:144</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="submitUndispatched" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>submit<wbr/>Undispatched</span><a href="#submitUndispatched" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -212,7 +219,7 @@
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4>
 <div class="tsd-comment tsd-typography"></div><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L103">src/core/pings/ping_type.ts:103</a></li></ul></aside></li></ul></section>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L109">src/core/pings/ping_type.ts:109</a></li></ul></aside></li></ul></section>
 <section class="tsd-panel tsd-member"><a id="testBeforeNextSubmit" class="tsd-anchor"></a>
 <h3 class="tsd-anchor-link"><span>test<wbr/>Before<wbr/>Next<wbr/>Submit</span><a href="#testBeforeNextSubmit" aria-label="Permalink" class="tsd-anchor-icon"><svg viewBox="0 0 24 24"><use href="#icon-anchor"></use></svg></a></h3>
 <ul class="tsd-signatures">
@@ -225,7 +232,7 @@
 <h5><span class="tsd-kind-parameter">callbackFn</span>: <span class="tsd-signature-type ">ValidatorFunction</span></h5></li></ul></div>
 <h4 class="tsd-returns-title">Returns <span class="tsd-signature-type ">Promise</span><span class="tsd-signature-symbol">&lt;</span><span class="tsd-signature-type">void</span><span class="tsd-signature-symbol">&gt;</span></h4><aside class="tsd-sources">
 <ul>
-<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/ad3361ac/glean/src/core/pings/ping_type.ts#L201">src/core/pings/ping_type.ts:201</a></li></ul></aside></li></ul></section></section></div>
+<li>Defined in <a href="https://github.com/mozilla/glean.js/blob/1ac7ab70/glean/src/core/pings/ping_type.ts#L207">src/core/pings/ping_type.ts:207</a></li></ul></aside></li></ul></section></section></div>
 <div class="col-sidebar">
 <div class="page-menu">
 <div class="tsd-navigation settings">
@@ -248,6 +255,7 @@
 <li><a href="#constructor" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-512"></use></svg><span>constructor</span></a></li>
 <li><a href="#includeClientId" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>include<wbr/>Client<wbr/>Id</span></a></li>
 <li><a href="#name" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>name</span></a></li>
+<li><a href="#preciseTimestamps" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>precise<wbr/>Timestamps</span></a></li>
 <li><a href="#reasonCodes" class=""><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>reason<wbr/>Codes</span></a></li>
 <li><a href="#rejectTestPromiseFunction" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>reject<wbr/>Test<wbr/>Promise<wbr/>Function</span></a></li>
 <li><a href="#resolveTestPromiseFunction" class="tsd-is-private"><svg class="tsd-kind-icon" viewBox="0 0 24 24"><use href="#icon-1024"></use></svg><span>resolve<wbr/>Test<wbr/>Promise<wbr/>Function</span></a></li>
