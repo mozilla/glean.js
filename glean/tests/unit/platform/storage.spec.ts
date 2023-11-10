@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import sqlite3 from "sqlite3";
 import "fake-indexeddb/auto";
 
 import type Store from "../../../src/core/storage/async";
@@ -12,43 +11,9 @@ import type { JSONValue } from "../../../src/core/utils";
 
 import { firefoxDriver, setupFirefox, webExtensionAPIProxyBuilder } from "./utils/webext";
 import TestStore from "../../../src/platform/test/storage";
-import QMLStore from "../../../src/platform/qt/storage";
 import WebExtStore from "../../../src/platform/browser/webext/storage";
 import { isUndefined } from "../../../src/core/utils";
 
-/**
- * QMLStore implementation, but instead of relying on QML's LocalStorage
- * executes queries using the Node.js sqlite3 package.
- */
-const TEST_DATABASE_NAME = "TestGlean";
-let QMLMockDB: sqlite3.Database;
-await new Promise<void>(resolve =>
-  QMLMockDB = new sqlite3.Database(`/tmp/${TEST_DATABASE_NAME}.sqlite3`, () => resolve())
-);
-class MockQMLStore extends QMLStore {
-  constructor(tableName: string) {
-    super(tableName, TEST_DATABASE_NAME);
-    this.initialized = Promise.all([super.initialized, this.delete([])]);
-  }
-
-  executeQuery(query: string): Promise<LocalStorage.QueryResult | undefined> {
-    return new Promise((resolve, reject) => {
-      QMLMockDB.all(query, (err, rows) => {
-        if (err) {
-          console.error("SQLITE ERROR!", err, query);
-          reject();
-        }
-        resolve({
-          rows: {
-            length: rows?.length || 0,
-            // eslint-disable-next-line @typescript-eslint/no-unsafe-return, @typescript-eslint/no-explicit-any
-            item: (index: number) => rows[index] || {} as any
-          }
-        });
-      });
-    });
-  }
-}
 
 // This object will contain all the asynchronous store names and
 // a function that will initialize and return the store when done.
@@ -61,13 +26,6 @@ const asyncStores: {
 } = {
   "TestStore": {
     initializeStore: (): TestStore => new TestStore("unused")
-  },
-  "QMLStore": {
-    initializeStore: (): MockQMLStore => new MockQMLStore("test"),
-    afterAll: async () => {
-      QMLMockDB.close();
-      return Promise.resolve();
-    }
   },
   "WebExtStore": {
     initializeStore: (): WebExtStore => new WebExtStore("test"),

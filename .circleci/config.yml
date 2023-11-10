@@ -147,46 +147,6 @@ jobs:
           command: |
             export PATH=.:$PATH && npm --prefix ./samples/node run test
 
-  sample-qt-test:
-    docker:
-      - image: cimg/python:<< pipeline.parameters.python-version >>
-    steps:
-      - checkout
-      - install-node
-      - run:
-          name: Install JavaScript dependencies for Glean
-          command: npm --prefix ./glean install
-      - run:
-          name: Install Qt dependencies
-          command: |
-            sudo apt-get update
-            sudo apt-get install -y gcc g++ make cmake \
-              qtbase5-dev qt5-default qt5-qmake qttools5-dev-tools qtdeclarative5-dev \
-              qtdeclarative5-dev-tools qml-module-qttest qml-module-qtquick2 \
-              qml-module-qtquick-localstorage qml-module-qtquick-controls2
-            sudo apt-get install xvfb
-      - run:
-          name: Build and install Qt Glean.js library
-          command: |
-            npm --prefix ./glean run build:qt
-            cp -r glean/dist/qt/org/ samples/qt/src/App/org/
-      - run:
-          name: Build the Node.js Glean generated files sample
-          command: |
-            cd samples/qt
-            python3 -m venv venv
-            source venv/bin/activate
-            pip install -r requirements.txt
-            glean_parser translate src/App/metrics.yaml src/App/pings.yaml \
-              -f javascript -o src/App/generated \
-              --option platform=qt --option version="2.0"
-      - run:
-          name: Run Qt sample tests
-          command: |
-            cd samples/qt
-            qmake -r
-            QML_IMPORT_TRACE=1 xvfb-run make check
-
   browser-compat-smoke-tests:
     docker:
       - image: cimg/python:<< pipeline.parameters.python-version >>
@@ -253,9 +213,30 @@ jobs:
       - run:
           name: NPM Authentication
           command: echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > glean/.npmrc
-      - run:
-          name: Publish to npm
-          command: export PATH=.:$PATH && (cd glean && npm publish --access public)
+      # This conditional matches the tag that contains 'pre', used
+      # to mark prerelease builds. Since CircleCI conditionals do
+      # not directly support 'else's, we need another conditional.
+      - when:
+          condition:
+            matches:
+              pattern: "^v.*-pre.*$"
+              value: << pipeline.git.tag >>
+          steps:
+            - run:
+                name: Publish to npm (prerelease)
+                command: export PATH=.:$PATH && (cd glean && npm publish --access public --tag prerelease)
+      # This conditional matches 'release': we won't tag the npm
+      # release in this case, because no 'pre' is found in the tag.
+      - when:
+          condition:
+            not:
+              matches:
+                pattern: "^v.*-pre.*$"
+                value: << pipeline.git.tag >>
+          steps:
+            - run:
+                name: Publish to npm
+                command: export PATH=.:$PATH && (cd glean && npm publish --access public)
       - run:
           name: Get ghr release tool
           command: |
@@ -265,14 +246,6 @@ jobs:
             echo "${GHR_SHA256} *${GHR}.tar.gz" | sha256sum -c -
             tar -xf "${GHR}.tar.gz"
             cp ./${GHR}/ghr ghr
-      - run:
-          name: Publish to Github
-          command: |
-            # Attach Qt build to release
-            npm --prefix ./glean install
-            npm --prefix ./glean run build:qt
-            tar -zcvf "glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz" glean/dist/qt
-            ./ghr -u mozilla -replace ${CIRCLE_TAG} glean/dist/glean_js-${CIRCLE_TAG}-qt.tar.gz
 
 workflows:
   ci:
@@ -291,9 +264,6 @@ workflows:
       - sample-node-test:
           requires:
             - test
-      - sample-qt-test:
-          requires:
-            - test
       - hold:
           type: approval
           requires:
@@ -302,7 +272,6 @@ workflows:
             - test
             - sample-webext-test
             - sample-node-test
-            - sample-qt-test
           filters:
             branches:
               ignore:

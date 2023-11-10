@@ -3,8 +3,9 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import Glean from "../../core/glean/async.js";
+import type { ConfigurationInterface } from "../../core/config.js";
 import type Platform from "../../platform/async.js";
-import type { IGlean, RestrictedConfigurationInterface } from "./shared.js";
+import type { IGlean } from "./shared.js";
 
 export const baseAsync = (platform: Platform): IGlean => {
   // See `IGlean` for method documentation.
@@ -12,7 +13,7 @@ export const baseAsync = (platform: Platform): IGlean => {
     initialize(
       applicationId: string,
       uploadEnabled: boolean,
-      config?: RestrictedConfigurationInterface
+      config?: ConfigurationInterface
     ): void {
       Glean.setPlatform(platform);
       Glean.initialize(applicationId, uploadEnabled, config);

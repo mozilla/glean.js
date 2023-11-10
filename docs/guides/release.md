@@ -6,7 +6,8 @@ That package will contain sub packages with Glean.js builds for each environment
 
 The development & release process roughly follows the [Git Flow model](https://nvie.com/posts/a-successful-git-branching-model/).
 
-> **Note**: The rest of this section assumes that `upstream` points to the `https://github.com/mozilla/glean.js` repository, while `origin` points to the developer fork. For some developer workflows, `upstream` can be the same as `origin`.
+> [!NOTE]
+> The rest of this section assumes that `upstream` points to the `https://github.com/mozilla/glean.js` repository, while `origin` points to the developer fork. For some developer workflows, `upstream` can be the same as `origin`.
 
 ## Standard release
 
@@ -14,7 +15,15 @@ Releases can only be done by one of the Glean maintainers.
 
 - Main development branch: `main`
 - Main release branch: `release`
-- Specific release branch: `release-vX.Y.Z`
+- Specific release branch: `release-vX.Y.Z` (or `release-vX.Y.Z-pre.N` for prerelease)
+
+> [!IMPORTANT]
+> Adding a suffix to the version **and** the branch/tag names such as
+> `-pre.0` triggers publishing to the NPM `prerelease` channel. This enables early
+> consumers to test the latest capabilities, without widely rolling them out to
+> all the consumers.
+> If cutting a prerelease, whenever `release-vX.Y.Z` is specified in the rest of the
+> document assume it refers to `release-vX.Y.Z-pre.N`.
 
 ### Create a release branch
 

@@ -4,12 +4,6 @@
 
 import type { ConfigurationInterface } from "../../core/config.js";
 
-// Strip the configuration interface of the Qt-only fields.
-export type RestrictedConfigurationInterface = Omit<
-  ConfigurationInterface,
-  "architecture" | "osVersion"
->;
-
 export interface IGlean {
   /**
    * Initialize Glean. This method should only be called once, subsequent calls will be no-op.

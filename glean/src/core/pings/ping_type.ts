@@ -31,6 +31,9 @@ export class InternalPingType implements CommonPingData {
   readonly sendIfEmpty: boolean;
   readonly reasonCodes: string[];
 
+  // Currently NOT IMPLEMENTED.
+  readonly preciseTimestamps?: boolean;
+
   // The functions and promises required for the test API to
   // execute and synchronize with the submission API.
   private resolveTestPromiseFunction?: PromiseCallback;
@@ -42,6 +45,9 @@ export class InternalPingType implements CommonPingData {
     this.includeClientId = meta.includeClientId;
     this.sendIfEmpty = meta.sendIfEmpty;
     this.reasonCodes = meta.reasonCodes ?? [];
+
+    // Currently NOT IMPLEMENTED.
+    this.preciseTimestamps = meta.preciseTimestamps;
   }
 
   /// SHARED ///

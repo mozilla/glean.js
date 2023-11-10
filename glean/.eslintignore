@@ -1,5 +1,4 @@
 dist
 venv
 node_modules
-qt.js
 tests/integration/schema/generated

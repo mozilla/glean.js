@@ -18,13 +18,13 @@
     "webextension-polyfill": "^0.10.0"
   },
   "devDependencies": {
-    "@types/mocha": "^10.0.2",
-    "@types/node": "^20.8.2",
+    "@types/mocha": "^10.0.3",
+    "@types/node": "^20.8.10",
     "mocha": "^10.2.0",
-    "ts-loader": "^9.4.4",
+    "ts-loader": "^9.5.0",
     "typescript": "^5.2.2",
     "web-ext-types": "^3.2.1",
-    "webpack": "^5.88.2",
+    "webpack": "^5.89.0",
     "webpack-cli": "^5.1.4",
     "ts-node": "^10.8.0",
     "strip-ansi": "^7.1.0"

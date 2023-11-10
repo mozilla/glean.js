@@ -7,8 +7,8 @@ import type { IPlatformInfo, KnownOperatingSystems } from "../platform_info/shar
 // See `IPlatformInfo` for method documentation.
 interface PlatformInfoSync extends IPlatformInfo {
   os(): KnownOperatingSystems;
-  osVersion(fallback?: string): string;
-  arch(fallback?: string): string;
+  osVersion(): string;
+  arch(): string;
   locale(): string;
 }
 

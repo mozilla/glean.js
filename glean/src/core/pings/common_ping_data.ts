@@ -14,4 +14,7 @@ export default interface CommonPingData {
   readonly sendIfEmpty: boolean;
   // Optional. The valid reason codes for this ping.
   readonly reasonCodes?: string[];
+
+  // Currently NOT IMPLEMENTED.
+  readonly preciseTimestamps?: boolean;
 }
