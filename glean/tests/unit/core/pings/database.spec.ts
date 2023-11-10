@@ -3,20 +3,20 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import assert from "assert";
-import type { SinonFakeTimers } from "sinon";
 import sinon from "sinon";
+import type { SinonFakeTimers } from "sinon";
 
-import type { Observer } from "../../../../src/core/pings/database/shared";
-import { isValidPingInternalRepresentation } from "../../../../src/core/pings/database/shared";
-import Database from "../../../../src/core/pings/database/async";
+import type { Observer } from "../../../../src/core/pings/database";
 import type { JSONObject } from "../../../../src/core/utils";
-import { testResetGlean } from "../../../../src/core/testing";
+
+import Glean from "../../../../src/core/glean";
+import { Context } from "../../../../src/core/context";
+import Database, { isValidPingInternalRepresentation } from "../../../../src/core/pings/database";
 import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
 import { InternalCounterMetricType as CounterMetricType } from "../../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import { stopGleanUploader } from "../../../utils";
-import { Context } from "../../../../src/core/context";
-import Glean from "../../../../src/core/glean/async";
+import { resumeGleanUploader, stopGleanUploader } from "../../../utils";
+import { testResetGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 const now = new Date();
@@ -25,9 +25,9 @@ describe("PingsDatabase", function() {
   const testAppId = `gleanjs.test.${this.title}`;
   let clock: SinonFakeTimers;
 
-  beforeEach(async function() {
+  beforeEach(function() {
     clock = sandbox.useFakeTimers(now.getTime());
-    await testResetGlean(testAppId);
+    testResetGlean(testAppId);
   });
 
   afterEach(function () {
@@ -36,7 +36,7 @@ describe("PingsDatabase", function() {
   });
 
   describe("record", function () {
-    it("records correctly to the correct place at the underlying storage", async function() {
+    it("records correctly to the correct place at the underlying storage", function() {
       const db = new Database();
       const path = "some/random/path/doesnt/matter";
       const identifier = "THE IDENTIFIER";
@@ -50,22 +50,22 @@ describe("PingsDatabase", function() {
           telemetry_sdk_build: "32.0.0"
         }
       };
-      await db.recordPing(path, identifier, payload);
-      assert.deepStrictEqual(await db["store"].get([identifier]), {
+      db.recordPing(path, identifier, payload);
+      assert.deepStrictEqual(db["store"].get([identifier]), {
         collectionDate: now.toISOString(), path, payload
       });
 
       const headers = { "X-Debug-ID": "test" };
       const otherIdentifier = "THE OTHER IDENTIFIER";
-      await db.recordPing(path, otherIdentifier, payload, headers);
-      assert.deepStrictEqual(await db["store"].get([otherIdentifier]), {
+      db.recordPing(path, otherIdentifier, payload, headers);
+      assert.deepStrictEqual(db["store"].get([otherIdentifier]), {
         collectionDate: now.toISOString(), path, payload, headers
       });
 
-      assert.strictEqual(Object.keys(await db["store"].get() as JSONObject).length, 2);
+      assert.strictEqual(Object.keys(db["store"].get() as JSONObject).length, 2);
     });
 
-    it("observer is notified when a new ping is added to the database", async function() {
+    it("observer is notified when a new ping is added to the database", function() {
       let wasNotified = false;
       const identifier = "THE IDENTIFIER";
       const observer: Observer = {
@@ -89,7 +89,7 @@ describe("PingsDatabase", function() {
           telemetry_sdk_build: "32.0.0"
         }
       };
-      await db.recordPing(path, identifier, payload);
+      db.recordPing(path, identifier, payload);
       assert.ok(wasNotified);
     });
   });
@@ -113,7 +113,7 @@ describe("PingsDatabase", function() {
       assert.strictEqual(isValidPingInternalRepresentation({ collectionDate: "2022-03-22T13:46:27.798Z", payload: {}, path: "some/path" }), true);
     });
 
-    it("isValidPingInternalRepresentation validates correctly real generated pings", async function () {
+    it("isValidPingInternalRepresentation validates correctly real generated pings", function () {
       // Stop the Glean uploader so that it does not interfere with this test.
       stopGleanUploader();
 
@@ -132,31 +132,32 @@ describe("PingsDatabase", function() {
       });
 
       // Record some metrics and submit the ping.
-      await metric.addUndispatched();
-      await metric.addUndispatched();
-      await metric.addUndispatched();
-      await ping.submitUndispatched();
+      metric.add();
+      metric.add();
+      metric.add();
+      ping.submit();
 
       // Check that the ping was there.
-      const allPings1 = await Context.pingsDatabase.getAllPings();
+      const allPings1 = Context.pingsDatabase.getAllPings();
       assert.strictEqual(allPings1.length, 1);
 
       // Set a debug tag so that the next submitted pings will have a `headers` prop
       Glean.setDebugViewTag("my-tag");
 
       // Record some more metrics and submit the ping again.
-      await metric.addUndispatched();
-      await metric.addUndispatched();
-      await metric.addUndispatched();
-      await ping.submitUndispatched();
+      metric.add();
+      metric.add();
+      metric.add();
+      ping.submit();
 
       // Check that both ping are there.
-      const allPings2 = await Context.pingsDatabase.getAllPings();
+      const allPings2 = Context.pingsDatabase.getAllPings();
       assert.strictEqual(allPings2.length, 2);
 
+      resumeGleanUploader();
     });
 
-    it("when incorrect data is found on the storage it is deleted", async function () {
+    it("when incorrect data is found on the storage it is deleted", function () {
       const db = new Database();
       const identifier = "THE IDENTIFIER";
       const path = "some/random/path/doesnt/matter";
@@ -170,20 +171,20 @@ describe("PingsDatabase", function() {
           telemetry_sdk_build: "32.0.0"
         }
       };
-      await db.recordPing(path, identifier, payload);
+      db.recordPing(path, identifier, payload);
 
       // Add weird stuff to the db
-      await db["store"].update(["incorrect"], () => "wrong data");
-      await db["store"].update(["more", "incorrectness"], () => "more wrong data");
+      db["store"].update(["incorrect"], () => "wrong data");
+      db["store"].update(["more", "incorrectness"], () => "more wrong data");
 
-      const allPings = await db.getAllPings();
+      const allPings = db.getAllPings();
       assert.strictEqual(allPings.length, 1);
       assert.deepStrictEqual([
         [ identifier, { collectionDate: now.toISOString(), path, payload } ]
       ], allPings);
     });
 
-    it("getAllPings works correctly when data is all correct", async function () {
+    it("getAllPings works correctly when data is all correct", function () {
       const db = new Database();
       const path = "some/random/path/doesnt/matter";
       const payload = {
@@ -199,17 +200,17 @@ describe("PingsDatabase", function() {
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
       for (const identifier of identifiers) {
-        await db.recordPing(path, identifier, payload);
+        db.recordPing(path, identifier, payload);
       }
 
-      const allPings = await db.getAllPings();
+      const allPings = db.getAllPings();
       assert.strictEqual(allPings.length, 5);
       for (const [index, [ identifier, _ ] ] of allPings.entries()) {
         assert.strictEqual(identifier, identifiers[index]);
       }
     });
 
-    it("getAllPings returns pings in ascending order by date", async function () {
+    it("getAllPings returns pings in ascending order by date", function () {
       const db = new Database();
       const path = "some/random/path/doesnt/matter";
       const payload = {
@@ -234,23 +235,23 @@ describe("PingsDatabase", function() {
         const stub = sinon
           .stub(Date.prototype, "toISOString")
           .callsFake(() => fakeISOString);
-        await db.recordPing(path, identifier, payload);
+        db.recordPing(path, identifier, payload);
         stub.restore();
       }
 
-      const allPings = await db.getAllPings();
+      const allPings = db.getAllPings();
       assert.strictEqual(allPings.length, 5);
       for (const [index, [ identifier, _ ] ] of allPings.reverse().entries()) {
         assert.strictEqual(identifier, identifiers[index]);
       }
     });
 
-    it("getAllPings dosen't error when there are no pings stored", async function () {
+    it("getAllPings dosen't error when there are no pings stored", function () {
       const db = new Database();
-      assert.deepStrictEqual([], await db.getAllPings());
+      assert.deepStrictEqual([], db.getAllPings());
     });
 
-    it("size quota is enforced by getAllPingsWithoutSurplus", async function() {
+    it("size quota is enforced by getAllPingsWithoutSurplus", function() {
       const db = new Database();
       const path = "some/random/path/doesnt/matter";
       const payload = {
@@ -266,12 +267,12 @@ describe("PingsDatabase", function() {
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
       for (const identifier of identifiers) {
-        await db.recordPing(path, identifier, payload);
+        db.recordPing(path, identifier, payload);
       }
 
       // Set a size quota that is just above the size of `payload`,
       // that will leave one ping in the db, but all others should be deleted.
-      const allPings = await db["getAllPingsWithoutSurplus"](
+      const allPings = db["getAllPingsWithoutSurplus"](
         250 /* maxCount */,
         300 /* maxSize */
       );
@@ -281,7 +282,7 @@ describe("PingsDatabase", function() {
       assert.strictEqual(identifier, identifiers[identifiers.length - 1]);
     });
 
-    it("ping count quota is enforced by getAllPingsWithoutSurplus", async function() {
+    it("ping count quota is enforced by getAllPingsWithoutSurplus", function() {
       const db = new Database();
       const path = "some/random/path/doesnt/matter";
       const payload = {
@@ -297,12 +298,12 @@ describe("PingsDatabase", function() {
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
       for (const identifier of identifiers) {
-        await db.recordPing(path, identifier, payload);
+        db.recordPing(path, identifier, payload);
       }
 
       // Set a size quota that is just above the size of `payload`,
       // that will leave one ping in the db, but all others should be deleted.
-      const allPings = await db["getAllPingsWithoutSurplus"](
+      const allPings = db["getAllPingsWithoutSurplus"](
         1 /* maxCount */,
       );
       assert.strictEqual(allPings.length, 1);
@@ -311,7 +312,7 @@ describe("PingsDatabase", function() {
       assert.strictEqual(identifier, identifiers[identifiers.length - 1]);
     });
 
-    it("deletion-request are never deleted, even if quota is hit", async function() {
+    it("deletion-request are never deleted, even if quota is hit", function() {
       const db = new Database();
       const deletionRequestPath = "/submit/applicationId/deletion-request/schema-version/identifier";
       const path = "some/random/path/doesnt/matter";
@@ -328,13 +329,13 @@ describe("PingsDatabase", function() {
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
       for (const identifier of identifiers) {
-        await db.recordPing(deletionRequestPath, `deletion-${identifier}`, payload);
-        await db.recordPing(path, identifier, payload);
+        db.recordPing(deletionRequestPath, `deletion-${identifier}`, payload);
+        db.recordPing(path, identifier, payload);
       }
 
       // Set a size quota that is just above the size of `payload`,
       // that will leave one ping in the db, but all others should be deleted.
-      const allPings = await db["getAllPingsWithoutSurplus"](
+      const allPings = db["getAllPingsWithoutSurplus"](
         1 /* maxCount */,
       );
 
@@ -350,7 +351,7 @@ describe("PingsDatabase", function() {
   });
 
   describe("delete", function() {
-    it("deleting works", async function() {
+    it("deleting works", function() {
       const db = new Database();
       const path = "some/random/path/doesnt/matter";
       const payload = {
@@ -366,25 +367,25 @@ describe("PingsDatabase", function() {
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
       for (const identifier of identifiers) {
-        await db.recordPing(path, identifier, payload);
+        db.recordPing(path, identifier, payload);
       }
 
-      await db.deletePing("foo");
-      const allPings = await db.getAllPings();
+      db.deletePing("foo");
+      const allPings = db.getAllPings();
       assert.strictEqual(allPings.length, 4);
       for (const [index, [identifier, _]] of allPings.entries()) {
         assert.strictEqual(identifier, identifiers[index + 1]);
       }
 
-      await db.deletePing("bar");
-      const allPings2 = await db.getAllPings();
+      db.deletePing("bar");
+      const allPings2 = db.getAllPings();
       assert.strictEqual(allPings2.length, 3);
       for (const [index, [identifier, _]] of allPings2.entries()) {
         assert.strictEqual(identifier, identifiers[index + 2]);
       }
     });
 
-    it("deleting a ping that is not in the db doesn't error", async function() {
+    it("deleting a ping that is not in the db doesn't error", function() {
       const db = new Database();
       const path = "some/random/path/doesnt/matter";
       const payload = {
@@ -400,11 +401,11 @@ describe("PingsDatabase", function() {
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
       for (const identifier of identifiers) {
-        await db.recordPing(path, identifier, payload);
+        db.recordPing(path, identifier, payload);
       }
 
-      await db.deletePing("no existo");
-      const allPings = await db.getAllPings();
+      db.deletePing("no existo");
+      const allPings = db.getAllPings();
       assert.strictEqual(allPings.length, 5);
       for (const [index, [ identifier, _]] of allPings.entries()) {
         assert.strictEqual(identifier, identifiers[index]);
@@ -413,7 +414,7 @@ describe("PingsDatabase", function() {
   });
 
   describe("clear", function () {
-    it("clearing works", async function() {
+    it("clearing works", function() {
       const db = new Database();
       const path = "some/random/path/doesnt/matter";
       const payload = {
@@ -429,11 +430,11 @@ describe("PingsDatabase", function() {
 
       const identifiers = ["foo", "bar", "baz", "qux", "etc"];
       for (const identifier of identifiers) {
-        await db.recordPing(path, identifier, payload);
+        db.recordPing(path, identifier, payload);
       }
 
-      await db.clearAll();
-      assert.strictEqual(Object.keys(await db["store"].get() || {}).length, 0);
+      db.clearAll();
+      assert.strictEqual(Object.keys(db["store"].get() || {}).length, 0);
     });
   });
 
@@ -469,13 +470,13 @@ describe("PingsDatabase", function() {
       for (let id = 0; id < 10; id++) {
         const newPayload = payload;
         newPayload.ping_info.seq = id;
-        await db.recordPing(path, `id-${id}`, payload);
+        db.recordPing(path, `id-${id}`, payload);
       }
 
       // Reset the ids we've seen because `Observer` will get called once again in `record`.
       pingIds = [];
 
-      await db.scanPendingPings();
+      db.scanPendingPings();
       await testPromise;
       assert.strictEqual(pingIds.length, 10);
       for (let id = 0; id < 10; id++) {

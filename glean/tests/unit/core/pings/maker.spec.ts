@@ -5,55 +5,37 @@
 import assert from "assert";
 import sinon from "sinon";
 
-import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
-import * as PingMaker from "../../../../src/core/pings/maker/async";
-import { getPingHeaders } from "../../../../src/core/pings/maker/shared";
-import Glean from "../../../../src/core/glean/async";
-import CoreEvents from "../../../../src/core/events/async";
-import Plugin from "../../../../src/plugins";
-import type { JSONArray, JSONObject } from "../../../../src/core/utils";
-import { Context } from "../../../../src/core/context";
-import { stopGleanUploader } from "../../../utils";
-import EventMetricType from "../../../../src/core/metrics/types/event";
-import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import {
-  testInitializeGlean,
-  testResetGlean,
-  testRestartGlean,
-  testUninitializeGlean,
-} from "../../../../src/core/testing";
 import type { ExtraMap } from "../../../../src/core/metrics/events_database/recorded_event";
+import type { JSONArray } from "../../../../src/core/utils";
+
+import Glean from "../../../../src/core/glean";
+import { Context } from "../../../../src/core/context";
+import EventMetricType from "../../../../src/core/metrics/types/event";
+import { InternalPingType as PingType } from "../../../../src/core/pings/ping_type";
+import { Lifetime } from "../../../../src/core/metrics/lifetime";
+import * as PingMaker from "../../../../src/core/pings/maker";
+import { testResetGlean, testRestartGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
-
-class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
-  constructor() {
-    super(CoreEvents["afterPingCollection"].name, "mockPlugin");
-  }
-
-  action(): Promise<JSONObject> {
-    return Promise.resolve({ "you": "got mocked!" });
-  }
-}
 
 describe("PingMaker", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
   afterEach(function () {
     sandbox.restore();
   });
 
-  it("ping info must contain a non-empty start and end time", async function() {
+  it("ping info must contain a non-empty start and end time", function() {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false,
     });
-    const pingInfo = await PingMaker.buildPingInfoSection(ping);
+    const pingInfo = PingMaker.buildPingInfoSection(ping);
 
     const startTime = new Date(pingInfo.start_time);
     const endTime = new Date(pingInfo.end_time);
@@ -61,20 +43,20 @@ describe("PingMaker", function() {
     assert.ok(startTime.getTime() <= endTime.getTime());
   });
 
-  it("buildPingInfo must report all the required fields", async function() {
+  it("buildPingInfo must report all the required fields", function() {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false,
     });
-    const pingInfo = await PingMaker.buildPingInfoSection(ping);
+    const pingInfo = PingMaker.buildPingInfoSection(ping);
 
     assert.ok("seq" in pingInfo);
     assert.ok("start_time" in pingInfo);
     assert.ok("end_time" in pingInfo);
   });
 
-  it("buildClientInfo must report all the available data", async function() {
+  it("buildClientInfo must report all the available data", function() {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -83,12 +65,12 @@ describe("PingMaker", function() {
     // Clear the metrics database to fake a worst case scenario
     // when Glean doesn't have any of the required metrics
     // for building the client info.
-    await Context.metricsDatabase.clearAll();
-    const clientInfo1 = await PingMaker.buildClientInfoSection(ping);
+    Context.metricsDatabase.clearAll();
+    const clientInfo1 = PingMaker.buildClientInfoSection(ping);
     assert.ok("telemetry_sdk_build" in clientInfo1);
 
     // Initialize will also initialize core metrics that are part of the client info.
-    await testResetGlean(testAppId, true, {
+    testResetGlean(testAppId, true, {
       channel: "channel",
       appBuild:"build",
       appDisplayVersion: "display version",
@@ -96,7 +78,7 @@ describe("PingMaker", function() {
       serverEndpoint: "http://localhost:8080"
     });
 
-    const clientInfo2 = await PingMaker.buildClientInfoSection(ping);
+    const clientInfo2 = PingMaker.buildClientInfoSection(ping);
     assert.ok("telemetry_sdk_build" in clientInfo2);
     assert.ok("client_id" in clientInfo2);
     assert.ok("first_run_date" in clientInfo2);
@@ -110,16 +92,16 @@ describe("PingMaker", function() {
     assert.strictEqual(clientInfo2["app_display_version"], "display version");
   });
 
-  it("collectPing must return `undefined` if ping that must not be sent if empty, is empty", async function() {
+  it("collectPing must return `undefined` if ping that must not be sent if empty, is empty", function() {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
       sendIfEmpty: false,
     });
-    assert.strictEqual(await PingMaker.collectPing(ping), undefined);
+    assert.strictEqual(PingMaker.collectPing(ping), undefined);
   });
 
-  it("sequence numbers must be sequential", async function() {
+  it("sequence numbers must be sequential", function() {
     const ping1 = new PingType({
       name: "ping1",
       includeClientId: true,
@@ -132,112 +114,32 @@ describe("PingMaker", function() {
     });
 
     for(let i = 0; i <= 10; i++) {
-      assert.strictEqual(await PingMaker.getSequenceNumber(ping1), i);
-      assert.strictEqual(await PingMaker.getSequenceNumber(ping2), i);
+      assert.strictEqual(PingMaker.getSequenceNumber(ping1), i);
+      assert.strictEqual(PingMaker.getSequenceNumber(ping2), i);
     }
 
-    await PingMaker.getSequenceNumber(ping1);
-    assert.strictEqual(await PingMaker.getSequenceNumber(ping1), 12);
-    assert.strictEqual(await PingMaker.getSequenceNumber(ping2), 11);
-    assert.strictEqual(await PingMaker.getSequenceNumber(ping1), 13);
+    PingMaker.getSequenceNumber(ping1);
+    assert.strictEqual(PingMaker.getSequenceNumber(ping1), 12);
+    assert.strictEqual(PingMaker.getSequenceNumber(ping2), 11);
+    assert.strictEqual(PingMaker.getSequenceNumber(ping1), 13);
   });
 
-  it("getPingHeaders returns headers when custom headers are set", async function () {
+  it("getPingHeaders returns headers when custom headers are set", function () {
     Glean.setDebugViewTag("test");
     Glean.setSourceTags(["tag1", "tag2", "tag3"]);
-    await Context.dispatcher.testBlockOnQueue();
 
     assert.deepStrictEqual({
       "X-Debug-ID": "test",
       "X-Source-Tags": "tag1,tag2,tag3"
-    }, getPingHeaders());
+    }, PingMaker.getPingHeaders());
 
-    await testResetGlean(testAppId);
-    assert.strictEqual(getPingHeaders(), undefined);
+    testResetGlean(testAppId);
+    assert.strictEqual(PingMaker.getPingHeaders(), undefined);
   });
 
-  it("collect and store triggers the AfterPingCollection and deals with possible result correctly", async function () {
-    // Disable ping uploading for it not to interfere with this tests.
-    stopGleanUploader();
+  it("should delete trailing restarted events", function() {
+    Glean.pingUploader.blockUploads();
 
-    await testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ]});
-    const ping = new PingType({
-      name: "ping",
-      includeClientId: true,
-      sendIfEmpty: true,
-    });
-
-    await PingMaker.collectAndStorePing("ident", ping);
-    const recordedPing = Object.fromEntries(
-      (await Context.pingsDatabase.getAllPings())
-    )["ident"];
-    assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
-
-    await testResetGlean(testAppId, true);
-    await PingMaker.collectAndStorePing("ident", ping);
-    const recordedPingNoPlugin = Object.fromEntries(
-      (await Context.pingsDatabase.getAllPings())
-    )["ident"];
-    assert.notDeepStrictEqual(recordedPingNoPlugin.payload, { "you": "got mocked!" });
-  });
-
-  it("ping payload is logged before it is modified by a plugin", async function () {
-    // Disable ping uploading for it not to interfere with this tests.
-    stopGleanUploader();
-
-    await testResetGlean(testAppId, true, { plugins: [ new MockPlugin() ] });
-    Glean.setLogPings(true);
-
-    const ping = new PingType({
-      name: "ping",
-      includeClientId: true,
-      sendIfEmpty: true,
-    });
-
-    const consoleSpy = sandbox.spy(console, "info");
-    await PingMaker.collectAndStorePing("ident", ping);
-
-    // Need to get the second argument of the console.info call,
-    // because the first one contains the log tag.
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
-    const loggedPayload = JSON.parse(consoleSpy.lastCall.args[1]) as JSONObject;
-
-    const recordedPing = Object.fromEntries(
-      (await Context.pingsDatabase.getAllPings())
-    )["ident"];
-    assert.deepStrictEqual(recordedPing.payload, { "you": "got mocked!" });
-    assert.notDeepStrictEqual(loggedPayload, { "you": "got mocked!" });
-    assert.ok("client_info" in loggedPayload);
-    assert.ok("ping_info" in loggedPayload);
-  });
-
-  it("pings are not recorded in case a plugin throws", async function () {
-    class ThrowingPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
-      constructor() {
-        super(CoreEvents["afterPingCollection"].name, "mockPlugin");
-      }
-
-      action(): Promise<JSONObject> {
-        throw new Error();
-      }
-    }
-
-    await testResetGlean(testAppId, true, { plugins: [ new ThrowingPlugin() ] });
-    Glean.setLogPings(true);
-
-    const ping = new PingType({
-      name: "ping",
-      includeClientId: true,
-      sendIfEmpty: true,
-    });
-
-    await PingMaker.collectAndStorePing("ident", ping);
-
-    const recordedPings = await Context.pingsDatabase.getAllPings();
-    assert.ok(!("ident" in recordedPings));
-  });
-
-  it("errors recorded during events collection make it to the current payload", async function () {
     const ping = new PingType({
       name: "aPing",
       includeClientId: true,
@@ -251,75 +153,30 @@ describe("PingMaker", function() {
       disabled: false
     });
 
-    event.record();
-    // Wait for recording action to complete.
-    await event.testGetValue();
-
-    // Un-initialize and re-initialize manually instead of using testResetGlean
-    // in order to have control over the startTime at initialization.
-    await testUninitializeGlean(false);
-    // Move the clock backwards by one hour.
-    //
-    // This will generate incoherent timestamps in events at collection time
-    // and record an `InvalidValue` error for the `glean.restarted` event.
-    Context.startTime.setTime(Context.startTime.getTime() - 1000 * 60 * 60);
-    await testInitializeGlean(testAppId, true);
-
-    event.record();
-    // Wait for recording action to complete.
-    await event.testGetValue();
-
-    await PingMaker.collectAndStorePing("ident", ping);
-    const allPings = Object.fromEntries(await Context.pingsDatabase.getAllPings());
-    const payload = allPings["ident"]["payload"];
-
-    // Check that the expected error metric is in the payload
-    assert.ok(payload?.metrics);
-    assert.deepStrictEqual(payload.metrics, {
-      labeled_counter: { "glean.error.invalid_value": { "glean.restarted": 1 } }
-    });
-  });
-
-  it("should delete trailing restarted events", async function() {
-    const ping = new PingType({
-      name: "aPing",
-      includeClientId: true,
-      sendIfEmpty: true,
-    });
-    const event = new EventMetricType({
-      category: "test",
-      name: "aEvent",
-      sendInPings: ["aPing"],
-      lifetime: Lifetime.Ping,
-      disabled: false
-    });
-
-    const triggerCustomEvent = async (event: EventMetricType<ExtraMap>) => {
+    const triggerCustomEvent = (event: EventMetricType<ExtraMap>) => {
       event.record();
       // Wait for recording action to complete
-      await event.testGetValue();
-    };
-
-    const triggerRestartedEvent = async () => {
-      await testRestartGlean();
+      event.testGetValue();
     };
 
     // Record events
-    await triggerCustomEvent(event);
+    triggerCustomEvent(event);
 
-    await triggerRestartedEvent();
-    await triggerRestartedEvent();
-    await triggerRestartedEvent();
+    testRestartGlean();
+    testRestartGlean();
+    testRestartGlean();
 
-    await triggerCustomEvent(event);
+    triggerCustomEvent(event);
 
-    await triggerRestartedEvent();
-    await triggerRestartedEvent();
+    testRestartGlean();
+    testRestartGlean();
 
-    await PingMaker.collectAndStorePing("ident", ping);
-    const allPings = Object.fromEntries(await Context.pingsDatabase.getAllPings());
+    PingMaker.collectAndStorePing("ident", ping);
+    const allPings = Object.fromEntries(Context.pingsDatabase.getAllPings());
     const eventsArray = allPings["ident"]["payload"]["events"] as JSONArray;
 
     assert.equal(5, eventsArray.length);
+
+    Glean.pingUploader.resumeUploads();
   });
 });

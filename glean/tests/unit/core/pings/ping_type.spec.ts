@@ -1,47 +1,34 @@
 /* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
-
 import assert from "assert";
 import sinon from "sinon";
 
 import PingType, { InternalPingType } from "../../../../src/core/pings/ping_type";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
 import type { JSONObject } from "../../../../src/core/utils";
 import TestPlatform from "../../../../src/platform/test";
 import { testResetGlean } from "../../../../src/core/testing";
-import { testUninitializeGlean } from "../../../../src/core/testing/utils";
-import type PingsDatabase from "../../../../src/core/pings/database/async";
+import { testUninitializeGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 
-/**
- * Submits a ping and waits for the dispatcher queue to be completed.
- *
- * @param ping The ping to submit.
- */
-async function submitSync(ping: PingType): Promise<void> {
-  ping.submit();
-  // TODO: Drop this whole approach once Bug 1691033 is resolved.
-  await Context.dispatcher.testBlockOnQueue();
-}
-
-describe("PingType", function() {
+describe("PingType", function () {
   const testAppId = `gleanjs.test.${this.title}`;
 
   afterEach(function () {
     sandbox.restore();
   });
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function () {
+    testResetGlean(testAppId);
   });
 
-  it("collects and stores ping on submit", async function () {
+  it("collects and stores ping on submit", function () {
     // Disable ping uploading for it not to interfere with this tests.
     stopGleanUploader();
 
@@ -59,12 +46,12 @@ describe("PingType", function() {
     });
     counter.add();
 
-    await submitSync(ping);
-    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
+    ping.submit();
+    const storedPings = Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
-  it("empty pings with send if empty flag are submitted", async function () {
+  it("empty pings with send if empty flag are submitted", function () {
     // Disable ping uploading for it not to interfere with this tests.
     stopGleanUploader();
 
@@ -79,16 +66,16 @@ describe("PingType", function() {
       sendIfEmpty: true,
     });
 
-    await submitSync(ping1);
-    let storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get();
+    ping1.submit();
+    let storedPings = Context.pingsDatabase["store"].get();
     assert.strictEqual(storedPings, undefined);
 
-    await submitSync(ping2);
-    storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get() as JSONObject;
+    ping2.submit();
+    storedPings = Context.pingsDatabase["store"].get() as JSONObject;
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 
-  it("no pings are submitted if upload is disabled", async function() {
+  it("no pings are submitted if upload is disabled", function () {
     Glean.setUploadEnabled(false);
 
     const ping = new PingType({
@@ -96,13 +83,13 @@ describe("PingType", function() {
       includeClientId: true,
       sendIfEmpty: false,
     });
-    await submitSync(ping);
-    const storedPings = await (Context.pingsDatabase as PingsDatabase)["store"].get();
+    ping.submit();
+    const storedPings = Context.pingsDatabase["store"].get();
     assert.strictEqual(storedPings, undefined);
   });
 
-  it("no pings are submitted if Glean has not been initialized", async function() {
-    await testUninitializeGlean();
+  it("no pings are submitted if Glean has not been initialized", function () {
+    testUninitializeGlean();
 
     const spy = sandbox.spy(TestPlatform.uploader, "post");
     const ping = new PingType({
@@ -110,12 +97,12 @@ describe("PingType", function() {
       includeClientId: true,
       sendIfEmpty: false,
     });
-    await submitSync(ping);
+    ping.submit();
 
     assert.ok(!spy.calledOnce);
   });
 
-  it("runs a validator with no metrics tests", async function() {
+  it("runs a validator with no metrics tests", async function () {
     // Need to use the internal type here in order to access the test promise related props.
     const ping = new InternalPingType({
       name: "custom",
@@ -147,7 +134,7 @@ describe("PingType", function() {
     assert.ok(validatorRun);
   });
 
-  it("runs a validator with metrics tests", async function() {
+  it("runs a validator with metrics tests", async function () {
     const TEST_VALUE = 2908;
 
     const ping = new PingType({
@@ -168,8 +155,9 @@ describe("PingType", function() {
     let validatorRun = false;
     const p = ping.testBeforeNextSubmit(async r => {
       assert.strictEqual(r, "test");
-      assert.strictEqual(await counter.testGetValue(), TEST_VALUE);
+      assert.strictEqual(counter.testGetValue(), TEST_VALUE);
       validatorRun = true;
+      return Promise.resolve();
     });
 
     ping.submit("test");
@@ -178,7 +166,7 @@ describe("PingType", function() {
     assert.ok(validatorRun);
   });
 
-  it("runs a validator multiple times on the same ping", async function() {
+  it("runs a validator multiple times on the same ping", async function () {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -199,8 +187,9 @@ describe("PingType", function() {
       let validatorRun = false;
       const testPromise = ping.testBeforeNextSubmit(async r => {
         assert.strictEqual(r, `test${i}`);
-        assert.strictEqual(await counter.testGetValue(), i);
+        assert.strictEqual(counter.testGetValue(), i);
         validatorRun = true;
+        return Promise.resolve();
       });
 
       await new Promise(r => setTimeout(r, 100));
@@ -212,7 +201,7 @@ describe("PingType", function() {
     }
   });
 
-  it("running a validator multiple times fails when not awaiting", function() {
+  it("running a validator multiple times fails when not awaiting", function () {
     // Need to use the internal type here in order to access the test promise related props.
     const ping = new InternalPingType({
       name: "custom",
@@ -230,7 +219,7 @@ describe("PingType", function() {
     assert.strictEqual(ping["testCallback"], testFunction);
   });
 
-  it("runs a validator that rejects", async function() {
+  it("runs a validator that rejects", async function () {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -250,7 +239,7 @@ describe("PingType", function() {
   // The following test showcases the shortcomings of the current implementation
   // of the Ping testing API. It's disabled as it fails with the current implementation,
   // but it's left there for future reference.
-  it.skip("the validator is not affected by recordings after submit", async function() {
+  it.skip("the validator is not affected by recordings after submit", async function () {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -274,7 +263,7 @@ describe("PingType", function() {
       // reliably with the current implementation.
       await new Promise(r => setTimeout(r, 100));
 
-      const value = await counter.testGetValue();
+      const value = counter.testGetValue();
       // We don't expect any value to be stored, because the
       // calls to 'add' happen after the ping submission.
       assert.strictEqual(value, undefined);
@@ -295,7 +284,7 @@ describe("PingType", function() {
   // The following test showcases the shortcomings of the current implementation
   // of the Ping testing API. It's disabled as it fails with the current implementation,
   // but it's left there for future reference.
-  it.skip("the validator real test", async function() {
+  it.skip("the validator real test", async function () {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -325,8 +314,8 @@ describe("PingType", function() {
     const p = ping.testBeforeNextSubmit(async () => {
       await new Promise(r => setTimeout(r, 100));
 
-      assert.strictEqual(await canary.testGetValue(), 37, "Canary must match");
-      const value = await delayedCounter.testGetValue();
+      assert.strictEqual(canary.testGetValue(), 37, "Canary must match");
+      const value = delayedCounter.testGetValue();
       assert.strictEqual(value, undefined);
       validatorRun = true;
     });
