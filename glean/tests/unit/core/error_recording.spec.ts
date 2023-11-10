@@ -14,11 +14,11 @@ import { combineIdentifierAndLabel } from "../../../src/core/metrics/types/label
 describe("error_recording", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
-  it("records error types correctly", async function () {
+  it("records error types correctly", function () {
     const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
@@ -27,14 +27,14 @@ describe("error_recording", function() {
       disabled: false
     });
 
-    await Context.errorManager.record(metric, ErrorType.InvalidValue, "Invalid value");
-    await Context.errorManager.record(metric, ErrorType.InvalidLabel, "Invalid label", 10);
+    Context.errorManager.record(metric, ErrorType.InvalidValue, "Invalid value");
+    Context.errorManager.record(metric, ErrorType.InvalidLabel, "Invalid label", 10);
 
-    assert.strictEqual(await Context.errorManager.testGetNumRecordedErrors(metric, ErrorType.InvalidValue), 1);
-    assert.strictEqual(await Context.errorManager.testGetNumRecordedErrors(metric, ErrorType.InvalidLabel), 10);
+    assert.strictEqual(Context.errorManager.testGetNumRecordedErrors(metric, ErrorType.InvalidValue), 1);
+    assert.strictEqual(Context.errorManager.testGetNumRecordedErrors(metric, ErrorType.InvalidLabel), 10);
   });
 
-  it("strips label when recording error to metric that contains label in it's name", async function () {
+  it("strips label when recording error to metric that contains label in it's name", function () {
     // Cannot use the LabeledMetricType here,
     // because it does not expose the internal metric types.
     const metric: Record<string, StringMetricType> = {
@@ -70,10 +70,10 @@ describe("error_recording", function() {
 
     // When the metric is created from a static label, it will contain the label in it's name,
     // otherwise the label stays underd the `dynamicLabel` property.
-    await Context.errorManager.record(metric.oneLabel, ErrorType.InvalidValue, "Invalid value");
-    await Context.errorManager.record(metric.anotherLabel, ErrorType.InvalidLabel, "Invalid label", 10);
+    Context.errorManager.record(metric.oneLabel, ErrorType.InvalidValue, "Invalid value");
+    Context.errorManager.record(metric.anotherLabel, ErrorType.InvalidLabel, "Invalid label", 10);
 
-    assert.strictEqual(await Context.errorManager.testGetNumRecordedErrors(metric.dynamicLabel, ErrorType.InvalidValue), 1);
-    assert.strictEqual(await Context.errorManager.testGetNumRecordedErrors(metric.dynamicLabel, ErrorType.InvalidLabel), 10);
+    assert.strictEqual(Context.errorManager.testGetNumRecordedErrors(metric.dynamicLabel, ErrorType.InvalidValue), 1);
+    assert.strictEqual(Context.errorManager.testGetNumRecordedErrors(metric.dynamicLabel, ErrorType.InvalidLabel), 10);
   });
 });
