@@ -4,24 +4,36 @@
 
 import { gzipSync, strToU8 } from "fflate";
 
-import type { QueuedPing } from "../manager/shared.js";
-import type Uploader from "../uploader.js";
-import type { UploadTask } from "../task.js";
-import { GLEAN_VERSION } from "../../constants.js";
-import { Context } from "../../context.js";
-import log, { LoggingLevel } from "../../log.js";
-import Policy from "../policy.js";
-import { UploadResult, UploadResultStatus } from "../uploader.js";
-import { UploadTaskTypes } from "../task.js";
-import type PlatformSync from "../../../platform/sync.js";
-import { PingBodyOverflowError, PING_UPLOAD_WORKER_LOG_TAG } from "./shared.js";
+import type { QueuedPing } from "./manager.js";
+import type Uploader from "./uploader.js";
+import type { UploadTask } from "./task.js";
 
-class PingUploadWorkerSync {
+import { Context } from "../context.js";
+import log, { LoggingLevel } from "../log.js";
+import Policy from "./policy.js";
+import { UploadResult, UploadResultStatus } from "./uploader.js";
+import { UploadTaskTypes } from "./task.js";
+import { GLEAN_VERSION } from "../constants.js";
+
+const PING_UPLOAD_WORKER_LOG_TAG = "core.Upload.PingUploadWorker";
+
+// Error to be thrown in case the final ping body is larger than MAX_PING_BODY_SIZE.
+class PingBodyOverflowError extends Error {
+  constructor(message?: string) {
+    super(message);
+    this.name = "PingBodyOverflow";
+  }
+}
+
+class PingUploadWorker {
+  // Whether or not someone is blocking on the currentJob.
+  isBlocking = false;
+
   constructor(
     private readonly uploader: Uploader,
     private readonly serverEndpoint: string,
     private readonly policy = new Policy()
-  ) {}
+  ) { }
 
   /**
    * Builds a ping request.
@@ -44,9 +56,7 @@ class PingUploadWorkerSync {
       ...ping.headers,
       "Content-Type": "application/json; charset=utf-8",
       Date: new Date().toISOString(),
-      "X-Telemetry-Agent": `Glean/${GLEAN_VERSION} (JS on ${(
-        Context.platform as PlatformSync
-      ).info.os()})`
+      "X-Telemetry-Agent": `Glean/${GLEAN_VERSION} (JS on ${(Context.platform).info.os()})`
     };
 
     const stringifiedBody = JSON.stringify(ping.payload);
@@ -120,26 +130,51 @@ class PingUploadWorkerSync {
     getUploadTask: () => UploadTask,
     processUploadResponse: (ping: QueuedPing, result: UploadResult) => void
   ): void {
-    try {
-      const task = getUploadTask();
-      switch (task.type) {
-      case UploadTaskTypes.Upload:
-        this.attemptPingUpload(task.ping)
-          .then((result) => {
-            processUploadResponse(task.ping, result);
-          })
-          .catch((error) => {
-            console.log(error);
-          });
+    while (true) {
+      try {
+        const task = getUploadTask();
+        switch (task.type) {
+        case UploadTaskTypes.Upload: {
+          if (this.isBlocking) {
+            return;
+          }
+
+          this.attemptPingUpload(task.ping)
+            .then((result) => {
+              processUploadResponse(task.ping, result);
+            })
+            .catch((error) => {
+              console.log(error);
+            });
+          continue;
+        }
+
+        case UploadTaskTypes.Done:
+          return;
+        }
+      } catch (error) {
+        log(
+          PING_UPLOAD_WORKER_LOG_TAG,
+          ["IMPOSSIBLE: Something went wrong while processing ping upload tasks.", error],
+          LoggingLevel.Error
+        );
       }
-    } catch (error) {
-      log(
-        PING_UPLOAD_WORKER_LOG_TAG,
-        ["IMPOSSIBLE: Something went wrong while processing ping upload tasks.", error],
-        LoggingLevel.Error
-      );
     }
+  }
+
+  /**
+   * Block the uploader from uploading pings.
+   */
+  blockUploading() {
+    this.isBlocking = true;
+  }
+
+  /**
+   * Resume the uploader to upload pings.
+   */
+  resumeUploading() {
+    this.isBlocking = false;
   }
 }
 
-export default PingUploadWorkerSync;
+export default PingUploadWorker;
