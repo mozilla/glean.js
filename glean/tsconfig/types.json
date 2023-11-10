@@ -3,7 +3,6 @@
   "include": [
     "../src/core/**/*.ts",
     "../src/plugins/*.ts",
-    "../src/entry/node.ts",
     "../src/entry/web.ts",
     "../src/entry/webext.ts"
   ],

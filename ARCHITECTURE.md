@@ -16,7 +16,7 @@ An end-to-end data collection platform developed by Mozilla and primarily target
 Glean provides multiple client SDKs for different programming languages and platforms.
 One of the aspects that guide Glean SDK development is cross-platform consistency and the Glean
 JavaScript SDK is no exception to that. It is built to work on multiple JavaScript platforms --
-websites, web extensions, Node.js and QML as of the time of writing -- and to be easily extendable
+websites, and web extensions as of the time of writing -- and to be easily extendable
 to other platforms as well.
 
 The Glean JavaScript SDK is the latest addition to the family of Glean SDKs. The other Glean SDKs,
@@ -40,10 +40,10 @@ storage. Each metric can have different [lifetimes](https://mozilla.github.io/gl
 and the SDK will manage its storage so that data does not remain in storage after it's lifetime is expired.
 
 The Glean SDK tries to do all of this is the least disruptive way possible to users. There are two separate
-implementations for the SDK based on the platform: async (node, web extensions) and sync (browser). The implementation
+implementations for the SDK based on the platform: async (web extensions) and sync (browser). The implementation
 is set inside of Glean itself and is not configurable by the user.
 
-### async (Web Extensions, Node)
+### async (Web Extensions)
 
 All of the SDKs tasks are queued and executed asynchronously. The APIs exposed by the Glean SDK will only do
 the en-queuing of tasks, a quick synchronous operation. Internally, the Glean SDK will handle the
@@ -124,7 +124,6 @@ It also makes testing easier, because the exact same suite of tests can be run f
 The storage module varies for each platform. The storage mechanism used by each platform is as follows:
 - `web` - [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
 - `webext` - [`storage`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage)
-- `Node` - None, everything is stored in memory
 
 ### `plugins/`
 
