@@ -2,24 +2,23 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { ConfigurationInterface } from "../config.js";
-import type PlatformSync from "../../platform/sync.js";
+import type { ConfigurationInterface } from "./config.js";
+import type Platform from "../platform/index.js";
 
-import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "../constants.js";
-import { Configuration } from "../config.js";
-import PingUploadManager from "../upload/manager/sync.js";
-import { extractBooleanFromString, isBoolean, isString, sanitizeApplicationId } from "../utils.js";
-import { CoreMetricsSync } from "../internal_metrics/sync.js";
-import { EventsDatabaseSync } from "../metrics/events_database/sync.js";
-import { DatetimeMetric } from "../metrics/types/datetime.js";
-import CorePings from "../internal_pings.js";
-import { registerPluginToEvent } from "../events/utils/sync.js";
-import ErrorManagerSync from "../error/sync.js";
-import { Lifetime } from "../metrics/lifetime.js";
-import { Context } from "../context.js";
-import log, { LoggingLevel } from "../log.js";
-import MetricsDatabaseSync from "../metrics/database/sync.js";
-import PingsDatabaseSync from "../pings/database/sync.js";
+import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants.js";
+import { Configuration } from "./config.js";
+import PingUploadManager from "./upload/manager.js";
+import { extractBooleanFromString, isBoolean, isString, sanitizeApplicationId } from "./utils.js";
+import { CoreMetrics } from "./internal_metrics.js";
+import { DatetimeMetric } from "./metrics/types/datetime.js";
+import CorePings from "./internal_pings.js";
+import { Lifetime } from "./metrics/lifetime.js";
+import { Context } from "./context.js";
+import log, { LoggingLevel } from "./log.js";
+import MetricsDatabase from "./metrics/database.js";
+import EventsDatabase from "./metrics/events_database/index.js";
+import PingsDatabase from "./pings/database.js";
+import ErrorManager from "./error/index.js";
 
 const LOG_TAG = "core.Glean";
 
@@ -82,6 +81,7 @@ namespace Glean {
    */
   function onUploadEnabled(): void {
     Context.uploadEnabled = true;
+    pingUploader.resumeUploads();
   }
 
   /**
@@ -90,7 +90,7 @@ namespace Glean {
    * @param migrateFromLegacy Whether or not to migrate data from legacy storage.
    */
   function initializeCoreMetrics(migrateFromLegacy?: boolean): void {
-    (Context.coreMetrics as CoreMetricsSync).initialize(migrateFromLegacy);
+    Context.coreMetrics.initialize(migrateFromLegacy);
   }
 
   /**
@@ -142,7 +142,7 @@ namespace Glean {
     let firstRunDate: Date;
     try {
       firstRunDate = new DatetimeMetric(
-        (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
+        Context.metricsDatabase.getMetric(
           CLIENT_INFO_STORAGE,
           Context.coreMetrics.firstRunDate
         )
@@ -152,9 +152,9 @@ namespace Glean {
     }
 
     // Clear the databases.
-    (Context.eventsDatabase as EventsDatabaseSync).clearAll();
-    (Context.metricsDatabase as MetricsDatabaseSync).clearAll();
-    (Context.pingsDatabase as PingsDatabaseSync).clearAll();
+    Context.eventsDatabase.clearAll();
+    Context.metricsDatabase.clearAll();
+    Context.pingsDatabase.clearAll();
 
     // We need to briefly set upload_enabled to true here so that `set`
     // is not a no-op.
@@ -171,10 +171,10 @@ namespace Glean {
     // Store a "dummy" KNOWN_CLIENT_ID in the client_id metric. This will
     // make it easier to detect if pings were unintentionally sent after
     // uploading is disabled.
-    (Context.coreMetrics as CoreMetricsSync).clientId.set(KNOWN_CLIENT_ID);
+    Context.coreMetrics.clientId.set(KNOWN_CLIENT_ID);
 
     // Restore the first_run_date.
-    (Context.coreMetrics as CoreMetricsSync).firstRunDate.set(firstRunDate);
+    Context.coreMetrics.firstRunDate.set(firstRunDate);
 
     Context.uploadEnabled = false;
   }
@@ -262,7 +262,7 @@ namespace Glean {
       return;
     }
 
-    Context.coreMetrics = new CoreMetricsSync();
+    Context.coreMetrics = new CoreMetrics();
     Context.corePings = new CorePings();
 
     Context.applicationId = sanitizeApplicationId(applicationId);
@@ -278,18 +278,12 @@ namespace Glean {
     if (preInitDebugViewTag) Context.config.debugViewTag = preInitDebugViewTag;
     if (preInitSourceTags) Context.config.sourceTags = preInitSourceTags;
 
-    Context.metricsDatabase = new MetricsDatabaseSync();
-    Context.eventsDatabase = new EventsDatabaseSync();
-    Context.pingsDatabase = new PingsDatabaseSync();
-    Context.errorManager = new ErrorManagerSync();
+    Context.metricsDatabase = new MetricsDatabase();
+    Context.eventsDatabase = new EventsDatabase();
+    Context.pingsDatabase = new PingsDatabase();
+    Context.errorManager = new ErrorManager();
 
     pingUploader = new PingUploadManager(correctConfig, Context.pingsDatabase);
-
-    if (config?.plugins) {
-      for (const plugin of config.plugins) {
-        registerPluginToEvent(plugin);
-      }
-    }
 
     Context.initialized = true;
 
@@ -323,6 +317,7 @@ namespace Glean {
       // just follow the normal code path to instantiate the core metrics.
       onUploadEnabled();
       initializeCoreMetrics(config?.migrateFromLegacyStorage);
+
     } else {
       // If upload is disabled, and we've never run before, only set the
       // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
@@ -455,16 +450,6 @@ namespace Glean {
   }
 
   /**
-   * Calling shutdown on the synchronous implementation is a no-op. Glean's
-   * synchronous implementation does not use the dispatcher, so there is no
-   * action to perform.
-   */
-  export function shutdown(): void {
-    log(LOG_TAG, "Calling shutdown for the Glean web implementation is a no-op. Ignoring.");
-    return;
-  }
-
-  /**
    * Sets the current environment.
    *
    * This function **must** be called before initialize.
@@ -472,7 +457,7 @@ namespace Glean {
    * @param platform The environment to set.
    *        Please check out the available environments in the platform/ module.
    */
-  export function setPlatform(platform: PlatformSync): void {
+  export function setPlatform(platform: Platform): void {
     // Platform can only be set if Glean is uninitialized,
     // because initialize will make sure to recreate any
     // databases in case another platform was set previously.
