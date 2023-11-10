@@ -2,10 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { GLEAN_RESERVED_EXTRA_KEYS } from "../../constants.js";
 import type { JSONObject } from "../../utils.js";
-import { isBoolean, isNumber, isString, isInteger, isObject } from "../../utils.js";
 import type { MetricValidationResult } from "../metric.js";
+
+import { GLEAN_RESERVED_EXTRA_KEYS } from "../../constants.js";
+import { isBoolean, isNumber, isString, isInteger, isObject } from "../../utils.js";
 import { MetricValidation, Metric } from "../metric.js";
 import { validateString } from "../utils.js";
 
