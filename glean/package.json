@@ -12,7 +12,6 @@
     "./plugins/*": "./dist/plugins/*.js",
     "./uploader": "./dist/core/upload/uploader.js",
     "./testing": "./dist/core/testing/index.js",
-    "./node": "./dist/entry/node.js",
     "./webext": "./dist/entry/webext.js",
     "./web": "./dist/entry/web.js"
   },
@@ -20,9 +19,6 @@
     "*": {
       "webext": [
         "./dist/types/entry/webext.d.ts"
-      ],
-      "node": [
-        "./dist/types/entry/node.d.ts"
       ],
       "web": [
         "./dist/types/entry/web.d.ts"

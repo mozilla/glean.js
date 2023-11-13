@@ -17,10 +17,6 @@ updates:
     schedule:
       interval: "monthly"
   - package-ecosystem: "npm"
-    directory: "/samples/node"
-    schedule:
-      interval: "monthly"
-  - package-ecosystem: "npm"
     directory: "/glean/tests/unit/platform/utils/webext/sample"
     schedule:
       interval: "monthly"

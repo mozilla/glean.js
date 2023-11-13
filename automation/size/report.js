@@ -23,11 +23,6 @@ async function buildStatsMap() {
       name: "Website",
       max: await getCustomLibSize("web", METRIC_TYPES, PLUGINS),
       min: await getCustomLibSize("web")
-    },
-    {
-      name: "Node.js",
-      max: await getCustomLibSize("node", METRIC_TYPES, PLUGINS),
-      min: await getCustomLibSize("node")
     }
   ];
 }

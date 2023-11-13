@@ -23,7 +23,3 @@ as Chromium based browsers.
 ## Web Extensions
 
 > TODO: see [Bug 1752549](https://bugzilla.mozilla.org/show_bug.cgi?id=1752549)
-
-## Node.js
-
-> TODO: see [Bug 1752548](https://bugzilla.mozilla.org/show_bug.cgi?id=1752548)
