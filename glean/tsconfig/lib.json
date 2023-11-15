@@ -3,8 +3,6 @@
   "include": [
     "../src/core/**/*.ts",
     "../src/plugins/*.ts",
-    "../src/entry/node.ts",
-    "../src/entry/webext.ts",
     "../src/entry/web.ts"
   ],
   "compilerOptions": {
