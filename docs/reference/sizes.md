@@ -13,8 +13,6 @@ To check out a comprehensive list of which metrics are collected by Glean and th
 || Size |
 |--|--|
 |web|**61 KB**|
-|webext|**61 KB**|
-|node|**61 KB**|
 <!-- ! -->
 
 > **Note**: The QML bundle contains all the metric types and is not distributed through the
@@ -29,23 +27,23 @@ the size of the bundle due to auxiliary code necessary to export the metric type
 to external consumers.
 
 <!-- ! -->
-|Metric Type| web|webext|node|
-|--|--|--|--|
-|boolean|1.8 KB |1.8 KB |1.8 KB |
-|counter|998 bytes |998 bytes |998 bytes |
-|custom_distribution|5.8 KB |5.8 KB |5.8 KB |
-|datetime|1.1 KB |1.1 KB |1.1 KB |
-|event|1008 bytes |1008 bytes |1008 bytes |
-|labeled|355 bytes |356 bytes |355 bytes |
-|memory_distribution|6.1 KB |6.1 KB |6.1 KB |
-|quantity|2.1 KB |2.1 KB |2.1 KB |
-|string|998 bytes |998 bytes |998 bytes |
-|text|1.8 KB |1.8 KB |1.8 KB |
-|timespan|5.3 KB |5.3 KB |5.3 KB |
-|timing_distribution|8.7 KB |8.7 KB |8.7 KB |
-|rate|2.5 KB |2.5 KB |2.5 KB |
-|uuid|1.0 KB |1.0 KB |1.0 KB |
-|url|2.3 KB |2.3 KB |2.3 KB |
+|Metric Type| web|
+|--|--|
+|boolean|1.8 KB |
+|counter|998 bytes |
+|custom_distribution|5.8 KB |
+|datetime|1.1 KB |
+|event|1008 bytes |
+|labeled|355 bytes |
+|memory_distribution|6.1 KB |
+|quantity|2.1 KB |
+|string|998 bytes |
+|text|1.8 KB |
+|timespan|5.3 KB |
+|timing_distribution|8.7 KB |
+|rate|2.5 KB |
+|uuid|1.0 KB |
+|url|2.3 KB |
 <!-- ! -->
 
 ## Plugins
@@ -54,7 +52,7 @@ Plugins add extra functionality to Glean.
 Using a plugin also means a size impact on the final bundle.
 
 <!-- ! -->
-|Plugin| web|webext|node|
-|--|--|--|--|
-|encryption|22 KB |22 KB |28 KB |
+|Plugin| web|
+|--|--|
+|encryption|22 KB |
 <!-- ! -->

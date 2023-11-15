@@ -1,6 +1,12 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0-pre.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0-pre.1...main)
+
+# v3.0.0-pre.1 (2023-11-15)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0-pre.0...v3.0.0-pre.1)
+
+* [#1814](https://github.com/mozilla/glean.js/pull/1814): **BREAKING CHANGE**: Temporarily drop support for web extensions. This platform will be added again once we complete the Glean.js platform refactoring.
 
 # v3.0.0-pre.0 (2023-11-10)
 
