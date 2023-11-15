@@ -15,8 +15,7 @@ An end-to-end data collection platform developed by Mozilla and primarily target
 
 Glean provides multiple client SDKs for different programming languages and platforms.
 One of the aspects that guide Glean SDK development is cross-platform consistency and the Glean
-JavaScript SDK is no exception to that. It is built to work on multiple JavaScript platforms --
-websites, and web extensions as of the time of writing -- and to be easily extendable
+JavaScript SDK is no exception to that. It is built to work on websites -- and to be easily extendable
 to other platforms as well.
 
 The Glean JavaScript SDK is the latest addition to the family of Glean SDKs. The other Glean SDKs,
@@ -39,9 +38,7 @@ When data is submitted, the Glean SDK is responsible for assembling the correct 
 storage. Each metric can have different [lifetimes](https://mozilla.github.io/glean/book/user/metrics/adding-new-metrics.html#a-lifetime-example)
 and the SDK will manage its storage so that data does not remain in storage after it's lifetime is expired.
 
-The Glean SDK tries to do all of this is the least disruptive way possible to users. There are two separate
-implementations for the SDK based on the platform: async (web extensions) and sync (browser). The implementation
-is set inside of Glean itself and is not configurable by the user.
+The Glean SDK tries to do all of this is the least disruptive way possible to users.
 
 ### async (Web Extensions)
 
@@ -104,7 +101,7 @@ To see all the exposed entry points, check out Glean.js' `package.json` file.
 ### `entry/`
 
 The `entry/` folder contains the main entry points for the Glean.js package per platform.
-For example, when a user does `import Glean from @mozilla/glean/webext` it's the `entry/webext.ts`
+For example, when a user does `import Glean from @mozilla/glean/web` it's the `entry/web.ts`
 file that they are getting and not `core/glean.ts`.
 
 The main difference between each platform's file is that a different `Platform` implementation is
@@ -123,7 +120,6 @@ It also makes testing easier, because the exact same suite of tests can be run f
 
 The storage module varies for each platform. The storage mechanism used by each platform is as follows:
 - `web` - [`localStorage`](https://developer.mozilla.org/en-US/docs/Web/API/Window/localStorage)
-- `webext` - [`storage`](https://developer.mozilla.org/en-US/docs/Mozilla/Add-ons/WebExtensions/API/storage)
 
 ### `plugins/`
 

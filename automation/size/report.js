@@ -15,11 +15,6 @@ import {
 async function buildStatsMap() {
   return [
     {
-      name: "Web Extension",
-      max: await getCustomLibSize("webext", METRIC_TYPES, PLUGINS),
-      min: await getCustomLibSize("webext")
-    },
-    {
       name: "Website",
       max: await getCustomLibSize("web", METRIC_TYPES, PLUGINS),
       min: await getCustomLibSize("web")

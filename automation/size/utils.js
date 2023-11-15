@@ -34,7 +34,7 @@ export const METRIC_TYPES = [
 
 export const PLUGINS = [ "encryption" ];
 
-export const PLATFORMS = [ "web", "webext" ];
+export const PLATFORMS = [ "web" ];
 
 const UNITS = ["bytes", "KB", "MB", "GB", "TB", "PB", "EB", "ZB", "YB"];
 /**
@@ -81,7 +81,7 @@ export function executeCmd(cmd) {
  *
  * Note: This function will use whatever `@mozilla/glean` package is linked at its runtime.
  *
- * @param {string} platform The platform to build for, supported platforms are: `web`, and `webext`.
+ * @param {string} platform The platform to build for, supported platforms are: `web`.
  * @param {[string]} metrics An array of metric types. Supported metrics types are listed in `METRIC_TYPES`.
  *        If not provided the final bundle won't contain any additional metric types.
  * @param {[string]} plugins An array of plugins. Supported plugins are listed in `PLUGINS`.
