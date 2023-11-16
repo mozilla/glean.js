@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0-pre.1...main)
 
+This is the official release based on v3.0.0-pre.1.
+
 # v3.0.0-pre.1 (2023-11-15)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0-pre.0...v3.0.0-pre.1)
