@@ -73,7 +73,7 @@ class PingUploadWorker {
       headers["Content-Encoding"] = "gzip";
     } catch {
       finalBody = stringifiedBody;
-      bodySizeInBytes = encodedBody.length;
+      bodySizeInBytes = stringifiedBody.length;
     }
 
     if (bodySizeInBytes > this.policy.maxPingBodySize) {
