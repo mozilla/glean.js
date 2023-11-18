@@ -10,6 +10,7 @@ import fetch from "node-fetch";
 
 import BrowserUploader from "../../../../src/platform/browser/uploader";
 import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
+import PingRequest from "../../../../src/core/upload/ping_request";
 
 const sandbox = sinon.createSandbox();
 
@@ -28,7 +29,7 @@ describe("Uploader/Browser", function () {
     for (const status of [200, 400, 500]) {
       nock(MOCK_ENDPOINT).post(/./i).reply(status);
 
-      const response = BrowserUploader.post(MOCK_ENDPOINT, "");
+      const response = BrowserUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
       const expectedResponse = new UploadResult(UploadResultStatus.Success, status);
       assert.deepStrictEqual(
         await response,
@@ -44,7 +45,7 @@ describe("Uploader/Browser", function () {
 
     nock(MOCK_ENDPOINT).post(/./i).delay(TEST_TIMEOUT_MS + 1).reply(500);
 
-    const response = BrowserUploader.post(MOCK_ENDPOINT, "");
+    const response = BrowserUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
     const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
     assert.deepStrictEqual(
       await response,
@@ -59,7 +60,7 @@ describe("Uploader/Browser", function () {
       code: "AWFUL_ERROR",
     });
 
-    const response = BrowserUploader.post(MOCK_ENDPOINT, "");
+    const response = BrowserUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
     const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
     assert.deepStrictEqual(
       await response,

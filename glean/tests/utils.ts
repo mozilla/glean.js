@@ -5,6 +5,7 @@
 import { gunzipSync } from "fflate";
 
 import type { JSONObject } from "../src/core/utils";
+import type PingRequest from "../src/core/upload/ping_request";
 import { isString } from "../src/core/utils";
 import Uploader from "../src/core/upload/uploader";
 import { UploadResultStatus, UploadResult } from "../src/core/upload/uploader";
@@ -116,7 +117,7 @@ export class WaitableUploader extends Uploader {
     });
   }
 
-  async post(url: string, body: string, headers: Record<string, string>): Promise<UploadResult> {
+  async post(url: string, pingRequest: PingRequest<string | Uint8Array>): Promise<UploadResult> {
     // Make this a tiny bit slow to mimic reality a bit better.
     await new Promise<void>(resolve => {
       setTimeout(() => resolve(), Math.random() * 10);
@@ -127,12 +128,12 @@ export class WaitableUploader extends Uploader {
 
     if (containsName || containsPath) {
       if (this.waitingForCount) {
-        this.batchResult.push(unzipPingPayload(body));
+        this.batchResult.push(unzipPingPayload(pingRequest.payload));
         if (this.batchResult.length >= this.waitingForCount) {
           this.waitResolver?.();
         }
       } else {
-        this.waitResolver?.(unzipPingPayload(body), headers);
+        this.waitResolver?.(unzipPingPayload(pingRequest.payload), pingRequest.headers);
       }
     }
 
@@ -146,7 +147,7 @@ export class WaitableUploader extends Uploader {
 export class CounterUploader extends Uploader {
   public count = 0;
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  async post(_url: string, _body: string): Promise<UploadResult> {
+  async post(_url: string, _pingRequest: PingRequest<string | Uint8Array>): Promise<UploadResult> {
     this.count++;
     // Make this just a tiny bit slow.
     await new Promise<void>(resolve => {

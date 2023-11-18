@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { gzipSync, strToU8 } from "fflate";
-
 import type { QueuedPing } from "./manager.js";
 import type Uploader from "./uploader.js";
 import type { UploadTask } from "./task.js";
@@ -14,16 +12,10 @@ import Policy from "./policy.js";
 import { UploadResult, UploadResultStatus } from "./uploader.js";
 import { UploadTaskTypes } from "./task.js";
 import { GLEAN_VERSION } from "../constants.js";
+import { PingBodyOverflowError } from "./ping_body_overflow_error.js";
+import PingRequest from "./ping_request.js";
 
 const PING_UPLOAD_WORKER_LOG_TAG = "core.Upload.PingUploadWorker";
-
-// Error to be thrown in case the final ping body is larger than MAX_PING_BODY_SIZE.
-class PingBodyOverflowError extends Error {
-  constructor(message?: string) {
-    super(message);
-    this.name = "PingBodyOverflow";
-  }
-}
 
 class PingUploadWorker {
   // Whether or not someone is blocking on the currentJob.
@@ -47,10 +39,7 @@ class PingUploadWorker {
    * @param ping The ping to include the headers in.
    * @returns The updated ping.
    */
-  private buildPingRequest(ping: QueuedPing): {
-    headers: Record<string, string>;
-    payload: string | Uint8Array;
-  } {
+  private buildPingRequest(ping: QueuedPing): PingRequest<string | Uint8Array> {
     let headers = ping.headers || {};
     headers = {
       ...ping.headers,
@@ -60,33 +49,15 @@ class PingUploadWorker {
     };
 
     const stringifiedBody = JSON.stringify(ping.payload);
-    // We prefer using `strToU8` instead of TextEncoder directly,
-    // because it will polyfill TextEncoder if it's not present in the environment.
-    // Environments that don't provide TextEncoder are IE and most importantly QML.
-    const encodedBody = strToU8(stringifiedBody);
 
-    let finalBody: string | Uint8Array;
-    let bodySizeInBytes: number;
-    try {
-      finalBody = gzipSync(encodedBody);
-      bodySizeInBytes = finalBody.length;
-      headers["Content-Encoding"] = "gzip";
-    } catch {
-      finalBody = stringifiedBody;
-      bodySizeInBytes = stringifiedBody.length;
-    }
-
-    if (bodySizeInBytes > this.policy.maxPingBodySize) {
+    if (stringifiedBody.length > this.policy.maxPingBodySize) {
       throw new PingBodyOverflowError(
         `Body for ping ${ping.identifier} exceeds ${this.policy.maxPingBodySize}bytes. Discarding.`
       );
     }
 
-    headers["Content-Length"] = bodySizeInBytes.toString();
-    return {
-      headers,
-      payload: finalBody
-    };
+    headers["Content-Length"] = stringifiedBody.length.toString();
+    return new PingRequest(ping.identifier, headers, stringifiedBody, this.policy.maxPingBodySize);
   }
 
   /**
@@ -103,8 +74,7 @@ class PingUploadWorker {
       // we rely on the browser's "keepalive" header.
       return this.uploader.post(
         `${this.serverEndpoint}${ping.path}`,
-        finalPing.payload,
-        finalPing.headers
+        finalPing
       );
     } catch (e) {
       log(

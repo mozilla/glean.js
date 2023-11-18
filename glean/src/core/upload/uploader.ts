@@ -2,6 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import type PingRequest from "./ping_request.js";
+
 // The timeout, in milliseconds, to use for all operations with the server.
 export const DEFAULT_UPLOAD_TIMEOUT_MS = 10_000;
 
@@ -51,7 +53,7 @@ export abstract class Uploader {
    * @param headers Optional headers to include in the request
    * @returns The status code of the response.
    */
-  abstract post(url: string, body: string | Uint8Array, headers?: Record<string, string>): Promise<UploadResult>;
+  abstract post(url: string, pingRequest: PingRequest<string | Uint8Array>): Promise<UploadResult>;
 }
 
 export default Uploader;
