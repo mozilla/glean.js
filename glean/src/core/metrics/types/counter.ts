@@ -5,7 +5,6 @@
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric.js";
-import type MetricsDatabaseSync from "../database/sync.js";
 
 import { saturatingAdd, isUndefined, testOnlyCheck } from "../../utils.js";
 import { MetricType } from "../index.js";
@@ -47,12 +46,21 @@ export class InternalCounterMetricType extends MetricType {
     super("counter", meta, CounterMetric);
   }
 
-  /// SHARED ///
   add(amount?: number): void {
-    if (Context.isPlatformSync()) {
-      this.addSync(amount);
-    } else {
-      this.addAsync(amount);
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    if (isUndefined(amount)) {
+      amount = 1;
+    }
+
+    try {
+      Context.metricsDatabase.transform(this, this.transformFn(amount));
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordError(this);
+      }
     }
   }
 
@@ -76,70 +84,10 @@ export class InternalCounterMetricType extends MetricType {
     };
   }
 
-  /// ASYNC ///
-  addAsync(amount?: number) {
-    Context.dispatcher.launch(async () => this.addUndispatched(amount));
-  }
-
-  /**
-   * An implementation of `add` that does not dispatch the recording task.
-   *
-   * # Important
-   *
-   * This method should **never** be exposed to users.
-   *
-   * @param amount The amount we want to add.
-   */
-  async addUndispatched(amount?: number): Promise<void> {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    if (isUndefined(amount)) {
-      amount = 1;
-    }
-
-    try {
-      await Context.metricsDatabase.transform(this, this.transformFn(amount));
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        await e.recordError(this);
-      }
-    }
-  }
-
-  /// SYNC ///
-  /**
-   * A synchronous implementation of add.
-   *
-   * @param amount The amount we want to add.
-   */
-  addSync(amount?: number) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    if (isUndefined(amount)) {
-      amount = 1;
-    }
-
-    try {
-      (Context.metricsDatabase as MetricsDatabaseSync).transform(this, this.transformFn(amount));
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
-      }
-    }
-  }
-
   /// TESTING ///
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
+  testGetValue(ping: string = this.sendInPings[0]): number | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: number | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<number>(ping, this);
-      });
-      return metric;
+      return Context.metricsDatabase.getMetric<number>(ping, this);
     }
   }
 }
@@ -184,7 +132,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<number | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): number | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -198,10 +146,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

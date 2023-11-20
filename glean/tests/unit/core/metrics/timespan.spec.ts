@@ -7,7 +7,7 @@ import sinon from "sinon";
 import type { SinonStub } from "sinon";
 
 import { Context } from "../../../../src/core/context";
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import TimeUnit from "../../../../src/core/metrics/time_unit";
 import TimespanMetricType, { InternalTimespanMetricType, TimespanMetric } from "../../../../src/core/metrics/types/timespan";
@@ -20,8 +20,8 @@ describe("TimespanMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
   let fakeNow: SinonStub;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
     fakeNow = typeof performance === "undefined" ? sandbox.stub(Date, "now") : sandbox.stub(performance, "now");
   });
 
@@ -51,7 +51,7 @@ describe("TimespanMetric", function() {
     assert.doesNotThrow(() => new TimespanMetric({ timeUnit: "millisecond", timespan: 300 }));
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", function() {
     const metric = new TimespanMetricType({
       category: "aCategory",
       name: "aTimespan",
@@ -60,10 +60,10 @@ describe("TimespanMetric", function() {
       disabled: false
     }, "millisecond");
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to start/stop when glean upload is disabled is a no-op", async function() {
+  it("attempting to start/stop when glean upload is disabled is a no-op", function() {
     Glean.setUploadEnabled(false);
 
     const metric = new TimespanMetricType({
@@ -77,10 +77,10 @@ describe("TimespanMetric", function() {
     metric.start();
     metric.stop();
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("ping payload is correct", async function() {
+  it("ping payload is correct", function() {
     fakeNow.onCall(0).callsFake(() => 0);
     fakeNow.onCall(1).callsFake(() => 100);
 
@@ -94,9 +94,9 @@ describe("TimespanMetric", function() {
 
     metric.start();
     metric.stop();
-    assert.strictEqual(await metric.testGetValue("aPing"), 100);
+    assert.strictEqual(metric.testGetValue("aPing"), 100);
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "timespan": {
         "aCategory.aTimespan": {
@@ -107,7 +107,7 @@ describe("TimespanMetric", function() {
     });
   });
 
-  it("recording APIs properly sets the value in all pings", async function() {
+  it("recording APIs properly sets the value in all pings", function() {
     fakeNow.onCall(0).callsFake(() => 0);
     fakeNow.onCall(1).callsFake(() => 100);
 
@@ -121,12 +121,12 @@ describe("TimespanMetric", function() {
 
     metric.start();
     metric.stop();
-    assert.strictEqual(await metric.testGetValue("aPing"), 100);
-    assert.strictEqual(await metric.testGetValue("twoPing"), 100);
-    assert.strictEqual(await metric.testGetValue("threePing"), 100);
+    assert.strictEqual(metric.testGetValue("aPing"), 100);
+    assert.strictEqual(metric.testGetValue("twoPing"), 100);
+    assert.strictEqual(metric.testGetValue("threePing"), 100);
   });
 
-  it("truncation works", async function() {
+  it("truncation works", function() {
     const testCases = [
       {
         unit: TimeUnit.Nanosecond,
@@ -172,14 +172,14 @@ describe("TimespanMetric", function() {
 
       metric.start();
       metric.stop();
-      assert.strictEqual(await metric.testGetValue("aPing"), testCases[i].expected);
+      assert.strictEqual(metric.testGetValue("aPing"), testCases[i].expected);
 
       sandbox.restore();
       fakeNow = typeof performance === "undefined" ? sandbox.stub(Date, "now") : sandbox.stub(performance, "now");
     }
   });
 
-  it("second timer run is skipped", async function() {
+  it("second timer run is skipped", function() {
     // First check, duration: 100
     fakeNow.onCall(0).callsFake(() => 0);
     fakeNow.onCall(1).callsFake(() => 100);
@@ -197,22 +197,22 @@ describe("TimespanMetric", function() {
 
     metric.start();
     metric.stop();
-    assert.strictEqual(await metric.testGetValue("aPing"), 100);
+    assert.strictEqual(metric.testGetValue("aPing"), 100);
 
     // No error should be logged here: we had no prior value stored.
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 0);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidState), 0);
 
     metric.start();
     metric.stop();
     // First value should not be overwritten
-    assert.strictEqual(await metric.testGetValue("aPing"), 100);
+    assert.strictEqual(metric.testGetValue("aPing"), 100);
 
     // Make sure that the error has been logged: we had a stored value,
     // the new measurement was dropped.
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
 
-  it("cancel does not store and clears start time", async function() {
+  it("cancel does not store and clears start time", function() {
     // Use the internal type here so we can access the `startTime` property.
     const metric = new InternalTimespanMetricType({
       category: "aCategory",
@@ -224,11 +224,11 @@ describe("TimespanMetric", function() {
 
     metric.start();
     metric.cancel();
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
     assert.strictEqual(metric["startTime"], undefined);
   });
 
-  it("nothing is stored before stop", async function() {
+  it("nothing is stored before stop", function() {
     fakeNow.onCall(0).callsFake(() => 0);
     fakeNow.onCall(1).callsFake(() => 100);
 
@@ -241,13 +241,13 @@ describe("TimespanMetric", function() {
     }, "millisecond");
 
     metric.start();
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
 
     metric.stop();
-    assert.strictEqual(await metric.testGetValue("aPing"), 100);
+    assert.strictEqual(metric.testGetValue("aPing"), 100);
   });
 
-  it("timespan is not tracked across upload toggle", async function() {
+  it("timespan is not tracked across upload toggle", function() {
     const metric = new TimespanMetricType({
       category: "aCategory",
       name: "aTimespan",
@@ -274,12 +274,12 @@ describe("TimespanMetric", function() {
     metric.stop();
 
     // Nothing should have been recorded.
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
 
-  it("time cannot go backwards", async function() {
+  it("time cannot go backwards", function() {
     fakeNow.onCall(0).callsFake(() => 100);
     fakeNow.onCall(1).callsFake(() => 0);
 
@@ -293,12 +293,12 @@ describe("TimespanMetric", function() {
 
     metric.start();
     metric.stop();
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
 
-  it("setting raw time works correctly", async function () {
+  it("setting raw time works correctly", function () {
     const metric = new TimespanMetricType({
       category: "aCategory",
       name: "aTimespan",
@@ -308,10 +308,10 @@ describe("TimespanMetric", function() {
     }, "millisecond");
 
     metric.setRawNanos(1000000); // 1ms
-    assert.strictEqual(await metric.testGetValue("aPing"), 1);
+    assert.strictEqual(metric.testGetValue("aPing"), 1);
   });
 
-  it("setting raw time does nothing when times is running", async function () {
+  it("setting raw time does nothing when times is running", function () {
     fakeNow.onCall(0).callsFake(() => 0);
     fakeNow.onCall(1).callsFake(() => 100);
 
@@ -328,11 +328,11 @@ describe("TimespanMetric", function() {
     metric.stop();
 
     // We expect the start/stop value, not the raw value.
-    assert.strictEqual(await metric.testGetValue("aPing"), 100);
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
+    assert.strictEqual(metric.testGetValue("aPing"), 100);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidState), 1);
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new TimespanMetricType({
       category: "aCategory",
       name: "aTimespan",
@@ -347,7 +347,7 @@ describe("TimespanMetric", function() {
     // Floating point numbers should also record an error
     metric.setRawNanos(Math.PI);
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });

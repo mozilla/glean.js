@@ -2,8 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type SynchronousStore from "../../../core/storage/sync.js";
-import type { StorageIndex } from "../../../core/storage/shared.js";
+import type Store from "../../../core/storage.js";
+import type { StorageIndex } from "../../../core/storage.js";
 import type { JSONObject, JSONValue } from "../../../core/utils.js";
 
 import log, { LoggingLevel } from "../../../core/log.js";
@@ -11,13 +11,13 @@ import {
   deleteKeyFromNestedObject,
   getValueFromNestedObject,
   updateNestedObject
-} from "../../../core/storage/utils.js";
+} from "../../../core/storage.js";
 import { isWindowObjectUnavailable } from "../../../core/utils.js";
 
 const LOG_TAG = "platform.web.Storage";
 
 // If `window.localStorage` is unavailable, we return undefined for all.
-class WebStore implements SynchronousStore {
+class WebStore implements Store {
   private logTag: string;
 
   constructor(private rootKey: string) {

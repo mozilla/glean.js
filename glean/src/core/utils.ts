@@ -8,7 +8,6 @@ import { Context } from "./context.js";
 import { ErrorType } from "./error/error_type.js";
 import log, { LoggingLevel } from "./log.js";
 import { MetricValidationError } from "./metrics/metric.js";
-import type ErrorManagerSync from "./error/sync.js";
 
 const LOG_TAG = "core.utils";
 
@@ -190,7 +189,7 @@ export function generateUUIDv4(): string {
   } else {
     // Copied from https://stackoverflow.com/a/2117523/261698
     // and https://stackoverflow.com/questions/105034/how-to-create-guid-uuid
-    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+    return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
       const r = Math.random() * 16 | 0, v = c == "x" ? r : (r & 0x3 | 0x8);
       return v.toString(16);
     });
@@ -226,42 +225,14 @@ export function getMonotonicNow(): number {
  * @returns A string with at most `length` bytes.
  * @throws In case `value` is not a string.
  */
-export async function truncateStringAtBoundaryWithError(metric: MetricType, value: unknown, length: number): Promise<string> {
-  if(!isString(value)) {
+export function truncateStringAtBoundaryWithError(metric: MetricType, value: unknown, length: number): string {
+  if (!isString(value)) {
     throw new MetricValidationError(`Expected string, got ${JSON.stringify(value)}`);
   }
 
   const truncated = value.substring(0, length);
   if (truncated !== value) {
-    await Context.errorManager.record(
-      metric,
-      ErrorType.InvalidOverflow,
-      `Value length ${value.length} exceeds maximum of ${length}.`
-    );
-  }
-  return truncated;
-}
-
-/**
- * Truncates a string to a given max length SYNCHRONOUSLY.
- *
- * If the string required truncation, records an error through the error
- * reporting mechanism.
- *
- * @param metric The metric to record an error to, if necessary,
- * @param value The string to truncate.
- * @param length The length to truncate to.
- * @returns A string with at most `length` bytes.
- * @throws In case `value` is not a string.
- */
-export function truncateStringAtBoundaryWithErrorSync(metric: MetricType, value: unknown, length: number): string {
-  if(!isString(value)) {
-    throw new MetricValidationError(`Expected string, got ${JSON.stringify(value)}`);
-  }
-
-  const truncated = value.substring(0, length);
-  if (truncated !== value) {
-    (Context.errorManager as ErrorManagerSync).record(
+    Context.errorManager.record(
       metric,
       ErrorType.InvalidOverflow,
       `Value length ${value.length} exceeds maximum of ${length}.`

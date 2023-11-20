@@ -4,7 +4,7 @@
 
 import assert from "assert";
 
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import StringMetricType, { MAX_LENGTH_VALUE } from "../../../../src/core/metrics/types/string";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 
@@ -15,11 +15,11 @@ import { testResetGlean } from "../../../../src/core/testing";
 describe("StringMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", function() {
     const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
@@ -28,10 +28,10 @@ describe("StringMetric", function() {
       disabled: false
     });
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", function() {
     Glean.setUploadEnabled(false);
 
     const metric = new StringMetricType({
@@ -43,10 +43,10 @@ describe("StringMetric", function() {
     });
 
     metric.set("test_string_value");
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("ping payload is correct", async function() {
+  it("ping payload is correct", function() {
     const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
@@ -56,9 +56,9 @@ describe("StringMetric", function() {
     });
 
     metric.set("test_string_value");
-    assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
+    assert.strictEqual(metric.testGetValue("aPing"), "test_string_value");
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "string": {
         "aCategory.aStringMetric": "test_string_value"
@@ -66,7 +66,7 @@ describe("StringMetric", function() {
     });
   });
 
-  it("set properly sets the value in all pings", async function() {
+  it("set properly sets the value in all pings", function() {
     const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
@@ -76,12 +76,12 @@ describe("StringMetric", function() {
     });
 
     metric.set("test_string_value");
-    assert.strictEqual(await metric.testGetValue("aPing"), "test_string_value");
-    assert.strictEqual(await metric.testGetValue("twoPing"), "test_string_value");
-    assert.strictEqual(await metric.testGetValue("threePing"), "test_string_value");
+    assert.strictEqual(metric.testGetValue("aPing"), "test_string_value");
+    assert.strictEqual(metric.testGetValue("twoPing"), "test_string_value");
+    assert.strictEqual(metric.testGetValue("threePing"), "test_string_value");
   });
 
-  it("long string values are truncated", async function() {
+  it("long string values are truncated", function() {
     const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
@@ -94,16 +94,16 @@ describe("StringMetric", function() {
     metric.set(testString);
 
     assert.strictEqual(
-      await metric.testGetValue("aPing"),
+      metric.testGetValue("aPing"),
       testString.substring(0, MAX_LENGTH_VALUE)
     );
 
     assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1
+      metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1
     );
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
@@ -116,7 +116,7 @@ describe("StringMetric", function() {
     // @ts-ignore
     metric.set({ "not": "string" });
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 1);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });

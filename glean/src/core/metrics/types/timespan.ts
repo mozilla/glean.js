@@ -5,17 +5,14 @@
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric.js";
-import type ErrorManagerSync from "../../error/sync.js";
-import type MetricsDatabaseSync from "../database/sync.js";
 
-import { isInteger } from "../../utils.js";
-import TimeUnit from "../time_unit.js";
-import { MetricType } from "../index.js";
-import { isString, isObject, isUndefined, getMonotonicNow, testOnlyCheck } from "../../utils.js";
-import { MetricValidation, MetricValidationError } from "../metric.js";
-import { Metric } from "../metric.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
+import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
+import { MetricType } from "../index.js";
+import TimeUnit from "../time_unit.js";
+import { isInteger } from "../../utils.js";
+import { isString, isObject, isUndefined, getMonotonicNow, testOnlyCheck } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.TimespanMetricType";
 
@@ -133,172 +130,7 @@ export class InternalTimespanMetricType extends MetricType {
     this.timeUnit = timeUnit as TimeUnit;
   }
 
-  /// SHARED ///
   start(): void {
-    if (Context.isPlatformSync()) {
-      this.startSync();
-    } else {
-      this.startAsync();
-    }
-  }
-
-  stop(): void {
-    if (Context.isPlatformSync()) {
-      this.stopSync();
-    } else {
-      this.stopAsync();
-    }
-  }
-
-  cancel(): void {
-    if (Context.isPlatformSync()) {
-      this.cancelSync();
-    } else {
-      this.cancelAsync();
-    }
-  }
-
-  setRawNanos(elapsed: number): void {
-    if (Context.isPlatformSync()) {
-      this.setRawNanosSync(elapsed);
-    } else {
-      this.setRawNanosAsync(elapsed);
-    }
-  }
-
-  /// ASYNC ///
-  startAsync(): void {
-    // Get the start time outside of the dispatched task so that
-    // it is the time this function is called and not the time the task is executed.
-    const startTime = getMonotonicNow();
-
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      if (!isUndefined(this.startTime)) {
-        await Context.errorManager.record(this, ErrorType.InvalidState, "Timespan already started");
-        return;
-      }
-
-      this.startTime = startTime;
-      return Promise.resolve();
-    });
-  }
-
-  stopAsync(): void {
-    // Get the stop time outside of the dispatched task so that
-    // it is the time this function is called and not the time the task is executed.
-    const stopTime = getMonotonicNow();
-
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        // Reset timer when disabled, so that we don't record timespans across
-        // disabled/enabled toggling.
-        this.startTime = undefined;
-        return;
-      }
-
-      if (isUndefined(this.startTime)) {
-        await Context.errorManager.record(this, ErrorType.InvalidState, "Timespan not running.");
-        return;
-      }
-
-      const elapsed = stopTime - this.startTime;
-      this.startTime = undefined;
-
-      if (elapsed < 0) {
-        await Context.errorManager.record(this, ErrorType.InvalidState, "Timespan was negative.");
-        return;
-      }
-
-      await this.setRawUndispatched(elapsed);
-    });
-  }
-
-  cancelAsync(): void {
-    Context.dispatcher.launch(() => {
-      this.startTime = undefined;
-      return Promise.resolve();
-    });
-  }
-
-  setRawNanosAsync(elapsed: number): void {
-    Context.dispatcher.launch(async () => {
-      // `elapsed` is in nanoseconds in order to match the glean-core API.
-      const elapsedMillis = elapsed * 10 ** -6;
-      await this.setRawUndispatched(elapsedMillis);
-    });
-  }
-
-  /**
-   * An implementation of `setRaw` that does not dispatch the recording task.
-   *
-   * # Important
-   *
-   * This method should **never** be exposed to users.
-   *
-   * @param elapsed The elapsed time to record, in milliseconds.
-   */
-  async setRawUndispatched(elapsed: number): Promise<void> {
-    await this.setRawAsync(elapsed);
-  }
-
-  async setRawAsync(elapsed: number) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    if (!isUndefined(this.startTime)) {
-      await Context.errorManager.record(
-        this,
-        ErrorType.InvalidState,
-        "Timespan already running. Raw value not recorded."
-      );
-      return;
-    }
-
-    let reportValueExists = false;
-    try {
-      const transformFn = ((elapsed) => {
-        return (old?: JSONValue): TimespanMetric => {
-          let metric: TimespanMetric;
-          try {
-            metric = new TimespanMetric(old);
-            // If creating the metric didn't error,
-            // there is a valid timespan already recorded for this metric.
-            reportValueExists = true;
-          } catch {
-            // This may still throw in case elapsed in not the correct type.
-            metric = new TimespanMetric({
-              timespan: elapsed,
-              timeUnit: this.timeUnit
-            });
-          }
-
-          return metric;
-        };
-      })(elapsed);
-
-      await Context.metricsDatabase.transform(this, transformFn);
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        await e.recordError(this);
-      }
-    }
-
-    if (reportValueExists) {
-      await Context.errorManager.record(
-        this,
-        ErrorType.InvalidState,
-        "Timespan value already recorded. New value discarded."
-      );
-    }
-  }
-
-  /// SYNC ///
-  startSync(): void {
     // Get the start time outside of the dispatched task so that
     // it is the time this function is called and not the time the task is executed.
     const startTime = getMonotonicNow();
@@ -308,7 +140,7 @@ export class InternalTimespanMetricType extends MetricType {
     }
 
     if (!isUndefined(this.startTime)) {
-      (Context.errorManager as ErrorManagerSync).record(
+      Context.errorManager.record(
         this,
         ErrorType.InvalidState,
         "Timespan already started"
@@ -319,7 +151,7 @@ export class InternalTimespanMetricType extends MetricType {
     this.startTime = startTime;
   }
 
-  stopSync(): void {
+  stop(): void {
     // Get the stop time outside of the dispatched task so that
     // it is the time this function is called and not the time the task is executed.
     const stopTime = getMonotonicNow();
@@ -332,7 +164,7 @@ export class InternalTimespanMetricType extends MetricType {
     }
 
     if (isUndefined(this.startTime)) {
-      (Context.errorManager as ErrorManagerSync).record(
+      Context.errorManager.record(
         this,
         ErrorType.InvalidState,
         "Timespan not running."
@@ -344,7 +176,7 @@ export class InternalTimespanMetricType extends MetricType {
     this.startTime = undefined;
 
     if (elapsed < 0) {
-      (Context.errorManager as ErrorManagerSync).record(
+      Context.errorManager.record(
         this,
         ErrorType.InvalidState,
         "Timespan was negative."
@@ -352,26 +184,26 @@ export class InternalTimespanMetricType extends MetricType {
       return;
     }
 
-    this.setRawSync(elapsed);
+    this.setRaw(elapsed);
   }
 
-  cancelSync(): void {
+  cancel(): void {
     this.startTime = undefined;
   }
 
-  setRawNanosSync(elapsed: number): void {
+  setRawNanos(elapsed: number): void {
     // `elapsed` is in nanoseconds in order to match the glean-core API.
     const elapsedMillis = elapsed * 10 ** -6;
-    this.setRawSync(elapsedMillis);
+    this.setRaw(elapsedMillis);
   }
 
-  setRawSync(elapsed: number) {
+  setRaw(elapsed: number) {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
     if (!isUndefined(this.startTime)) {
-      (Context.errorManager as ErrorManagerSync).record(
+      Context.errorManager.record(
         this,
         ErrorType.InvalidState,
         "Timespan already running. Raw value not recorded."
@@ -401,15 +233,15 @@ export class InternalTimespanMetricType extends MetricType {
         };
       })(elapsed);
 
-      (Context.metricsDatabase as MetricsDatabaseSync).transform(this, transformFn);
+      Context.metricsDatabase.transform(this, transformFn);
     } catch (e) {
       if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
+        e.recordError(this);
       }
     }
 
     if (reportValueExists) {
-      (Context.errorManager as ErrorManagerSync).record(
+      Context.errorManager.record(
         this,
         ErrorType.InvalidState,
         "Timespan value already recorded. New value discarded."
@@ -418,13 +250,9 @@ export class InternalTimespanMetricType extends MetricType {
   }
 
   /// TESTING ///
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<number | undefined> {
+  testGetValue(ping: string = this.sendInPings[0]): number | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let value: TimespanInternalRepresentation | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        value = await Context.metricsDatabase.getMetric<TimespanInternalRepresentation>(ping, this);
-      });
-
+      const value: TimespanInternalRepresentation | undefined = Context.metricsDatabase.getMetric<TimespanInternalRepresentation>(ping, this);
       if (value) {
         return new TimespanMetric(value).timespan;
       }
@@ -502,7 +330,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<number | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): number | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -516,10 +344,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

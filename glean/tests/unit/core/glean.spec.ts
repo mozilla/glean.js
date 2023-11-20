@@ -6,8 +6,7 @@ import assert from "assert";
 import sinon from "sinon";
 
 import { CLIENT_INFO_STORAGE, DELETION_REQUEST_PING_NAME, KNOWN_CLIENT_ID } from "../../../src/core/constants";
-import CoreEvents from "../../../src/core/events/async";
-import Glean from "../../../src/core/glean/async";
+import Glean from "../../../src/core/glean";
 import StringMetricType from "../../../src/core/metrics/types/string";
 import CounterMetricType from "../../../src/core/metrics/types/counter";
 import PingType from "../../../src/core/pings/ping_type";
@@ -15,51 +14,40 @@ import type { JSONObject } from "../../../src/core/utils";
 import { isObject } from "../../../src/core/utils";
 import { stopGleanUploader, WaitableUploader } from "../../../tests/utils";
 import TestPlatform from "../../../src/platform/test";
-import Plugin from "../../../src/plugins";
 import { Lifetime } from "../../../src/core/metrics/lifetime";
 import { Context } from "../../../src/core/context";
 import EventMetricType from "../../../src/core/metrics/types/event";
-import { getGleanRestartedEventMetric } from "../../../src/core/metrics/events_database/shared";
+import { getGleanRestartedEventMetric } from "../../../src/core/metrics/events_database";
 import { testInitializeGlean, testUninitializeGlean } from "../../../src/core/testing/utils";
 import { testResetGlean } from "../../../src/core/testing";
-
-class MockPlugin extends Plugin<typeof CoreEvents["afterPingCollection"]> {
-  constructor() {
-    super(CoreEvents["afterPingCollection"].name, "mockPlugin");
-  }
-
-  action(): Promise<JSONObject> {
-    return Promise.resolve({});
-  }
-}
 
 const sandbox = sinon.createSandbox();
 
 describe("Glean", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
   afterEach(function () {
     sandbox.restore();
   });
 
-  it("client_id and first_run_date are regenerated if cleared", async function() {
-    await Context.metricsDatabase.clearAll();
+  it("client_id and first_run_date are regenerated if cleared", function() {
+    Context.metricsDatabase.clearAll();
     assert.strictEqual(
-      await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE), undefined);
+      Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE), undefined);
     assert.strictEqual(
-      await Context.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
+      Context.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE), undefined);
 
-    await testUninitializeGlean();
-    await testInitializeGlean(testAppId, true);
-    assert.ok(await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE));
-    assert.ok(await Context.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
+    testUninitializeGlean();
+    testInitializeGlean(testAppId, true);
+    assert.ok(Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE));
+    assert.ok(Context.coreMetrics["firstRunDate"].testGetValue(CLIENT_INFO_STORAGE));
   });
 
-  it("basic metrics should be cleared when upload is disabled", async function() {
+  it("basic metrics should be cleared when upload is disabled", function() {
     const pings = ["aPing", "twoPing", "threePing"];
     const metric = new StringMetricType({
       category: "aCategory",
@@ -71,150 +59,118 @@ describe("Glean", function() {
 
     metric.set("TEST VALUE");
     for (const ping of pings) {
-      assert.strictEqual(await metric.testGetValue(ping), "TEST VALUE");
+      assert.strictEqual(metric.testGetValue(ping), "TEST VALUE");
     }
 
     Glean.setUploadEnabled(false);
     for (const ping of pings) {
-      assert.strictEqual(await metric.testGetValue(ping), undefined);
+      assert.strictEqual(metric.testGetValue(ping), undefined);
     }
 
     metric.set("TEST VALUE");
     for (const ping of pings) {
-      assert.strictEqual(await metric.testGetValue(ping), undefined);
+      assert.strictEqual(metric.testGetValue(ping), undefined);
     }
 
     Glean.setUploadEnabled(true);
     for (const ping of pings) {
-      assert.strictEqual(await metric.testGetValue(ping), undefined);
+      assert.strictEqual(metric.testGetValue(ping), undefined);
     }
 
     metric.set("TEST VALUE");
     for (const ping of pings) {
-      assert.strictEqual(await metric.testGetValue(ping), "TEST VALUE");
+      assert.strictEqual(metric.testGetValue(ping), "TEST VALUE");
     }
   });
 
-  it("first_run_date is managed correctly when toggling uploading", async function() {
-    const originalFirstRunDate = await Context.coreMetrics["firstRunDate"]
+  it("first_run_date is managed correctly when toggling uploading", function() {
+    const originalFirstRunDate = Context.coreMetrics["firstRunDate"]
       .testGetValueAsString(CLIENT_INFO_STORAGE);
 
     Glean.setUploadEnabled(false);
     assert.strictEqual(
-      await Context.coreMetrics["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
+      Context.coreMetrics["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
       originalFirstRunDate
     );
 
     Glean.setUploadEnabled(true);
     assert.strictEqual(
-      await Context.coreMetrics["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
+      Context.coreMetrics["firstRunDate"].testGetValueAsString(CLIENT_INFO_STORAGE),
       originalFirstRunDate
     );
   });
 
-  it("client_id is managed correctly when toggling uploading", async function() {
-    const originalClientId = await Context.coreMetrics["clientId"]
+  it("client_id is managed correctly when toggling uploading", function() {
+    const originalClientId = Context.coreMetrics["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(originalClientId);
     assert.ok(originalClientId !== KNOWN_CLIENT_ID);
 
     Glean.setUploadEnabled(false);
     assert.strictEqual(
-      await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE),
+      Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
     );
 
     Glean.setUploadEnabled(true);
-    const newClientId = await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE);
+    const newClientId = Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(newClientId !== originalClientId);
     assert.ok(newClientId !== KNOWN_CLIENT_ID);
   });
 
-  it("client_id is set to known value when uploading disabled at start", async function() {
-    await testUninitializeGlean();
-    await testInitializeGlean(testAppId, false);
+  it("client_id is set to known value when uploading disabled at start", function() {
+    testUninitializeGlean();
+    testInitializeGlean(testAppId, false);
     assert.strictEqual(
-      await Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE),
+      Context.coreMetrics["clientId"].testGetValue(CLIENT_INFO_STORAGE),
       KNOWN_CLIENT_ID
     );
   });
 
-  it("client_id is set to random value when uploading enabled at start", async function() {
+  it("client_id is set to random value when uploading enabled at start", function() {
     Glean.setUploadEnabled(false);
-    await testUninitializeGlean();
-    await testInitializeGlean(testAppId, true);
-    const clientId = await Context.coreMetrics["clientId"]
+    testUninitializeGlean();
+    testInitializeGlean(testAppId, true);
+    const clientId = Context.coreMetrics["clientId"]
       .testGetValue(CLIENT_INFO_STORAGE);
     assert.ok(clientId);
     assert.ok(clientId !== KNOWN_CLIENT_ID);
   });
 
-  it("enabling when already enabled is a no-op", async function() {
+  it("enabling when already enabled is a no-op", function() {
     const spy = sandbox.spy(Context.coreMetrics, "initialize");
     Glean.setUploadEnabled(true);
-    // Wait for `setUploadEnabled` to be executed.
-    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(spy.callCount, 0);
   });
 
-  it("disabling when already disabled is a no-op", async function() {
+  it("disabling when already disabled is a no-op", function() {
     const spy = sandbox.spy(Glean.pingUploader, "clearPendingPingsQueue");
     Glean.setUploadEnabled(false);
     Glean.setUploadEnabled(false);
-    // Wait for `setUploadEnabled` to be executed both times.
-    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(spy.callCount, 1);
   });
 
-  it("attempting to change upload status prior to initialize is a no-op", async function() {
-    await testUninitializeGlean();
-
-    const launchSpy = sandbox.spy(Context.dispatcher, "launch");
-    Glean.setUploadEnabled(false);
-    assert.strictEqual(launchSpy.callCount, 0);
-  });
-
-  it("initialization throws if applicationId is an empty string", async function() {
-    await testUninitializeGlean();
+  it("initialization throws if applicationId is an empty string", function() {
+    testUninitializeGlean();
     try {
-      await testInitializeGlean("", true);
+      testInitializeGlean("", true);
       assert.ok(false);
     } catch {
       assert.ok(true);
     }
   });
 
-  it("initialization throws if serverEndpoint is an invalida URL", async function() {
-    await testUninitializeGlean();
+  it("initialization throws if serverEndpoint is an invalida URL", function() {
+    testUninitializeGlean();
     try {
-      await testInitializeGlean(testAppId, true, { serverEndpoint: "" });
+      testInitializeGlean(testAppId, true, { serverEndpoint: "" });
       assert.ok(false);
     } catch {
       assert.ok(true);
     }
   });
 
-  it("initialization registers plugins when provided", async function() {
-    await testUninitializeGlean();
-
-    const mockPlugin = new MockPlugin();
-    await testInitializeGlean(testAppId, true, {
-      // We need to ignore TypeScript here,
-      // otherwise it will error since mockEvent is not listed as a Glean event in core/events.ts
-      //
-      // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-      // @ts-ignore
-      plugins: [ mockPlugin ]
-    });
-
-    assert.deepStrictEqual(CoreEvents["afterPingCollection"]["plugin"], mockPlugin);
-
-    await testUninitializeGlean();
-    await testInitializeGlean(testAppId, true);
-    assert.strictEqual(CoreEvents["afterPingCollection"]["plugin"], undefined);
-  });
-
-  it("disabling upload should disable metrics recording", async function() {
+  it("disabling upload should disable metrics recording", function() {
     const pings = ["aPing", "twoPing", "threePing"];
     const metric = new StringMetricType({
       category: "aCategory",
@@ -226,29 +182,27 @@ describe("Glean", function() {
 
     metric.set("TEST VALUE");
     for (const ping of pings) {
-      assert.strictEqual(await metric.testGetValue(ping), "TEST VALUE");
+      assert.strictEqual(metric.testGetValue(ping), "TEST VALUE");
     }
 
     Glean.setUploadEnabled(false);
     metric.set("TEST VALUE");
     for (const ping of pings) {
-      assert.strictEqual(await metric.testGetValue(ping), undefined);
+      assert.strictEqual(metric.testGetValue(ping), undefined);
     }
   });
 
-  it("initializing twice is a no-op", async function() {
-    await testUninitializeGlean();
-    await testInitializeGlean(testAppId, true);
-    // initialize is dispatched, we must await on the queue being completed to assert things.
-    await Context.dispatcher.testBlockOnQueue();
+  it("initializing twice is a no-op", function() {
+    testUninitializeGlean();
+    testInitializeGlean(testAppId, true);
 
     // This time it should not be called, which means upload should not be switched to `false`.
-    await testInitializeGlean(testAppId, false);
+    testInitializeGlean(testAppId, false);
     assert.ok(Context.uploadEnabled);
   });
 
   it("flipping upload enabled respects order of events", async function() {
-    await testUninitializeGlean();
+    testUninitializeGlean();
 
     const ping = new PingType({
       name: "custom",
@@ -259,7 +213,7 @@ describe("Glean", function() {
     const pingBody = mockUploader.waitForPingSubmission(DELETION_REQUEST_PING_NAME);
 
     // Start Glean with upload enabled.
-    await testInitializeGlean(
+    testInitializeGlean(
       testAppId,
       true,
       {
@@ -269,18 +223,17 @@ describe("Glean", function() {
     Glean.setUploadEnabled(false);
     ping.submit();
 
-    await Context.dispatcher.testBlockOnQueue();
     await pingBody;
   });
 
   it("deletion request is sent when toggling upload from on to off", async function() {
     // Un-initialize, but don't clear the stores.
-    await testUninitializeGlean();
+    testUninitializeGlean();
 
     const mockUploader = new WaitableUploader();
     const pingBody = mockUploader.waitForPingSubmission(DELETION_REQUEST_PING_NAME);
 
-    await testInitializeGlean(
+    testInitializeGlean(
       testAppId,
       true,
       {
@@ -296,7 +249,7 @@ describe("Glean", function() {
 
   it("deletion request is sent when toggling upload from on to off and the pings queue is full", async function() {
     const httpClient = new WaitableUploader();
-    await testResetGlean(testAppId, true, { httpClient });
+    testResetGlean(testAppId, true, { httpClient });
 
     // Fill up the pending pings queue.
     const custom = new PingType({
@@ -310,7 +263,6 @@ describe("Glean", function() {
 
     const waitForDeletionRequestPing = httpClient.waitForPingSubmission(DELETION_REQUEST_PING_NAME);
     Glean.setUploadEnabled(false);
-    await Context.dispatcher.testBlockOnQueue();
 
     // This throws in case the ping is not sent.
     await waitForDeletionRequestPing;
@@ -321,11 +273,11 @@ describe("Glean", function() {
     Glean.setUploadEnabled(true);
 
     // Un-initialize, but don't clear the stores.
-    await testUninitializeGlean(false);
+    testUninitializeGlean(false);
 
     const mockUploader = new WaitableUploader();
     const pingBody = mockUploader.waitForPingSubmission("deletion-request");
-    await testInitializeGlean(
+    testInitializeGlean(
       testAppId,
       false,
       {
@@ -343,7 +295,7 @@ describe("Glean", function() {
   it("deletion request ping is not sent if upload status does not change between runs", async function () {
     const mockUploader = new WaitableUploader();
     let pingBody = mockUploader.waitForPingSubmission("deletion-request");
-    await testResetGlean(
+    testResetGlean(
       testAppId,
       true,
       {
@@ -358,10 +310,10 @@ describe("Glean", function() {
 
     // Can't clear stores here,
     // otherwise Glean won't know upload has been disabled in a previous run.
-    await testUninitializeGlean(false);
+    testUninitializeGlean(false);
 
     pingBody = mockUploader.waitForPingSubmission("deletion-request");
-    await testInitializeGlean(
+    testInitializeGlean(
       testAppId,
       false,
       {
@@ -374,20 +326,19 @@ describe("Glean", function() {
     assert.strictEqual(Context.uploadEnabled, false);
   });
 
-  it("deletion request ping is not sent when user starts Glean for the first time with upload disabled", async function () {
+  it("deletion request ping is not sent when user starts Glean for the first time with upload disabled", function () {
     const postSpy = sandbox.spy(Context.platform.uploader, "post");
-    await testResetGlean(testAppId, false);
+    testResetGlean(testAppId, false);
     assert.strictEqual(postSpy.callCount, 0);
     assert.strictEqual(Context.uploadEnabled, false);
   });
 
-  it("setting log pings works before and after and on initialize", async function () {
-    await testUninitializeGlean();
+  it("setting log pings works before and after and on initialize", function () {
+    testUninitializeGlean();
 
     // Setting before initialize.
     Glean.setLogPings(true);
-    await testInitializeGlean(testAppId, true);
-    await Context.dispatcher.testBlockOnQueue();
+    testInitializeGlean(testAppId, true);
     assert.ok(Context.config.logPings);
 
     // Setting after initialize.
@@ -395,17 +346,16 @@ describe("Glean", function() {
     assert.ok(!Context.config.logPings);
   });
 
-  it("setting debug view tag works before and after and on initialize", async function () {
-    await testUninitializeGlean();
+  it("setting debug view tag works before and after and on initialize", function () {
+    testUninitializeGlean();
 
     const testTag = "test";
 
-    await testUninitializeGlean();
+    testUninitializeGlean();
 
     // Setting before initialize.
     Glean.setDebugViewTag(testTag);
-    await testInitializeGlean(testAppId, true);
-    await Context.dispatcher.testBlockOnQueue();
+    testInitializeGlean(testAppId, true);
     assert.strictEqual(Context.config.debugViewTag, testTag);
 
     // Setting after initialize.
@@ -414,30 +364,27 @@ describe("Glean", function() {
     assert.strictEqual(Context.config.debugViewTag, anotherTestTag);
   });
 
-  it("attempting to set an invalid debug view tag is ignored", async function () {
+  it("attempting to set an invalid debug view tag is ignored", function () {
     const invaligTag = "inv@l!d_t*g";
     Glean.setDebugViewTag(invaligTag);
-    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Context.config.debugViewTag, undefined);
   });
 
-  it("setting source tags on initialize works", async function () {
-    await testUninitializeGlean();
-    await testInitializeGlean(testAppId, true);
+  it("setting source tags on initialize works", function () {
+    testUninitializeGlean();
+    testInitializeGlean(testAppId, true);
     Glean.setSourceTags(["1", "2", "3", "4", "5"]);
-    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Context.config.sourceTags?.toString(), "1,2,3,4,5");
   });
 
-  it("attempting to set invalid source tags is ignored", async function () {
+  it("attempting to set invalid source tags is ignored", function () {
     const invaligTags = ["inv@l!d_t*g"];
     Glean.setSourceTags(invaligTags);
-    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Context.config.sourceTags, undefined);
   });
 
   it("enabling debug features before init apply to ping sent at initialize", async function() {
-    await testUninitializeGlean(false);
+    testUninitializeGlean(false);
 
     const consoleSpy = sandbox.spy(console, "info");
 
@@ -448,7 +395,7 @@ describe("Glean", function() {
     // The only ping we send at init is deletion-request.
     const httpClient = new WaitableUploader();
     const waitForPing = httpClient.waitForPingSubmission(DELETION_REQUEST_PING_NAME, undefined, true);
-    await testInitializeGlean(testAppId, false, { httpClient });
+    testInitializeGlean(testAppId, false, { httpClient });
 
     const { body, headers } = await waitForPing;
     // This checks if console.info is called at any point with the payload of the ping we just sent.
@@ -460,7 +407,7 @@ describe("Glean", function() {
     assert.strictEqual((headers as Record<string, string>)?.["X-Source-Tags"], "hey,ho");
   });
 
-  it("testResetGlean correctly resets", async function () {
+  it("testResetGlean correctly resets", function () {
     const metric = new StringMetricType({
       category: "aCategory",
       name: "aStringMetric",
@@ -472,19 +419,19 @@ describe("Glean", function() {
     const TEST_VALUE = "TEST VALUE";
     metric.set(TEST_VALUE);
 
-    assert.strictEqual(await metric.testGetValue(), TEST_VALUE);
-    await testResetGlean(testAppId);
+    assert.strictEqual(metric.testGetValue(), TEST_VALUE);
+    testResetGlean(testAppId);
 
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 
-  it("appBuild, appDisplayVersion and buildDate are correctly reported", async function () {
-    await testUninitializeGlean();
+  it("appBuild, appDisplayVersion and buildDate are correctly reported", function () {
+    testUninitializeGlean();
 
     const testBuild = "test";
     const testDisplayVersion = "1.2.3-stella";
 
-    await testInitializeGlean(
+    testInitializeGlean(
       testAppId,
       true, {
         appBuild: testBuild,
@@ -492,10 +439,9 @@ describe("Glean", function() {
         buildDate: new Date(),
       }
     );
-    await Context.dispatcher.testBlockOnQueue();
 
-    assert.strictEqual(await Context.coreMetrics.appBuild.testGetValue(), testBuild);
-    assert.strictEqual(await Context.coreMetrics.appDisplayVersion.testGetValue(), testDisplayVersion);
+    assert.strictEqual(Context.coreMetrics.appBuild.testGetValue(), testBuild);
+    assert.strictEqual(Context.coreMetrics.appDisplayVersion.testGetValue(), testDisplayVersion);
   });
 
   // Verification test, does not test anything the Dispatcher suite doesn't cover,
@@ -525,7 +471,7 @@ describe("Glean", function() {
       disabled: false
     });
 
-    // Synchoronous function that records and submits a ping.
+    // Synchronous function that records and submits a ping.
     //
     // This is the catch, even if this is called inside an async function
     // it will be executed to completion, guaranteeing one count per async action.
@@ -534,7 +480,7 @@ describe("Glean", function() {
       custom.submit();
     };
 
-    // Simustaneously execute async actions that include recording metrics and submitting a ping.
+    // Simultaneously execute async actions that include recording metrics and submitting a ping.
     await Promise.all(
       [...Array(10).keys()].map(() => {
         return (async () => {
@@ -547,8 +493,8 @@ describe("Glean", function() {
       }),
     );
 
-    await Context.dispatcher.testBlockOnQueue();
-    const storedPings = await Context.pingsDatabase.getAllPings();
+    const storedPings = Context.pingsDatabase.getAllPings();
+
     const counterValues = [];
     for (const [_, ping] of storedPings) {
       const metrics = ping.payload.metrics;
@@ -577,30 +523,7 @@ describe("Glean", function() {
     assert.strictEqual(TestPlatform.name, Context.platform.name);
   });
 
-  it("shutdown allows all pending pings to be sent before shutting down uploader", async function() {
-    const postSpy = sandbox.spy(Context.platform.uploader, "post");
-
-    // `setUploadEnabled` is a task dispatched on the main dispatcher,
-    // this task will dispatch an upload task to the upload dispatcher.
-    //
-    // We want to be sure the ping uploader dispatcher is not shutdown
-    // before it can execute this final task.
-    Glean.setUploadEnabled(false);
-    await Glean.shutdown();
-
-    assert.strictEqual(postSpy.callCount, 1);
-    assert.ok(postSpy.getCall(0).args[0].indexOf(DELETION_REQUEST_PING_NAME) !== -1);
-  });
-
-  it("attempting to shutdown Glean prior to initialize is a no-op", async function() {
-    await testUninitializeGlean();
-
-    const launchSpy = sandbox.spy(Context.dispatcher, "launch");
-    await Glean.shutdown();
-    assert.strictEqual(launchSpy.callCount, 0);
-  });
-
-  it("events database is initialized at a time when metrics can already be recorded", async function() {
+  it("events database is initialized at a time when metrics can already be recorded", function() {
     const event = new EventMetricType({
       category: "test",
       name: "event",
@@ -613,43 +536,41 @@ describe("Glean", function() {
     // it will record a glean.restarted event on the `custom` ping events list.
     event.record();
 
-    await testResetGlean(testAppId, true, undefined, false);
+    testResetGlean(testAppId, true, undefined, false);
 
     // Check that Glean was able to record the `glean.restarted` event on initialization.
     const restartedEvent = getGleanRestartedEventMetric(["custom"]);
     // We expect two events. One that was recorded when we recorded an event on the custom ping
     // for the first time and another once we re-initialized.
-    assert.strictEqual((await restartedEvent.testGetValue("custom"))?.length, 2);
+    assert.strictEqual((restartedEvent.testGetValue("custom"))?.length, 2);
   });
 
-  it("glean is not initialized if uploadEnabled or applicationId are not the right type", async function() {
-    await testUninitializeGlean();
+  it("glean is not initialized if uploadEnabled or applicationId are not the right type", function() {
+    testUninitializeGlean();
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    await testResetGlean(["not", "string"], true);
+    testResetGlean(["not", "string"], true);
     assert.strictEqual(Context.initialized, false);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    await testResetGlean(testAppId, "not boolean");
+    testResetGlean(testAppId, "not boolean");
     assert.strictEqual(Context.initialized, false);
 
-    await testResetGlean(testAppId, true);
+    testResetGlean(testAppId, true);
     assert.strictEqual(Context.initialized, true);
   });
 
-  it("setUploadEnabled does nothing in case a non-boolean value is passed to it", async function() {
+  it("setUploadEnabled does nothing in case a non-boolean value is passed to it", function() {
     // Set the current upload value to false,
     // strings are "truthy", this way we can be sure calling with the wrong type dod not work.
     Glean.setUploadEnabled(false);
-    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Context.uploadEnabled, false);
 
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     Glean.setUploadEnabled("not a boolean");
-    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Context.uploadEnabled, false);
   });
 });

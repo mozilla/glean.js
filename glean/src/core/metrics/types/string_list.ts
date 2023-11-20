@@ -5,22 +5,14 @@
 import type { CommonMetricData } from "../index.js";
 import type { MetricValidationResult } from "../metric.js";
 import type { JSONValue } from "../../utils.js";
-import type ErrorManagerSync from "../../error/sync.js";
-import type MetricsDatabaseSync from "../database/sync.js";
 
-import { MetricType } from "../index.js";
-import { Context } from "../../context.js";
-
-import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
-import {
-  testOnlyCheck,
-  truncateStringAtBoundaryWithError,
-  truncateStringAtBoundaryWithErrorSync
-} from "../../utils.js";
-
-import { ErrorType } from "../../error/error_type.js";
 import log from "../../log.js";
+import { Context } from "../../context.js";
+import { ErrorType } from "../../error/error_type.js";
+import { MetricType } from "../index.js";
+import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
 import { validateString } from "../utils.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.StringListMetricType";
 export const MAX_LIST_LENGTH = 20;
@@ -78,20 +70,58 @@ class InternalStringListMetricType extends MetricType {
     super("string_list", meta, StringListMetric);
   }
 
-  /// SHARED ///
   set(value: string[]): void {
-    if (Context.isPlatformSync()) {
-      this.setSync(value);
-    } else {
-      this.setAsync(value);
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      if (value.length > MAX_LIST_LENGTH) {
+        Context.errorManager.record(
+          this,
+          ErrorType.InvalidValue,
+          `String list length of ${value.length} exceeds maximum of ${MAX_LIST_LENGTH}.`
+        );
+      }
+
+      // Create metric here, in order to run the validations and throw in case input in invalid.
+      const metric = new StringListMetric(value);
+
+      const truncatedList: string[] = [];
+      for (let i = 0; i < Math.min(value.length, MAX_LIST_LENGTH); ++i) {
+        const truncatedString = truncateStringAtBoundaryWithError(
+          this,
+          value[i],
+          MAX_STRING_LENGTH
+        );
+        truncatedList.push(truncatedString);
+      }
+
+      metric.set(truncatedList);
+      Context.metricsDatabase.record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordError(this);
+      }
     }
   }
 
   add(value: string): void {
-    if (Context.isPlatformSync()) {
-      this.addSync(value);
-    } else {
-      this.addAsync(value);
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    try {
+      const truncatedValue = truncateStringAtBoundaryWithError(this, value, MAX_STRING_LENGTH);
+
+      Context.metricsDatabase.transform(
+        this,
+        this.addTransformFn(truncatedValue)
+      );
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordError(this);
+      }
     }
   }
 
@@ -120,131 +150,10 @@ class InternalStringListMetricType extends MetricType {
     };
   }
 
-  /// ASYNC ///
-  setAsync(value: string[]) {
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      try {
-        if (value.length > MAX_LIST_LENGTH) {
-          await Context.errorManager.record(
-            this,
-            ErrorType.InvalidValue,
-            `String list length of ${value.length} exceeds maximum of ${MAX_LIST_LENGTH}.`
-          );
-        }
-
-        // Create metric here, in order to run the validations and throw in case input in invalid.
-        const metric = new StringListMetric(value);
-
-        const truncatedList: string[] = [];
-        for (let i = 0; i < Math.min(value.length, MAX_LIST_LENGTH); ++i) {
-          const truncatedString = await truncateStringAtBoundaryWithError(
-            this,
-            value[i],
-            MAX_STRING_LENGTH
-          );
-          truncatedList.push(truncatedString);
-        }
-
-        metric.set(truncatedList);
-        await Context.metricsDatabase.record(this, metric);
-      } catch (e) {
-        if (e instanceof MetricValidationError) {
-          await e.recordError(this);
-        }
-      }
-    });
-  }
-
-  addAsync(value: string) {
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      try {
-        const truncatedValue = await truncateStringAtBoundaryWithError(
-          this,
-          value,
-          MAX_STRING_LENGTH
-        );
-
-        await Context.metricsDatabase.transform(this, this.addTransformFn(truncatedValue));
-      } catch (e) {
-        if (e instanceof MetricValidationError) {
-          await e.recordError(this);
-        }
-      }
-    });
-  }
-
-  /// SYNC ///
-  setSync(value: string[]) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    try {
-      if (value.length > MAX_LIST_LENGTH) {
-        (Context.errorManager as ErrorManagerSync).record(
-          this,
-          ErrorType.InvalidValue,
-          `String list length of ${value.length} exceeds maximum of ${MAX_LIST_LENGTH}.`
-        );
-      }
-
-      // Create metric here, in order to run the validations and throw in case input in invalid.
-      const metric = new StringListMetric(value);
-
-      const truncatedList: string[] = [];
-      for (let i = 0; i < Math.min(value.length, MAX_LIST_LENGTH); ++i) {
-        const truncatedString = truncateStringAtBoundaryWithErrorSync(
-          this,
-          value[i],
-          MAX_STRING_LENGTH
-        );
-        truncatedList.push(truncatedString);
-      }
-
-      metric.set(truncatedList);
-      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
-      }
-    }
-  }
-
-  addSync(value: string) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    try {
-      const truncatedValue = truncateStringAtBoundaryWithErrorSync(this, value, MAX_STRING_LENGTH);
-
-      (Context.metricsDatabase as MetricsDatabaseSync).transform(
-        this,
-        this.addTransformFn(truncatedValue)
-      );
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
-      }
-    }
-  }
-
   /// TESTING ///
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<string[] | undefined> {
+  testGetValue(ping: string = this.sendInPings[0]): string[] | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: string[] | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<string[]>(ping, this);
-      });
-      return metric;
+      return Context.metricsDatabase.getMetric<string[]>(ping, this);
     }
   }
 }
@@ -298,7 +207,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string[] | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): string[] | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -312,10 +221,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

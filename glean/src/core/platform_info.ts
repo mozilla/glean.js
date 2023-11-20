@@ -2,8 +2,6 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type { OptionalAsync } from "../types";
-
 // Must be up to date with https://github.com/mozilla/glean/blob/main/glean-core/src/system.rs
 export const enum KnownOperatingSystems {
   Android = "Android",
@@ -34,32 +32,34 @@ export const enum KnownOperatingSystems {
   WebOS = "WebOS"
 }
 
-export interface IPlatformInfo {
+interface PlatformInfo {
   /**
    * Gets and returns the current OS system.
    *
    * @returns The current OS.
    */
-  os(): OptionalAsync<KnownOperatingSystems>;
+  os(): KnownOperatingSystems;
 
   /**
    * Gets and returns the current OS system version.
    *
    * @returns The current OS version.
    */
-  osVersion(): OptionalAsync<string>;
+  osVersion(): string;
 
   /**
    * Gets and returns the current system architecture.
    *
    * @returns The current system architecture.
    */
-  arch(): OptionalAsync<string>;
+  arch(): string;
 
   /**
    * Gets and returns the current system / browser locale.
    *
    * @returns The current system / browser locale.
    */
-  locale(): OptionalAsync<string>;
+  locale(): string;
 }
+
+export default PlatformInfo;

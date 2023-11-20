@@ -5,7 +5,7 @@
 import assert from "assert";
 import sinon from "sinon";
 import { ErrorType } from "../../../../src/core/error/error_type";
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import { convertMemoryUnitToBytes, MemoryUnit } from "../../../../src/core/metrics/memory_unit";
 import MemoryDistributionMetricType, {
@@ -19,15 +19,15 @@ const sandbox = sinon.createSandbox();
 describe("MemoryDistributionMetric", function () {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function () {
-    await testResetGlean(testAppId);
+  beforeEach(function () {
+    testResetGlean(testAppId);
   });
 
   afterEach(function () {
     sandbox.restore();
   });
 
-  it("serializer should correctly serialize memory distribution", async function () {
+  it("serializer should correctly serialize memory distribution", function () {
     const kb = 1024;
 
     const metric = new MemoryDistributionMetricType(
@@ -42,7 +42,7 @@ describe("MemoryDistributionMetric", function () {
     );
 
     metric.accumulate(100000);
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
     assert.equal(snapshot?.sum, 100000 * kb);
   });
 
@@ -62,13 +62,13 @@ describe("MemoryDistributionMetric", function () {
 
     metric.accumulate(100000);
 
-    storeNames.forEach(async (store) => {
-      const snapshot = await metric.testGetValue(store);
+    storeNames.forEach((store) => {
+      const snapshot = metric.testGetValue(store);
       assert.equal(100000, snapshot?.sum);
     });
   });
 
-  it("the accumulate samples api correctly stores memory values", async function () {
+  it("the accumulate samples api correctly stores memory values", function () {
     const metric = new MemoryDistributionMetricType(
       {
         category: "aCategory",
@@ -84,7 +84,7 @@ describe("MemoryDistributionMetric", function () {
     // negative values to not trigger error reporting.
     metric.accumulateSamples([1, 2, 3]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
 
     const kb = 1024;
 
@@ -99,10 +99,10 @@ describe("MemoryDistributionMetric", function () {
     assert.equal(1, snapshot?.values[3024]);
 
     // No errors should be reported.
-    assert.equal(0, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
+    assert.equal(0, metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
-  it("the accumulate samples api correctly handles negative values", async function () {
+  it("the accumulate samples api correctly handles negative values", function () {
     const metric = new MemoryDistributionMetricType(
       {
         category: "aCategory",
@@ -117,7 +117,7 @@ describe("MemoryDistributionMetric", function () {
     // Accumulates the samples.
     metric.accumulateSamples([-1, 1, 2, 3]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
 
     const kb = 1024;
 
@@ -132,7 +132,7 @@ describe("MemoryDistributionMetric", function () {
     assert.equal(1, snapshot?.values[3024]);
 
     // 1 error should be reported.
-    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
+    assert.equal(1, metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
   it("memory distribution internal representation validation works as expected", function () {
@@ -156,7 +156,7 @@ describe("MemoryDistributionMetric", function () {
     assert.doesNotThrow(() => new MemoryDistributionMetric([100, 200, 300]));
   });
 
-  it("attempting to accumulate when glean upload is disabled is a no-op", async function () {
+  it("attempting to accumulate when glean upload is disabled is a no-op", function () {
     const metric = new MemoryDistributionMetricType(
       {
         category: "aCategory",
@@ -171,7 +171,7 @@ describe("MemoryDistributionMetric", function () {
     Glean.setUploadEnabled(false);
     metric.accumulate(100000);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
     assert(isUndefined(snapshot));
   });
 

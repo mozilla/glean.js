@@ -4,7 +4,6 @@
 
 import type { CommonMetricData } from "../index.js";
 import type { MetricValidationResult } from "../metric.js";
-import type MetricsDatabaseSync from "../database/sync.js";
 
 import { MetricType } from "../index.js";
 import TimeUnit from "../../metrics/time_unit.js";
@@ -203,19 +202,22 @@ export class InternalDatetimeMetricType extends MetricType {
     this.timeUnit = timeUnit as TimeUnit;
   }
 
-  /// SHARED ///
   set(value?: Date): void {
-    if (Context.isPlatformSync()) {
-      this.setSync(value);
-    } else {
-      this.setAsync(value);
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    const truncatedDate = this.truncateDate(value);
+    try {
+      const metric = DatetimeMetric.fromDate(truncatedDate, this.timeUnit);
+      Context.metricsDatabase.record(this, metric);
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordError(this);
+      }
     }
   }
 
-  // TODO
-  // JSDoc
-  // Unit test
-  // Verify this is working the same as before.
   private truncateDate(value?: Date) {
     if (!value) {
       value = new Date();
@@ -247,53 +249,6 @@ export class InternalDatetimeMetricType extends MetricType {
     return truncatedDate;
   }
 
-  /// ASYNC ///
-  setAsync(value?: Date) {
-    Context.dispatcher.launch(() => this.setUndispatched(value));
-  }
-
-  /**
-   * An implementation of `set` that does not dispatch the recording task.
-   *
-   * # Important
-   *
-   * This method should **never** be exposed to users.
-   *
-   * @param value The date we want to set to.
-   */
-  async setUndispatched(value?: Date): Promise<void> {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    const truncatedDate = this.truncateDate(value);
-    try {
-      const metric = DatetimeMetric.fromDate(truncatedDate, this.timeUnit);
-      await Context.metricsDatabase.record(this, metric);
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        await e.recordError(this);
-      }
-    }
-  }
-
-  /// SYNC ///
-  setSync(value?: Date) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    const truncatedDate = this.truncateDate(value);
-    try {
-      const metric = DatetimeMetric.fromDate(truncatedDate, this.timeUnit);
-      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
-      }
-    }
-  }
-
   /**
    * Set a datetime metric from raw values.
    *
@@ -305,17 +260,17 @@ export class InternalDatetimeMetricType extends MetricType {
    * @param timezone Raw timezone.
    * @param timeUnit Raw timeUnit.
    */
-  setSyncRaw(isoString: string, timezone: number, timeUnit: TimeUnit) {
+  setRaw(isoString: string, timezone: number, timeUnit: TimeUnit) {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
     try {
       const metric = DatetimeMetric.fromRawDatetime(isoString, timezone, timeUnit);
-      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
+      Context.metricsDatabase.record(this, metric);
     } catch (e) {
       if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
+        e.recordError(this);
       }
     }
   }
@@ -332,28 +287,26 @@ export class InternalDatetimeMetricType extends MetricType {
    * @param fn The name of the function that is calling this function. Used for testing purposes.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  private async testGetValueAsDatetimeMetric(
+  private testGetValueAsDatetimeMetric(
     ping: string,
     fn: string
-  ): Promise<DatetimeMetric | undefined> {
+  ): DatetimeMetric | undefined {
     if (testOnlyCheck(fn, LOG_TAG)) {
-      let value: DatetimeInternalRepresentation | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        value = await Context.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
-      });
+      const value: DatetimeInternalRepresentation | undefined =
+        Context.metricsDatabase.getMetric<DatetimeInternalRepresentation>(ping, this);
       if (value) {
         return new DatetimeMetric(value);
       }
     }
   }
 
-  async testGetValueAsString(ping: string = this.sendInPings[0]): Promise<string | undefined> {
-    const metric = await this.testGetValueAsDatetimeMetric(ping, "testGetValueAsString");
+  testGetValueAsString(ping: string = this.sendInPings[0]): string | undefined {
+    const metric = this.testGetValueAsDatetimeMetric(ping, "testGetValueAsString");
     return metric ? metric.payload() : undefined;
   }
 
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<Date | undefined> {
-    const metric = await this.testGetValueAsDatetimeMetric(ping, "testGetValue");
+  testGetValue(ping: string = this.sendInPings[0]): Date | undefined {
+    const metric = this.testGetValueAsDatetimeMetric(ping, "testGetValue");
     return metric ? metric.date : undefined;
   }
 }
@@ -391,9 +344,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValueAsString(
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<string | undefined> {
+  testGetValueAsString(ping: string = this.#inner.sendInPings[0]): string | undefined {
     return this.#inner.testGetValueAsString(ping);
   }
 
@@ -415,7 +366,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<Date | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): Date | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -429,10 +380,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

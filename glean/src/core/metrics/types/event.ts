@@ -4,8 +4,6 @@
 
 import type { CommonMetricData } from "../index.js";
 import type { ExtraMap, Event } from "../events_database/recorded_event.js";
-import type ErrorManagerSync from "../../error/sync.js";
-import type EventsDatabaseSync from "../events_database/sync.js";
 
 import { RecordedEvent } from "../events_database/recorded_event.js";
 import { MetricType } from "../index.js";
@@ -13,8 +11,7 @@ import {
   getMonotonicNow,
   isString,
   testOnlyCheck,
-  truncateStringAtBoundaryWithError,
-  truncateStringAtBoundaryWithErrorSync
+  truncateStringAtBoundaryWithError
 } from "../../utils.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
@@ -40,7 +37,6 @@ export class InternalEventMetricType<
     this.allowedExtraKeys = allowedExtraKeys;
   }
 
-  /// SHARED ///
   /**
    * Record an event.
    *
@@ -49,33 +45,6 @@ export class InternalEventMetricType<
    * @param timestamp The event timestamp, defaults to now.
    */
   record(extra?: SpecificExtraMap, timestamp: number = getMonotonicNow()): void {
-    if (Context.isPlatformSync()) {
-      this.recordSync(timestamp, extra);
-    } else {
-      this.recordAsync(timestamp, extra);
-    }
-  }
-
-  /// ASYNC ///
-  recordAsync(timestamp: number, extra?: SpecificExtraMap) {
-    Context.dispatcher.launch(async () => {
-      await this.recordUndispatched(extra, timestamp);
-    });
-  }
-
-  /**
-   * An implementation of `record` that does not dispatch the recording task.
-   *
-   * # Important
-   *
-   * This method should **never** be exposed to users.
-   *
-   * @param extra optional. Used for events where additional richer context is needed.
-   *        The maximum length for string values is 100 bytes.
-   * @param timestamp The event timestamp, defaults to now.
-   * @returns A promise that resolves once the event is recorded.
-   */
-  async recordUndispatched(extra?: ExtraMap, timestamp: number = getMonotonicNow()): Promise<void> {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
@@ -96,7 +65,7 @@ export class InternalEventMetricType<
         for (const [name, value] of Object.entries(extra)) {
           if (this.allowedExtraKeys.includes(name)) {
             if (isString(value)) {
-              truncatedExtra[name] = await truncateStringAtBoundaryWithError(
+              truncatedExtra[name] = truncateStringAtBoundaryWithError(
                 this,
                 value,
                 MAX_LENGTH_EXTRA_KEY_VALUE
@@ -105,60 +74,7 @@ export class InternalEventMetricType<
               truncatedExtra[name] = value;
             }
           } else {
-            await Context.errorManager.record(
-              this,
-              ErrorType.InvalidValue,
-              `Invalid key index: ${name}`
-            );
-            continue;
-          }
-        }
-      }
-
-      metric.set({
-        ...metric.get(),
-        extra: truncatedExtra
-      });
-      return Context.eventsDatabase.record(this, metric);
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        await e.recordError(this);
-      }
-    }
-  }
-
-  /// SYNC ///
-  recordSync(timestamp: number, extra?: SpecificExtraMap) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    try {
-      // Create metric here, in order to run the validations and throw in case input in invalid.
-      const metric = new RecordedEvent({
-        category: this.category,
-        name: this.name,
-        timestamp,
-        extra
-      });
-
-      // Truncate the extra keys, if needed.
-      let truncatedExtra: ExtraMap | undefined = undefined;
-      if (extra && this.allowedExtraKeys) {
-        truncatedExtra = {};
-        for (const [name, value] of Object.entries(extra)) {
-          if (this.allowedExtraKeys.includes(name)) {
-            if (isString(value)) {
-              truncatedExtra[name] = truncateStringAtBoundaryWithErrorSync(
-                this,
-                value,
-                MAX_LENGTH_EXTRA_KEY_VALUE
-              );
-            } else {
-              truncatedExtra[name] = value;
-            }
-          } else {
-            (Context.errorManager as ErrorManagerSync).record(
+            Context.errorManager.record(
               this,
               ErrorType.InvalidValue,
               `Invalid key index: ${name}`
@@ -173,10 +89,10 @@ export class InternalEventMetricType<
         extra: truncatedExtra
       });
 
-      (Context.eventsDatabase as EventsDatabaseSync).record(this, metric);
+      Context.eventsDatabase.record(this, metric);
     } catch (e) {
       if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
+        e.recordError(this);
       }
     }
   }
@@ -193,13 +109,9 @@ export class InternalEventMetricType<
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<Event[] | undefined> {
+  testGetValue(ping: string = this.sendInPings[0]): Event[] | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let events: Event[] | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        events = await Context.eventsDatabase.getEvents(ping, this);
-      });
-      return events;
+      return Context.eventsDatabase.getEvents(ping, this);
     }
   }
 }
@@ -235,7 +147,7 @@ export default class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<Event[] | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): Event[] | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -249,10 +161,7 @@ export default class EventMetricType<SpecificExtraMap extends ExtraMap = ExtraMa
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

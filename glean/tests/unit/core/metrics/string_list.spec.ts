@@ -6,19 +6,19 @@ import assert from "assert";
 import { Context } from "../../../../src/core/context";
 import { ErrorType } from "../../../../src/core/error/error_type";
 
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import StringListMetricType, { MAX_LIST_LENGTH, MAX_STRING_LENGTH } from "../../../../src/core/metrics/types/string_list";
 import { testResetGlean } from "../../../../src/core/testing";
 
-describe("StringListMetric", function() {
+describe("StringListMetric", function () {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function () {
+    testResetGlean(testAppId);
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", function () {
     const metric = new StringListMetricType({
       category: "aCategory",
       name: "aStringListMetric",
@@ -27,10 +27,10 @@ describe("StringListMetric", function() {
       disabled: false
     });
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", function () {
     Glean.setUploadEnabled(false);
 
     const metric = new StringListMetricType({
@@ -42,10 +42,10 @@ describe("StringListMetric", function() {
     });
 
     metric.set(["test_string_one", "test_string_two"]);
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("ping payload is correct", async function() {
+  it("ping payload is correct", function () {
     const metric = new StringListMetricType({
       category: "aCategory",
       name: "aStringListMetric",
@@ -55,9 +55,9 @@ describe("StringListMetric", function() {
     });
 
     metric.set(["test_string_one", "test_string_two"]);
-    assert.deepStrictEqual(await metric.testGetValue("aPing"), ["test_string_one", "test_string_two"]);
+    assert.deepStrictEqual(metric.testGetValue("aPing"), ["test_string_one", "test_string_two"]);
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "string_list": {
         "aCategory.aStringListMetric": ["test_string_one", "test_string_two"]
@@ -65,7 +65,7 @@ describe("StringListMetric", function() {
     });
   });
 
-  it("set properly sets the value in all pings", async function() {
+  it("set properly sets the value in all pings", function () {
     const metric = new StringListMetricType({
       category: "aCategory",
       name: "aStringListMetric",
@@ -75,12 +75,12 @@ describe("StringListMetric", function() {
     });
 
     metric.set(["test_string_one", "test_string_two"]);
-    assert.deepStrictEqual(await metric.testGetValue("aPing"), ["test_string_one", "test_string_two"]);
-    assert.deepStrictEqual(await metric.testGetValue("twoPing"), ["test_string_one", "test_string_two"]);
-    assert.deepStrictEqual(await metric.testGetValue("threePing"), ["test_string_one", "test_string_two"]);
+    assert.deepStrictEqual(metric.testGetValue("aPing"), ["test_string_one", "test_string_two"]);
+    assert.deepStrictEqual(metric.testGetValue("twoPing"), ["test_string_one", "test_string_two"]);
+    assert.deepStrictEqual(metric.testGetValue("threePing"), ["test_string_one", "test_string_two"]);
   });
 
-  it("long string list is truncated", async function() {
+  it("long string list is truncated", function () {
     const metric = new StringListMetricType({
       category: "aCategory",
       name: "aStringListMetric",
@@ -92,7 +92,7 @@ describe("StringListMetric", function() {
     const testStringList = [];
     const expectedStringList = [];
     const testString = "test";
-    for(let i = 0; i < MAX_LIST_LENGTH; ++i) {
+    for (let i = 0; i < MAX_LIST_LENGTH; ++i) {
       testStringList.push(testString);
       expectedStringList.push(testString);
     }
@@ -100,16 +100,16 @@ describe("StringListMetric", function() {
 
     metric.set(testStringList);
     assert.deepStrictEqual(
-      await metric.testGetValue("aPing"),
+      metric.testGetValue("aPing"),
       expectedStringList
     );
 
     assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1
+      metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1
     );
   });
 
-  it("long string is truncated", async function() {
+  it("long string is truncated", function () {
     const metric = new StringListMetricType({
       category: "aCategory",
       name: "aStringListMetric",
@@ -123,16 +123,16 @@ describe("StringListMetric", function() {
     metric.set(testStringList);
     const expectedList = [testString.substring(0, MAX_STRING_LENGTH)];
     assert.deepStrictEqual(
-      await metric.testGetValue("aPing"),
+      metric.testGetValue("aPing"),
       expectedList
     );
 
     assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1
+      metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1
     );
   });
 
-  it("attempt to add string to string list of maximum length records an error", async function() {
+  it("attempt to add string to string list of maximum length records an error", function () {
     const metric = new StringListMetricType({
       category: "aCategory",
       name: "aStringListMetric",
@@ -149,22 +149,22 @@ describe("StringListMetric", function() {
     metric.set(testStringList);
     metric.add(testString);
     assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0
+      metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0
     );
 
     testStringList.push(testString);
     assert.deepStrictEqual(
-      await metric.testGetValue("aPing"),
+      metric.testGetValue("aPing"),
       testStringList
     );
 
     metric.add(testString);
     assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1
+      metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 1
     );
   });
 
-  it("attempting to set to empty list does not record error", async function() {
+  it("attempting to set to empty list does not record error", function () {
     const metric = new StringListMetricType({
       category: "aCategory",
       name: "aStringListMetric",
@@ -175,13 +175,13 @@ describe("StringListMetric", function() {
 
     const testStringList: string[] = [];
     metric.set(testStringList);
-    assert.deepStrictEqual(await metric.testGetValue("aPing"), testStringList);
+    assert.deepStrictEqual(metric.testGetValue("aPing"), testStringList);
     assert.strictEqual(
-      await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0
+      metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 0
     );
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new StringListMetricType({
       category: "aCategory",
       name: "aStringListMetric",
@@ -195,12 +195,12 @@ describe("StringListMetric", function() {
     metric.set("not string list");
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
-    metric.set([ "one", "two", { "not": "string" } ]);
+    metric.set(["one", "two", { "not": "string" }]);
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore
     metric.add({ "not": "string" });
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 3);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 3);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });

@@ -5,19 +5,15 @@
 import assert from "assert";
 import "fake-indexeddb/auto";
 
-import type Store from "../../../src/core/storage/async";
-import type { OptionalAsync } from "../../../src/core/types";
+import type Store from "../../../src/core/storage.js";
 import type { JSONValue } from "../../../src/core/utils";
 
 import TestStore from "../../../src/platform/test/storage";
 import { isUndefined } from "../../../src/core/utils";
 
-
-// This object will contain all the asynchronous store names and
-// a function that will initialize and return the store when done.
-const asyncStores: {
+const stores: {
   [store: string]: {
-    initializeStore: () => OptionalAsync<Store>,
+    initializeStore: () => Store,
     before?: () => Promise<void>,
     afterAll?: () => Promise<void>
   }
@@ -27,8 +23,8 @@ const asyncStores: {
   }
 };
 
-for (const store in asyncStores) {
-  const currentStore = asyncStores[store];
+for (const store in stores) {
+  const currentStore = stores[store];
 
   describe(`storage/${store}`, function () {
     after(async function () {
@@ -56,44 +52,44 @@ for (const store in asyncStores) {
 
       before(async function () {
         !isUndefined(currentStore.before) && await currentStore.before();
-        store = await currentStore.initializeStore();
-        await store.update(["bip", "bling"], () => false);
-        await store.update(["bip", "bop", "blip"], () => "something, something!");
-        await store.update(["bip", "bop", "blergh"], () => "don't panic!");
-        await store.update(["bip", "bop", "burp"], () => "you are doing great!");
-        await store.update(["bip", "boing"], () => "almost done!");
-        await store.update(["bip", "bok", "blot"], () => "smile!");
-        await store.update(["bip", "bok", "bet"], () => "this is the end!");
-        await store.update(["bump"], () => "not quite!");
+        store = currentStore.initializeStore();
+        store.update(["bip", "bling"], () => false);
+        store.update(["bip", "bop", "blip"], () => "something, something!");
+        store.update(["bip", "bop", "blergh"], () => "don't panic!");
+        store.update(["bip", "bop", "burp"], () => "you are doing great!");
+        store.update(["bip", "boing"], () => "almost done!");
+        store.update(["bip", "bok", "blot"], () => "smile!");
+        store.update(["bip", "bok", "bet"], () => "this is the end!");
+        store.update(["bump"], () => "not quite!");
       });
 
-      it("Attempting to get the whole store works", async function () {
-        const value = await store.get();
+      it("Attempting to get the whole store works", function () {
+        const value = store.get();
         assert.deepStrictEqual(value, expected);
       });
 
-      it("Attempting to get a non-existent entry doesn't error", async function () {
-        const value = await store.get(["random", "inexistent", "index"]);
+      it("Attempting to get a non-existent entry doesn't error", function () {
+        const value = store.get(["random", "inexistent", "index"]);
         assert.strictEqual(value, undefined);
       });
 
-      it("Attempting to get a non-existent nested entry works", async function () {
-        const value = await store.get(["bip", "bop", "inexistent"]);
+      it("Attempting to get a non-existent nested entry works", function () {
+        const value = store.get(["bip", "bop", "inexistent"]);
         assert.strictEqual(value, undefined);
       });
 
-      it("Attempting to get an index that contains an object works", async function () {
-        const value = await store.get(["bip", "bok"]);
+      it("Attempting to get an index that contains an object works", function () {
+        const value = store.get(["bip", "bok"]);
         assert.deepStrictEqual(value, expected["bip"]["bok"]);
       });
 
-      it("Attempting to get an index that contains a string works", async function () {
-        const value = await store.get(["bump"]);
+      it("Attempting to get an index that contains a string works", function () {
+        const value = store.get(["bump"]);
         assert.deepStrictEqual(value, expected["bump"]);
       });
 
-      it("Attempting to get an index that contains a boolean works", async function () {
-        const value = await store.get(["bip", "bling"]);
+      it("Attempting to get an index that contains a boolean works", function () {
+        const value = store.get(["bip", "bling"]);
         assert.strictEqual(value, expected["bip"]["bling"]);
       });
     });
@@ -105,36 +101,33 @@ for (const store in asyncStores) {
 
       before(async function() {
         !isUndefined(currentStore.before) && await currentStore.before();
-        store = await currentStore.initializeStore();
+        store = currentStore.initializeStore();
       });
 
-      it("Attempting to update a non-existent entry works", async function () {
-        await store.update(index, () => value);
-        assert.strictEqual(value, await store.get(index));
+      it("Attempting to update a non-existent entry works", function () {
+        store.update(index, () => value);
+        assert.strictEqual(value, store.get(index));
       });
 
-      it("Attempting to update an existing entry doesn't error ", async function () {
+      it("Attempting to update an existing entry doesn't error ", function () {
         const updater = (v?: JSONValue): string => `${JSON.stringify(v)} new and improved!`;
-        await store.update(index, updater);
-        assert.strictEqual(updater(value), await store.get(index));
+        store.update(index, updater);
+        assert.strictEqual(updater(value), store.get(index));
       });
 
-      it("Attempting to update a nested entry doesn't error and overwrites", async function () {
+      it("Attempting to update a nested entry doesn't error and overwrites", function () {
         const updatedIndex = index.slice(1);
-        await store.update(updatedIndex, () => value);
-        assert.strictEqual(value, await store.get(updatedIndex));
+        store.update(updatedIndex, () => value);
+        assert.strictEqual(value, store.get(updatedIndex));
       });
 
       it("Attempting to update an empty index throws an error", function () {
-        store
-          .update([], () => "should never get here!")
-          .then(() =>
-            assert.ok(
-              false,
-              "Attempting to update with an empty index should fail."
-            )
-          )
-          .catch(() => assert.ok(true));
+        try {
+          store.update([], () => "should never get here!");
+          assert.ok(false, "Attempting to update with an empty index should fail.");
+        } catch (e) {
+          assert.ok(true);
+        }
       });
     });
 
@@ -145,66 +138,43 @@ for (const store in asyncStores) {
 
       before(async function() {
         !isUndefined(currentStore.before) && await currentStore.before();
-        store = await currentStore.initializeStore();
+        store = currentStore.initializeStore();
       });
 
-      it("Attempting to delete an existing index works", async function () {
-        await store.update(index, () => value);
-        assert.strictEqual(value, await store.get(index));
+      it("Attempting to delete an existing index works", function () {
+        store.update(index, () => value);
+        assert.strictEqual(value, store.get(index));
 
-        await store.delete(index);
-        assert.strictEqual(await store.get(index), undefined);
+        store.delete(index);
+        assert.strictEqual(store.get(index), undefined);
       });
 
-      it("Attempting to delete a non-existing entry is a no-op", async function () {
-        await store.update(index, () => value);
-        const storeSnapshot = await store.get();
+      it("Attempting to delete a non-existing entry is a no-op", function () {
+        store.update(index, () => value);
+        const storeSnapshot = store.get();
 
-        await store.delete(["random", "inexistent", "index"]);
+        store.delete(["random", "inexistent", "index"]);
         assert.deepStrictEqual(
           storeSnapshot,
-          await store.get()
+          store.get()
         );
       });
 
-      it("Attempting to delete an index that is not correct is a no-op", async function () {
-        await store.update(index, () => value);
-        const storeSnapshot = await store.get();
+      it("Attempting to delete an index that is not correct is a no-op", function () {
+        store.update(index, () => value);
+        const storeSnapshot = store.get();
 
-        await store.delete(index.slice(1));
+        store.delete(index.slice(1));
         assert.deepStrictEqual(
           storeSnapshot,
-          await store.get()
+          store.get()
         );
       });
 
-      it("Attempting to delete an empty index deletes all entries in the store", async function () {
-        await store.delete([]);
-        assert.deepStrictEqual(undefined, await store.get());
+      it("Attempting to delete an empty index deletes all entries in the store", function () {
+        store.delete([]);
+        assert.deepStrictEqual(undefined, store.get());
       });
     });
   });
 }
-
-// TODO
-// Write tests for the synchronous store. `LocalStorage` does not exist by default,
-// so it needs to be mocked instead, like we do for QML.
-//
-// This object will contain all the synchronous store names and
-// a function that will initialize and return the store when done.
-// const syncStores: {
-//   [store: string]: {
-//     initializeStore: () => SynchronousStore;
-//     before?: () => void;
-//     afterAll?: () => void;
-//   };
-// } = {
-//   WebStore: {
-//     initializeStore: (): WebStore => {
-//       const store = new WebStore("test");
-//       // Clear the store before starting.
-//       store.delete([]);
-//       return store;
-//     }
-//   }
-// };

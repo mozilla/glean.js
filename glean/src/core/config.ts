@@ -3,7 +3,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { DEFAULT_TELEMETRY_ENDPOINT, GLEAN_MAX_SOURCE_TAGS } from "./constants.js";
-import type Plugin from "../plugins/index.js";
 import { validateHeader, validateURL } from "./utils.js";
 import type Uploader from "./upload/uploader.js";
 import log, { LoggingLevel } from "./log.js";
@@ -41,8 +40,6 @@ export interface ConfigurationInterface {
   readonly serverEndpoint?: string,
   // The maximum number of events to store before submitting the events ping.
   readonly maxEvents?: number,
-  // Optional list of plugins to include in current Glean instance.
-  plugins?: Plugin[],
   // The HTTP client implementation to use for uploading pings.
   httpClient?: Uploader,
   // The build date, provided by glean_parser

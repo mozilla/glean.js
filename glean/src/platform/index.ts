@@ -2,9 +2,9 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type Store from "../core/storage/async.js";
+import type Store from "../core/storage.js";
 import type Uploader from "../core/upload/uploader.js";
-import type PlatformInfo from "../core/platform_info/async.js";
+import type PlatformInfo from "../core/platform_info.js";
 
 export type StorageBuilder = new (rootKey: string) => Store;
 
