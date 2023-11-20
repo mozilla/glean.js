@@ -185,7 +185,7 @@ class MetricsDatabase {
    * On the Glean SDK we panic when we can't serialize the persisted value,
    * that is because this is an extremely unlikely situation for that environment.
    *
-   * Since Glean.js will run on the browser, it is easy for a consumers / developers
+   * Since Glean.js will run on the browser, it is easy for consumers / developers
    * to mess with the storage which makes this sort of errors plausible.
    * That is why we choose to not panic and simply delete the corrupted data here.
    *
