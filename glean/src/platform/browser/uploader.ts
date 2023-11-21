@@ -9,7 +9,7 @@ import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus, UploadResult } from "../
 const LOG_TAG = "platform.browser.Uploader";
 
 class BrowserUploader extends Uploader {
-  defaultTimeoutMs: number = DEFAULT_UPLOAD_TIMEOUT_MS;
+  timeoutMs: number = DEFAULT_UPLOAD_TIMEOUT_MS;
 
   async post(
     url: string,
@@ -18,7 +18,7 @@ class BrowserUploader extends Uploader {
     keepalive = true
   ): Promise<UploadResult> {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), this.defaultTimeoutMs);
+    const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
     let response;
     try {

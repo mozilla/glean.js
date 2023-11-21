@@ -39,8 +39,8 @@ describe("Uploader/Browser", function () {
 
   it("returns the correct status for timeout requests", async function () {
     const TEST_TIMEOUT_MS = 100;
-    const ORIGINAL_TIMEOUT_MS = BrowserUploader.defaultTimeoutMs;
-    BrowserUploader.defaultTimeoutMs = TEST_TIMEOUT_MS;
+    const ORIGINAL_TIMEOUT_MS = BrowserUploader.timeoutMs;
+    BrowserUploader.timeoutMs = TEST_TIMEOUT_MS;
 
     nock(MOCK_ENDPOINT).post(/./i).delay(TEST_TIMEOUT_MS + 1).reply(500);
 
@@ -50,7 +50,7 @@ describe("Uploader/Browser", function () {
       await response,
       expectedResponse
     );
-    BrowserUploader.defaultTimeoutMs = ORIGINAL_TIMEOUT_MS;
+    BrowserUploader.timeoutMs = ORIGINAL_TIMEOUT_MS;
   });
 
   it("returns the correct status for request errors", async function () {
