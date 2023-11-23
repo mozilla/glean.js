@@ -283,6 +283,7 @@ namespace Glean {
     Context.eventsDatabase = new EventsDatabase();
     Context.pingsDatabase = new PingsDatabase();
     Context.errorManager = new ErrorManager();
+    Context.automaticallyRecordPageLoads = config?.enableAutoPageLoadEvents ?? false;
 
     pingUploader = new PingUploadManager(correctConfig, Context.pingsDatabase);
 
