@@ -19,6 +19,7 @@ import MetricsDatabase from "./metrics/database.js";
 import EventsDatabase from "./metrics/events_database/index.js";
 import PingsDatabase from "./pings/database.js";
 import ErrorManager from "./error/index.js";
+import { recordPageLoadEvent } from "./metrics/page_load.js";
 
 const LOG_TAG = "core.Glean";
 
@@ -318,6 +319,10 @@ namespace Glean {
       onUploadEnabled();
       initializeCoreMetrics(config?.migrateFromLegacyStorage);
 
+      // Record a page load event if the client has auto page-load events enabled.
+      if (config?.enableAutoPageLoadEvents) {
+        recordPageLoadEvent();
+      }
     } else {
       // If upload is disabled, and we've never run before, only set the
       // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
