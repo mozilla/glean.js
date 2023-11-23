@@ -19,7 +19,7 @@ import MetricsDatabase from "./metrics/database.js";
 import EventsDatabase from "./metrics/events_database/index.js";
 import PingsDatabase from "./pings/database.js";
 import ErrorManager from "./error/index.js";
-import { recordPageLoadEvent } from "./metrics/page_load.js";
+import { recordPageLoadEvent } from "./built_in_events/page_load.js";
 
 const LOG_TAG = "core.Glean";
 

@@ -2,9 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import { InternalEventMetricType as EventMetricType } from "./types/event.js";
-import { Lifetime } from "./lifetime.js";
+import { InternalEventMetricType as EventMetricType } from "../metrics/types/event.js";
+import { Lifetime } from "../metrics/lifetime.js";
 import { EVENTS_PING_NAME } from "../constants.js";
+
+export interface PageLoadValues {
+  url?: string;
+  referrer?: string;
+  title?: string;
+}
 
 /**
  * Creates a `glean.page_load` event metric.
@@ -29,14 +35,16 @@ function getGleanPageLoadEventMetric(): EventMetricType {
  * For a standard web project `initialize` is called every time a page
  * loads. For every page load if the client has auto page loads enabled,
  * we will record a page load event.
+ *
+ * @param values Overrides for each page_load extra key.
  */
-export function recordPageLoadEvent(): void {
+export function recordPageLoadEvent(values?: PageLoadValues): void {
   if (typeof window !== "undefined" && typeof document !== "undefined") {
     const eventMetric = getGleanPageLoadEventMetric();
     eventMetric.record({
-      url: window.location.href,
-      referrer: document.referrer,
-      title: document.title
+      url: values?.url ?? window.location.href,
+      referrer: values?.referrer ?? document.referrer,
+      title: values?.title ?? document.title
     });
   }
 }
