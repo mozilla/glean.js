@@ -413,3 +413,31 @@ glean:
     notification_emails:
       - glean-team@mozilla.com
     expires: never
+  page_load:
+    type: event
+    description: |
+      A event triggered whenever a page is loaded.
+
+      **This event by default is collected automatically. This can be
+      configured by the client and turned off. Glean provides a separate
+      API for collecting the same page load data if the client does not
+      want to collect page loads automatically.**
+    bugs:
+      - TODO
+    data_reviews:
+      - TODO
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+    extra_keys:
+      url:
+        description: The page URL.
+        type: string
+      referrer:
+        description: The page referrer.
+        type: string
+      title:
+        description: The page title.
+        type: string
