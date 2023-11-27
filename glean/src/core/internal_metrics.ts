@@ -2,19 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
-import type PlatformSync from "../../platform/sync.js";
-import type MetricsDatabaseSync from "../metrics/database/sync.js";
-
-import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "../constants.js";
-import { InternalUUIDMetricType as UUIDMetricType } from "../metrics/types/uuid.js";
-import { InternalDatetimeMetricType as DatetimeMetricType } from "../metrics/types/datetime.js";
-import { InternalStringMetricType as StringMetricType } from "../metrics/types/string.js";
-import { createMetric } from "../metrics/utils.js";
-import TimeUnit from "../metrics/time_unit.js";
-import { generateUUIDv4, isWindowObjectUnavailable } from "../utils.js";
-import { Lifetime } from "../metrics/lifetime.js";
-import log, { LoggingLevel } from "../log.js";
-import { Context } from "../context.js";
+import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "./constants.js";
+import { InternalUUIDMetricType as UUIDMetricType } from "./metrics/types/uuid.js";
+import { InternalDatetimeMetricType as DatetimeMetricType } from "./metrics/types/datetime.js";
+import { InternalStringMetricType as StringMetricType } from "./metrics/types/string.js";
+import { createMetric } from "./metrics/utils.js";
+import TimeUnit from "./metrics/time_unit.js";
+import { generateUUIDv4, isWindowObjectUnavailable } from "./utils.js";
+import { Lifetime } from "./metrics/lifetime.js";
+import log, { LoggingLevel } from "./log.js";
+import { Context } from "./context.js";
 
 const LOG_TAG = "core.InternalMetrics";
 
@@ -24,7 +21,7 @@ const LOG_TAG = "core.InternalMetrics";
  * Metrics initialized here should be defined in `./metrics.yaml`
  * and manually translated into JS code.
  */
-export class CoreMetricsSync {
+export class CoreMetrics {
   readonly clientId: UUIDMetricType;
   readonly firstRunDate: DatetimeMetricType;
   readonly os: StringMetricType;
@@ -126,10 +123,7 @@ export class CoreMetricsSync {
   }
 
   initialize(migrateFromLegacyStorage?: boolean): void {
-    // The "sync" version of Glean.js is only meant to be used in the browser.
-    // If we cannot access the window object, then we are unable to store
-    // any of the metric data in `localStorage`.
-    if (isWindowObjectUnavailable()) {
+    if (!Context.testing && isWindowObjectUnavailable()) {
       return;
     }
 
@@ -151,10 +145,10 @@ export class CoreMetricsSync {
       this.initializeUserLifetimeMetrics();
     }
 
-    this.os.set((Context.platform as PlatformSync).info.os());
-    this.osVersion.set((Context.platform as PlatformSync).info.osVersion());
-    this.architecture.set((Context.platform as PlatformSync).info.arch());
-    this.locale.set((Context.platform as PlatformSync).info.locale());
+    this.os.set(Context.platform.info.os());
+    this.osVersion.set(Context.platform.info.osVersion());
+    this.architecture.set(Context.platform.info.arch());
+    this.locale.set(Context.platform.info.locale());
     this.appBuild.set(Context.config.appBuild || "Unknown");
     this.appDisplayVersion.set(Context.config.appDisplayVersion || "Unknown");
     if (Context.config.channel) {
@@ -171,7 +165,7 @@ export class CoreMetricsSync {
    */
   private initializeClientId(): void {
     let needNewClientId = false;
-    const clientIdData = (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
+    const clientIdData = Context.metricsDatabase.getMetric(
       CLIENT_INFO_STORAGE,
       this.clientId
     );
@@ -198,7 +192,7 @@ export class CoreMetricsSync {
    * Generates and sets the first_run_date if it is not set.
    */
   private initializeFirstRunDate(): void {
-    const firstRunDate = (Context.metricsDatabase as MetricsDatabaseSync).getMetric(
+    const firstRunDate = Context.metricsDatabase.getMetric(
       CLIENT_INFO_STORAGE,
       this.firstRunDate
     );
@@ -264,7 +258,7 @@ export class CoreMetricsSync {
             timeUnit: TimeUnit;
           };
           if (!!firstRunDate) {
-            this.firstRunDate.setSyncRaw(
+            this.firstRunDate.setRaw(
               firstRunDate.date,
               firstRunDate.timezone,
               firstRunDate.timeUnit

@@ -4,7 +4,6 @@
 
 import type { JSONValue } from "../utils.js";
 import type { MetricType } from "./index.js";
-import type ErrorManagerSync from "../error/sync.js";
 
 import { Context } from "../context.js";
 import { ErrorType } from "../error/error_type.js";
@@ -24,12 +23,8 @@ export class MetricValidationError extends Error {
     this.name = "MetricValidationError";
   }
 
-  async recordError(metric: MetricType) {
-    await Context.errorManager.record(metric, this.type, this.message);
-  }
-
-  recordErrorSync(metric: MetricType) {
-    (Context.errorManager as ErrorManagerSync).record(metric, this.type, this.message);
+  recordError(metric: MetricType) {
+    Context.errorManager.record(metric, this.type, this.message);
   }
 }
 

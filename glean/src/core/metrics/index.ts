@@ -9,7 +9,7 @@ import type { Metric } from "./metric.js";
 
 import { Context } from "../context.js";
 import { isUndefined, testOnlyCheck } from "../utils.js";
-import { getValidDynamicLabel, getValidDynamicLabelSync } from "./types/labeled.js";
+import { getValidDynamicLabel } from "./types/labeled.js";
 
 export interface Metrics {
   [aMetricType: string]: {
@@ -92,31 +92,13 @@ export abstract class MetricType implements CommonMetricData {
    * @returns The generated identifier. If `category` is empty, it's omitted. Otherwise,
    *          it's the combination of the metric's `category`, `name` and `label`.
    */
-  async identifier(): Promise<string> {
+  identifier(): string {
     const baseIdentifier = this.baseIdentifier();
 
     // We need to use `isUndefined` and cannot use `(this.dynamicLabel)` because we want
     // empty strings to propagate as dynamic labels, so that errors are potentially recorded.
     if (!isUndefined(this.dynamicLabel)) {
-      return await getValidDynamicLabel(this);
-    } else {
-      return baseIdentifier;
-    }
-  }
-
-  /**
-   * The metric's unique identifier, including the category, name and label.
-   *
-   * @returns The generated identifier. If `category` is empty, it's omitted. Otherwise,
-   *          it's the combination of the metric's `category`, `name` and `label`.
-   */
-  identifierSync(): string {
-    const baseIdentifier = this.baseIdentifier();
-
-    // We need to use `isUndefined` and cannot use `(this.dynamicLabel)` because we want
-    // empty strings to propagate as dynamic labels, so that errors are potentially recorded.
-    if (!isUndefined(this.dynamicLabel)) {
-      return getValidDynamicLabelSync(this);
+      return getValidDynamicLabel(this);
     } else {
       return baseIdentifier;
     }
@@ -133,10 +115,7 @@ export abstract class MetricType implements CommonMetricData {
     return uploadEnabled && !this.disabled;
   }
 
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): number {
     if (testOnlyCheck("testGetNumRecordedErrors")) {
       return Context.errorManager.testGetNumRecordedErrors(this, errorType as ErrorType, ping);
     }

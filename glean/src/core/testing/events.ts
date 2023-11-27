@@ -3,7 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { Context } from "../context.js";
-import EventsDatabase from "../metrics/events_database/async.js";
+import EventsDatabase from "../metrics/events_database/index.js";
 
 /**
  * Test-only API
@@ -17,12 +17,12 @@ import EventsDatabase from "../metrics/events_database/async.js";
  *        a future time, others need a specific future time. The default time is 1 minute.
  * @returns New instance of `EventsDatabase` since we "restarted" it.
  */
-export async function testRestartGlean(timeOffset: number = 1000 * 60): Promise<EventsDatabase> {
+export function testRestartGlean(timeOffset: number = 1000 * 60): EventsDatabase {
   // Move the clock to look like Glean was really restarted.
   Context.startTime.setTime(Context.startTime.getTime() + timeOffset);
 
   // Fake a restart.
   const db = new EventsDatabase();
-  await db.initialize();
+  db.initialize();
   return db;
 }

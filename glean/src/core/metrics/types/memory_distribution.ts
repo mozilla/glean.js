@@ -7,8 +7,6 @@ import type { MemoryUnit } from "../memory_unit.js";
 import type { MetricValidationResult } from "../metric.js";
 import type { CommonMetricData } from "../index.js";
 import type { JSONValue } from "../../utils.js";
-import type ErrorManagerSync from "../../error/sync.js";
-import type MetricsDatabaseSync from "../database/sync.js";
 
 import { MetricType } from "../index.js";
 import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
@@ -104,28 +102,80 @@ class InternalMemoryDistributionMetricType extends MetricType {
     this.memoryUnit = memoryUnit as MemoryUnit;
   }
 
-  /// SHARED ///
   accumulate(sample: number): void {
-    if (Context.isPlatformSync()) {
-      this.accumulateSync(sample);
-    } else {
-      this.accumulateAsync(sample);
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    if (sample < 0) {
+      Context.errorManager.record(
+        this,
+        ErrorType.InvalidValue,
+        "Accumulated a negative sample"
+      );
+      return;
+    }
+
+    let convertedSample = convertMemoryUnitToBytes(sample, this.memoryUnit as MemoryUnit);
+
+    if (sample > MAX_BYTES) {
+      Context.errorManager.record(
+        this,
+        ErrorType.InvalidValue,
+        "Sample is bigger than 1 terabyte."
+      );
+      convertedSample = MAX_BYTES;
+    }
+
+    try {
+      Context.metricsDatabase.transform(
+        this,
+        this.accumulateTransformFn(convertedSample)
+      );
+    } catch (e) {
+      if (e instanceof MetricValidationError) {
+        e.recordError(this);
+      }
     }
   }
 
+  accumulateSamples(samples: number[]): void {
+    if (!this.shouldRecord(Context.uploadEnabled)) {
+      return;
+    }
+
+    Context.metricsDatabase.transform(
+      this,
+      this.accumulateSamplesTransformFn(samples)
+    );
+
+    const numNegativeSamples = getNumNegativeSamples(samples);
+    if (numNegativeSamples > 0) {
+      Context.errorManager.record(
+        this,
+        ErrorType.InvalidValue,
+        `Accumulated ${numNegativeSamples} negative samples`,
+        numNegativeSamples
+      );
+    }
+
+    const numTooLongSamples = getNumTooLongSamples(samples, MAX_BYTES);
+    if (numTooLongSamples > 0) {
+      Context.errorManager.record(
+        this,
+        ErrorType.InvalidValue,
+        `Accumulated ${numTooLongSamples} larger than 1TB`,
+        numTooLongSamples
+      );
+    }
+  }
+
+  /// TRANSFORMS ///
   private accumulateTransformFn(sample: number) {
     return (old?: JSONValue): MemoryDistributionMetric => {
       const values = extractAccumulatedValuesFromJsonValue(old);
       return new MemoryDistributionMetric([...values, sample]);
     };
-  }
-
-  accumulateSamples(samples: number[]): void {
-    if (Context.isPlatformSync()) {
-      this.accumulateSamplesSync(samples);
-    } else {
-      this.accumulateSamplesAsync(samples);
-    }
   }
 
   private accumulateSamplesTransformFn(samples: number[]) {
@@ -148,150 +198,10 @@ class InternalMemoryDistributionMetricType extends MetricType {
     };
   }
 
-  /// ASYNC ///
-  accumulateAsync(sample: number) {
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      if (sample < 0) {
-        await Context.errorManager.record(
-          this,
-          ErrorType.InvalidValue,
-          "Accumulated a negative sample"
-        );
-        return;
-      }
-
-      let convertedSample = convertMemoryUnitToBytes(sample, this.memoryUnit as MemoryUnit);
-
-      if (sample > MAX_BYTES) {
-        await Context.errorManager.record(
-          this,
-          ErrorType.InvalidValue,
-          "Sample is bigger than 1 terabyte."
-        );
-        convertedSample = MAX_BYTES;
-      }
-
-      try {
-        await Context.metricsDatabase.transform(this, this.accumulateTransformFn(convertedSample));
-      } catch (e) {
-        if (e instanceof MetricValidationError) {
-          await e.recordError(this);
-        }
-      }
-    });
-  }
-
-  accumulateSamplesAsync(samples: number[]) {
-    Context.dispatcher.launch(async () => {
-      if (!this.shouldRecord(Context.uploadEnabled)) {
-        return;
-      }
-
-      await Context.metricsDatabase.transform(this, this.accumulateSamplesTransformFn(samples));
-
-      const numNegativeSamples = getNumNegativeSamples(samples);
-      if (numNegativeSamples > 0) {
-        await Context.errorManager.record(
-          this,
-          ErrorType.InvalidValue,
-          `Accumulated ${numNegativeSamples} negative samples`,
-          numNegativeSamples
-        );
-      }
-
-      const numTooLongSamples = getNumTooLongSamples(samples, MAX_BYTES);
-      if (numTooLongSamples > 0) {
-        await Context.errorManager.record(
-          this,
-          ErrorType.InvalidValue,
-          `Accumulated ${numTooLongSamples} larger than 1TB`,
-          numTooLongSamples
-        );
-      }
-    });
-  }
-
-  /// SYNC ///
-  accumulateSync(sample: number) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    if (sample < 0) {
-      (Context.errorManager as ErrorManagerSync).record(
-        this,
-        ErrorType.InvalidValue,
-        "Accumulated a negative sample"
-      );
-      return;
-    }
-
-    let convertedSample = convertMemoryUnitToBytes(sample, this.memoryUnit as MemoryUnit);
-
-    if (sample > MAX_BYTES) {
-      (Context.errorManager as ErrorManagerSync).record(
-        this,
-        ErrorType.InvalidValue,
-        "Sample is bigger than 1 terabyte."
-      );
-      convertedSample = MAX_BYTES;
-    }
-
-    try {
-      (Context.metricsDatabase as MetricsDatabaseSync).transform(
-        this,
-        this.accumulateTransformFn(convertedSample)
-      );
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
-      }
-    }
-  }
-
-  accumulateSamplesSync(samples: number[]) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    (Context.metricsDatabase as MetricsDatabaseSync).transform(
-      this,
-      this.accumulateSamplesTransformFn(samples)
-    );
-
-    const numNegativeSamples = getNumNegativeSamples(samples);
-    if (numNegativeSamples > 0) {
-      (Context.errorManager as ErrorManagerSync).record(
-        this,
-        ErrorType.InvalidValue,
-        `Accumulated ${numNegativeSamples} negative samples`,
-        numNegativeSamples
-      );
-    }
-
-    const numTooLongSamples = getNumTooLongSamples(samples, MAX_BYTES);
-    if (numTooLongSamples > 0) {
-      (Context.errorManager as ErrorManagerSync).record(
-        this,
-        ErrorType.InvalidValue,
-        `Accumulated ${numTooLongSamples} larger than 1TB`,
-        numTooLongSamples
-      );
-    }
-  }
-
   /// TESTING ///
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<DistributionData | undefined> {
+  testGetValue(ping: string = this.sendInPings[0]): DistributionData | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let value: MemoryDistributionInternalRepresentation | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        value = await Context.metricsDatabase.getMetric(ping, this);
-      });
-
+      const value: MemoryDistributionInternalRepresentation | undefined = Context.metricsDatabase.getMetric(ping, this);
       if (value) {
         return snapshot(
           constructFunctionalHistogramFromValues(value, LOG_BASE, BUCKETS_PER_MAGNITUDE)
@@ -300,10 +210,7 @@ class InternalMemoryDistributionMetricType extends MetricType {
     }
   }
 
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.sendInPings[0]): number {
     if (testOnlyCheck("testGetNumRecordedErrors")) {
       return Context.errorManager.testGetNumRecordedErrors(this, errorType as ErrorType, ping);
     }
@@ -371,9 +278,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<DistributionData | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): DistributionData | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -387,10 +292,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

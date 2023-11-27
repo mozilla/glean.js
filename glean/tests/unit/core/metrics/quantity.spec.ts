@@ -6,7 +6,7 @@ import assert from "assert";
 import { Context } from "../../../../src/core/context";
 import { ErrorType } from "../../../../src/core/error/error_type";
 
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import QuantityMetricType from "../../../../src/core/metrics/types/quantity";
 import { testResetGlean } from "../../../../src/core/testing";
@@ -14,11 +14,11 @@ import { testResetGlean } from "../../../../src/core/testing";
 describe("QuantityMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", function() {
     const metric = new QuantityMetricType({
       category: "aCategory",
       name: "aQuantityMetric",
@@ -27,10 +27,10 @@ describe("QuantityMetric", function() {
       disabled: false
     });
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to set when glean upload is disabled is a no-op", async function() {
+  it("attempting to set when glean upload is disabled is a no-op", function() {
     Glean.setUploadEnabled(false);
 
     const metric = new QuantityMetricType({
@@ -42,10 +42,10 @@ describe("QuantityMetric", function() {
     });
 
     metric.set(10);
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("ping payload is correct", async function() {
+  it("ping payload is correct", function() {
     const metric = new QuantityMetricType({
       category: "aCategory",
       name: "aQuantityMetric",
@@ -55,9 +55,9 @@ describe("QuantityMetric", function() {
     });
 
     metric.set(10);
-    assert.strictEqual(await metric.testGetValue("aPing"), 10);
+    assert.strictEqual(metric.testGetValue("aPing"), 10);
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "quantity": {
         "aCategory.aQuantityMetric": 10
@@ -65,7 +65,7 @@ describe("QuantityMetric", function() {
     });
   });
 
-  it("set properly sets the value in all pings", async function() {
+  it("set properly sets the value in all pings", function() {
     const metric = new QuantityMetricType({
       category: "aCategory",
       name: "aQuantityMetric",
@@ -75,12 +75,12 @@ describe("QuantityMetric", function() {
     });
 
     metric.set(0);
-    assert.strictEqual(await metric.testGetValue("aPing"), 0);
-    assert.strictEqual(await metric.testGetValue("twoPing"), 0);
-    assert.strictEqual(await metric.testGetValue("threePing"), 0);
+    assert.strictEqual(metric.testGetValue("aPing"), 0);
+    assert.strictEqual(metric.testGetValue("twoPing"), 0);
+    assert.strictEqual(metric.testGetValue("threePing"), 0);
   });
 
-  it("must not set when passed negative", async function() {
+  it("must not set when passed negative", function() {
     const metric = new QuantityMetricType({
       category: "aCategory",
       name: "aQuantityMetric",
@@ -90,12 +90,11 @@ describe("QuantityMetric", function() {
     });
 
     metric.set(-1);
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
-
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue, "aPing"), 1);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidValue, "aPing"), 1);
   });
 
-  it("saturates at boundary", async function() {
+  it("saturates at boundary", function() {
     const metric = new QuantityMetricType({
       category: "aCategory",
       name: "aQuantityMetric",
@@ -105,10 +104,10 @@ describe("QuantityMetric", function() {
     });
 
     metric.set(Number.MAX_SAFE_INTEGER+1);
-    assert.strictEqual(await metric.testGetValue("aPing"), Number.MAX_SAFE_INTEGER);
+    assert.strictEqual(metric.testGetValue("aPing"), Number.MAX_SAFE_INTEGER);
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new QuantityMetricType({
       category: "aCategory",
       name: "aQuantityMetric",
@@ -123,7 +122,7 @@ describe("QuantityMetric", function() {
     // Floating point numbers should also record an error
     metric.set(Math.PI);
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });

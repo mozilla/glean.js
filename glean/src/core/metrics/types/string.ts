@@ -4,17 +4,12 @@
 
 import type { CommonMetricData } from "../index.js";
 import type { MetricValidationResult } from "../metric.js";
-import type MetricsDatabaseSync from "../database/sync.js";
 
-import { MetricType } from "../index.js";
 import { Context } from "../../context.js";
+import { MetricType } from "../index.js";
 import { Metric, MetricValidationError } from "../metric.js";
-import {
-  testOnlyCheck,
-  truncateStringAtBoundaryWithError,
-  truncateStringAtBoundaryWithErrorSync
-} from "../../utils.js";
 import { validateString } from "../utils.js";
+import { testOnlyCheck, truncateStringAtBoundaryWithError, } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.StringMetricType";
 export const MAX_LENGTH_VALUE = 100;
@@ -45,70 +40,26 @@ export class InternalStringMetricType extends MetricType {
     super("string", meta, StringMetric);
   }
 
-  /// SHARED ///
   set(value: string): void {
-    if (Context.isPlatformSync()) {
-      this.setSync(value);
-    } else {
-      this.setAsync(value);
-    }
-  }
-
-  /// ASYNC ///
-  setAsync(value: string) {
-    Context.dispatcher.launch(() => this.setUndispatched(value));
-  }
-
-  /**
-   * An implementation of `set` that does not dispatch the recording task.
-   *
-   * # Important
-   *
-   * This method should **never** be exposed to users.
-   *
-   * @param value The string we want to set to.
-   */
-  async setUndispatched(value: string): Promise<void> {
     if (!this.shouldRecord(Context.uploadEnabled)) {
       return;
     }
 
     try {
-      const truncatedValue = await truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_VALUE);
+      const truncatedValue = truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_VALUE);
       const metric = new StringMetric(truncatedValue);
-      await Context.metricsDatabase.record(this, metric);
+      Context.metricsDatabase.record(this, metric);
     } catch (e) {
       if (e instanceof MetricValidationError) {
-        await e.recordError(this);
-      }
-    }
-  }
-
-  /// SYNC ///
-  setSync(value: string) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    try {
-      const truncatedValue = truncateStringAtBoundaryWithErrorSync(this, value, MAX_LENGTH_VALUE);
-      const metric = new StringMetric(truncatedValue);
-      (Context.metricsDatabase as MetricsDatabaseSync).record(this, metric);
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        e.recordErrorSync(this);
+        e.recordError(this);
       }
     }
   }
 
   /// TESTING ///
-  async testGetValue(ping: string = this.sendInPings[0]): Promise<string | undefined> {
+  testGetValue(ping: string = this.sendInPings[0]): string | undefined {
     if (testOnlyCheck("testGetValue", LOG_TAG)) {
-      let metric: string | undefined;
-      await Context.dispatcher.testLaunch(async () => {
-        metric = await Context.metricsDatabase.getMetric<string>(ping, this);
-      });
-      return metric;
+      return Context.metricsDatabase.getMetric<string>(ping, this);
     }
   }
 }
@@ -151,7 +102,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns The value found in storage or `undefined` if nothing was found.
    */
-  async testGetValue(ping: string = this.#inner.sendInPings[0]): Promise<string | undefined> {
+  testGetValue(ping: string = this.#inner.sendInPings[0]): string | undefined {
     return this.#inner.testGetValue(ping);
   }
 
@@ -165,10 +116,7 @@ export default class {
    *        Defaults to the first value in `sendInPings`.
    * @returns the number of errors recorded for the metric.
    */
-  async testGetNumRecordedErrors(
-    errorType: string,
-    ping: string = this.#inner.sendInPings[0]
-  ): Promise<number> {
+  testGetNumRecordedErrors(errorType: string, ping: string = this.#inner.sendInPings[0]): number {
     return this.#inner.testGetNumRecordedErrors(errorType, ping);
   }
 }

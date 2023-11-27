@@ -4,7 +4,7 @@
 
 import assert from "assert";
 
-import { KnownOperatingSystems } from "../../../../../src/core/platform_info/shared";
+import { KnownOperatingSystems } from "../../../../../src/core/platform_info";
 import PlatformInfo from "../../../../../src/platform/browser/web/platform_info";
 
 describe("PlatformInfo/browser/web", function () {

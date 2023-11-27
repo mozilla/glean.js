@@ -9,7 +9,7 @@ import nock from "nock";
 import fetch from "node-fetch";
 
 import BrowserUploader from "../../../../src/platform/browser/uploader";
-import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
+import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 
 const sandbox = sinon.createSandbox();
 
@@ -38,7 +38,11 @@ describe("Uploader/Browser", function () {
   });
 
   it("returns the correct status for timeout requests", async function () {
-    nock(MOCK_ENDPOINT).post(/./i).delay(DEFAULT_UPLOAD_TIMEOUT_MS + 1).reply(500);
+    const TEST_TIMEOUT_MS = 100;
+    const ORIGINAL_TIMEOUT_MS = BrowserUploader.timeoutMs;
+    BrowserUploader.timeoutMs = TEST_TIMEOUT_MS;
+
+    nock(MOCK_ENDPOINT).post(/./i).delay(TEST_TIMEOUT_MS + 1).reply(500);
 
     const response = BrowserUploader.post(MOCK_ENDPOINT, "");
     const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
@@ -46,6 +50,7 @@ describe("Uploader/Browser", function () {
       await response,
       expectedResponse
     );
+    BrowserUploader.timeoutMs = ORIGINAL_TIMEOUT_MS;
   });
 
   it("returns the correct status for request errors", async function () {

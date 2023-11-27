@@ -10,7 +10,7 @@ import TimingDistributionMetricType, {
 } from "../../../../src/core/metrics/types/timing_distribution";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import TimeUnit, { convertTimeUnitToNanos } from "../../../../src/core/metrics/time_unit";
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import { Histogram } from "../../../../src/histogram/histogram";
 import { Functional } from "../../../../src/histogram/functional";
 import { ErrorType } from "../../../../src/core/error/error_type";
@@ -21,8 +21,8 @@ const sandbox = sinon.createSandbox();
 describe("TimingDistributionMetric", function () {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function () {
-    await testResetGlean(testAppId);
+  beforeEach(function () {
+    testResetGlean(testAppId);
   });
 
   afterEach(function () {
@@ -81,7 +81,7 @@ describe("TimingDistributionMetric", function () {
     assert.deepEqual(snap, expectedJson);
   });
 
-  it("serializer should correctly serialize timing distribution", async function () {
+  it("serializer should correctly serialize timing distribution", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -100,7 +100,7 @@ describe("TimingDistributionMetric", function () {
     metric.setStart(id, startTime);
     metric.setStopAndAccumulate(id, duration);
 
-    assert.equal((await metric.testGetValue("aPing"))?.sum, duration);
+    assert.equal((metric.testGetValue("aPing"))?.sum, duration);
   });
 
   it("set value properly sets the value in all stores", function () {
@@ -123,8 +123,8 @@ describe("TimingDistributionMetric", function () {
     metric.setStart(id, 0);
     metric.setStopAndAccumulate(id, duration);
 
-    storesNames.forEach(async (store) => {
-      const snapshot = await metric.testGetValue(store);
+    storesNames.forEach((store) => {
+      const snapshot = metric.testGetValue(store);
 
       assert.equal(snapshot?.sum, duration);
       assert.equal(snapshot?.values[1], 1);
@@ -132,7 +132,7 @@ describe("TimingDistributionMetric", function () {
     });
   });
 
-  it("timing distributions must not accumulate negative values", async function () {
+  it("timing distributions must not accumulate negative values", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -152,11 +152,11 @@ describe("TimingDistributionMetric", function () {
     metric.setStart(id, duration);
     metric.setStopAndAccumulate(id, 0);
 
-    assert.equal(await metric.testGetValue("aPing"), undefined);
-    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
+    assert.equal(metric.testGetValue("aPing"), undefined);
+    assert.equal(1, metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
-  it("the accumulate samples api correctly stores timing values", async function () {
+  it("the accumulate samples api correctly stores timing values", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -172,7 +172,7 @@ describe("TimingDistributionMetric", function () {
     // negative values to not trigger error reporting.
     metric.setAccumulateSamples([1, 2, 3]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
     const secondsToNanos = 1000 * 1000 * 1000;
     assert.equal(snapshot?.sum, 6 * secondsToNanos);
 
@@ -184,10 +184,10 @@ describe("TimingDistributionMetric", function () {
     assert.equal(1, snapshot?.values[2784941737]);
 
     // No errors should be reported.
-    assert.equal(0, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
+    assert.equal(0, metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
-  it("the accumulate samples api correctly handles negative values", async function () {
+  it("the accumulate samples api correctly handles negative values", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -202,7 +202,7 @@ describe("TimingDistributionMetric", function () {
     // Accumulate the samples.
     metric.setAccumulateSamples([-1, 1, 2, 3]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
 
     // Check that we got the right sum and number of samples.
     assert.equal(snapshot?.sum, 6);
@@ -213,10 +213,10 @@ describe("TimingDistributionMetric", function () {
     assert.equal(1, snapshot?.values[3]);
 
     // 1 error should be reported.
-    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
+    assert.equal(1, metric.testGetNumRecordedErrors(ErrorType.InvalidValue));
   });
 
-  it("the accumulate samples api correctly handles overflowing values", async function () {
+  it("the accumulate samples api correctly handles overflowing values", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -234,7 +234,7 @@ describe("TimingDistributionMetric", function () {
     // Accumulate the samples.
     metric.setAccumulateSamples([overflowingVal, 1, 2, 3]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
 
     // Overflowing values are truncated to MAX_SAMPLE_TIME and recorded.
     assert.equal(snapshot?.sum, MAX_SAMPLE_TIME + 6);
@@ -245,10 +245,10 @@ describe("TimingDistributionMetric", function () {
     assert.equal(1, snapshot?.values[3]);
 
     // 1 error should be reported.
-    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow));
+    assert.equal(1, metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow));
   });
 
-  it("large nanosecond values", async function () {
+  it("large nanosecond values", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -266,13 +266,13 @@ describe("TimingDistributionMetric", function () {
     metric.setStart(id, 0);
     metric.setStopAndAccumulate(id, time);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
 
     // Check that we got the right sum and number of samples.
     assert.equal(snapshot?.sum, time);
   });
 
-  it("stopping non existing id records an error", async function () {
+  it("stopping non existing id records an error", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -288,10 +288,10 @@ describe("TimingDistributionMetric", function () {
     metric.setStopAndAccumulate(id, 60);
 
     // 1 error should be reported.
-    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidState, "aPing"));
+    assert.equal(1, metric.testGetNumRecordedErrors(ErrorType.InvalidState, "aPing"));
   });
 
-  it("the accumulate raw samples api correctly stores timing values", async function () {
+  it("the accumulate raw samples api correctly stores timing values", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -306,7 +306,7 @@ describe("TimingDistributionMetric", function () {
     const secondsToNanos = 1000 * 1000 * 1000;
     metric.accumulateRawSamplesNanos([secondsToNanos, secondsToNanos * 2, secondsToNanos * 3]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
 
     // Check that we got the right sum and number of samples.
     assert.equal(snapshot?.sum, 6 * secondsToNanos);
@@ -319,10 +319,10 @@ describe("TimingDistributionMetric", function () {
     assert.equal(1, snapshot?.values[2784941737]);
 
     // No errors should be reported.
-    assert.equal(0, await metric.testGetNumRecordedErrors(ErrorType.InvalidState, "aPing"));
+    assert.equal(0, metric.testGetNumRecordedErrors(ErrorType.InvalidState, "aPing"));
   });
 
-  it("raw samples api error cases", async function () {
+  it("raw samples api error cases", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -339,7 +339,7 @@ describe("TimingDistributionMetric", function () {
 
     metric.accumulateRawSamplesNanos([0, 1, maxSampleTime + 1]);
 
-    const snapshot = await metric.testGetValue("aPing");
+    const snapshot = metric.testGetValue("aPing");
 
     // Check that we got the right sum and number of samples.
     assert.equal(snapshot?.sum, 2 + maxSampleTime);
@@ -351,7 +351,7 @@ describe("TimingDistributionMetric", function () {
     assert.equal(1, snapshot?.values[599512966122]);
 
     // 1 error should be reported.
-    assert.equal(1, await metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow, "aPing"));
+    assert.equal(1, metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow, "aPing"));
   });
 
   it("timing distribution internal representation validation works as expected", function () {
@@ -375,7 +375,7 @@ describe("TimingDistributionMetric", function () {
     assert.doesNotThrow(() => new TimingDistributionMetric([100, 200, 200]));
   });
 
-  it("cancelling a metric", async function () {
+  it("cancelling a metric", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -390,10 +390,10 @@ describe("TimingDistributionMetric", function () {
     const id = metric.start();
     metric.cancel(id);
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to start/accumulate when glean upload is disabled is a no-op", async function () {
+  it("attempting to start/accumulate when glean upload is disabled is a no-op", function () {
     Glean.setUploadEnabled(false);
 
     const metric = new TimingDistributionMetricType(
@@ -410,10 +410,10 @@ describe("TimingDistributionMetric", function () {
     const id = metric.start();
     metric.stopAndAccumulate(id);
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("value accumulated when upload is not enabled gets removed", async function () {
+  it("value accumulated when upload is not enabled gets removed", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -438,11 +438,11 @@ describe("TimingDistributionMetric", function () {
     Glean.setUploadEnabled(true);
     metric.stopAndAccumulate(id2);
 
-    const testValue = await metric.testGetValue("aPing");
+    const testValue = metric.testGetValue("aPing");
     assert.equal(testValue?.count, 1);
   });
 
-  it("multiple timers can be started, stopped, and cancelled in any order", async function () {
+  it("multiple timers can be started, stopped, and cancelled in any order", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -462,11 +462,11 @@ describe("TimingDistributionMetric", function () {
     metric.stopAndAccumulate(id1);
     metric.cancel(id2);
 
-    const testValue = await metric.testGetValue("aPing");
+    const testValue = metric.testGetValue("aPing");
     assert.equal(testValue?.count, 2);
   });
 
-  it("recording APIs properly sets the value in all pings", async function () {
+  it("recording APIs properly sets the value in all pings", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -481,20 +481,20 @@ describe("TimingDistributionMetric", function () {
     const id = metric.start();
     metric.stopAndAccumulate(id);
 
-    const testValueA = await metric.testGetValue("aPing");
+    const testValueA = metric.testGetValue("aPing");
     assert.strictEqual(testValueA?.count, 1);
     assert.ok(!!testValueA?.sum, "The sum of the distribution should be greater than 0.");
 
-    const testValueB = await metric.testGetValue("bPing");
+    const testValueB = metric.testGetValue("bPing");
     assert.strictEqual(testValueB?.count, 1);
     assert.ok(!!testValueB?.sum, "The sum of the distribution should be greater than 0.");
 
-    const testValueC = await metric.testGetValue("cPing");
+    const testValueC = metric.testGetValue("cPing");
     assert.strictEqual(testValueC?.count, 1);
     assert.ok(!!testValueC?.sum, "The sum of the distribution should be greater than 0.");
   });
 
-  it("recording multiple timings", async function () {
+  it("recording multiple timings", function () {
     const metric = new TimingDistributionMetricType(
       {
         category: "aCategory",
@@ -514,7 +514,7 @@ describe("TimingDistributionMetric", function () {
       secondsToNanos * 4,
     ]);
 
-    const testValue = await metric.testGetValue("aPing");
+    const testValue = metric.testGetValue("aPing");
     assert.strictEqual(testValue?.count, 4);
     assert.ok(!!testValue?.sum, "The sum of the distribution should be greater than 0.");
   });

@@ -6,14 +6,14 @@ import https from "https";
 import { validate } from "jsonschema";
 
 import type { JSONObject } from "../../../src/core/utils";
-import Glean from "../../../src/core/glean/async";
+import Glean from "../../../src/core/glean";
 import { WaitableUploader } from "../../utils";
 
 // Generated files.
 import * as metrics from "./generated/forTesting";
 import * as pings from "./generated/pings";
 import { testResetGlean } from "../../../src/core/testing";
-import { testInitializeGlean, testUninitializeGlean } from "../../../src/core/testing/utils";
+import { testInitializeGlean, testUninitializeGlean } from "../../../src/core/testing";
 
 const GLEAN_SCHEMA_URL = "https://raw.githubusercontent.com/mozilla-services/mozilla-pipeline-schemas/main/schemas/glean/glean/glean.1.schema.json";
 
@@ -57,7 +57,7 @@ describe("schema", function() {
 
   it("validate generated ping is valid against glean schema", async function () {
     const httpClient = new WaitableUploader();
-    await testResetGlean(testAppId, true, { httpClient });
+    testResetGlean(testAppId, true, { httpClient });
 
     // Record something for each metric type.
     //
@@ -110,7 +110,7 @@ describe("schema", function() {
 
   it("validate that the deletion-request is valid against glean schema", async function () {
     const httpClient = new WaitableUploader();
-    await testResetGlean(testAppId, true, { httpClient });
+    testResetGlean(testAppId, true, { httpClient });
 
     const deletionPingBody = httpClient.waitForPingSubmission("deletion-request");
     Glean.setUploadEnabled(false);
@@ -123,12 +123,12 @@ describe("schema", function() {
     const deletionPingBody = httpClient.waitForPingSubmission("deletion-request");
 
     // Reset Glean and enable upload.
-    await testResetGlean(testAppId, true);
+    testResetGlean(testAppId, true);
 
     // Re-start Glean with upload disabled, but don't clear stores.
     // We want to know that we were previously started with the upload enabled.
-    await testUninitializeGlean(false);
-    await testInitializeGlean(testAppId, false, { httpClient });
+    testUninitializeGlean(false);
+    testInitializeGlean(testAppId, false, { httpClient });
 
     validate(await deletionPingBody, pingSchema, { throwError: true });
   });

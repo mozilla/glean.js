@@ -6,7 +6,7 @@ import assert from "assert";
 import { Context } from "../../../../src/core/context";
 import { ErrorType } from "../../../../src/core/error/error_type";
 
-import Glean from "../../../../src/core/glean/async";
+import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 import CounterMetricType from "../../../../src/core/metrics/types/counter";
 import { testResetGlean } from "../../../../src/core/testing";
@@ -14,11 +14,11 @@ import { testResetGlean } from "../../../../src/core/testing";
 describe("CounterMetric", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function() {
-    await testResetGlean(testAppId);
+  beforeEach(function() {
+    testResetGlean(testAppId);
   });
 
-  it("attempting to get the value of a metric that hasn't been recorded doesn't error", async function() {
+  it("attempting to get the value of a metric that hasn't been recorded doesn't error", function() {
     const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -27,10 +27,10 @@ describe("CounterMetric", function() {
       disabled: false
     });
 
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("attempting to add when glean upload is disabled is a no-op", async function() {
+  it("attempting to add when glean upload is disabled is a no-op", function() {
     Glean.setUploadEnabled(false);
 
     const metric = new CounterMetricType({
@@ -42,10 +42,10 @@ describe("CounterMetric", function() {
     });
 
     metric.add(10);
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
   });
 
-  it("ping payload is correct", async function() {
+  it("ping payload is correct", function() {
     const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -55,9 +55,9 @@ describe("CounterMetric", function() {
     });
 
     metric.add(10);
-    assert.strictEqual(await metric.testGetValue("aPing"), 10);
+    assert.strictEqual(metric.testGetValue("aPing"), 10);
 
-    const snapshot = await Context.metricsDatabase.getPingMetrics("aPing", true);
+    const snapshot = Context.metricsDatabase.getPingMetrics("aPing", true);
     assert.deepStrictEqual(snapshot, {
       "counter": {
         "aCategory.aCounterMetric": 10
@@ -65,7 +65,7 @@ describe("CounterMetric", function() {
     });
   });
 
-  it("set properly sets the value in all pings", async function() {
+  it("set properly sets the value in all pings", function() {
     const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -75,12 +75,12 @@ describe("CounterMetric", function() {
     });
 
     metric.add(10);
-    assert.strictEqual(await metric.testGetValue("aPing"), 10);
-    assert.strictEqual(await metric.testGetValue("twoPing"), 10);
-    assert.strictEqual(await metric.testGetValue("threePing"), 10);
+    assert.strictEqual(metric.testGetValue("aPing"), 10);
+    assert.strictEqual(metric.testGetValue("twoPing"), 10);
+    assert.strictEqual(metric.testGetValue("threePing"), 10);
   });
 
-  it("must not increment when passed zero or negative", async function() {
+  it("must not increment when passed zero or negative", function() {
     const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -90,18 +90,18 @@ describe("CounterMetric", function() {
     });
 
     metric.add(0);
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
 
     metric.add(-1);
-    assert.strictEqual(await metric.testGetValue("aPing"), undefined);
+    assert.strictEqual(metric.testGetValue("aPing"), undefined);
 
     metric.add(1);
-    assert.strictEqual(await metric.testGetValue("aPing"), 1);
+    assert.strictEqual(metric.testGetValue("aPing"), 1);
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 2);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidValue), 2);
   });
 
-  it("transformation works", async function() {
+  it("transformation works", function() {
     const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -111,22 +111,22 @@ describe("CounterMetric", function() {
     });
 
     metric.add(2);
-    assert.strictEqual(await metric.testGetValue("aPing"), 2);
-    assert.strictEqual(await metric.testGetValue("twoPing"), 2);
-    assert.strictEqual(await metric.testGetValue("threePing"), 2);
+    assert.strictEqual(metric.testGetValue("aPing"), 2);
+    assert.strictEqual(metric.testGetValue("twoPing"), 2);
+    assert.strictEqual(metric.testGetValue("threePing"), 2);
 
     metric.add(2);
-    assert.strictEqual(await metric.testGetValue("aPing"), 4);
-    assert.strictEqual(await metric.testGetValue("twoPing"), 4);
-    assert.strictEqual(await metric.testGetValue("threePing"), 4);
+    assert.strictEqual(metric.testGetValue("aPing"), 4);
+    assert.strictEqual(metric.testGetValue("twoPing"), 4);
+    assert.strictEqual(metric.testGetValue("threePing"), 4);
 
     metric.add(2);
-    assert.strictEqual(await metric.testGetValue("aPing"), 6);
-    assert.strictEqual(await metric.testGetValue("twoPing"), 6);
-    assert.strictEqual(await metric.testGetValue("threePing"), 6);
+    assert.strictEqual(metric.testGetValue("aPing"), 6);
+    assert.strictEqual(metric.testGetValue("twoPing"), 6);
+    assert.strictEqual(metric.testGetValue("threePing"), 6);
   });
 
-  it("saturates at boundary", async function() {
+  it("saturates at boundary", function() {
     const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -136,12 +136,12 @@ describe("CounterMetric", function() {
     });
 
     metric.add(2);
-    assert.strictEqual(await metric.testGetValue("aPing"), 2);
+    assert.strictEqual(metric.testGetValue("aPing"), 2);
     metric.add(Number.MAX_SAFE_INTEGER);
-    assert.strictEqual(await metric.testGetValue("aPing"), Number.MAX_SAFE_INTEGER);
+    assert.strictEqual(metric.testGetValue("aPing"), Number.MAX_SAFE_INTEGER);
   });
 
-  it("attempting to record a value of incorrect type records an error", async function () {
+  it("attempting to record a value of incorrect type records an error", function () {
     const metric = new CounterMetricType({
       category: "aCategory",
       name: "aCounterMetric",
@@ -156,7 +156,7 @@ describe("CounterMetric", function() {
     // Floating point numbers should also record an error
     metric.add(Math.PI);
 
-    assert.strictEqual(await metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
-    assert.strictEqual(await metric.testGetValue(), undefined);
+    assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidType), 2);
+    assert.strictEqual(metric.testGetValue(), undefined);
   });
 });

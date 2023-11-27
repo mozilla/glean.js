@@ -20,14 +20,14 @@ import { testInitializeGlean, testUninitializeGlean } from "./utils.js";
  * @param config Glean configuration options.
  * @param clearStores Whether or not to clear the events, metrics and pings databases on reset.
  */
-export async function testResetGlean(
+export function testResetGlean(
   applicationId: string,
   uploadEnabled = true,
   config?: ConfigurationInterface,
   clearStores = true,
-): Promise<void> {
-  await testUninitializeGlean(clearStores);
-  await testInitializeGlean(applicationId, uploadEnabled, config);
+): void {
+  testUninitializeGlean(clearStores);
+  testInitializeGlean(applicationId, uploadEnabled, config);
 }
 
 export * from "./utils.js";

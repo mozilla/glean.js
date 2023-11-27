@@ -6,8 +6,7 @@ import type { ConfigurationInterface } from "../config.js";
 
 import TestPlatform from "../../platform/test/index.js";
 import { Context } from "../context.js";
-import { testResetEvents } from "../events/utils/async.js";
-import Glean from "../glean/async.js";
+import Glean from "../glean.js";
 
 /**
  * Test-only API
@@ -22,17 +21,15 @@ import Glean from "../glean/async.js";
  *        first_run_date) are cleared. Default to `true`.
  * @param config Glean configuration options.
  */
-export async function testInitializeGlean(
+export function testInitializeGlean(
   applicationId: string,
   uploadEnabled = true,
   config?: ConfigurationInterface
-): Promise<void> {
+): void {
   Context.testing = true;
 
   Glean.setPlatform(TestPlatform);
   Glean.initialize(applicationId, uploadEnabled, config);
-
-  await Context.dispatcher.testBlockOnQueue();
 }
 
 /**
@@ -43,21 +40,16 @@ export async function testInitializeGlean(
  *
  * @param clearStores Whether or not to clear the events, metrics and pings databases on uninitialize.
  */
-export async function testUninitializeGlean(clearStores = true): Promise<void> {
+export function testUninitializeGlean(clearStores = true): void {
   if (Context.initialized) {
-    await Glean.shutdown();
-
     if (clearStores) {
-      await Context.eventsDatabase.clearAll();
-      await Context.metricsDatabase.clearAll();
-      await Context.pingsDatabase.clearAll();
+      Context.eventsDatabase.clearAll();
+      Context.metricsDatabase.clearAll();
+      Context.pingsDatabase.clearAll();
     }
 
     // Get back to an uninitialized state.
     Context.testUninitialize();
-
-    // Deregister all plugins
-    testResetEvents();
 
     // Clear debug features cache
     Glean.preInitLogPings = undefined;

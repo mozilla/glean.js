@@ -8,8 +8,6 @@ import type BooleanMetricType from "./boolean.js";
 import type StringMetricType from "./string.js";
 import type { JSONValue } from "../../utils.js";
 import type { MetricValidationResult } from "../metric.js";
-import type ErrorManagerSync from "../../error/sync.js";
-import type MetricsDatabaseSync from "../database/sync.js";
 
 import { Metric, MetricValidation } from "../metric.js";
 import { Context } from "../../context.js";
@@ -96,7 +94,7 @@ export function stripLabel(identifier: string): string {
  * @param metric the metric to record to.
  * @returns a valid label that can be used to store data.
  */
-export async function getValidDynamicLabel(metric: MetricType): Promise<string> {
+export function getValidDynamicLabel(metric: MetricType): string {
   // Note that we assume `metric.dynamicLabel` to always be available within this function.
   // This is a safe assumptions because we should only call `getValidDynamicLabel` if we have
   // a dynamic label.
@@ -107,14 +105,14 @@ export async function getValidDynamicLabel(metric: MetricType): Promise<string> 
   const key = combineIdentifierAndLabel(metric.baseIdentifier(), metric.dynamicLabel);
 
   for (const ping of metric.sendInPings) {
-    if (await Context.metricsDatabase.hasMetric(metric.lifetime, ping, metric.type, key)) {
+    if (Context.metricsDatabase.hasMetric(metric.lifetime, ping, metric.type, key)) {
       return key;
     }
   }
 
   let numUsedKeys = 0;
   for (const ping of metric.sendInPings) {
-    numUsedKeys += await Context.metricsDatabase.countByBaseIdentifier(
+    numUsedKeys += Context.metricsDatabase.countByBaseIdentifier(
       metric.lifetime,
       ping,
       metric.type,
@@ -127,77 +125,14 @@ export async function getValidDynamicLabel(metric: MetricType): Promise<string> 
     hitError = true;
   } else if (metric.dynamicLabel.length > MAX_LABEL_LENGTH) {
     hitError = true;
-    await Context.errorManager.record(
+    Context.errorManager.record(
       metric,
       ErrorType.InvalidLabel,
       `Label length ${metric.dynamicLabel.length} exceeds maximum of ${MAX_LABEL_LENGTH}.`
     );
   } else if (!LABEL_REGEX.test(metric.dynamicLabel)) {
     hitError = true;
-    await Context.errorManager.record(
-      metric,
-      ErrorType.InvalidLabel,
-      `Label must be snake_case, got '${metric.dynamicLabel}'.`
-    );
-  }
-
-  return hitError ? combineIdentifierAndLabel(metric.baseIdentifier(), OTHER_LABEL) : key;
-}
-
-/**
- * Checks if the dynamic label stored in the metric data is
- * valid. If not, record an error and store data in the "__other__"
- * label.
- *
- * @param metric the metric to record to.
- * @returns a valid label that can be used to store data.
- */
-export function getValidDynamicLabelSync(metric: MetricType): string {
-  // Note that we assume `metric.dynamicLabel` to always be available within this function.
-  // This is a safe assumptions because we should only call `getValidDynamicLabel` if we have
-  // a dynamic label.
-  if (metric.dynamicLabel === undefined) {
-    throw new Error("This point should never be reached.");
-  }
-
-  const key = combineIdentifierAndLabel(metric.baseIdentifier(), metric.dynamicLabel);
-
-  for (const ping of metric.sendInPings) {
-    if (
-      (Context.metricsDatabase as MetricsDatabaseSync).hasMetric(
-        metric.lifetime,
-        ping,
-        metric.type,
-        key
-      )
-    ) {
-      return key;
-    }
-  }
-
-  let numUsedKeys = 0;
-  for (const ping of metric.sendInPings) {
-    numUsedKeys += (Context.metricsDatabase as MetricsDatabaseSync).countByBaseIdentifier(
-      metric.lifetime,
-      ping,
-      metric.type,
-      metric.baseIdentifier()
-    );
-  }
-
-  let hitError = false;
-  if (numUsedKeys >= MAX_LABELS) {
-    hitError = true;
-  } else if (metric.dynamicLabel.length > MAX_LABEL_LENGTH) {
-    hitError = true;
-    (Context.errorManager as ErrorManagerSync).record(
-      metric,
-      ErrorType.InvalidLabel,
-      `Label length ${metric.dynamicLabel.length} exceeds maximum of ${MAX_LABEL_LENGTH}.`
-    );
-  } else if (!LABEL_REGEX.test(metric.dynamicLabel)) {
-    hitError = true;
-    (Context.errorManager as ErrorManagerSync).record(
+    Context.errorManager.record(
       metric,
       ErrorType.InvalidLabel,
       `Label must be snake_case, got '${metric.dynamicLabel}'.`

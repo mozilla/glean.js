@@ -5,11 +5,10 @@
 import assert from "assert";
 
 import { Context } from "../../../src/core/context";
-import Dispatcher from "../../../src/core/dispatcher";
-import Glean from "../../../src/core/glean/async";
-import MetricsDatabase from "../../../src/core/metrics/database/async";
-import EventsDatabase from "../../../src/core/metrics/events_database/async";
-import PingsDatabase from "../../../src/core/pings/database/async";
+import Glean from "../../../src/core/glean";
+import MetricsDatabase from "../../../src/core/metrics/database";
+import EventsDatabase from "../../../src/core/metrics/events_database";
+import PingsDatabase from "../../../src/core/pings/database";
 import { testResetGlean } from "../../../src/core/testing";
 import { testUninitializeGlean } from "../../../src/core/testing/utils";
 import { sanitizeApplicationId } from "../../../src/core/utils";
@@ -17,39 +16,28 @@ import { sanitizeApplicationId } from "../../../src/core/utils";
 describe("Context", function() {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(async function () {
-    await testResetGlean(testAppId);
+  beforeEach(function () {
+    testResetGlean(testAppId);
   });
 
-  it("dispatcher contains the expected value", async function () {
-    assert.notStrictEqual(Context.dispatcher, undefined);
-    assert.ok(Context.dispatcher instanceof Dispatcher);
-
-    await testUninitializeGlean();
-    // Dispatcher should be available when Glean is uninitialized too.
-    assert.notStrictEqual(Context.dispatcher, undefined);
-    assert.ok((Context.dispatcher as unknown) instanceof Dispatcher);
-  });
-
-  it("uploadEnabled contains the expected value", async function () {
+  it("uploadEnabled contains the expected value", function () {
     assert.strictEqual(Context.uploadEnabled, true);
 
     Glean.setUploadEnabled(false);
-    await Context.dispatcher.testBlockOnQueue();
     assert.strictEqual(Context.uploadEnabled, false);
   });
 
-  it("appId contains the expected value", async function () {
+  it("appId contains the expected value", function () {
     assert.strictEqual(Context.applicationId, sanitizeApplicationId(testAppId));
 
-    await testResetGlean("new-id");
+    testResetGlean("new-id");
     assert.strictEqual(Context.applicationId, sanitizeApplicationId("new-id"));
   });
 
-  it("initialized contains the expected value", async function () {
+  it("initialized contains the expected value", function () {
     assert.strictEqual(Context.initialized, true);
 
-    await testUninitializeGlean();
+    testUninitializeGlean();
     assert.strictEqual(Context.initialized, false);
   });
 
@@ -62,21 +50,5 @@ describe("Context", function() {
 
     assert.notStrictEqual(Context.pingsDatabase, undefined);
     assert.ok(Context.pingsDatabase instanceof PingsDatabase);
-  });
-
-  it("the dispatcher is always available", function () {
-    const originalDispatcher = Context.dispatcher;
-    assert.notStrictEqual(originalDispatcher, null);
-
-    Context.testUninitialize();
-
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    assert.strictEqual(Context._instance?._dispatcher, undefined);
-
-    // Trying to access the dispatcher will instantiate a new one.
-    const newDispatcher = Context.instance;
-    assert.notStrictEqual(newDispatcher, null);
-    assert.notStrictEqual(newDispatcher, originalDispatcher);
   });
 });
