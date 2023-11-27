@@ -6,6 +6,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0...v4.0.0-pre.0)
 
+[#1808](https://github.com/mozilla/glean.js/pull/1808): **BREAKING CHANGE**: Make glean.js fully synchronous.
+
 # v3.0.0 (2023-11-16)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0-pre.1...v3.0.0)
