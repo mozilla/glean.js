@@ -8,7 +8,7 @@ import sinon from "sinon";
 import nock from "nock";
 import fetch from "node-fetch";
 
-import BrowserUploader from "../../../../src/platform/browser/uploader";
+import BrowserFetchUploader from "../../../../src/platform/browser/fetch_uploader";
 import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 import PingRequest from "../../../../src/core/upload/ping_request";
 
@@ -20,7 +20,7 @@ const MOCK_ENDPOINT = "http://www.example.com";
 // @ts-ignore
 global.fetch = fetch;
 
-describe("Uploader/Browser", function () {
+describe("Uploader/BrowserFetch", function () {
   afterEach(function () {
     sandbox.restore();
   });
@@ -29,7 +29,7 @@ describe("Uploader/Browser", function () {
     for (const status of [200, 400, 500]) {
       nock(MOCK_ENDPOINT).post(/./i).reply(status);
 
-      const response = BrowserUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
+      const response = BrowserFetchUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
       const expectedResponse = new UploadResult(UploadResultStatus.Success, status);
       assert.deepStrictEqual(
         await response,
@@ -40,18 +40,18 @@ describe("Uploader/Browser", function () {
 
   it("returns the correct status for timeout requests", async function () {
     const TEST_TIMEOUT_MS = 100;
-    const ORIGINAL_TIMEOUT_MS = BrowserUploader.timeoutMs;
-    BrowserUploader.timeoutMs = TEST_TIMEOUT_MS;
+    const ORIGINAL_TIMEOUT_MS = BrowserFetchUploader.timeoutMs;
+    BrowserFetchUploader.timeoutMs = TEST_TIMEOUT_MS;
 
     nock(MOCK_ENDPOINT).post(/./i).delay(TEST_TIMEOUT_MS + 1).reply(500);
 
-    const response = BrowserUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
+    const response = BrowserFetchUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
     const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
     assert.deepStrictEqual(
       await response,
       expectedResponse
     );
-    BrowserUploader.timeoutMs = ORIGINAL_TIMEOUT_MS;
+    BrowserFetchUploader.timeoutMs = ORIGINAL_TIMEOUT_MS;
   });
 
   it("returns the correct status for request errors", async function () {
@@ -60,7 +60,7 @@ describe("Uploader/Browser", function () {
       code: "AWFUL_ERROR",
     });
 
-    const response = BrowserUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
+    const response = BrowserFetchUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
     const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
     assert.deepStrictEqual(
       await response,

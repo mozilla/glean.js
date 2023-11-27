@@ -8,9 +8,9 @@ import log, { LoggingLevel } from "../../core/log.js";
 import Uploader from "../../core/upload/uploader.js";
 import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus, UploadResult } from "../../core/upload/uploader.js";
 
-const LOG_TAG = "platform.browser.Uploader";
+const LOG_TAG = "platform.browser.FetchUploader";
 
-class BrowserUploader extends Uploader {
+class BrowserFetchUploader extends Uploader {
   timeoutMs: number = DEFAULT_UPLOAD_TIMEOUT_MS;
 
   async post(
@@ -69,4 +69,4 @@ class BrowserUploader extends Uploader {
   }
 }
 
-export default new BrowserUploader();
+export default new BrowserFetchUploader();
