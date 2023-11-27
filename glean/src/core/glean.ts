@@ -19,7 +19,7 @@ import MetricsDatabase from "./metrics/database.js";
 import EventsDatabase from "./metrics/events_database/index.js";
 import PingsDatabase from "./pings/database.js";
 import ErrorManager from "./error/index.js";
-import { recordPageLoadEvent } from "./built_in_events/page_load.js";
+import GleanMetrics from "./glean_metrics.js";
 
 const LOG_TAG = "core.Glean";
 
@@ -322,7 +322,9 @@ namespace Glean {
 
       // Record a page load event if the client has auto page-load events enabled.
       if (config?.enableAutoPageLoadEvents) {
-        recordPageLoadEvent();
+        // This function call has no parameters because auto-instrumentation
+        // means there are no overrides.
+        GleanMetrics.pageLoad();
       }
     } else {
       // If upload is disabled, and we've never run before, only set the

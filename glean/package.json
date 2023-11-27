@@ -12,7 +12,7 @@
     "./uploader": "./dist/core/upload/uploader.js",
     "./testing": "./dist/core/testing/index.js",
     "./web": "./dist/entry/web.js",
-    "./built_in_events": "./dist/core/built_in_events/index.js"
+    "./metrics": "./dist/core/glean_metrics.js"
   },
   "typesVersions": {
     "*": {
