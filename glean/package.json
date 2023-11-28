@@ -34,8 +34,8 @@
       "error": [
         "./dist/types/core/error/error_type.d.ts"
       ],
-      "built_in_events": [
-        "./dist/types/core/built_in_events/index.d.ts"
+      "metrics": [
+        "./dist/types/core/glean_metrics.d.ts"
       ]
     }
   },
