@@ -46,7 +46,6 @@ export class Context {
   private errorManager!: ErrorManager;
   private applicationId!: string;
   private config!: Configuration;
-  private automaticallyRecordPageLoads!: boolean;
 
   // Whether or not Glean is initialized.
   private initialized = false;
@@ -262,14 +261,6 @@ export class Context {
     }
 
     return Context.instance.platform;
-  }
-
-  static set automaticallyRecordPageLoads(value: boolean) {
-    Context.instance.automaticallyRecordPageLoads = value;
-  }
-
-  static get automaticallyRecordPageLoads(): boolean {
-    return Context.instance.automaticallyRecordPageLoads;
   }
 
   static isPlatformSet(): boolean {
