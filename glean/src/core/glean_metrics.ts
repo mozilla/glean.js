@@ -10,7 +10,6 @@ import log, { LoggingLevel } from "./log.js";
 
 const LOG_TAG = "core.glean_metrics";
 
-/// INTERFACES ///
 interface PageLoadParams {
   url?: string;
   referrer?: string;
@@ -23,6 +22,21 @@ interface PageLoadParams {
  * via the Glean config or they are called manually by the client.
  */
 namespace GleanMetrics {
+  // Object to hold all automatic instrumentation metrics.
+  const metrics = {
+    pageLoad: new EventMetricType(
+      {
+        category: "glean",
+        name: "page_load",
+        sendInPings: [EVENTS_PING_NAME],
+        lifetime: Lifetime.Ping,
+        disabled: false,
+      },
+      // Page load extras defined in `src/metrics.yaml`.
+      ["url", "referrer", "title"]
+    )
+  };
+
   /**
    * For a standard web project `initialize` is called every time a page
    * loads. For every page load if the client has auto page loads enabled,
@@ -41,27 +55,29 @@ namespace GleanMetrics {
       return;
     }
 
-    // Create the pageLoad event metric.
-    const pageLoadMetric = new EventMetricType(
-      {
-        category: "glean",
-        name: "page_load",
-        sendInPings: [EVENTS_PING_NAME],
-        lifetime: Lifetime.Ping,
-        disabled: false
-      },
-      // Page load extras defined in `src/metrics.yaml`.
-      ["url", "referrer", "title"]
-    );
-
-    // Only record the metric if it is safe to do so on the web.
-    if (typeof window !== "undefined" && typeof document !== "undefined") {
-      pageLoadMetric.record({
-        url: overrides?.url ?? window.location.href,
-        referrer: overrides?.referrer ?? document.referrer,
-        title: overrides?.title ?? document.title
-      });
-    }
+    // Each key defaults to the override. If no override is provided, we fall
+    // back to the default value IF the `window` or the `document` objects
+    // are available.
+    //
+    // If neither of those are available, then we default to a value that shows
+    // that no value is available.
+    metrics.pageLoad.record({
+      url:
+        overrides?.url ?? (typeof window !== "undefined"
+          ? window.location.href
+          : "URL_NOT_PROVIDED_OR_AVAILABLE"
+        ),
+      referrer:
+        overrides?.referrer ?? (typeof document !== "undefined"
+          ? document.referrer
+          : "REFERRER_NOT_PROVIDED_OR_AVAILABLE"
+        ),
+      title:
+        overrides?.title ?? (typeof document !== "undefined"
+          ? document.title
+          : "TITLE_NOT_PROVIDED_OR_AVAILABLE"
+        ),
+    });
   }
 }
 
