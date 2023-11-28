@@ -418,12 +418,13 @@ glean:
     description: |
       A event triggered whenever a page is loaded.
 
-      **This event by default is collected automatically. This can be
-      configured by the client and turned off. Glean provides a separate
-      API for collecting the same page load data if the client does not
-      want to collect page loads automatically.**
+      **This event by default is not collected automatically. This can be
+      turned on by the client in the Glean configuration object
+      (`enableAutoPageLoadEvents`). Glean provides a separate API for
+      collecting the same page load data if the client wants to collect
+      page loads manually.**
     bugs:
-      - TODO
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867126
     data_reviews:
       - TODO
     data_sensitivity:
