@@ -426,7 +426,7 @@ glean:
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1867126
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867126#c2
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867126#c8
     data_sensitivity:
       - interaction
     notification_emails:
