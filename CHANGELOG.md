@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0...main)
 
+* [#1835](https://github.com/mozilla/glean.js/pull/1835): Automatic instrumentation of page load events for simple web properties.
+
 # v3.0.0 (2023-11-16)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0-pre.1...v3.0.0)
