@@ -67,6 +67,10 @@ class BrowserFetchUploader extends Uploader {
     clearTimeout(timeout);
     return new UploadResult(UploadResultStatus.Success, response.status);
   }
+
+  supportsCustomHeaders(): boolean {
+    return true;
+  }
 }
 
 export default new BrowserFetchUploader();

@@ -33,6 +33,10 @@ class BrowserSendBeaconUploader extends Uploader {
     // If the agent says there's a problem, there's not so much we can do.
     return new UploadResult(UploadResultStatus.UnrecoverableFailure);
   }
+
+  supportsCustomHeaders(): boolean {
+    return false;
+  }
 }
 
 export default new BrowserSendBeaconUploader();

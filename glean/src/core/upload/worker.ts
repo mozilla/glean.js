@@ -70,13 +70,18 @@ class PingUploadWorker {
     try {
       const finalPing = this.buildPingRequest(ping);
 
-      // Some options require us to submit custom headers. Unfortunately not all the
-      // uploaders support them (e.g. `sendBeacon`). In case headers are required, switch
-      // back to the default uploader that, for now, supports headers.
-      const needsHeaders = (
-        (Context.config.sourceTags === undefined) && (Context.config.debugViewTag === undefined)
-      ) ? false : true;
-      const safeUploader = needsHeaders ? Context.platform.uploader : this.uploader;
+      let safeUploader = this.uploader;
+      if (!this.uploader.supportsCustomHeaders()) {
+        // Some options require us to submit custom headers. Unfortunately not all the
+        // uploaders support them (e.g. `sendBeacon`). In case headers are required, switch
+        // back to the default uploader that, for now, supports headers.
+        const needsHeaders = (
+          (Context.config.sourceTags === undefined) && (Context.config.debugViewTag === undefined)
+        ) ? false : true;
+        if (needsHeaders) {
+          safeUploader = Context.platform.uploader;
+        }
+      }
 
       // The POST call has to be asynchronous. Once the API call is triggered,
       // we rely on the browser's "keepalive" header.

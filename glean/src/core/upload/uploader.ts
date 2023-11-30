@@ -54,6 +54,13 @@ export abstract class Uploader {
    * @returns The status code of the response.
    */
   abstract post(url: string, pingRequest: PingRequest<string | Uint8Array>): Promise<UploadResult>;
+
+  /**
+   * Whether or not this uploader supports submitting custom headers.
+   *
+   * @returns whether or not custom headers are supported.
+   */
+  abstract supportsCustomHeaders(): boolean;
 }
 
 export default Uploader;

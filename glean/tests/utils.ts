@@ -139,6 +139,10 @@ export class WaitableUploader extends Uploader {
 
     return Promise.resolve(new UploadResult(UploadResultStatus.Success, 200));
   }
+
+  supportsCustomHeaders(): boolean {
+    return true;
+  }
 }
 
 /**
@@ -158,5 +162,9 @@ export class CounterUploader extends Uploader {
       status: 200,
       result: UploadResultStatus.Success
     };
+  }
+
+  supportsCustomHeaders(): boolean {
+    return true;
   }
 }

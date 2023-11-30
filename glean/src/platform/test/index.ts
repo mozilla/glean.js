@@ -17,6 +17,10 @@ class MockUploader extends Uploader {
     const result = new UploadResult(UploadResultStatus.Success, 200);
     return Promise.resolve(result);
   }
+
+  supportsCustomHeaders(): boolean {
+    return true;
+  }
 }
 
 const MockPlatformInfo: PlatformInfo = {
