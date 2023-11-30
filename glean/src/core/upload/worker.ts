@@ -75,9 +75,9 @@ class PingUploadWorker {
         // Some options require us to submit custom headers. Unfortunately not all the
         // uploaders support them (e.g. `sendBeacon`). In case headers are required, switch
         // back to the default uploader that, for now, supports headers.
-        const needsHeaders = (
+        const needsHeaders = !(
           (Context.config.sourceTags === undefined) && (Context.config.debugViewTag === undefined)
-        ) ? false : true;
+        );
         if (needsHeaders) {
           safeUploader = Context.platform.uploader;
         }
