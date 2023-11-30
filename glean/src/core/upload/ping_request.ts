@@ -22,11 +22,10 @@ export default class PingRequest<BodyType extends string | Uint8Array> {
       return this;
     }
 
-    const stringifiedBody = JSON.stringify(this.payload);
     // We prefer using `strToU8` instead of TextEncoder directly,
     // because it will polyfill TextEncoder if it's not present in the environment.
-    // Environments that don't provide TextEncoder are IE and most importantly QML.
-    const encodedBody = strToU8(stringifiedBody);
+    // For example, IE doesn't provide TextEncoder.
+    const encodedBody = strToU8(this.payload as string);
 
     let finalBody: string | Uint8Array;
     const headers = this.headers;
