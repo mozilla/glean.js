@@ -268,8 +268,7 @@ namespace Glean {
     Context.applicationId = sanitizeApplicationId(applicationId);
 
     // The configuration constructor will throw in case config has any incorrect prop.
-    const correctConfig = new Configuration(config);
-    Context.config = correctConfig;
+    Context.config = new Configuration(config);
 
     // Pre-set debug options for Glean from browser SessionStorage values.
     setDebugOptionsFromSessionStorage();
@@ -283,7 +282,7 @@ namespace Glean {
     Context.pingsDatabase = new PingsDatabase();
     Context.errorManager = new ErrorManager();
 
-    pingUploader = new PingUploadManager(correctConfig, Context.pingsDatabase);
+    pingUploader = new PingUploadManager(Context.config, Context.pingsDatabase);
 
     Context.initialized = true;
 

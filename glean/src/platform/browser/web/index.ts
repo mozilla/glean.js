@@ -4,7 +4,7 @@
 
 import type Platform from "../../index.js";
 
-import uploader from "../uploader.js";
+import uploader from "../fetch_uploader.js";
 import info from "./platform_info.js";
 import Storage from "./storage.js";
 
