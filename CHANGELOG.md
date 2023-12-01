@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.0...main)
 
+[#1834](https://github.com/mozilla/glean.js/pull/1834): Added support for `navigator.sendBeacon`. This is not turned on by default and needs to be enabled manually.
+
 # v4.0.0-pre.0 (2023-11-27)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0...v4.0.0-pre.0)
