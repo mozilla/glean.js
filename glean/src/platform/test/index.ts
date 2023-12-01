@@ -2,6 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import type PingRequest from "../../core/upload/ping_request.js";
 import type Platform from "../index.js";
 import type PlatformInfo from "../../core/platform_info.js";
 
@@ -12,9 +13,13 @@ import { UploadResultStatus, UploadResult } from "../../core/upload/uploader.js"
 
 class MockUploader extends Uploader {
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  post(_url: string, _body: string | Uint8Array, _headers?: Record<string, string>): Promise<UploadResult> {
+  post(_url: string, _pingRequest: PingRequest<string | Uint8Array>): Promise<UploadResult> {
     const result = new UploadResult(UploadResultStatus.Success, 200);
     return Promise.resolve(result);
+  }
+
+  supportsCustomHeaders(): boolean {
+    return true;
   }
 }
 

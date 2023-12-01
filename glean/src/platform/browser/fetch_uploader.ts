@@ -2,30 +2,34 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
+import type PingRequest from "../../core/upload/ping_request.js";
+
 import log, { LoggingLevel } from "../../core/log.js";
 import Uploader from "../../core/upload/uploader.js";
 import { DEFAULT_UPLOAD_TIMEOUT_MS, UploadResultStatus, UploadResult } from "../../core/upload/uploader.js";
 
-const LOG_TAG = "platform.browser.Uploader";
+const LOG_TAG = "platform.browser.FetchUploader";
 
-class BrowserUploader extends Uploader {
+class BrowserFetchUploader extends Uploader {
   timeoutMs: number = DEFAULT_UPLOAD_TIMEOUT_MS;
 
   async post(
     url: string,
-    body: string | Uint8Array,
-    headers: Record<string, string> = {},
+    pingRequest: PingRequest<string | Uint8Array>,
     keepalive = true
   ): Promise<UploadResult> {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), this.timeoutMs);
 
+    // We expect to have a gzipped payload.
+    const gzipRequest = pingRequest.asCompressedPayload();
+
     let response;
     try {
       response = await fetch(url.toString(), {
-        headers,
+        headers: gzipRequest.headers,
         method: "POST",
-        body: body,
+        body: gzipRequest.payload,
         keepalive,
         // Strips any cookies or authorization headers from the request.
         credentials: "omit",
@@ -42,7 +46,7 @@ class BrowserUploader extends Uploader {
           // Try again without `keepalive`, because that may be the issue.
           // This problem was observed in chromium versions below v81.
           // See: https://chromium.googlesource.com/chromium/src/+/26d70b36dd1c18244fb17b91d275332c8b73eab3
-          return this.post(url, body, headers, false);
+          return this.post(url, gzipRequest, false);
         }
 
         // From MDN: "A fetch() promise will reject with a TypeError
@@ -63,6 +67,10 @@ class BrowserUploader extends Uploader {
     clearTimeout(timeout);
     return new UploadResult(UploadResultStatus.Success, response.status);
   }
+
+  supportsCustomHeaders(): boolean {
+    return true;
+  }
 }
 
-export default new BrowserUploader();
+export default new BrowserFetchUploader();

@@ -1,10 +1,18 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.1...main)
+
+# v4.0.0-pre.1 (2023-12-01)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.0...v4.0.0-pre.1)
+
+[#1834](https://github.com/mozilla/glean.js/pull/1834): Added support for `navigator.sendBeacon`. This is not turned on by default and needs to be enabled manually.
 
 # v4.0.0-pre.0 (2023-11-27)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0...v4.0.0-pre.0)
+
+[#1808](https://github.com/mozilla/glean.js/pull/1808): **BREAKING CHANGE**: Make glean.js fully synchronous.
 
 # v3.0.0 (2023-11-16)
 

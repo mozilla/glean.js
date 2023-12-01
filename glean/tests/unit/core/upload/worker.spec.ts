@@ -130,7 +130,7 @@ describe("PingUploadWorker", function () {
     const url = postSpy.firstCall.args[0].split("/");
     const appId = url[url.length - 4];
     const documentId = url[url.length - 1];
-    const headers = postSpy.firstCall.args[2] || {};
+    const headers = postSpy.firstCall.args[1].headers || {};
 
     assert.strictEqual(documentId, MOCK_PING_IDENTIFIER);
     assert.strictEqual(appId, Context.applicationId);
@@ -139,7 +139,6 @@ describe("PingUploadWorker", function () {
     assert.ok("Content-Length" in headers);
     assert.ok("Content-Type" in headers);
     assert.ok("X-Telemetry-Agent" in headers);
-    assert.strictEqual(headers["Content-Encoding"], "gzip");
   });
 
   it("successful upload attempts to return the correct upload result", function () {
