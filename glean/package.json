@@ -11,7 +11,8 @@
     "./private/ping": "./dist/core/pings/ping_type.js",
     "./uploader": "./dist/core/upload/uploader.js",
     "./testing": "./dist/core/testing/index.js",
-    "./web": "./dist/entry/web.js"
+    "./web": "./dist/entry/web.js",
+    "./metrics": "./dist/core/glean_metrics.js"
   },
   "typesVersions": {
     "*": {
@@ -32,6 +33,9 @@
       ],
       "error": [
         "./dist/types/core/error/error_type.d.ts"
+      ],
+      "metrics": [
+        "./dist/types/core/glean_metrics.d.ts"
       ]
     }
   },

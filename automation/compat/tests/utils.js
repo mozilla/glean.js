@@ -101,7 +101,7 @@ export async function runWebTest(driver) {
     await driver.wait(
       until.elementTextIs(
         successTextContainer,
-        "Ping submitted successfully."
+        "Pings submitted successfully."
       ), 11_000); // 1s more than the default upload timeout in Glean.
 
     console.log("Test passed.");

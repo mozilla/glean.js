@@ -47,6 +47,9 @@ export interface ConfigurationInterface {
   // Migrate from legacy storage (IndexedDB) to the new one (LocalStorage).
   // This should only be true for older projects that have existing data in IndexedDB.
   readonly migrateFromLegacyStorage?: boolean,
+  // Allow the client to explicitly specify whether they want page load events to be
+  // collected automatically.
+  readonly enableAutoPageLoadEvents?: boolean,
 }
 
 // Important: the `Configuration` should only be used internally by the Glean singleton.
@@ -58,6 +61,7 @@ export class Configuration implements ConfigurationInterface {
   readonly buildDate?: Date;
   readonly maxEvents: number;
   readonly migrateFromLegacyStorage?: boolean;
+  readonly enableAutoPageLoadEvents?: boolean;
 
   // Debug configuration.
   debug: DebugOptions;
@@ -71,6 +75,7 @@ export class Configuration implements ConfigurationInterface {
     this.buildDate = config?.buildDate;
     this.maxEvents = config?.maxEvents || DEFAULT_MAX_EVENTS;
     this.migrateFromLegacyStorage = config?.migrateFromLegacyStorage;
+    this.enableAutoPageLoadEvents = config?.enableAutoPageLoadEvents;
 
     this.debug = {};
 
