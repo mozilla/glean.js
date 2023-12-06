@@ -442,3 +442,25 @@ glean:
       title:
         description: The page title.
         type: string
+  anchor_click:
+    type: event
+    description: |
+      A event triggered whenever an anchor html element is clicked on a page.
+
+      **This event by default is not collected automatically. This can be
+      turned on by the client in the Glean configuration object
+      (`enableAutoClickEvents`). Glean provides a separate API for
+      clients to record anchor clicks manually.**
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867126
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867126#c8
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+    extra_keys:
+      id:
+        description: The id of the element clicked.
+        type: string

@@ -16,6 +16,10 @@ interface PageLoadParams {
   title?: string;
 }
 
+interface ClickParams {
+  id: string;
+}
+
 /**
  * This namespace contains functions to support Glean's auto-instrumentation
  * capability. These functions are either running automatically if enabled
@@ -34,6 +38,17 @@ namespace GleanMetrics {
       },
       // Page load extras defined in `src/metrics.yaml`.
       ["url", "referrer", "title"]
+    ),
+    anchorClick: new EventMetricType(
+      {
+        category: "glean",
+        name: "anchor_click",
+        sendInPings: [EVENTS_PING_NAME],
+        lifetime: Lifetime.Ping,
+        disabled: false,
+      },
+      // extras defined in `src/metrics.yaml`.
+      ["id"]
     )
   };
 
@@ -78,6 +93,41 @@ namespace GleanMetrics {
           : "TITLE_NOT_PROVIDED_OR_AVAILABLE"
         ),
     });
+  }
+
+  export function handleClickEvent(event: Event) {
+    let element = event.target as Element;
+    console.log("element: ", element.tagName);
+    if ((event.target as Element)?.tagName.toUpperCase() === "A") {
+      let anchorElement = event.target as HTMLAnchorElement;
+      console.log("id, href, classList, className, innerHTML: ", anchorElement.id, anchorElement.href, anchorElement.classList, anchorElement.className, anchorElement.innerHTML);
+      recordAnchorClick({ id : anchorElement?.id });
+    }
+  }
+
+  /**
+   * If the client has automatic clicks enabled, we will record click events.
+   *
+   * @param overrides Overrides for each click extra key.
+   */
+  export function recordAnchorClick(clickParams: ClickParams) {
+    // Cannot record an event if Glean has not been initialized.
+    if (!Context.initialized) {
+      log(
+        LOG_TAG,
+        "Attempted to record anchor click events before Glean was initialized. This is a no-op.",
+        LoggingLevel.Warn
+      );
+      return;
+    }
+
+    // Each key defaults to the override. If no override is provided, we fall
+    // back to the default value IF the `window` or the `document` objects
+    // are available.
+    //
+    // If neither of those are available, then we default to a value that shows
+    // that no value is available.
+    metrics.anchorClick.record({id: clickParams.id});
   }
 }
 

@@ -324,6 +324,15 @@ namespace Glean {
         // means there are no overrides.
         GleanMetrics.pageLoad();
       }
+
+      // Record all click events if the client has auto click events enabled.
+      if (config?.enableAutoClickEvents) {
+        // This function call has no parameters because auto-instrumentation
+        // means there are no overrides.
+        document.addEventListener('click', (event) => {
+          GleanMetrics.handleClickEvent(event);
+        });
+      }
     } else {
       // If upload is disabled, and we've never run before, only set the
       // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
