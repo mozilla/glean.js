@@ -108,7 +108,7 @@ jobs:
       - checkout
       - install-node
       - run:
-          name: Run browser comapt smoke tests
+          name: Run browser compat smoke tests
           command: |
             npm --prefix ./automation install
             npm --prefix ./automation run link:glean

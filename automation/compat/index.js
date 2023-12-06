@@ -9,7 +9,9 @@ import { benchmark } from "./generated/pings.js";
 import * as metrics from "./generated/sample.js";
 
 Glean.setSourceTags(["automation"]);
-Glean.initialize("glean-compat-benchmark", true);
+Glean.initialize("glean-compat-benchmark", true, {
+  enableAutoPageLoadEvents: true
+});
 
 metrics.pageLoaded.set();
 benchmark.submit();
@@ -18,6 +20,7 @@ benchmark.submit();
 //
 // Overwrite the console.info function in order to know when (and if) the benchmark ping was sent.
 // If a success ping message is logged we show that in the document.
+let pingSubmissionCount = 0;
 console.info = function () {
   var message = "";
   for (var i = 0; i < arguments.length; i++) {
@@ -29,7 +32,14 @@ console.info = function () {
   }
   console.log(message);
   if (/successfully sent 200.$/.test(message)) {
-    var elem = document.getElementById("msg");
-    elem.innerHTML = "Ping submitted successfully.";
+    pingSubmissionCount++;
+
+    // Two pings should be submitted when run successfully
+    // 1. The built-in page_load event, which submits an events ping.
+    // 2. The benchmark ping.
+    if (pingSubmissionCount == 2) {
+      var elem = document.getElementById("msg");
+      elem.innerHTML = "Pings submitted successfully.";
+    }
   }
 }

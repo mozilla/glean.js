@@ -1,6 +1,12 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.2...main)
+
+# v4.0.0-pre.2 (2023-12-06)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.1...v4.0.0-pre.2)
+
+[#1835](https://github.com/mozilla/glean.js/pull/1835): Added support for automatic page load instrumentation.
 
 # v4.0.0-pre.1 (2023-12-01)
 
@@ -13,6 +19,8 @@
 [Full changelog](https://github.com/mozilla/glean.js/compare/v3.0.0...v4.0.0-pre.0)
 
 [#1808](https://github.com/mozilla/glean.js/pull/1808): **BREAKING CHANGE**: Make glean.js fully synchronous.
+
+* [#1835](https://github.com/mozilla/glean.js/pull/1835): Automatic instrumentation of page load events for simple web properties.
 
 # v3.0.0 (2023-11-16)
 
