@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.1...main)
 
+* [#1846](https://github.com/mozilla/glean.js/pull/1846): Add logging messages when using the debugging APIs from the browser console.
+
 # v4.0.0-pre.1 (2023-12-01)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.0...v4.0.0-pre.1)
