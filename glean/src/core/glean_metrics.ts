@@ -97,16 +97,18 @@ namespace GleanMetrics {
     });
   }
 
+  /**
+   * Handle "click" event on an element.
+   *
+   * It records click events on anchor element. Rest of the events are ignored.
+   *
+   * @param event Event object.
+   */
   export function handleClickEvent(event: Event) {
-    let element = event.target as Element;
-    console.log("element: ", element.tagName);
+    // handle click event on anchor html element
     if ((event.target as Element)?.tagName.toUpperCase() === "A") {
-      let anchorElement = event.target as HTMLAnchorElement;
-      const elementUrl = anchorElement.href;
-      const elementId = anchorElement.id;
-      const elementClass = anchorElement.className;
-      console.log("href, id, classes, innerHTML: ", elementUrl, elementId, elementClass, anchorElement.innerHTML);
-      recordAnchorClick({ url: elementUrl, id : elementId, class : elementClass });
+      const anchorElement = event.target as HTMLAnchorElement;
+      recordAnchorClick({ url: anchorElement.href, id : anchorElement.id, class : anchorElement.className });
     }
   }
 

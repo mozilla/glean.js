@@ -327,7 +327,7 @@ namespace Glean {
 
       // Record click events if the client has auto click events enabled.
       if (config?.enableAutoClickEvents) {
-        document.addEventListener('click', (event) => {
+        document.addEventListener("click", (event) => {
           GleanMetrics.handleClickEvent(event);
         });
       }

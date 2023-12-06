@@ -454,7 +454,7 @@ glean:
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1867294
     data_reviews:
-      - #ToDo
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867294 #ToDo
     data_sensitivity:
       - interaction
     notification_emails:
