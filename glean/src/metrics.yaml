@@ -452,15 +452,21 @@ glean:
       (`enableAutoClickEvents`). Glean provides a separate API for
       clients to record anchor clicks manually.**
     bugs:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867126
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867294
     data_reviews:
-      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867126#c8
+      - #ToDo
     data_sensitivity:
       - interaction
     notification_emails:
       - glean-team@mozilla.com
     expires: never
     extra_keys:
+      url:
+        description: The url of the link.
+        type: string
       id:
         description: The id of the element clicked.
+        type: string
+      class:
+        description: The class of the element clicked.
         type: string

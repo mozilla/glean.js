@@ -325,10 +325,8 @@ namespace Glean {
         GleanMetrics.pageLoad();
       }
 
-      // Record all click events if the client has auto click events enabled.
+      // Record click events if the client has auto click events enabled.
       if (config?.enableAutoClickEvents) {
-        // This function call has no parameters because auto-instrumentation
-        // means there are no overrides.
         document.addEventListener('click', (event) => {
           GleanMetrics.handleClickEvent(event);
         });

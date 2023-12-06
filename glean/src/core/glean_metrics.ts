@@ -16,8 +16,10 @@ interface PageLoadParams {
   title?: string;
 }
 
-interface ClickParams {
-  id: string;
+interface AnchorClickParams {
+  url?: string;
+  id?: string;
+  class?: string;
 }
 
 /**
@@ -48,7 +50,7 @@ namespace GleanMetrics {
         disabled: false,
       },
       // extras defined in `src/metrics.yaml`.
-      ["id"]
+      ["url", "id", "class"]
     )
   };
 
@@ -100,17 +102,20 @@ namespace GleanMetrics {
     console.log("element: ", element.tagName);
     if ((event.target as Element)?.tagName.toUpperCase() === "A") {
       let anchorElement = event.target as HTMLAnchorElement;
-      console.log("id, href, classList, className, innerHTML: ", anchorElement.id, anchorElement.href, anchorElement.classList, anchorElement.className, anchorElement.innerHTML);
-      recordAnchorClick({ id : anchorElement?.id });
+      const elementUrl = anchorElement.href;
+      const elementId = anchorElement.id;
+      const elementClass = anchorElement.className;
+      console.log("href, id, classes, innerHTML: ", elementUrl, elementId, elementClass, anchorElement.innerHTML);
+      recordAnchorClick({ url: elementUrl, id : elementId, class : elementClass });
     }
   }
 
   /**
-   * If the client has automatic clicks enabled, we will record click events.
+   * Record clicks on anchor html elements.
    *
-   * @param overrides Overrides for each click extra key.
+   * @param anchorClickParams anchor click extra keys.
    */
-  export function recordAnchorClick(clickParams: ClickParams) {
+  export function recordAnchorClick(anchorClickParams: AnchorClickParams) {
     // Cannot record an event if Glean has not been initialized.
     if (!Context.initialized) {
       log(
@@ -120,14 +125,7 @@ namespace GleanMetrics {
       );
       return;
     }
-
-    // Each key defaults to the override. If no override is provided, we fall
-    // back to the default value IF the `window` or the `document` objects
-    // are available.
-    //
-    // If neither of those are available, then we default to a value that shows
-    // that no value is available.
-    metrics.anchorClick.record({id: clickParams.id});
+    metrics.anchorClick.record({url: anchorClickParams?.url ?? "", id: anchorClickParams?.id ?? "", class: anchorClickParams?.class ?? ""});
   }
 }
 
