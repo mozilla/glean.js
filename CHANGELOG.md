@@ -1,6 +1,12 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.2...main)
+
+# v4.0.0-pre.2 (2023-12-06)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.1...v4.0.0-pre.2)
+
+[#1835](https://github.com/mozilla/glean.js/pull/1835): Added support for automatic page load instrumentation.
 
 # v4.0.0-pre.1 (2023-12-01)
 
