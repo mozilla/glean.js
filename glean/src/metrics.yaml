@@ -122,6 +122,40 @@ glean.internal.metrics:
       - glean-team@mozilla.com
     expires: never
 
+  session_id:
+    type: uuid
+    description: |
+      A UUID uniquely identifying the client's current session.
+    send_in_pings:
+      - glean_client_info
+    lifetime: user
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955
+    data_reviews:
+      - TODO
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+
+  session_count:
+    type: counter
+    description: |
+      A running counter of the number of sessions for this client.
+    send_in_pings:
+      - glean_client_info
+    lifetime: user
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955
+    data_reviews:
+      - TODO
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+
   app_build:
     type: string
     lifetime: application
