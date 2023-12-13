@@ -6,12 +6,14 @@ import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "./constants.js";
 import { InternalUUIDMetricType as UUIDMetricType } from "./metrics/types/uuid.js";
 import { InternalDatetimeMetricType as DatetimeMetricType } from "./metrics/types/datetime.js";
 import { InternalStringMetricType as StringMetricType } from "./metrics/types/string.js";
+import { InternalCounterMetricType as CounterMetricType } from "./metrics/types/counter.js";
 import { createMetric } from "./metrics/utils.js";
 import TimeUnit from "./metrics/time_unit.js";
 import { generateUUIDv4, isWindowObjectUnavailable } from "./utils.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import log, { LoggingLevel } from "./log.js";
 import { Context } from "./context.js";
+import { hasSessionBeenInactiveForOverThirtyMinutes } from "./sessions.js";
 
 const LOG_TAG = "core.InternalMetrics";
 
@@ -28,6 +30,8 @@ export class CoreMetrics {
   readonly osVersion: StringMetricType;
   readonly architecture: StringMetricType;
   readonly locale: StringMetricType;
+  readonly sessionId: UUIDMetricType;
+  readonly sessionCount: CounterMetricType;
   // Provided by the user
   readonly appChannel: StringMetricType;
   readonly appBuild: StringMetricType;
@@ -120,6 +124,22 @@ export class CoreMetrics {
       },
       "second"
     );
+
+    this.sessionId = new UUIDMetricType({
+      name: "session_id",
+      category: "",
+      sendInPings: ["glean_client_info"],
+      lifetime: Lifetime.User,
+      disabled: false
+    });
+
+    this.sessionCount = new CounterMetricType({
+      name: "session_count",
+      category: "",
+      sendInPings: ["glean_client_info"],
+      lifetime: Lifetime.User,
+      disabled: false
+    });
   }
 
   initialize(migrateFromLegacyStorage?: boolean): void {
@@ -157,6 +177,42 @@ export class CoreMetrics {
     if (Context.config.buildDate) {
       this.buildDate.set();
     }
+  }
+
+  /**
+   * If this is the first session, then we set a new session ID and a
+   * lastActive timestamp.
+   *
+   * If the lastActive time is under 30 minutes, then we only update
+   * the lastActive time.
+   *
+   * If the lastActive time is over 30 minutes, then we update the
+   * session ID, the session sequence number, and the lastActive time.
+   */
+  updateSessionInfo(): void {
+    const existingSessionId = Context.metricsDatabase.getMetric(
+      CLIENT_INFO_STORAGE,
+      this.sessionId
+    );
+
+    if (existingSessionId) {
+      try {
+        // If over 30 minutes has passed since last session interaction,
+        // then we create a new session.
+        if (hasSessionBeenInactiveForOverThirtyMinutes()) {
+          this.generateNewSession();
+        }
+      } catch (e) {
+        // Error parsing the last active timestamp, create a new session.
+        this.generateNewSession();
+      }
+    } else {
+      // There is no previous session information, create a new session.
+      this.generateNewSession();
+    }
+
+    // Set the session new session last active time in LocalStorage.
+    localStorage.setItem("glean_session_last_active", Date.now().toString());
   }
 
   /**
@@ -202,12 +258,18 @@ export class CoreMetrics {
     }
   }
 
+  private generateNewSession(): void {
+    this.sessionId.set(generateUUIDv4());
+    this.sessionCount.add();
+  }
+
   /**
    * Initializes the Glean internal user-lifetime metrics.
    */
   private initializeUserLifetimeMetrics(): void {
     this.initializeClientId();
     this.initializeFirstRunDate();
+    this.updateSessionInfo();
   }
 
   /**
