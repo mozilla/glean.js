@@ -132,7 +132,7 @@ glean.internal.metrics:
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955
     data_reviews:
-      - TODO
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955#c2
     data_sensitivity:
       - technical
     notification_emails:
@@ -149,7 +149,7 @@ glean.internal.metrics:
     bugs:
       - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955
     data_reviews:
-      - TODO
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955#c2
     data_sensitivity:
       - technical
     notification_emails:
