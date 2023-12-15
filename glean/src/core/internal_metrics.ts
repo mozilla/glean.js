@@ -165,6 +165,8 @@ export class CoreMetrics {
       this.initializeUserLifetimeMetrics();
     }
 
+    this.updateSessionInfo();
+
     this.os.set(Context.platform.info.os());
     this.osVersion.set(Context.platform.info.osVersion());
     this.architecture.set(Context.platform.info.arch());
@@ -180,16 +182,28 @@ export class CoreMetrics {
   }
 
   /**
-   * If this is the first session, then we set a new session ID and a
+   * Update local stored session information for Glean. This is called whenever
+   * the app is initialized and on every read/write to storage.
+   *
+   * There are a few scenarios to handle depending on what we already have
+   * stored about the session and how long it has been since the last action.
+   *
+   * SCENARIOS:
+   *
+   * 1. If this is the first session, then we set a new session ID and a
    * lastActive timestamp.
    *
-   * If the lastActive time is under 30 minutes, then we only update
+   * 2. If the lastActive time is under 30 minutes, then we only update
    * the lastActive time.
    *
-   * If the lastActive time is over 30 minutes, then we update the
+   * 3. If the lastActive time is over 30 minutes, then we update the
    * session ID, the session sequence number, and the lastActive time.
    */
   updateSessionInfo(): void {
+    if (isWindowObjectUnavailable()) {
+      return;
+    }
+
     const existingSessionId = Context.metricsDatabase.getMetric(
       CLIENT_INFO_STORAGE,
       this.sessionId
@@ -269,7 +283,6 @@ export class CoreMetrics {
   private initializeUserLifetimeMetrics(): void {
     this.initializeClientId();
     this.initializeFirstRunDate();
-    this.updateSessionInfo();
   }
 
   /**
