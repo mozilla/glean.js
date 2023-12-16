@@ -6,6 +6,7 @@ import type Store from "../../../core/storage.js";
 import type { StorageIndex } from "../../../core/storage.js";
 import type { JSONObject, JSONValue } from "../../../core/utils.js";
 
+import { Context } from "../../../core/context.js";
 import log, { LoggingLevel } from "../../../core/log.js";
 import {
   deleteKeyFromNestedObject,
@@ -44,6 +45,10 @@ class WebStore implements Store {
       log(LOG_TAG, ["Unable to fetch value from local storage.", err], LoggingLevel.Error);
     }
 
+    if (this.shouldUpdateSession(index)) {
+      Context.coreMetrics.updateSessionInfo();
+    }
+
     return result;
   }
 
@@ -60,6 +65,10 @@ class WebStore implements Store {
       localStorage.setItem(this.rootKey, JSON.stringify(updatedObj));
     } catch (err) {
       log(LOG_TAG, ["Unable to update value from local storage.", err], LoggingLevel.Error);
+    }
+
+    if (this.shouldUpdateSession(index)) {
+      Context.coreMetrics.updateSessionInfo();
     }
   }
 
@@ -89,6 +98,23 @@ class WebStore implements Store {
     } catch (err) {
       log(LOG_TAG, ["Unable to delete value from storage.", err], LoggingLevel.Error);
     }
+
+    if (this.shouldUpdateSession(index)) {
+      Context.coreMetrics.updateSessionInfo();
+    }
+  }
+
+  /**
+   * Check to see if the session information should be updated whenever
+   * interacting with storage. If we are updating the existing session metrics
+   * then running the `updateSessionInfo` function again would result in an
+   * infinite loop of updating the metrics and re-running this function.
+   *
+   * @param {StorageIndex} index Index to update in storage.
+   * @returns {boolean} Whether we should update session metrics.
+   */
+  private shouldUpdateSession(index: StorageIndex): boolean {
+    return !index.includes("session_id") && !index.includes("session_count");
   }
 }
 
