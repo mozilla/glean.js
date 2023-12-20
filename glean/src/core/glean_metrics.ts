@@ -17,9 +17,9 @@ interface PageLoadParams {
 }
 
 interface ElementClickParams {
-  elementId?: string;
-  elementType?: string;
-  elementLabel?: string;
+  id?: string;
+  type?: string;
+  label?: string;
 }
 
 /**
@@ -50,7 +50,7 @@ namespace GleanMetrics {
         disabled: false,
       },
       // extras defined in `src/metrics.yaml`.
-      ["element_id", "element_type", "element_label"]
+      ["id", "type", "label"]
     )
   };
 
@@ -108,7 +108,7 @@ namespace GleanMetrics {
   export function handleClickEvent(event: Event) {
     const htmlElement = event.target as HTMLElement;
     if (htmlElement?.dataset?.gleanId || htmlElement?.dataset?.gleanType || htmlElement?.dataset?.gleanLabel) {
-      recordElementClick({ elementId: htmlElement?.dataset?.gleanId, elementType : htmlElement?.dataset?.gleanType, elementLabel : htmlElement?.dataset?.gleanLabel });
+      recordElementClick({ id: htmlElement?.dataset?.gleanId, type : htmlElement?.dataset?.gleanType, label : htmlElement?.dataset?.gleanLabel });
     }
   }
 
@@ -127,7 +127,7 @@ namespace GleanMetrics {
       );
       return;
     }
-    metrics.elementClick.record({element_id: elementClickParams?.elementId ?? "", element_type: elementClickParams?.elementType ?? "", element_label: elementClickParams?.elementLabel ?? ""});
+    metrics.elementClick.record({id: elementClickParams?.id ?? "", type: elementClickParams?.type ?? "", label: elementClickParams?.label ?? ""});
   }
 }
 

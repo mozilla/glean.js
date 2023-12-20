@@ -462,12 +462,12 @@ glean:
       - glean-team@mozilla.com
     expires: never
     extra_keys:
-      element_id:
+      id:
         description: An identifier of the element clicked. For automatic collection, its value is the element's `data-glean-id` data attribute value.
         type: string
-      element_type:
+      type:
         description: The type of the element clicked. For automatic collection, its value is the element's `data-glean-type` data attribute value.
         type: string
-      element_label:
+      label:
         description: The label of the element clicked. For automatic collection, its value is the element's `data-glean-label` data attribute value.
         type: string
