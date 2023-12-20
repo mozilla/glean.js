@@ -12,11 +12,11 @@ import { ErrorType } from "../../error/error_type.js";
 import { MetricType } from "../index.js";
 import { Metric, MetricValidation, MetricValidationError } from "../metric.js";
 import { validateString } from "../utils.js";
-import { testOnlyCheck, truncateStringAtBoundaryWithError } from "../../utils.js";
+import { testOnlyCheck, truncateStringAtBytesBoundaryWithError } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.StringListMetricType";
 export const MAX_LIST_LENGTH = 20;
-export const MAX_STRING_LENGTH = 50;
+export const MAX_STRING_LENGTH_IN_BYTES = 100;
 
 export class StringListMetric extends Metric<string[], string[]> {
   constructor(v: unknown) {
@@ -89,10 +89,10 @@ class InternalStringListMetricType extends MetricType {
 
       const truncatedList: string[] = [];
       for (let i = 0; i < Math.min(value.length, MAX_LIST_LENGTH); ++i) {
-        const truncatedString = truncateStringAtBoundaryWithError(
+        const truncatedString = truncateStringAtBytesBoundaryWithError(
           this,
           value[i],
-          MAX_STRING_LENGTH
+          MAX_STRING_LENGTH_IN_BYTES
         );
         truncatedList.push(truncatedString);
       }
@@ -112,7 +112,7 @@ class InternalStringListMetricType extends MetricType {
     }
 
     try {
-      const truncatedValue = truncateStringAtBoundaryWithError(this, value, MAX_STRING_LENGTH);
+      const truncatedValue = truncateStringAtBytesBoundaryWithError(this, value, MAX_STRING_LENGTH_IN_BYTES);
 
       Context.metricsDatabase.transform(
         this,
