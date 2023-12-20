@@ -16,10 +16,10 @@ interface PageLoadParams {
   title?: string;
 }
 
-interface AnchorClickParams {
-  url?: string;
-  id?: string;
-  class?: string;
+interface ElementClickParams {
+  elementId?: string;
+  elementType?: string;
+  elementLabel?: string;
 }
 
 /**
@@ -41,16 +41,16 @@ namespace GleanMetrics {
       // Page load extras defined in `src/metrics.yaml`.
       ["url", "referrer", "title"]
     ),
-    anchorClick: new EventMetricType(
+    elementClick: new EventMetricType(
       {
         category: "glean",
-        name: "anchor_click",
+        name: "element_click",
         sendInPings: [EVENTS_PING_NAME],
         lifetime: Lifetime.Ping,
         disabled: false,
       },
       // extras defined in `src/metrics.yaml`.
-      ["url", "id", "class"]
+      ["element_id", "element_type", "element_label"]
     )
   };
 
@@ -98,36 +98,36 @@ namespace GleanMetrics {
   }
 
   /**
-   * Handle "click" event on an element.
+   * Handler for "click" events on a document.
    *
-   * It records click events on anchor element. Rest of the events are ignored.
+   * It records click event on an html element if the element has any of the data-glean-* attributes.
+   * Otherwise, the event is ignored.
    *
    * @param event Event object.
    */
   export function handleClickEvent(event: Event) {
-    // handle click event on anchor html element
-    if ((event.target as Element)?.tagName.toUpperCase() === "A") {
-      const anchorElement = event.target as HTMLAnchorElement;
-      recordAnchorClick({ url: anchorElement.href, id : anchorElement.id, class : anchorElement.className });
+    const htmlElement = event.target as HTMLElement;
+    if (htmlElement?.dataset?.gleanId || htmlElement?.dataset?.gleanType || htmlElement?.dataset?.gleanLabel) {
+      recordElementClick({ elementId: htmlElement?.dataset?.gleanId, elementType : htmlElement?.dataset?.gleanType, elementLabel : htmlElement?.dataset?.gleanLabel });
     }
   }
 
   /**
-   * Record clicks on anchor html elements.
+   * Record click on an html element.
    *
-   * @param anchorClickParams anchor click extra keys.
+   * @param elementClickParams element click extra keys.
    */
-  export function recordAnchorClick(anchorClickParams: AnchorClickParams) {
+  export function recordElementClick(elementClickParams?: ElementClickParams) {
     // Cannot record an event if Glean has not been initialized.
     if (!Context.initialized) {
       log(
         LOG_TAG,
-        "Attempted to record anchor click events before Glean was initialized. This is a no-op.",
+        "Attempted to record element click event before Glean was initialized. This is a no-op.",
         LoggingLevel.Warn
       );
       return;
     }
-    metrics.anchorClick.record({url: anchorClickParams?.url ?? "", id: anchorClickParams?.id ?? "", class: anchorClickParams?.class ?? ""});
+    metrics.elementClick.record({element_id: elementClickParams?.elementId ?? "", element_type: elementClickParams?.elementType ?? "", element_label: elementClickParams?.elementLabel ?? ""});
   }
 }
 
