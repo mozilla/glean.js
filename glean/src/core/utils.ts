@@ -268,7 +268,7 @@ export function truncateStringAtBytesBoundaryWithError(metric: MetricType, value
     Context.errorManager.record(
       metric,
       ErrorType.InvalidOverflow,
-      `Value length ${new Blob([value]).size} exceeds maximum of ${length} bytes.`
+      `Value length ${new Blob([value]).size} exceeds maximum of ${value.length} bytes.`
     );
   }
   return truncated;
