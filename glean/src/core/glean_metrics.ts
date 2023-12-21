@@ -16,11 +16,11 @@ interface PageLoadParams {
   title?: string;
 }
 
-interface ElementClickParams {
+type ElementClickEventContext = {
   id?: string;
   type?: string;
   label?: string;
-}
+};
 
 /**
  * This namespace contains functions to support Glean's auto-instrumentation
@@ -107,17 +107,21 @@ namespace GleanMetrics {
    */
   export function handleClickEvent(event: Event) {
     const htmlElement = event.target as HTMLElement;
-    if (htmlElement?.dataset?.gleanId || htmlElement?.dataset?.gleanType || htmlElement?.dataset?.gleanLabel) {
-      recordElementClick({ id: htmlElement?.dataset?.gleanId, type : htmlElement?.dataset?.gleanType, label : htmlElement?.dataset?.gleanLabel });
-    }
+
+    const elementClickEventContext: ElementClickEventContext = {};
+    if (htmlElement?.dataset?.gleanId) elementClickEventContext.id = htmlElement?.dataset?.gleanId;
+    if (htmlElement?.dataset?.gleanType) elementClickEventContext.type = htmlElement?.dataset?.gleanType;
+    if (htmlElement?.dataset?.gleanLabel) elementClickEventContext.label = htmlElement?.dataset?.gleanLabel;
+
+    if (Object.keys(elementClickEventContext).length > 0) recordElementClick(elementClickEventContext);
   }
 
   /**
    * Record click on an html element.
    *
-   * @param elementClickParams element click extra keys.
+   * @param elementClickEventContext element click event extra keys.
    */
-  export function recordElementClick(elementClickParams?: ElementClickParams) {
+  export function recordElementClick(elementClickEventContext: ElementClickEventContext) {
     // Cannot record an event if Glean has not been initialized.
     if (!Context.initialized) {
       log(
@@ -127,7 +131,8 @@ namespace GleanMetrics {
       );
       return;
     }
-    metrics.elementClick.record({id: elementClickParams?.id ?? "", type: elementClickParams?.type ?? "", label: elementClickParams?.label ?? ""});
+
+    metrics.elementClick.record(elementClickEventContext);
   }
 }
 
