@@ -1,4 +1,4 @@
-personal_ws-1.1 en 76 
+personal_ws-1.1 en 82 
 API's
 APIs
 BUGFIX
@@ -12,8 +12,10 @@ ESM
 Glean's
 Gzip
 HTTPS
+IndexedDB
 JSDoc
 JWK
+LocalStorage
 MPL
 PingType
 PlatformInfo
@@ -30,6 +32,7 @@ UI
 UUID
 UploadResult
 UploadResultStatus
+async
 benchmarking
 boolean
 booleans
@@ -62,10 +65,12 @@ mdroettboom
 mozilla
 npm
 prerelease
+queueing
 runtime
 schemas
 setRawNanos
 setUploadEnabled
+ssr
 timespan
 travis
 unminified
@@ -76,8 +81,3 @@ uuid
 virtualenv
 webext
 webpack
-async
-queueing
-LocalStorage
-IndexedDB
-ssr
