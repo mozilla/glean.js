@@ -16,6 +16,12 @@ interface PageLoadParams {
   title?: string;
 }
 
+type ElementClickEventContext = {
+  id?: string;
+  type?: string;
+  label?: string;
+};
+
 /**
  * This namespace contains functions to support Glean's auto-instrumentation
  * capability. These functions are either running automatically if enabled
@@ -34,6 +40,17 @@ namespace GleanMetrics {
       },
       // Page load extras defined in `src/metrics.yaml`.
       ["url", "referrer", "title"]
+    ),
+    elementClick: new EventMetricType(
+      {
+        category: "glean",
+        name: "element_click",
+        sendInPings: [EVENTS_PING_NAME],
+        lifetime: Lifetime.Ping,
+        disabled: false,
+      },
+      // extras defined in `src/metrics.yaml`.
+      ["id", "type", "label"]
     )
   };
 
@@ -78,6 +95,44 @@ namespace GleanMetrics {
           : "TITLE_NOT_PROVIDED_OR_AVAILABLE"
         ),
     });
+  }
+
+  /**
+   * Handler for "click" events on a document.
+   *
+   * It records click event on an html element if the element has any of the data-glean-* attributes.
+   * Otherwise, the event is ignored.
+   *
+   * @param event Event object.
+   */
+  export function handleClickEvent(event: Event) {
+    const htmlElement = event.target as HTMLElement;
+
+    const elementClickEventContext: ElementClickEventContext = {};
+    if (htmlElement?.dataset?.gleanId) elementClickEventContext.id = htmlElement?.dataset?.gleanId;
+    if (htmlElement?.dataset?.gleanType) elementClickEventContext.type = htmlElement?.dataset?.gleanType;
+    if (htmlElement?.dataset?.gleanLabel) elementClickEventContext.label = htmlElement?.dataset?.gleanLabel;
+
+    if (Object.keys(elementClickEventContext).length > 0) recordElementClick(elementClickEventContext);
+  }
+
+  /**
+   * Record click on an html element.
+   *
+   * @param elementClickEventContext element click event extra keys.
+   */
+  export function recordElementClick(elementClickEventContext: ElementClickEventContext) {
+    // Cannot record an event if Glean has not been initialized.
+    if (!Context.initialized) {
+      log(
+        LOG_TAG,
+        "Attempted to record element click event before Glean was initialized. This is a no-op.",
+        LoggingLevel.Warn
+      );
+      return;
+    }
+
+    metrics.elementClick.record(elementClickEventContext);
   }
 }
 

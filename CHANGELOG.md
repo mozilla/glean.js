@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.2...main)
 
+[#1848](https://github.com/mozilla/glean.js/pull/1848): Support for automatically collecting element click events (first version)
+
 # v4.0.0-pre.2 (2023-12-06)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.1...v4.0.0-pre.2)
