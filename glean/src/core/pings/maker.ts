@@ -233,7 +233,7 @@ export function collectPing(ping: CommonPingData, reason?: string): PingPayload 
   // !IMPORTANT! Events data needs to be collected BEFORE other metrics,
   // because events collection may result in recording of error metrics.
   const eventsData = Context.eventsDatabase.getPingEvents(ping.name, true);
-  const metricsData = Context.metricsDatabase.getPingMetrics(
+  let metricsData = Context.metricsDatabase.getPingMetrics(
     ping.name,
     true
   );
@@ -247,6 +247,19 @@ export function collectPing(ping: CommonPingData, reason?: string): PingPayload 
       `Storage for ${ping.name} empty. Ping will still be sent.`,
       LoggingLevel.Info
     );
+  }
+
+  // Insert the experimentation id if the metrics aren't empty
+  if (ping.includeClientId && Context.config.experimentationId) {
+    if (metricsData != undefined) {
+      metricsData["string"]["glean.client.annotation.experimentation_id"] = Context.config.experimentationId;
+    } else {
+      metricsData = {
+        "string": {
+          "glean.client.annotation.experimentation_id": Context.config.experimentationId
+        }
+      };
+    }
   }
 
   const metrics = metricsData ? { metrics: metricsData } : {};

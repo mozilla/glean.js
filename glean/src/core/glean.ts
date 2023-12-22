@@ -8,7 +8,12 @@ import type Platform from "../platform/index.js";
 import { CLIENT_INFO_STORAGE, KNOWN_CLIENT_ID } from "./constants.js";
 import { Configuration } from "./config.js";
 import PingUploadManager from "./upload/manager.js";
-import { extractBooleanFromString, isBoolean, isString, sanitizeApplicationId } from "./utils.js";
+import {
+  extractBooleanFromString,
+  isBoolean,
+  isString,
+  sanitizeApplicationId,
+} from "./utils.js";
 import { CoreMetrics } from "./internal_metrics.js";
 import { DatetimeMetric } from "./metrics/types/datetime.js";
 import CorePings from "./internal_pings.js";
@@ -26,7 +31,7 @@ const LOG_TAG = "core.Glean";
 enum DebugOption {
   DebugTag = "DebugTag",
   SourceTags = "SourceTags",
-  LogPings = "LogPings"
+  LogPings = "LogPings",
 }
 type DebugOptionValue = keyof typeof DebugOption;
 
@@ -36,7 +41,10 @@ type DebugOptionValue = keyof typeof DebugOption;
  * @param option The debug option key to set.
  * @param value The value of the debug option.
  */
-const setDebugOptionInSessionStorage = (option: DebugOptionValue, value: boolean | string | string[]) => {
+const setDebugOptionInSessionStorage = (
+  option: DebugOptionValue,
+  value: boolean | string | string[]
+) => {
   const key = `Glean.${option.toString()}`;
 
   switch (option) {
@@ -58,7 +66,9 @@ const setDebugOptionInSessionStorage = (option: DebugOptionValue, value: boolean
  * @param option The debug option key to fetch the value of.
  * @returns The stringified value.
  */
-const getDebugOptionFromSessionStorage = (option: DebugOptionValue): string | undefined => {
+const getDebugOptionFromSessionStorage = (
+  option: DebugOptionValue
+): string | undefined => {
   return sessionStorage.getItem(`Glean.${option.toString()}`) || undefined;
 };
 
@@ -185,7 +195,10 @@ namespace Glean {
    */
   function setDebugOptionsFromSessionStorage() {
     // If we cannot access browser APIs, we do nothing.
-    if (typeof window === "undefined" || typeof window.sessionStorage === "undefined") {
+    if (
+      typeof window === "undefined" ||
+      typeof window.sessionStorage === "undefined"
+    ) {
       return;
     }
 
@@ -259,7 +272,11 @@ namespace Glean {
     }
 
     if (!Context.platform) {
-      log(LOG_TAG, "Unable to initialize Glean, platform has not been set.", LoggingLevel.Error);
+      log(
+        LOG_TAG,
+        "Unable to initialize Glean, platform has not been set.",
+        LoggingLevel.Error
+      );
       return;
     }
 
@@ -383,7 +400,7 @@ namespace Glean {
         [
           "Changing upload enabled before Glean is initialized is not supported.\n",
           "Pass the correct state into `initialize`.\n",
-          "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`"
+          "See documentation at https://mozilla.github.io/glean/book/user/general-api.html#initializing-the-glean-sdk`",
         ],
         LoggingLevel.Error
       );
@@ -484,12 +501,16 @@ namespace Glean {
       return;
     }
 
-    if (Context.isPlatformSet() && Context.platform.name !== platform.name && !Context.testing) {
+    if (
+      Context.isPlatformSet() &&
+      Context.platform.name !== platform.name &&
+      !Context.testing
+    ) {
       log(
         LOG_TAG,
         [
           `IMPOSSIBLE: Attempted to change Glean's targeted platform",
-            "from "${Context.platform.name}" to "${platform.name}". Ignoring.`
+            "from "${Context.platform.name}" to "${platform.name}". Ignoring.`,
         ],
         LoggingLevel.Error
       );
@@ -506,17 +527,22 @@ declare global {
       setLogPings: (flag: boolean) => void;
       setDebugViewTag: (value: string) => void;
       setSourceTags: (value: string[]) => void;
-    }
+    };
   }
 }
 
 // Only set `Glean` values whenever running inside of a browser.
-if (typeof window !== "undefined" && typeof window.sessionStorage !== "undefined") {
+if (
+  typeof window !== "undefined" &&
+  typeof window.sessionStorage !== "undefined"
+) {
   window.Glean = {
     setLogPings: (flag: boolean) => {
       setDebugOptionInSessionStorage(DebugOption.LogPings, flag);
       Glean.setLogPings(flag);
-      console.log("Pings will be logged to the console until this tab is closed.");
+      console.log(
+        "Pings will be logged to the console until this tab is closed."
+      );
     },
     setDebugViewTag: (value: string) => {
       setDebugOptionInSessionStorage(DebugOption.DebugTag, value);
@@ -528,8 +554,10 @@ if (typeof window !== "undefined" && typeof window.sessionStorage !== "undefined
     setSourceTags: (value: string[]) => {
       setDebugOptionInSessionStorage(DebugOption.SourceTags, value);
       Glean.setSourceTags(value);
-      console.log("Pings will be given the specified tags until the tab is closed.");
-    }
+      console.log(
+        "Pings will be given the specified tags until the tab is closed."
+      );
+    },
   };
 }
 

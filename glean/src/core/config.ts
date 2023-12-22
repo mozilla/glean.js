@@ -53,6 +53,8 @@ export interface ConfigurationInterface {
   // Allow the client to explicitly specify whether they want to automatically capture
   // element clicks.
   readonly enableAutoElementClickEvents?: boolean,
+  // Experimentation identifier to be set in all pings
+  readonly experimentationId?: string,
 }
 
 // Important: the `Configuration` should only be used internally by the Glean singleton.
@@ -66,6 +68,7 @@ export class Configuration implements ConfigurationInterface {
   readonly migrateFromLegacyStorage?: boolean;
   readonly enableAutoPageLoadEvents?: boolean;
   readonly enableAutoElementClickEvents?: boolean;
+  readonly experimentationId?: string;
 
   // Debug configuration.
   debug: DebugOptions;
@@ -81,6 +84,7 @@ export class Configuration implements ConfigurationInterface {
     this.migrateFromLegacyStorage = config?.migrateFromLegacyStorage;
     this.enableAutoPageLoadEvents = config?.enableAutoPageLoadEvents;
     this.enableAutoElementClickEvents = config?.enableAutoElementClickEvents;
+    this.experimentationId = config?.experimentationId;
 
     this.debug = {};
 
