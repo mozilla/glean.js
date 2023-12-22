@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.2...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.3...main)
+
+# v4.0.0-pre.3 (2023-12-22)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.2...v4.0.0-pre.3)
 
 * [#1848](https://github.com/mozilla/glean.js/pull/1848): Support for automatically collecting element click events (first version)
 * [#1849](https://github.com/mozilla/glean.js/pull/1849): Truncate event extra strings to 500 bytes. This also updates other string-based metrics to truncate based on max bytes rather than a set number of characters.
