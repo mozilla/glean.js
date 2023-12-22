@@ -9,10 +9,10 @@ import { Context } from "../../context.js";
 import { MetricType } from "../index.js";
 import { Metric, MetricValidationError } from "../metric.js";
 import { validateString } from "../utils.js";
-import { testOnlyCheck, truncateStringAtBoundaryWithError, } from "../../utils.js";
+import { testOnlyCheck, truncateStringAtBytesBoundaryWithError } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.StringMetricType";
-export const MAX_LENGTH_VALUE = 100;
+export const MAX_STRING_LENGTH_IN_BYTES = 100;
 
 export class StringMetric extends Metric<string, string> {
   constructor(v: unknown) {
@@ -46,7 +46,12 @@ export class InternalStringMetricType extends MetricType {
     }
 
     try {
-      const truncatedValue = truncateStringAtBoundaryWithError(this, value, MAX_LENGTH_VALUE);
+      const truncatedValue = truncateStringAtBytesBoundaryWithError(
+        this,
+        value,
+        MAX_STRING_LENGTH_IN_BYTES
+      );
+
       const metric = new StringMetric(truncatedValue);
       Context.metricsDatabase.record(this, metric);
     } catch (e) {

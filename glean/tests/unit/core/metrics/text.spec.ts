@@ -8,7 +8,7 @@ import { ErrorType } from "../../../../src/core/error/error_type";
 
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import TextMetricType, { TEXT_MAX_LENGTH } from "../../../../src/core/metrics/types/text";
+import TextMetricType, { MAX_TEXT_LENGTH_IN_BYTES } from "../../../../src/core/metrics/types/text";
 import { testResetGlean } from "../../../../src/core/testing";
 
 describe("TextMetric", function() {
@@ -97,9 +97,9 @@ describe("TextMetric", function() {
       disabled: false
     });
 
-    const testText = `some value ${"a".repeat(TEXT_MAX_LENGTH)}`;
+    const testText = `some value ${"a".repeat(MAX_TEXT_LENGTH_IN_BYTES)}`;
     metric.set(testText);
-    const truncated = testText.substr(0, TEXT_MAX_LENGTH);
+    const truncated = testText.substr(0, MAX_TEXT_LENGTH_IN_BYTES);
 
     assert.strictEqual(metric.testGetValue("aPing"), truncated);
     assert.strictEqual(

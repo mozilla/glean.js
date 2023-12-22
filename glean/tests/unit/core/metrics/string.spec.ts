@@ -5,7 +5,7 @@
 import assert from "assert";
 
 import Glean from "../../../../src/core/glean";
-import StringMetricType, { MAX_LENGTH_VALUE } from "../../../../src/core/metrics/types/string";
+import StringMetricType, { MAX_STRING_LENGTH_IN_BYTES } from "../../../../src/core/metrics/types/string";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
 
 import { Context } from "../../../../src/core/context";
@@ -95,7 +95,7 @@ describe("StringMetric", function() {
 
     assert.strictEqual(
       metric.testGetValue("aPing"),
-      testString.substring(0, MAX_LENGTH_VALUE)
+      testString.substring(0, MAX_STRING_LENGTH_IN_BYTES)
     );
 
     assert.strictEqual(

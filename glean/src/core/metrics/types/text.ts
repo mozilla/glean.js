@@ -10,11 +10,11 @@ import { Metric } from "../metric.js";
 import { MetricType } from "../index.js";
 import { MetricValidationError } from "../metric.js";
 import { validateString } from "../utils.js";
-import { testOnlyCheck, truncateStringAtBoundaryWithError, } from "../../utils.js";
+import { testOnlyCheck, truncateStringAtBytesBoundaryWithError } from "../../utils.js";
 
 const LOG_TAG = "core.metrics.TextMetricType";
-// The maximum number of characters for text.
-export const TEXT_MAX_LENGTH = 200 * 1024;
+
+export const MAX_TEXT_LENGTH_IN_BYTES = 200 * 1024;
 
 export class TextMetric extends Metric<string, string> {
   constructor(v: unknown) {
@@ -54,7 +54,12 @@ class InternalTextMetricType extends MetricType {
     }
 
     try {
-      const truncatedValue = truncateStringAtBoundaryWithError(this, text, TEXT_MAX_LENGTH);
+      const truncatedValue = truncateStringAtBytesBoundaryWithError(
+        this,
+        text,
+        MAX_TEXT_LENGTH_IN_BYTES
+      );
+
       const metric = new TextMetric(truncatedValue);
       Context.metricsDatabase.record(this, metric);
     } catch (e) {
