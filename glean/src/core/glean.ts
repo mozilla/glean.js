@@ -324,6 +324,13 @@ namespace Glean {
         // means there are no overrides.
         GleanMetrics.pageLoad();
       }
+
+      // Record click events if the client has auto element click events enabled.
+      if (config?.enableAutoElementClickEvents) {
+        document.addEventListener("click", (event) => {
+          GleanMetrics.handleClickEvent(event);
+        });
+      }
     } else {
       // If upload is disabled, and we've never run before, only set the
       // client_id to KNOWN_CLIENT_ID, but do not send a deletion request
@@ -509,14 +516,19 @@ if (typeof window !== "undefined" && typeof window.sessionStorage !== "undefined
     setLogPings: (flag: boolean) => {
       setDebugOptionInSessionStorage(DebugOption.LogPings, flag);
       Glean.setLogPings(flag);
+      console.log("Pings will be logged to the console until this tab is closed.");
     },
     setDebugViewTag: (value: string) => {
       setDebugOptionInSessionStorage(DebugOption.DebugTag, value);
       Glean.setDebugViewTag(value);
+      console.log(
+        "Pings will be sent to the Debug Ping Viewer until this tab is closed. Pings can be found here: https://debug-ping-preview.firebaseapp.com/."
+      );
     },
     setSourceTags: (value: string[]) => {
       setDebugOptionInSessionStorage(DebugOption.SourceTags, value);
       Glean.setSourceTags(value);
+      console.log("Pings will be given the specified tags until the tab is closed.");
     }
   };
 }

@@ -442,3 +442,32 @@ glean:
       title:
         description: The page title.
         type: string
+  element_click:
+    type: event
+    description: |
+      A event triggered whenever an html element is clicked on a page.
+
+      **Clicks are recorded only for those html elements that have at least one of
+      the `data-glean-*` data attributes.
+      By default, this event is not collected automatically. Collection can be turned on
+      by clients via Glean configuration object (`enableAutoElementClickEvents`). Glean
+      also provides a separate API for clients to record element clicks manually.**
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867294
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1867294#c29
+    data_sensitivity:
+      - interaction
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+    extra_keys:
+      id:
+        description: An identifier of the element clicked. For automatic collection, its value is the element's `data-glean-id` data attribute value.
+        type: string
+      type:
+        description: The type of the element clicked. For automatic collection, its value is the element's `data-glean-type` data attribute value.
+        type: string
+      label:
+        description: The label of the element clicked. For automatic collection, its value is the element's `data-glean-label` data attribute value.
+        type: string

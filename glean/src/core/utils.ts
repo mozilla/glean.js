@@ -242,6 +242,39 @@ export function truncateStringAtBoundaryWithError(metric: MetricType, value: unk
 }
 
 /**
+ * Truncates a string to a given max number of bytes.
+ *
+ * If the string required truncation, records an error through the error
+ * reporting mechanism.
+ *
+ * @param metric The metric to record an error to, if necessary,
+ * @param value The string to truncate.
+ * @param maxBytes The max number of bytes to truncate to.
+ * @returns A string with at most `maxLength` bytes.
+ * @throws In case `value` is not a string.
+ */
+export function truncateStringAtBytesBoundaryWithError(metric: MetricType, value: unknown, maxBytes: number): string {
+  if (!isString(value)) {
+    throw new MetricValidationError(`Expected string, got ${JSON.stringify(value)}`);
+  }
+
+  const encoder = new TextEncoder();
+  const decoder = new TextDecoder("utf-8");
+
+  const uint8 = encoder.encode(value);
+  const section = uint8.slice(0, maxBytes);
+  const truncated = decoder.decode(section);
+  if (truncated !== value) {
+    Context.errorManager.record(
+      metric,
+      ErrorType.InvalidOverflow,
+      `Value length ${new Blob([value]).size} exceeds maximum of ${value.length} bytes.`
+    );
+  }
+  return truncated;
+}
+
+/**
  * Decorator factory that will only allow a function to be called when Glean is in testing mode.
  *
  * @param name The name of the function that is being called. Used for logging purposes only.

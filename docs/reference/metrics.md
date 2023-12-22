@@ -10,6 +10,7 @@ This means you might have to go searching through the dependency tree to get a f
 
 - [all-pings](#all-pings)
 - [deletion-request](#deletion-request)
+- [events](#events)
 
 ## all-pings
 
@@ -59,6 +60,48 @@ This ping includes the [client id](https://mozilla.github.io/glean/book/user/pin
 All Glean pings contain built-in metrics in the [`ping_info`](https://mozilla.github.io/glean/book/user/pings/index.html#the-ping_info-section) and [`client_info`](https://mozilla.github.io/glean/book/user/pings/index.html#the-client_info-section) sections.
 
 This ping contains no metrics.
+
+## events
+
+This is a built-in ping that is assembled out of the box by the Glean SDK.
+
+See the Glean SDK documentation for the [`events` ping](https://mozilla.github.io/glean/book/user/pings/events.html).
+
+This ping includes the [client id](https://mozilla.github.io/glean/book/user/pings/index.html#the-client_info-section).
+
+**Data reviews for this ping:**
+
+- <https://bugzilla.mozilla.org/show_bug.cgi?id=1512938#c3>
+
+**Bugs related to this ping:**
+
+- <https://bugzilla.mozilla.org/1512938>
+
+**Reasons this ping may be sent:**
+
+- `inactive`: The ping was submitted when becoming inactive. In earlier versions, this
+      was called `background`.
+
+      NOTE: It is not possible to find a definition of "inactivity" that spans
+      all of the platforms served by the Glean JavaScript SDK.
+      This reason is only listed here for documentation purposes.
+      It is never reported by the JavaScript SDK.
+
+- `max_capacity`: The maximum number of events was reached (default 1 event).
+
+- `startup`: The ping was submitted at startup.
+      The events ping is always sent if there are any pending events at startup,
+      because event timestamps are not as reliable across application runs.
+
+
+All Glean pings contain built-in metrics in the [`ping_info`](https://mozilla.github.io/glean/book/user/pings/index.html#the-ping_info-section) and [`client_info`](https://mozilla.github.io/glean/book/user/pings/index.html#the-client_info-section) sections.
+
+In addition to those built-in metrics, the following metrics are added to the ping:
+
+| Name | Type | Description | Data reviews | Extras | Expiration | [Data Sensitivity](https://wiki.mozilla.org/Firefox/Data_Collection) |
+| --- | --- | --- | --- | --- | --- | --- |
+| glean.element_click |[event](https://mozilla.github.io/glean/book/user/metrics/event.html) |A event triggered whenever an html element is clicked on a page.  **Clicks are recorded only for those html elements that have at least one of the `data-glean-*` data attributes. By default, this event is not collected automatically. Collection can be turned on by clients via Glean configuration object (`enableAutoElementClickEvents`). Glean also provides a separate API for clients to record element clicks manually.**  |[Bug 1867294](https://bugzilla.mozilla.org/show_bug.cgi?id=1867294#c29)|<ul><li>id: An identifier of the element clicked. For automatic collection, its value is the element's `data-glean-id` data attribute value.</li><li>label: The label of the element clicked. For automatic collection, its value is the element's `data-glean-label` data attribute value.</li><li>type: The type of the element clicked. For automatic collection, its value is the element's `data-glean-type` data attribute value.</li></ul>|never |2 |
+| glean.page_load |[event](https://mozilla.github.io/glean/book/user/metrics/event.html) |A event triggered whenever a page is loaded.  **This event by default is not collected automatically. This can be turned on by the client in the Glean configuration object (`enableAutoPageLoadEvents`). Glean provides a separate API for collecting the same page load data if the client wants to collect page loads manually.**  |[Bug 1867126](https://bugzilla.mozilla.org/show_bug.cgi?id=1867126#c8)|<ul><li>referrer: The page referrer.</li><li>title: The page title.</li><li>url: The page URL.</li></ul>|never |2 |
 
 Data categories are [defined here](https://wiki.mozilla.org/Firefox/Data_Collection).
 

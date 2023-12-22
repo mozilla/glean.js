@@ -8,7 +8,7 @@ import { ErrorType } from "../../../../src/core/error/error_type";
 
 import Glean from "../../../../src/core/glean";
 import { Lifetime } from "../../../../src/core/metrics/lifetime";
-import StringListMetricType, { MAX_LIST_LENGTH, MAX_STRING_LENGTH } from "../../../../src/core/metrics/types/string_list";
+import StringListMetricType, { MAX_LIST_LENGTH, MAX_STRING_LENGTH_IN_BYTES } from "../../../../src/core/metrics/types/string_list";
 import { testResetGlean } from "../../../../src/core/testing";
 
 describe("StringListMetric", function () {
@@ -121,7 +121,7 @@ describe("StringListMetric", function () {
     const testString = "01234567890".repeat(20);
     const testStringList = [testString];
     metric.set(testStringList);
-    const expectedList = [testString.substring(0, MAX_STRING_LENGTH)];
+    const expectedList = [testString.substring(0, MAX_STRING_LENGTH_IN_BYTES)];
     assert.deepStrictEqual(
       metric.testGetValue("aPing"),
       expectedList

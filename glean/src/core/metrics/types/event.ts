@@ -11,14 +11,14 @@ import {
   getMonotonicNow,
   isString,
   testOnlyCheck,
-  truncateStringAtBoundaryWithError
+  truncateStringAtBytesBoundaryWithError
 } from "../../utils.js";
 import { Context } from "../../context.js";
 import { ErrorType } from "../../error/error_type.js";
 import { MetricValidationError } from "../metric.js";
 
 const LOG_TAG = "core.metrics.EventMetricType";
-const MAX_LENGTH_EXTRA_KEY_VALUE = 100;
+const MAX_BYTES_EXTRA_KEY_VALUE = 500;
 
 /**
  * Base implementation of the event metric type,
@@ -65,10 +65,10 @@ export class InternalEventMetricType<
         for (const [name, value] of Object.entries(extra)) {
           if (this.allowedExtraKeys.includes(name)) {
             if (isString(value)) {
-              truncatedExtra[name] = truncateStringAtBoundaryWithError(
+              truncatedExtra[name] = truncateStringAtBytesBoundaryWithError(
                 this,
                 value,
-                MAX_LENGTH_EXTRA_KEY_VALUE
+                MAX_BYTES_EXTRA_KEY_VALUE
               );
             } else {
               truncatedExtra[name] = value;

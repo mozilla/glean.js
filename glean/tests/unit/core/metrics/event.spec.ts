@@ -126,7 +126,7 @@ describe("EventMetric", function() {
       disabled: false
     }, ["label"]);
 
-    metric.record({ label: "01234567890".repeat(20) });
+    metric.record({ label: "01234567890".repeat(100) });
     assert.strictEqual(metric.testGetNumRecordedErrors(ErrorType.InvalidOverflow), 1);
   });
 
@@ -210,7 +210,7 @@ describe("EventMetric", function() {
     const testValue = "LeanGleanByFrank";
     const extra = {
       "extra1": testValue,
-      "truncatedExtra": testValue.repeat(10),
+      "truncatedExtra": testValue.repeat(50),
     };
 
     testEvent.record(extra);
@@ -225,7 +225,7 @@ describe("EventMetric", function() {
     assert.strictEqual(2, Object.keys(event.extra).length);
     assert.strictEqual(testValue, event.extra["extra1"]);
     assert.strictEqual(
-      testValue.repeat(10).substr(0, 100),
+      testValue.repeat(50).substr(0, 500),
       event.extra["truncatedExtra"]
     );
   });

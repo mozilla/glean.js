@@ -50,6 +50,9 @@ export interface ConfigurationInterface {
   // Allow the client to explicitly specify whether they want page load events to be
   // collected automatically.
   readonly enableAutoPageLoadEvents?: boolean,
+  // Allow the client to explicitly specify whether they want to automatically capture
+  // element clicks.
+  readonly enableAutoElementClickEvents?: boolean,
 }
 
 // Important: the `Configuration` should only be used internally by the Glean singleton.
@@ -62,6 +65,7 @@ export class Configuration implements ConfigurationInterface {
   readonly maxEvents: number;
   readonly migrateFromLegacyStorage?: boolean;
   readonly enableAutoPageLoadEvents?: boolean;
+  readonly enableAutoElementClickEvents?: boolean;
 
   // Debug configuration.
   debug: DebugOptions;
@@ -76,6 +80,7 @@ export class Configuration implements ConfigurationInterface {
     this.maxEvents = config?.maxEvents || DEFAULT_MAX_EVENTS;
     this.migrateFromLegacyStorage = config?.migrateFromLegacyStorage;
     this.enableAutoPageLoadEvents = config?.enableAutoPageLoadEvents;
+    this.enableAutoElementClickEvents = config?.enableAutoElementClickEvents;
 
     this.debug = {};
 
