@@ -427,6 +427,15 @@ namespace Glean {
   }
 
   /**
+   * Sets the experimentation identifier
+   *
+   * @param experimentationId The string identifier to set
+   */
+  export function setExperimentationId(experimentationId: string): void {
+    Context.config.experimentationId = experimentationId;
+  }
+
+  /**
    * Sets the `logPings` debug option.
    *
    * When this flag is `true` pings will be logged to the console right before they are collected.

@@ -54,7 +54,7 @@ export interface ConfigurationInterface {
   // element clicks.
   readonly enableAutoElementClickEvents?: boolean,
   // Experimentation identifier to be set in all pings
-  readonly experimentationId?: string,
+  experimentationId?: string,
 }
 
 // Important: the `Configuration` should only be used internally by the Glean singleton.
@@ -68,7 +68,7 @@ export class Configuration implements ConfigurationInterface {
   readonly migrateFromLegacyStorage?: boolean;
   readonly enableAutoPageLoadEvents?: boolean;
   readonly enableAutoElementClickEvents?: boolean;
-  readonly experimentationId?: string;
+  experimentationId?: string;
 
   // Debug configuration.
   debug: DebugOptions;
