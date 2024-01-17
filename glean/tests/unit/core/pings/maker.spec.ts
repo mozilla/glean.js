@@ -161,6 +161,40 @@ describe("PingMaker", function () {
     }
   });
 
+  it("experimentation id is present in all pings when dynamically set", function () {
+    const ping1 = new PingType({
+      name: "ping1",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+
+    const payloadWithoutId = PingMaker.collectPing(ping1);
+
+    assert(
+      payloadWithoutId?.metrics?.string[
+        "glean.client.annotation.experimentation_id"
+      ] == undefined
+    );
+
+    Glean.setExperimentationId("test_experiment_id");
+
+    const payloadWithId = PingMaker.collectPing(ping1);
+
+    assert(payloadWithId?.metrics?.string != undefined);
+    if (payloadWithId?.metrics?.string != undefined) {
+      assert(
+        payloadWithId.metrics.string[
+          "glean.client.annotation.experimentation_id"
+        ] != undefined
+      );
+      assert(
+        payloadWithId.metrics.string[
+          "glean.client.annotation.experimentation_id"
+        ] == "test_experiment_id"
+      );
+    }
+  });
+
   it("getPingHeaders returns headers when custom headers are set", function () {
     Glean.setDebugViewTag("test");
     Glean.setSourceTags(["tag1", "tag2", "tag3"]);
