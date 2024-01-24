@@ -316,6 +316,29 @@ glean.internal.metrics:
       - glean-team@mozilla.com
     expires: never
 
+# This metric is marked as "application" lifetime but its handling is a little different
+# since it is sent on all pings, it is passed into Glean on init and rather than being
+# recorded as a normal metric, it is held in memory (like an application lifetime metric)
+# and inserted into all pings sent during the current "run" of Glean.
+glean.client.annotation:
+  experimentation_id:
+    type: string
+    lifetime: application
+    send_in_pings:
+      - all-pings
+    description: |
+      An experimentation identifier derived and provided by the application
+      for the purpose of experimentation enrollment.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1848201
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1848201#c5
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+
 glean.error:
   invalid_value:
     type: labeled_counter

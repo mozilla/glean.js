@@ -18,10 +18,10 @@ import { testResetGlean, testRestartGlean } from "../../../../src/core/testing";
 
 const sandbox = sinon.createSandbox();
 
-describe("PingMaker", function() {
+describe("PingMaker", function () {
   const testAppId = `gleanjs.test.${this.title}`;
 
-  beforeEach(function() {
+  beforeEach(function () {
     testResetGlean(testAppId);
   });
 
@@ -29,7 +29,7 @@ describe("PingMaker", function() {
     sandbox.restore();
   });
 
-  it("ping info must contain a non-empty start and end time", function() {
+  it("ping info must contain a non-empty start and end time", function () {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -43,7 +43,7 @@ describe("PingMaker", function() {
     assert.ok(startTime.getTime() <= endTime.getTime());
   });
 
-  it("buildPingInfo must report all the required fields", function() {
+  it("buildPingInfo must report all the required fields", function () {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -56,7 +56,7 @@ describe("PingMaker", function() {
     assert.ok("end_time" in pingInfo);
   });
 
-  it("buildClientInfo must report all the available data", function() {
+  it("buildClientInfo must report all the available data", function () {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -72,10 +72,10 @@ describe("PingMaker", function() {
     // Initialize will also initialize core metrics that are part of the client info.
     testResetGlean(testAppId, true, {
       channel: "channel",
-      appBuild:"build",
+      appBuild: "build",
       appDisplayVersion: "display version",
       buildDate: new Date(),
-      serverEndpoint: "http://localhost:8080"
+      serverEndpoint: "http://localhost:8080",
     });
 
     const clientInfo2 = PingMaker.buildClientInfoSection(ping);
@@ -86,13 +86,13 @@ describe("PingMaker", function() {
     assert.ok("os_version" in clientInfo2);
     assert.ok("architecture" in clientInfo2);
     assert.ok("locale" in clientInfo2);
-    assert.ok("build_date"in clientInfo2);
+    assert.ok("build_date" in clientInfo2);
     assert.strictEqual(clientInfo2["app_channel"], "channel");
     assert.strictEqual(clientInfo2["app_build"], "build");
     assert.strictEqual(clientInfo2["app_display_version"], "display version");
   });
 
-  it("collectPing must return `undefined` if ping that must not be sent if empty, is empty", function() {
+  it("collectPing must return `undefined` if ping that must not be sent if empty, is empty", function () {
     const ping = new PingType({
       name: "custom",
       includeClientId: true,
@@ -101,7 +101,7 @@ describe("PingMaker", function() {
     assert.strictEqual(PingMaker.collectPing(ping), undefined);
   });
 
-  it("sequence numbers must be sequential", function() {
+  it("sequence numbers must be sequential", function () {
     const ping1 = new PingType({
       name: "ping1",
       includeClientId: true,
@@ -113,7 +113,7 @@ describe("PingMaker", function() {
       sendIfEmpty: true,
     });
 
-    for(let i = 0; i <= 10; i++) {
+    for (let i = 0; i <= 10; i++) {
       assert.strictEqual(PingMaker.getSequenceNumber(ping1), i);
       assert.strictEqual(PingMaker.getSequenceNumber(ping2), i);
     }
@@ -124,20 +124,94 @@ describe("PingMaker", function() {
     assert.strictEqual(PingMaker.getSequenceNumber(ping1), 13);
   });
 
+  it("experimentation id is present in all pings when set", function () {
+    const ping1 = new PingType({
+      name: "ping1",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+
+    const payloadWithoutId = PingMaker.collectPing(ping1);
+
+    assert(
+      payloadWithoutId?.metrics?.string[
+        "glean.client.annotation.experimentation_id"
+      ] == undefined
+    );
+
+    // Reset Glean, this time passing in an experimentation_id through the configuration
+    testResetGlean(testAppId, true, {
+      experimentationId: "test_experiment_id",
+    });
+
+    const payloadWithId = PingMaker.collectPing(ping1);
+
+    assert(payloadWithId?.metrics?.string != undefined);
+    if (payloadWithId?.metrics?.string != undefined) {
+      assert(
+        payloadWithId.metrics.string[
+          "glean.client.annotation.experimentation_id"
+        ] != undefined
+      );
+      assert(
+        payloadWithId.metrics.string[
+          "glean.client.annotation.experimentation_id"
+        ] == "test_experiment_id"
+      );
+    }
+  });
+
+  it("experimentation id is present in all pings when dynamically set", function () {
+    const ping1 = new PingType({
+      name: "ping1",
+      includeClientId: true,
+      sendIfEmpty: true,
+    });
+
+    const payloadWithoutId = PingMaker.collectPing(ping1);
+
+    assert(
+      payloadWithoutId?.metrics?.string[
+        "glean.client.annotation.experimentation_id"
+      ] == undefined
+    );
+
+    Glean.setExperimentationId("test_experiment_id");
+
+    const payloadWithId = PingMaker.collectPing(ping1);
+
+    assert(payloadWithId?.metrics?.string != undefined);
+    if (payloadWithId?.metrics?.string != undefined) {
+      assert(
+        payloadWithId.metrics.string[
+          "glean.client.annotation.experimentation_id"
+        ] != undefined
+      );
+      assert(
+        payloadWithId.metrics.string[
+          "glean.client.annotation.experimentation_id"
+        ] == "test_experiment_id"
+      );
+    }
+  });
+
   it("getPingHeaders returns headers when custom headers are set", function () {
     Glean.setDebugViewTag("test");
     Glean.setSourceTags(["tag1", "tag2", "tag3"]);
 
-    assert.deepStrictEqual({
-      "X-Debug-ID": "test",
-      "X-Source-Tags": "tag1,tag2,tag3"
-    }, PingMaker.getPingHeaders());
+    assert.deepStrictEqual(
+      {
+        "X-Debug-ID": "test",
+        "X-Source-Tags": "tag1,tag2,tag3",
+      },
+      PingMaker.getPingHeaders()
+    );
 
     testResetGlean(testAppId);
     assert.strictEqual(PingMaker.getPingHeaders(), undefined);
   });
 
-  it("should delete trailing restarted events", function() {
+  it("should delete trailing restarted events", function () {
     Glean.pingUploader.blockUploads();
 
     const ping = new PingType({
@@ -150,7 +224,7 @@ describe("PingMaker", function() {
       name: "aEvent",
       sendInPings: ["aPing"],
       lifetime: Lifetime.Ping,
-      disabled: false
+      disabled: false,
     });
 
     const triggerCustomEvent = (event: EventMetricType<ExtraMap>) => {
