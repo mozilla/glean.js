@@ -18,19 +18,26 @@ const MOCK_ENDPOINT = "http://www.example.com";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-global.navigator.sendBeacon = (url: string, content: string): boolean => {
-  void fetch(url, {
-    body: content,
-    method: "POST",
-  });
+// eslint-disable-next-line jsdoc/require-jsdoc
+function setGlobalSendBeacon() {
+  global.navigator.sendBeacon = (url: string, content: string): boolean => {
+    void fetch(url, {
+      body: content,
+      method: "POST",
+    });
 
-  return true;
-};
+    return true;
+  };
+}
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
 global.fetch = fetch;
 
 describe("Uploader/BrowserSendBeaconFallback", function () {
+  beforeEach(function() {
+    setGlobalSendBeacon();
+  });
+
   afterEach(function () {
     sandbox.restore();
   });
@@ -57,7 +64,14 @@ describe("Uploader/BrowserSendBeaconFallback", function () {
     const TEST_PING_CONTENT = {"my-test-value": 40721};
     nock(MOCK_ENDPOINT).post(/./i).reply(200);
 
+    // Reset `fetch` to a known state.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    global.fetch = fetch;
+
+    // Ensure `sendBeacon` fails.
     global.navigator.sendBeacon = () => false;
+
     const response = BrowserSendBeaconFallbackUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, JSON.stringify(TEST_PING_CONTENT), 1024));
     const expectedResponse = new UploadResult(UploadResultStatus.Success, 200);
     assert.deepStrictEqual(
@@ -72,7 +86,14 @@ describe("Uploader/BrowserSendBeaconFallback", function () {
       code: "AWFUL_ERROR",
     });
 
+    // Reset `fetch` to a known state.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    global.fetch = fetch;
+
+    // Ensure `sendBeacon` fails.
     global.navigator.sendBeacon = () => false;
+
     const response = BrowserSendBeaconFallbackUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
     const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
     assert.deepStrictEqual(

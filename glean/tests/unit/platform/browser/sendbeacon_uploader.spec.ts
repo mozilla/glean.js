@@ -18,16 +18,23 @@ const MOCK_ENDPOINT = "http://www.example.com";
 
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-global.navigator.sendBeacon = (url: string, content: string): boolean => {
-  void fetch(url, {
-    body: content,
-    method: "POST",
-  });
+// eslint-disable-next-line jsdoc/require-jsdoc
+function setGlobalSendBeacon() {
+  global.navigator.sendBeacon = (url: string, content: string): boolean => {
+    void fetch(url, {
+      body: content,
+      method: "POST",
+    });
 
-  return true;
-};
+    return true;
+  };
+}
 
 describe("Uploader/BrowserSendBeacon", function () {
+  beforeEach(function() {
+    setGlobalSendBeacon();
+  });
+
   afterEach(function () {
     sandbox.restore();
   });
