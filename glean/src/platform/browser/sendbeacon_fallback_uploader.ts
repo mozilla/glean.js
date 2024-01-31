@@ -25,7 +25,7 @@ class BrowserSendBeaconFallbackUploader extends Uploader {
 
     // Try `sendBeacon` first,
     // fall back to `fetch` if `sendBeacon` reports an error.
-    const beaconStatus = await this.sendBeaconUploader.post(url, pingRequest);
+    const beaconStatus = await this.sendBeaconUploader.post(url, pingRequest, false);
     if (beaconStatus.result == UploadResultStatus.Success) {
       return beaconStatus;
     }
