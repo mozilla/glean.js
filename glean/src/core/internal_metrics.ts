@@ -190,8 +190,8 @@ export class CoreMetrics {
    *
    * SCENARIOS:
    *
-   * 1. If this is the first session, then we set a new session ID and a
-   * lastActive timestamp.
+   * 1. If this is the first session (there is no existing session ID),
+   * then we set a new session ID and a lastActive timestamp.
    *
    * 2. If the lastActive time is under 30 minutes, then we only update
    * the lastActive time.
