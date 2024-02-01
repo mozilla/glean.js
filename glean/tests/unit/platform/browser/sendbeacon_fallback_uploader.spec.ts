@@ -8,7 +8,7 @@ import sinon from "sinon";
 import nock from "nock";
 import fetch from "node-fetch";
 
-import BrowserSendBeaconUploader from "../../../../src/platform/browser/sendbeacon_uploader";
+import BrowserSendBeaconFallbackUploader from "../../../../src/platform/browser/sendbeacon_fallback_uploader";
 import { UploadResult, UploadResultStatus } from "../../../../src/core/upload/uploader";
 import PingRequest from "../../../../src/core/upload/ping_request";
 
@@ -29,8 +29,11 @@ function setGlobalSendBeacon() {
     return true;
   };
 }
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+global.fetch = fetch;
 
-describe("Uploader/BrowserSendBeacon", function () {
+describe("Uploader/BrowserSendBeaconFallback", function () {
   beforeEach(function() {
     setGlobalSendBeacon();
   });
@@ -46,7 +49,7 @@ describe("Uploader/BrowserSendBeacon", function () {
         return JSON.stringify(body) == JSON.stringify(TEST_PING_CONTENT);
       }).reply(status);
 
-      const response = BrowserSendBeaconUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, JSON.stringify(TEST_PING_CONTENT), 1024));
+      const response = BrowserSendBeaconFallbackUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, JSON.stringify(TEST_PING_CONTENT), 1024));
       // When using sendBeacon, we can't really tell if something was correctly uploaded
       // or not. All we can know is if the request was enqueued, so we always expect 200.
       const expectedResponse = new UploadResult(UploadResultStatus.Success, 200);
@@ -57,15 +60,42 @@ describe("Uploader/BrowserSendBeacon", function () {
     }
   });
 
-  it("returns the correct status for failed sendBeacon", async function () {
+  it("returns the correct status after fallback", async function () {
+    const TEST_PING_CONTENT = {"my-test-value": 40721};
+    nock(MOCK_ENDPOINT).post(/./i).reply(200);
+
+    // Reset `fetch` to a known state.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    global.fetch = fetch;
+
+    // Ensure `sendBeacon` fails.
+    global.navigator.sendBeacon = () => false;
+
+    const response = BrowserSendBeaconFallbackUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, JSON.stringify(TEST_PING_CONTENT), 1024));
+    const expectedResponse = new UploadResult(UploadResultStatus.Success, 200);
+    assert.deepStrictEqual(
+      await response,
+      expectedResponse
+    );
+  });
+
+  it("returns the correct status when both uploads fail", async function () {
     nock(MOCK_ENDPOINT).post(/./i).replyWithError({
       message: "something awful happened",
       code: "AWFUL_ERROR",
     });
 
+    // Reset `fetch` to a known state.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    global.fetch = fetch;
+
+    // Ensure `sendBeacon` fails.
     global.navigator.sendBeacon = () => false;
-    const response = BrowserSendBeaconUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
-    const expectedResponse = new UploadResult(UploadResultStatus.UnrecoverableFailure);
+
+    const response = BrowserSendBeaconFallbackUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
+    const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
     assert.deepStrictEqual(
       await response,
       expectedResponse
