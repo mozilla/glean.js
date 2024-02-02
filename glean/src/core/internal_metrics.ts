@@ -13,7 +13,7 @@ import { generateUUIDv4, isWindowObjectUnavailable } from "./utils.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import log, { LoggingLevel } from "./log.js";
 import { Context } from "./context.js";
-import { hasSessionBeenInactiveForOverThirtyMinutes } from "./sessions.js";
+import { isSessionInactive } from "./sessions.js";
 
 const LOG_TAG = "core.InternalMetrics";
 
@@ -193,11 +193,10 @@ export class CoreMetrics {
    * 1. If this is the first session (there is no existing session ID),
    * then we set a new session ID and a lastActive timestamp.
    *
-   * 2. If the lastActive time is under 30 minutes, then we only update
-   * the lastActive time.
+   * 2. If the session is not expired, then we only update the lastActive time.
    *
-   * 3. If the lastActive time is over 30 minutes, then we update the
-   * session ID, the session sequence number, and the lastActive time.
+   * 3. If the session is expired (inactive threshold is more recent than lastActive)
+   * then we update the session ID, the session sequence number, and the lastActive time.
    */
   updateSessionInfo(): void {
     if (isWindowObjectUnavailable()) {
@@ -211,9 +210,8 @@ export class CoreMetrics {
 
     if (existingSessionId) {
       try {
-        // If over 30 minutes has passed since last session interaction,
-        // then we create a new session.
-        if (hasSessionBeenInactiveForOverThirtyMinutes()) {
+        // If the session has timed out, then we create a new session.
+        if (isSessionInactive()) {
           this.generateNewSession();
         }
       } catch (e) {
