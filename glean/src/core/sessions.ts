@@ -12,8 +12,9 @@ export function isSessionInactive(sessionLengthInMinutes = 30): boolean {
   const lastActive = localStorage.getItem("glean_session_last_active");
   const lastActiveDate = new Date(Number(lastActive));
 
-  // Subtract the session length from the current date
-  const inactiveThreshold = new Date(Date.now() - (60000 * sessionLengthInMinutes));
+  // Subtract the session length from the current date.
+  const inactiveThreshold = new Date();
+  inactiveThreshold.setMinutes(inactiveThreshold.getMinutes() - sessionLengthInMinutes);
 
   // If the inactiveThreshold is more recent than the lastActiveDate, then the
   // current session is expired.
