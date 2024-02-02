@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0...main)
 
+* [#1866](https://github.com/mozilla/glean.js/pull/1866): Added a new uploader that falls back to `fetch` if `navigator.sendBeacon` fails. This is not used by default and needs to be enabled manually.
+
 # v4.0.0 (2024-01-24)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0-pre.3...v4.0.0)
