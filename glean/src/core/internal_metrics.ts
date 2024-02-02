@@ -273,7 +273,7 @@ export class CoreMetrics {
   }
 
   private generateNewSession(): void {
-    this.sessionId.set(generateUUIDv4());
+    this.sessionId.generateAndSet();
     this.sessionCount.add();
   }
 
