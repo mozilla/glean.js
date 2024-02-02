@@ -211,7 +211,7 @@ export class CoreMetrics {
     if (existingSessionId) {
       try {
         // If the session has timed out, then we create a new session.
-        if (isSessionInactive()) {
+        if (isSessionInactive(Context.config.sessionLengthInMinutesOverride)) {
           this.generateNewSession();
         }
       } catch (e) {
