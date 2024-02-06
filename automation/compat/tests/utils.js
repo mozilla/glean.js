@@ -73,7 +73,7 @@ export async function runWebTest(driver) {
     // will receive the text "Ping submitted successfully."
     await driver.get(`http://localhost:${PORT}/`);
     // Give it time to send the ping request.
-    const successTextContainer = await driver.findElement(By.id("msg"));
+    const pingTextContainer = await driver.findElement(By.id("ping_msg"));
 
     const areGleanWindowVarsSet = await driver.executeScript(() => {
       // Verify that all Glean `window` vars are properly set.
@@ -100,9 +100,16 @@ export async function runWebTest(driver) {
 
     await driver.wait(
       until.elementTextIs(
-        successTextContainer,
+        pingTextContainer,
         "Pings submitted successfully."
       ), 11_000); // 1s more than the default upload timeout in Glean.
+
+    const sessionTextContainer = await driver.findElement(By.id("session_msg"));
+    await driver.wait(
+      until.elementTextIs(
+        sessionTextContainer,
+        "Session IDs updated successfully."
+      ), 1000);
 
     console.log("Test passed.");
   } catch(e) {
