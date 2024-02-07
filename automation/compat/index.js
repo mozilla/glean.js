@@ -33,7 +33,7 @@ console.info = function () {
     // 2. The benchmark ping.
     if (pingSubmissionCount == 2) {
       var elem = document.getElementById("ping_msg");
-      elem.innerHTML = "Pings submitted successfully.";
+      elem.innerText = "Pings submitted successfully.";
     }
   }
 
@@ -44,7 +44,7 @@ console.info = function () {
     if (!!sessionId) {
       if (currSessionId !== sessionId) {
         var elem = document.getElementById("session_msg");
-        elem.innerHTML = "Session IDs updated successfully.";
+        elem.innerText = "Session IDs updated successfully.";
       } else {
         console.log("Something went wrong...");
       }
