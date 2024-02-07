@@ -125,7 +125,11 @@ glean.internal.metrics:
   session_id:
     type: uuid
     description: |
-      A UUID uniquely identifying the client's current session.
+      A UUID uniquely identifying the client's current session. A session is
+      the period of time in which a user interacts with the application. After
+      a period of inactivity (default being 30 minutes) a new session will be
+      created the next time the user interacts with the application. On each
+      new session, the session_id will be updated.
     send_in_pings:
       - glean_client_info
     lifetime: user
@@ -142,7 +146,11 @@ glean.internal.metrics:
   session_count:
     type: counter
     description: |
-      A running counter of the number of sessions for this client.
+      A running counter of the number of sessions for this client. A session is
+      the period of time in which a user interacts with the application. After
+      a period of inactivity (default being 30 minutes) a new session will be
+      created the next time the user interacts with the application. On each
+      new session, the session_count will be incremented.
     send_in_pings:
       - glean_client_info
     lifetime: user
