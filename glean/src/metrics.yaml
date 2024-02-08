@@ -151,6 +151,7 @@ glean.internal.metrics:
       a period of inactivity (default being 30 minutes) a new session will be
       created the next time the user interacts with the application. On each
       new session, the session_count will be incremented.
+      This count will ONLY be reset on opt-out or whenever storage is deleted.
     send_in_pings:
       - glean_client_info
     lifetime: user
