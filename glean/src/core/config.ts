@@ -55,7 +55,7 @@ export interface ConfigurationInterface {
   readonly enableAutoElementClickEvents?: boolean,
   // Experimentation identifier to be set in all pings
   experimentationId?: string,
-  // Allow the client to explicitly define the length of a session in MINUTES.
+  // Allows custom session length, in minutes. The default value is 30 minutes.
   readonly sessionLengthInMinutesOverride?: number,
 }
 
