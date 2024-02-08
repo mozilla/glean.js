@@ -183,7 +183,8 @@ export class CoreMetrics {
 
   /**
    * Update local stored session information for Glean. This is called whenever
-   * the app is initialized and on every read/write to storage.
+   * the app on initialization and just after every read/write/delete to/from
+   * storage.
    *
    * There are a few scenarios to handle depending on what we already have
    * stored about the session and how long it has been since the last action.
