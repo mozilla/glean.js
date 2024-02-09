@@ -22,7 +22,7 @@
   "devDependencies": {
     "@octokit/request": "^8.1.6",
     "browserstack-local": "^1.5.5",
-    "geckodriver": "^4.3.0",
+    "geckodriver": "^4.3.2",
     "patch-package": "^8.0.0",
     "selenium-webdriver": "^4.13.0",
     "webpack": "^5.90.0",
