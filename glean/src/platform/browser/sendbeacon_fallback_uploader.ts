@@ -10,6 +10,7 @@ import BrowserFetchUploader from "./fetch_uploader.js";
 import BrowserSendBeaconUploader from "./sendbeacon_uploader.js";
 import { UploadResultStatus } from "../../core/upload/uploader.js";
 import type { UploadResult } from "../../core/upload/uploader.js";
+import { Context } from "../../core/context.js";
 
 const LOG_TAG = "platform.browser.SendBeaconFallbackUploader";
 
@@ -23,13 +24,23 @@ class BrowserSendBeaconFallbackUploader extends Uploader {
     pingRequest: PingRequest<string | Uint8Array>
   ): Promise<UploadResult> {
 
-    // Try `sendBeacon` first,
-    // fall back to `fetch` if `sendBeacon` reports an error.
-    const beaconStatus = await this.sendBeaconUploader.post(url, pingRequest, false);
-    if (beaconStatus.result == UploadResultStatus.Success) {
-      return beaconStatus;
+    // Some options require us to submit custom headers. Unfortunately not all the
+    // uploaders support them (e.g. `sendBeacon`). In case headers are required, switch
+    // back to the `fetch` uploader that supports headers.
+    // Then try `sendBeacon` first,
+    // fall back to `fetch` if `sendBeacon` reports an error or `sendBeacon` is
+    // not defined.
+    const hasNoCustomHeaders = !Context.config?.sourceTags && !Context.config?.debugViewTag;
+
+    if (hasNoCustomHeaders && !!navigator && !!navigator.sendBeacon) {
+      const beaconStatus = await this.sendBeaconUploader.post(url, pingRequest, false);
+      if (beaconStatus.result == UploadResultStatus.Success) {
+        return beaconStatus;
+      }
+      log(LOG_TAG, "The `sendBeacon` call was not serviced by the browser. Falling back to the `fetch` uploader.", LoggingLevel.Warn);
+    } else {
+      log(LOG_TAG, "`sendBeacon` is not available. Falling back to the `fetch` uploader.", LoggingLevel.Warn);
     }
-    log(LOG_TAG, "The `sendBeacon` call was not serviced by the browser. Falling back to the fetch uploader.", LoggingLevel.Warn);
 
     return this.fetchUploader.post(url, pingRequest);
   }
