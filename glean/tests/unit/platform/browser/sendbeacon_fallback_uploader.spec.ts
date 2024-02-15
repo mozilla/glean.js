@@ -33,17 +33,17 @@ function setGlobalSendBeacon() {
 // @ts-ignore
 global.fetch = fetch;
 
-describe("Uploader/BrowserSendBeaconFallback", function () {
+describe("Uploader/BrowserSendBeaconFallback", function() {
   beforeEach(function() {
     setGlobalSendBeacon();
   });
 
-  afterEach(function () {
+  afterEach(function() {
     sandbox.restore();
   });
 
-  it("returns the correct status for successful requests", async function () {
-    const TEST_PING_CONTENT = {"my-test-value": 40721};
+  it("returns the correct status for successful requests", async function() {
+    const TEST_PING_CONTENT = { "my-test-value": 40721 };
     for (const status of [200, 400, 500]) {
       nock(MOCK_ENDPOINT).post(/./i, body => {
         return JSON.stringify(body) == JSON.stringify(TEST_PING_CONTENT);
@@ -60,8 +60,8 @@ describe("Uploader/BrowserSendBeaconFallback", function () {
     }
   });
 
-  it("returns the correct status after fallback", async function () {
-    const TEST_PING_CONTENT = {"my-test-value": 40721};
+  it("returns the correct status after fallback", async function() {
+    const TEST_PING_CONTENT = { "my-test-value": 40721 };
     nock(MOCK_ENDPOINT).post(/./i).reply(200);
 
     // Reset `fetch` to a known state.
@@ -80,7 +80,7 @@ describe("Uploader/BrowserSendBeaconFallback", function () {
     );
   });
 
-  it("returns the correct status when both uploads fail", async function () {
+  it("returns the correct status when both uploads fail", async function() {
     nock(MOCK_ENDPOINT).post(/./i).replyWithError({
       message: "something awful happened",
       code: "AWFUL_ERROR",
@@ -96,6 +96,23 @@ describe("Uploader/BrowserSendBeaconFallback", function () {
 
     const response = BrowserSendBeaconFallbackUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, "{}", 1024));
     const expectedResponse = new UploadResult(UploadResultStatus.RecoverableFailure);
+    assert.deepStrictEqual(
+      await response,
+      expectedResponse
+    );
+  });
+
+  it("still sends even when navigator has been unset", async function() {
+    const TEST_PING_CONTENT = { "my-test-value": 40721 };
+    nock(MOCK_ENDPOINT).post(/./i).reply(200);
+
+    // Unset Navigator, to emulate add-on behavior.
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+    // @ts-ignore
+    global.navigator.sendBeacon = undefined;
+
+    const response = BrowserSendBeaconFallbackUploader.post(MOCK_ENDPOINT, new PingRequest("abc", {}, JSON.stringify(TEST_PING_CONTENT), 1024));
+    const expectedResponse = new UploadResult(UploadResultStatus.Success, 200);
     assert.deepStrictEqual(
       await response,
       expectedResponse
