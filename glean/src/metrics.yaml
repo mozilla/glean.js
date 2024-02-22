@@ -130,6 +130,8 @@ glean.internal.metrics:
       a period of inactivity (default being 30 minutes) a new session will be
       created the next time the user interacts with the application. On each
       new session, the session_id will be updated.
+
+      This metric WILL NOT be included for pings where `include_client_id` is `false`.
     send_in_pings:
       - glean_client_info
     lifetime: user
