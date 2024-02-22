@@ -216,6 +216,9 @@ export function buildClientInfoSection(ping: CommonPingData): ClientInfo {
 
   if (!ping.includeClientId) {
     delete finalClientInfo["client_id"];
+
+    // If the ping doesn't include the client_id, we also should exclude session_id.
+    delete finalClientInfo["session_id"];
   }
 
   return finalClientInfo;

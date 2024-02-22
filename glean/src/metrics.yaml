@@ -122,6 +122,51 @@ glean.internal.metrics:
       - glean-team@mozilla.com
     expires: never
 
+  session_id:
+    type: uuid
+    description: |
+      A UUID uniquely identifying the client's current session. A session is
+      the period of time in which a user interacts with the application. After
+      a period of inactivity (default being 30 minutes) a new session will be
+      created the next time the user interacts with the application. On each
+      new session, the session_id will be updated.
+
+      This metric WILL NOT be included for pings where `include_client_id` is `false`.
+    send_in_pings:
+      - glean_client_info
+    lifetime: user
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955#c2
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+
+  session_count:
+    type: counter
+    description: |
+      A running counter of the number of sessions for this client. A session is
+      the period of time in which a user interacts with the application. After
+      a period of inactivity (default being 30 minutes) a new session will be
+      created the next time the user interacts with the application. On each
+      new session, the session_count will be incremented.
+      This count will ONLY be reset on opt-out or whenever storage is deleted.
+    send_in_pings:
+      - glean_client_info
+    lifetime: user
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1862955#c2
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+
   app_build:
     type: string
     lifetime: application

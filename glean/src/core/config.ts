@@ -55,6 +55,8 @@ export interface ConfigurationInterface {
   readonly enableAutoElementClickEvents?: boolean,
   // Experimentation identifier to be set in all pings
   experimentationId?: string,
+  // Allows custom session length, in minutes. The default value is 30 minutes.
+  readonly sessionLengthInMinutesOverride?: number,
 }
 
 // Important: the `Configuration` should only be used internally by the Glean singleton.
@@ -69,6 +71,7 @@ export class Configuration implements ConfigurationInterface {
   readonly enableAutoPageLoadEvents?: boolean;
   readonly enableAutoElementClickEvents?: boolean;
   experimentationId?: string;
+  readonly sessionLengthInMinutesOverride?: number;
 
   // Debug configuration.
   debug: DebugOptions;
@@ -85,6 +88,7 @@ export class Configuration implements ConfigurationInterface {
     this.enableAutoPageLoadEvents = config?.enableAutoPageLoadEvents;
     this.enableAutoElementClickEvents = config?.enableAutoElementClickEvents;
     this.experimentationId = config?.experimentationId;
+    this.sessionLengthInMinutesOverride = config?.sessionLengthInMinutesOverride;
 
     this.debug = {};
 
