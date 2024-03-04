@@ -59,7 +59,7 @@ console.info = function () {
   // Extract the session id metric.
   const sessionInfo = /"session_id":".{36}"/.exec(userLifetimeMetrics);
   if (!!sessionInfo.length) {
-    const currSessionId = sessionInfo[0]?.split(":")?.[1]?.split("\"")?.[1];
+    const currSessionId = sessionInfo[0].split(":")[1].split("\"")[1];
     if (!!sessionId) {
       if (currSessionId !== sessionId) {
         var elem = document.getElementById("session_msg");
