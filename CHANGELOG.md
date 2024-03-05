@@ -4,6 +4,7 @@
 
 * [#1866](https://github.com/mozilla/glean.js/pull/1866): Added a new uploader that falls back to `fetch` if `navigator.sendBeacon` fails. 
 * [#1876](https://github.com/mozilla/glean.js/pull/1876): **BREAKING CHANGE**: `navigator.sendBeacon` with fallback to `fetch` (see #1866) is now the default uploader. This can be changed manually.
+* [#1850](https://github.com/mozilla/glean.js/pull/1850): Automatically record basic session information (`session_id` & `session_count`) for web properties.
 
 # v4.0.0 (2024-01-24)
 
@@ -17,8 +18,6 @@
 
 * [#1848](https://github.com/mozilla/glean.js/pull/1848): Support for automatically collecting element click events (first version)
 * [#1849](https://github.com/mozilla/glean.js/pull/1849): Truncate event extra strings to 500 bytes. This also updates other string-based metrics to truncate based on max bytes rather than a set number of characters.
-
-* [#1850](https://github.com/mozilla/glean.js/pull/1850): Automatically record basic session information (`session_id` & `session_count`) for web properties.
 
 # v4.0.0-pre.2 (2023-12-06)
 
