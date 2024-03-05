@@ -84,7 +84,12 @@ const BrowserPlatformInfo: PlatformInfo = {
   },
 
   locale(): string {
-    return navigator.language || "und";
+    if (!!navigator && !!navigator.language) {
+      return navigator.language;
+    }
+    else {
+      return "und";
+    }
   }
 };
 

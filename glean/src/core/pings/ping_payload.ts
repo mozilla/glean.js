@@ -27,7 +27,9 @@ export interface ClientInfo extends JSONObject {
   first_run_date?: string,
   os?: string,
   os_version?: string,
-  telemetry_sdk_build: string
+  telemetry_sdk_build: string,
+  session_id?: string,
+  session_count?: number
 }
 
 /**

@@ -6,12 +6,14 @@ import { KNOWN_CLIENT_ID, CLIENT_INFO_STORAGE } from "./constants.js";
 import { InternalUUIDMetricType as UUIDMetricType } from "./metrics/types/uuid.js";
 import { InternalDatetimeMetricType as DatetimeMetricType } from "./metrics/types/datetime.js";
 import { InternalStringMetricType as StringMetricType } from "./metrics/types/string.js";
+import { InternalCounterMetricType as CounterMetricType } from "./metrics/types/counter.js";
 import { createMetric } from "./metrics/utils.js";
 import TimeUnit from "./metrics/time_unit.js";
 import { generateUUIDv4, isWindowObjectUnavailable } from "./utils.js";
 import { Lifetime } from "./metrics/lifetime.js";
 import log, { LoggingLevel } from "./log.js";
 import { Context } from "./context.js";
+import { isSessionInactive } from "./sessions.js";
 
 const LOG_TAG = "core.InternalMetrics";
 
@@ -28,6 +30,8 @@ export class CoreMetrics {
   readonly osVersion: StringMetricType;
   readonly architecture: StringMetricType;
   readonly locale: StringMetricType;
+  readonly sessionId: UUIDMetricType;
+  readonly sessionCount: CounterMetricType;
   // Provided by the user
   readonly appChannel: StringMetricType;
   readonly appBuild: StringMetricType;
@@ -120,6 +124,22 @@ export class CoreMetrics {
       },
       "second"
     );
+
+    this.sessionId = new UUIDMetricType({
+      name: "session_id",
+      category: "",
+      sendInPings: ["glean_client_info"],
+      lifetime: Lifetime.User,
+      disabled: false
+    });
+
+    this.sessionCount = new CounterMetricType({
+      name: "session_count",
+      category: "",
+      sendInPings: ["glean_client_info"],
+      lifetime: Lifetime.User,
+      disabled: false
+    });
   }
 
   initialize(migrateFromLegacyStorage?: boolean): void {
@@ -145,6 +165,8 @@ export class CoreMetrics {
       this.initializeUserLifetimeMetrics();
     }
 
+    this.updateSessionInfo();
+
     this.os.set(Context.platform.info.os());
     this.osVersion.set(Context.platform.info.osVersion());
     this.architecture.set(Context.platform.info.arch());
@@ -157,6 +179,53 @@ export class CoreMetrics {
     if (Context.config.buildDate) {
       this.buildDate.set();
     }
+  }
+
+  /**
+   * Update local stored session information for Glean. This is called whenever
+   * the app on initialization and just after every read/write/delete to/from
+   * storage.
+   *
+   * There are a few scenarios to handle depending on what we already have
+   * stored about the session and how long it has been since the last action.
+   *
+   * SCENARIOS:
+   *
+   * 1. If this is the first session (there is no existing session ID),
+   * then we set a new session ID and a lastActive timestamp.
+   *
+   * 2. If the session is not expired, then we only update the lastActive time.
+   *
+   * 3. If the session is expired (inactive threshold is more recent than lastActive)
+   * then we update the session ID, the session sequence number, and the lastActive time.
+   */
+  updateSessionInfo(): void {
+    if (isWindowObjectUnavailable()) {
+      return;
+    }
+
+    const existingSessionId = Context.metricsDatabase.getMetric(
+      CLIENT_INFO_STORAGE,
+      this.sessionId
+    );
+
+    if (existingSessionId) {
+      try {
+        // If the session has timed out, then we create a new session.
+        if (isSessionInactive(Context.config.sessionLengthInMinutesOverride)) {
+          this.generateNewSession();
+        }
+      } catch (e) {
+        // Error parsing the last active timestamp, create a new session.
+        this.generateNewSession();
+      }
+    } else {
+      // There is no previous session information, create a new session.
+      this.generateNewSession();
+    }
+
+    // Update the last-active timestamp in LocalStorage to the current time.
+    localStorage.setItem("glean_session_last_active", Date.now().toString());
   }
 
   /**
@@ -200,6 +269,11 @@ export class CoreMetrics {
     if (!firstRunDate) {
       this.firstRunDate.set();
     }
+  }
+
+  private generateNewSession(): void {
+    this.sessionId.generateAndSet();
+    this.sessionCount.add();
   }
 
   /**

@@ -7,4 +7,5 @@ import { base } from "./base.js";
 
 export { default as Uploader, UploadResult, UploadResultStatus } from "../core/upload/uploader.js";
 export {default as BrowserSendBeaconUploader} from "../platform/browser/sendbeacon_uploader.js";
+export {default as BrowserSendBeaconFallbackUploader} from "../platform/browser/sendbeacon_fallback_uploader.js";
 export default base(platform);

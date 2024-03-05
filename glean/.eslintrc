@@ -31,6 +31,7 @@
     "jsdoc/require-param-type": "off",
     "jsdoc/require-returns-type": "off",
     "jsdoc/require-returns-check": "off",
+    "jsdoc/tag-lines": 0,
     "import/no-named-as-default": "off",
     "import/no-duplicates": "off",
     "import/no-unresolved": "off",

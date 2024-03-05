@@ -16,7 +16,8 @@ class BrowserSendBeaconUploader extends Uploader {
   // eslint-disable-next-line @typescript-eslint/require-await
   async post(
     url: string,
-    pingRequest: PingRequest<string | Uint8Array>
+    pingRequest: PingRequest<string | Uint8Array>,
+    errorLog = true,
   ): Promise<UploadResult> {
     // While the most appropriate type would be "application/json",
     // using that would cause to send CORS preflight requests. We
@@ -29,7 +30,9 @@ class BrowserSendBeaconUploader extends Uploader {
       // thing we can do is remove this from our internal queue.
       return new UploadResult(UploadResultStatus.Success, 200);
     }
-    log(LOG_TAG, "The `sendBeacon` call was not serviced by the browser. Deleting data.", LoggingLevel.Error);
+    if (errorLog) {
+      log(LOG_TAG, "The `sendBeacon` call was not serviced by the browser. Deleting data.", LoggingLevel.Error);
+    }
     // If the agent says there's a problem, there's not so much we can do.
     return new UploadResult(UploadResultStatus.UnrecoverableFailure);
   }
