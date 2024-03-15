@@ -106,14 +106,27 @@ namespace GleanMetrics {
    * @param event Event object.
    */
   export function handleClickEvent(event: Event) {
-    const htmlElement = event.target as HTMLElement;
+    const actualElement = event.target as HTMLElement;
+    console.log("actualElement:", actualElement, "actualElement.tagName:", actualElement.tagName);
 
-    const elementClickEventContext: ElementClickEventContext = {};
-    if (htmlElement?.dataset?.gleanId) elementClickEventContext.id = htmlElement?.dataset?.gleanId;
-    if (htmlElement?.dataset?.gleanType) elementClickEventContext.type = htmlElement?.dataset?.gleanType;
-    if (htmlElement?.dataset?.gleanLabel) elementClickEventContext.label = htmlElement?.dataset?.gleanLabel;
+    const nearestElementWithData = actualElement.closest('[data-glean-id],[data-glean-type],[data-glean-label]');
+    if (!nearestElementWithData) {
+      console.log("Couldn't find closest element");
+      return;
+    }
+    console.log("nearestElementWithData:", nearestElementWithData, "nearestElementWithData.tagName:", nearestElementWithData.tagName);
+    //const htmlElement = event.target as HTMLElement;
 
-    if (Object.keys(elementClickEventContext).length > 0) recordElementClick(elementClickEventContext);
+    if (nearestElementWithData instanceof HTMLElement) {
+      const elementClickEventContext: ElementClickEventContext = {};
+      if (nearestElementWithData?.dataset?.gleanId) elementClickEventContext.id = nearestElementWithData?.dataset?.gleanId;
+      if (nearestElementWithData?.dataset?.gleanType) elementClickEventContext.type = nearestElementWithData?.dataset?.gleanType;
+      if (nearestElementWithData?.dataset?.gleanLabel) elementClickEventContext.label = nearestElementWithData?.dataset?.gleanLabel;
+      recordElementClick(elementClickEventContext);
+    }
+    else {
+      console.log('No glean data attribute set');
+    }
   }
 
   /**
