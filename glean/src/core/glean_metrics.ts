@@ -98,6 +98,30 @@ namespace GleanMetrics {
   }
 
   /**
+   * Construct click event context for a given element.
+   *
+   * The element should have at least one of the data-glean-{x} attributes where x corresponds
+   * to the keys of ElementClickEventContext).
+   *
+   * @param element Element object.
+   * @returns ElementClickEventContext
+   */
+  function constructClickEventContextForElement(element: Element) {
+    const dataset = (element as HTMLElement).dataset;
+    const elementClickEventContext: ElementClickEventContext = {};
+    if (dataset.gleanId) {
+      elementClickEventContext.id = dataset.gleanId;
+    }
+    if (dataset.gleanType) {
+      elementClickEventContext.type = dataset.gleanType;
+    }
+    if (dataset.gleanLabel) {
+      elementClickEventContext.label = dataset.gleanLabel;
+    }
+    return elementClickEventContext;
+  }
+
+  /**
    * Handler for "click" events on a document.
    *
    * It records click event on an html element if the element has any of the data-glean-* attributes.
@@ -106,27 +130,18 @@ namespace GleanMetrics {
    * @param event Event object.
    */
   export function handleClickEvent(event: Event) {
-    const actualElement = event.target as HTMLElement;
-    console.log("actualElement:", actualElement, "actualElement.tagName:", actualElement.tagName);
+    const clickedElement = event.target as Element;
+    console.log("clickedElement:", clickedElement, "clickedElement.tagName:", clickedElement.tagName);
 
-    const nearestElementWithData = actualElement.closest('[data-glean-id],[data-glean-type],[data-glean-label]');
-    if (!nearestElementWithData) {
-      console.log("Couldn't find closest element");
+    const closestElementWithClickAttributes: Element|null = clickedElement.closest("[data-glean-id],[data-glean-type],[data-glean-label]");
+    if (!closestElementWithClickAttributes) {
+      console.log("Couldn't find closest element with click attributes for click event target:", clickedElement);
       return;
     }
-    console.log("nearestElementWithData:", nearestElementWithData, "nearestElementWithData.tagName:", nearestElementWithData.tagName);
-    //const htmlElement = event.target as HTMLElement;
+    console.log("closestElementWithClickAttributes:", closestElementWithClickAttributes, "closestElementWithClickAttributes.tagName:", closestElementWithClickAttributes.tagName);
 
-    if (nearestElementWithData instanceof HTMLElement) {
-      const elementClickEventContext: ElementClickEventContext = {};
-      if (nearestElementWithData?.dataset?.gleanId) elementClickEventContext.id = nearestElementWithData?.dataset?.gleanId;
-      if (nearestElementWithData?.dataset?.gleanType) elementClickEventContext.type = nearestElementWithData?.dataset?.gleanType;
-      if (nearestElementWithData?.dataset?.gleanLabel) elementClickEventContext.label = nearestElementWithData?.dataset?.gleanLabel;
-      recordElementClick(elementClickEventContext);
-    }
-    else {
-      console.log('No glean data attribute set');
-    }
+    const elementClickEventContext: ElementClickEventContext = constructClickEventContextForElement(closestElementWithClickAttributes);
+    recordElementClick(elementClickEventContext);
   }
 
   /**
