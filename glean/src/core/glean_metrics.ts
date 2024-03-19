@@ -126,10 +126,9 @@ namespace GleanMetrics {
    */
   export function handleClickEvent(event: Event) {
     const clickedElement = event.target as Element;
-
     const closestElementWithClickAttributes: Element | null = clickedElement.closest("[data-glean-id], [data-glean-type], [data-glean-label]");
+
     if (!closestElementWithClickAttributes) {
-      console.log("Couldn't find closest element with click attributes for click event target:", clickedElement);
       return;
     }
 
