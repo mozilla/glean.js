@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.1.0-pre.0...main)
 
+* [#1895](https://github.com/mozilla/glean.js/pull/1895): Improve automatic click events for nested elements.
+
 # v4.1.0-pre.0 (2024-03-05)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0...v4.1.0-pre.0)
