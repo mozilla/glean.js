@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v4.1.0-pre.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.0-pre.0...main)
+
+# v5.0.0-pre.0 (2024-03-21)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v4.1.0-pre.0...v5.0.0-pre.0)
 
 * [#1895](https://github.com/mozilla/glean.js/pull/1895): Improve automatic click events for nested elements.
 * [#1899](https://github.com/mozilla/glean.js/pull/1899): Bug 1886113 - Add wall-clock timestamps to all events.
