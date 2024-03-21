@@ -98,6 +98,25 @@ namespace GleanMetrics {
   }
 
   /**
+   * Construct click event context for a given element.
+   *
+   * The element should have at least one of the data-glean-{x} attributes where x corresponds
+   * to the keys of ElementClickEventContext).
+   *
+   * @param element Element object.
+   * @returns ElementClickEventContext
+   */
+  function constructClickEventContextForElement(element: Element) {
+    const dataset = (element as HTMLElement).dataset;
+    const elementClickEventContext: ElementClickEventContext = {
+      ...(dataset.gleanId && { id: dataset.gleanId }),
+      ...(dataset.gleanType && { type: dataset.gleanType }),
+      ...(dataset.gleanLabel && { label: dataset.gleanLabel })
+    };
+    return elementClickEventContext;
+  }
+
+  /**
    * Handler for "click" events on a document.
    *
    * It records click event on an html element if the element has any of the data-glean-* attributes.
@@ -106,14 +125,15 @@ namespace GleanMetrics {
    * @param event Event object.
    */
   export function handleClickEvent(event: Event) {
-    const htmlElement = event.target as HTMLElement;
+    const clickedElement = event.target as Element;
+    const closestElementWithClickAttributes: Element | null = clickedElement.closest("[data-glean-id], [data-glean-type], [data-glean-label]");
 
-    const elementClickEventContext: ElementClickEventContext = {};
-    if (htmlElement?.dataset?.gleanId) elementClickEventContext.id = htmlElement?.dataset?.gleanId;
-    if (htmlElement?.dataset?.gleanType) elementClickEventContext.type = htmlElement?.dataset?.gleanType;
-    if (htmlElement?.dataset?.gleanLabel) elementClickEventContext.label = htmlElement?.dataset?.gleanLabel;
+    if (!closestElementWithClickAttributes) {
+      return;
+    }
 
-    if (Object.keys(elementClickEventContext).length > 0) recordElementClick(elementClickEventContext);
+    const elementClickEventContext: ElementClickEventContext = constructClickEventContextForElement(closestElementWithClickAttributes);
+    recordElementClick(elementClickEventContext);
   }
 
   /**
