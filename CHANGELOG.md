@@ -1,6 +1,12 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.0-pre.0...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.0...main)
+
+# v5.0.0 (2024-03-25)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.0-pre.0...v5.0.0)
+
+This is the official release based on the v5.0.0-pre.0 release.
 
 # v5.0.0-pre.0 (2024-03-21)
 
