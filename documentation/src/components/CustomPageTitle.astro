@@ -1,0 +1,27 @@
+---
+import type { Props } from '@astrojs/starlight/props';
+import Default from '@astrojs/starlight/components/PageTitle.astro';
+---
+
+<script>
+  // !NOTE! //
+  //
+  // This component override exists solely for telemetry. To properly collect
+  // telemtry data from our docs, we need to override an existing Starlight
+  // component. Every time this component `PageTitle` is rendered, we inject
+  // this script for initializing Glean and collecting telemetry.
+  //
+  // https://starlight.astro.build/guides/overriding-components/
+
+  import Glean from '@mozilla/glean/web';
+
+  if (Glean) {
+    Glean.setLogPings(true);
+    Glean.setDebugViewTag("gleanjs-docs");
+    Glean.initialize("gleanjs-docs", true, {
+      enableAutoPageLoadEvents: true
+    });
+}
+</script>
+
+<Default {...Astro.props}><slot /></Default>
