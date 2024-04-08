@@ -15,13 +15,16 @@ import Default from '@astrojs/starlight/components/PageTitle.astro';
 
   import Glean from '@mozilla/glean/web';
 
-  if (Glean) {
+  // Do not initialize on the /playground page. This page will have its own
+  // initialization so that we can customize the experience based on the
+  // user inputs.
+  if (window.location.pathname !== "/playground" && Glean) {
     Glean.setLogPings(true);
     Glean.setDebugViewTag("gleanjs-docs");
     Glean.initialize("gleanjs-docs", true, {
       enableAutoPageLoadEvents: true
     });
-}
+  }
 </script>
 
 <Default {...Astro.props}><slot /></Default>
