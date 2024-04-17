@@ -1,9 +1,9 @@
 ---
-title: Click Events
+title: Click events
 description: How to use Glean.js automatic clicks.
 ---
 
-## Automatic Click Events
+## Automatic click events
 
 You can turn on automatic click events by adding a value in the `Glean.initialize` configuration object.
 
@@ -36,10 +36,12 @@ An example HTML button that will fire a click event:
 </button>
 ```
 
-## Click Event API
+## Click event API
 
 Glean.js provides an API for collecting click events as an alternative to
 automatic instrumentation.
+
+### Usage
 
 ```js
 import GleanMetrics from '@mozilla/glean/metrics';
@@ -55,3 +57,7 @@ GleanMetrics.recordElementClick({
   label: someLabel
 });
 ```
+
+## Try it out
+
+To see automatic click events in action, check out our [interactive playground](/playground).
