@@ -1,5 +1,5 @@
 ---
-title: Page Load Events
+title: Page load events
 description: How to use Glean.js automatic page loads.
 ---
 
@@ -11,7 +11,7 @@ values that are captured are:
 - referrer: `document.referrer`
 - title: `document.title`
 
-## Automatic Page Load Events
+## Automatic page load events
 
 You can turn on automatic page load events by adding a value in the Glean
 initialize configuration.
@@ -25,12 +25,17 @@ Glean.initialize("app-name", true, {
 });
 ```
 
-## Manual Page Load Events w/ Overrides
+## Page load event API
+
+Glean.js provides an API for collecting page load events as an alternative to
+automatic instrumentation.
 
 When to use the `GleanMetrics.pageLoad` API
 
-1. You are using an SPA framework that doesn't reload pages on navigation.
-2. You want to trigger page loads with custom data overrides.
+1. You want to trigger page loads with custom data overrides.
+2. You are using a framework that doesn't truly reload pages on navigation, like React.
+
+### Usage
 
 ```js
 import GleanMetrics from '@mozilla/glean/metrics';
@@ -45,4 +50,16 @@ GleanMetrics.pageLoad({
   url: someCustomUrl,
   title: someCustomTitle
 });
+
+// Call the pageLoad event with a single override.
+GleanMetrics.pageLoad({
+  // If you do not provide an override, the default value will be recorded.
+  // This overrides the `referrer` and still uses the default values for
+  // both the `url` and the `title`.
+  referrer: someCustomReferrer,
+});
 ```
+
+## Try it out
+
+To see automatic page load events in action, check out our [interactive playground](/playground).
