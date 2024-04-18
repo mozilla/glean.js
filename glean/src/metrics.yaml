@@ -539,3 +539,20 @@ glean:
       label:
         description: The label of the element clicked. For automatic collection, its value is the element's `data-glean-label` data attribute value.
         type: string
+  page_id:
+    type: uuid
+    description: |
+      Uniquely identifies a page_load, not the page itself, for the purpose of associating other events with the specific page load event. This gets
+      rotated with each page load and is sent along with each event ping.
+    send_in_pings:
+      - events
+    lifetime: application
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1888430
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1888430
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
