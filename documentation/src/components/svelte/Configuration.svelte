@@ -127,14 +127,33 @@
    * configuration in the UI.
    */
   function generateConfigCode() {
-    let code =
-`import Glean from '@mozilla/glean/web';
+    let code = `import Glean from '@mozilla/glean/web';`;
+    code += `\n\n// Invoke as early as possible in your application.`;
 
-Glean.initialize("${debugTag}", ${uploadEnabled}, {
-  enableAutoPageLoadEvents: ${pageLoads},
-  enableAutoElementClickEvents: ${clicks},
-  sessionLengthInMinutesOverride: ${sessionDuration}
-});`
+    // If the user has customized their Glean.js config, then the object will
+    // need to be spread out across a few lines.
+    const anyCustomValues = pageLoads || clicks || sessionDuration !== 30;
+    if (anyCustomValues) {
+      code += `\nGlean.initialize('${debugTag}', ${uploadEnabled}, {`;
+      
+      if (pageLoads) {
+        code += `\n  enableAutoPageLoadEvents: ${pageLoads},`;
+      }
+
+      if (clicks) {
+        code += `\n  enableAutoElementClickEvents: ${clicks},`;
+      }
+
+      if (sessionDuration !== 30) {
+        code += `\n  sessionLengthInMinutesOverride: ${sessionDuration}`;
+      }
+      
+      code += `\n});`
+    } else {
+      // There are no config customizations, so everything can exist on one line.
+      code += `\nGlean.initialize("${debugTag}", ${uploadEnabled});`;
+    }
+
     code = code.trim();
     return code;
   }
