@@ -38,7 +38,7 @@ Glean.setSourceTags(["my-tag", "your-tag", "our-tag"]);
 
 ## Usage
 
-These APIs can be called from anywhere in your codebase; before or after Glean
+These APIs can be called from anywhere in your code base; before or after Glean
 is initialized. Be cautious of timing. If the debug option is not set until
 after initialization, then something like a page load event may never show
 up in the browser console or get sent to the Glean Debug Ping Viewer.
