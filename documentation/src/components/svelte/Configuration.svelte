@@ -81,7 +81,7 @@
 
     Toastify({
       text: "Glean.js is initialized, let's collect some data!",
-      duration: 2000
+      duration: 5000
     }).showToast();
   }
 
