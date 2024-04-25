@@ -1,6 +1,6 @@
 ---
 title: Installing Glean.js
-description: A guide for how to install Glean.js for your project.
+description: Installing Glean.js in your project.
 ---
 
 ```sh

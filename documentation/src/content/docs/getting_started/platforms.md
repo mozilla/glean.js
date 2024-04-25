@@ -1,6 +1,6 @@
 ---
 title: Platforms
-description: A guide for Glean.js platforms.
+description: A list of Glean.js supported platforms.
 ---
 
 ## Supported Platforms
