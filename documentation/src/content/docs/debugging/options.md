@@ -46,11 +46,15 @@ up in the browser console or get sent to the Glean Debug Ping Viewer.
 Example:
 
 ```js
+import Glean from '@mozilla/glean/web';
+
 if (appEnvironment.isDev) {
   Glean.setLogPings(true);
   Glean.setDebugViewTag("my-tag");
   Glean.setSourceTags(["my-tag", "your-tag", "our-tag"]);
 }
 
-Glean.initialize("my-app", true, { ... });
+Glean.initialize("my-app", true, {
+  // Configuration options
+});
 ```
