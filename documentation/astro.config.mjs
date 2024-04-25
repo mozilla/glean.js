@@ -35,15 +35,21 @@ export default defineConfig({
     }, {
       label: 'Getting Started',
       items: [{
+        label: 'Platforms',
+        link: '/getting_started/platforms'
+      }, {
+        label: 'Installation',
+        link: '/getting_started/installation'
+      }, {
+        label: 'Setting up Glean',
+        link: '/getting_started/setup'
+      }, {
         label: 'Integration guide',
-        link: 'https://mozilla.github.io/glean/book/user/adding-glean-to-your-project/javascript.html',
+        link: 'https://mozilla.github.io/glean/book/user/adding-glean-to-your-project/index.html',
         attrs: {
           target: '_blank',
           style: 'font-style: italic'
         }
-      }, {
-        label: 'Platforms',
-        link: '/getting_started/platforms'
       }]
     }, {
       label: 'Automatic Events',
