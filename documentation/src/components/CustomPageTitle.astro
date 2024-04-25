@@ -19,7 +19,10 @@ import Default from '@astrojs/starlight/components/PageTitle.astro';
   // Do not initialize on the /playground page. This page will have its own
   // initialization so that we can customize the experience based on the
   // user inputs.
-  if (window.location.pathname !== "/playground" && Glean) {
+  if (!Glean || window.location.pathname.includes("/playground")) {
+    // Do nothing - we shouldn't initialize the playground since it has
+    // its own configurable Glean instance.
+  } else {
     Glean.setLogPings(true);
     Glean.setDebugViewTag("gleanjs-docs");
     Glean.initialize("gleanjs-docs", true, {
