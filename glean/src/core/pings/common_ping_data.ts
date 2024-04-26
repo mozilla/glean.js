@@ -17,4 +17,7 @@ export default interface CommonPingData {
 
   // Currently NOT IMPLEMENTED.
   readonly preciseTimestamps?: boolean;
+  readonly includeInfoSections?: boolean;
+  readonly enabled?: boolean;
+  readonly schedulesPings?: string[];
 }

@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.0...main)
 
+* [#1923](https://github.com/mozilla/glean.js/pull/1923): Bumped `glean_parser` version to `14.0.1`.
 * [#1921](https://github.com/mozilla/glean.js/pull/1921): BUGFIX: Fix issue causing `glean.client.annotation.experimentation_id` metric to not get added in certain pings.
 * [#1919](https://github.com/mozilla/glean.js/pull/1919): Add `glean.page_id` to Glean automatic events.
 
