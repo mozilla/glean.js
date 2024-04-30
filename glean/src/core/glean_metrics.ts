@@ -3,6 +3,7 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/. */
 
 import { Context } from "./context.js";
+import UUIDMetric from "./metrics/types/uuid.js";
 import EventMetricType from "./metrics/types/event.js";
 import { EVENTS_PING_NAME } from "./constants.js";
 import { Lifetime } from "./metrics/lifetime.js";
@@ -51,6 +52,15 @@ namespace GleanMetrics {
       },
       // extras defined in `src/metrics.yaml`.
       ["id", "type", "label"]
+    ),
+    pageId: new UUIDMetric(
+      {
+        category: "glean",
+        name: "page_id",
+        sendInPings: [EVENTS_PING_NAME],
+        lifetime: Lifetime.Application,
+        disabled: false,
+      }
     )
   };
 
@@ -71,6 +81,9 @@ namespace GleanMetrics {
       );
       return;
     }
+
+    // Rotate the page_id for each page_load event.
+    metrics.pageId.generateAndSet();
 
     // Each key defaults to the override. If no override is provided, we fall
     // back to the default value IF the `window` or the `document` objects

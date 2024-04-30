@@ -254,8 +254,14 @@ export function collectPing(ping: CommonPingData, reason?: string): PingPayload 
 
   // Insert the experimentation id if the metrics aren't empty
   if (ping.includeClientId && Context.config.experimentationId) {
-    if (metricsData != undefined) {
-      metricsData["string"]["glean.client.annotation.experimentation_id"] = Context.config.experimentationId;
+    if (metricsData !== undefined) {
+      metricsData = {
+        ...metricsData,
+        string: {
+          ...metricsData?.string || undefined,
+          "glean.client.annotation.experimentation_id": Context.config.experimentationId
+        }
+      };
     } else {
       metricsData = {
         "string": {
