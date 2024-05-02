@@ -53,11 +53,7 @@ export default defineConfig({
       }]
     }, {
       label: 'Automatic Events',
-      items: [/*{
-        // This will be added back in later.
-        label: 'Why',
-        link: '/automatic_instrumentation/why'
-      },*/ {
+      items: [{
         label: 'Page load events',
         link: '/automatic_instrumentation/page_load_events'
       }, {
