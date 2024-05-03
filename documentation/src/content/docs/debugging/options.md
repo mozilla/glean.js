@@ -9,7 +9,7 @@ Tags all outgoing pings as debug pings to make them available for real-time vali
 
 The debug tag is used in the Glean Debug Ping Viewer so you can easily
 find your pings. The Debug Tag is not included in the ping itself, rather
-as a custom header in the network request; the header is `X-Debug-ID`.
+as a custom header in the network request; the header is <a href="https://mozilla.github.io/glean/book/user/pings/index.html?highlight=x-debug-id#x-debug-id-optional" target="_blank">`X-Debug-ID`</a>.
 
 All debug tags must match the regex `[a-zA-Z0-9-]{1,20}`. All other values are ignored.
 
@@ -28,7 +28,7 @@ Glean.setLogPings(true);
 ## Source Tags
 
 Tags outgoing pings with a maximum of 5 comma-separated tags. These are passed
-along in the network request using the `X-Source-Tags` custom header. All values
+along in the network request using the <a href="https://mozilla.github.io/glean/book/user/pings/index.html?highlight=x-debug-id#x-source-tags-optional" target="_blank">`X-Source-Tags`</a> custom header. All values
 must match the regex `[a-zA-Z0-9-]{1,20}`. If one of the values are invalid,
 then all tags will be ignored.
 
