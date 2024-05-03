@@ -25,7 +25,7 @@ export default defineConfig({
         label: 'Interactive playground',
         link: '/playground'
       }, {
-        label: 'Roadmap',
+        label: 'Roadmap 🔒',
         link: 'https://docs.google.com/document/d/1vqu9O9VRGRiuptQbGPY5UX-cH2gkUSVj4EoZizQtHGM/edit#heading=h.m18zbbjlaigo',
         attrs: {
           target: '_blank',
