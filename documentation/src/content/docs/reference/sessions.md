@@ -14,6 +14,7 @@ this using the `sessionLengthInMinutesOverride` property when
 calling `Glean.initialize()`.
 
 ### Session Duration
+
 This specifies how long a session lasts before refreshing. The session
 is checked for inactivity every time Glean performs a read/write/delete
 to localStorage. You can find the session info in each ping:
