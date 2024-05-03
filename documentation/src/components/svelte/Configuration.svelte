@@ -42,11 +42,11 @@
     const gleanConfig = sessionStorage.getItem('glean-config');
     if (gleanConfig) {
       const parsedConfig = JSON.parse(gleanConfig);
-      debugTag = parsedConfig.debugTag ?? 'gleanjs-docs';
-      sessionDuration = parsedConfig.sessionDuration ?? 30;
-      uploadEnabled = parsedConfig.uploadEnabled ?? true;
-      pageLoads = parsedConfig.pageLoads ?? false;
-      clicks = parsedConfig.clicks ?? false;
+      debugTag = parsedConfig?.debugTag ?? 'gleanjs-docs';
+      sessionDuration = parsedConfig?.sessionDuration ?? 30;
+      uploadEnabled = parsedConfig?.uploadEnabled ?? true;
+      pageLoads = parsedConfig?.pageLoads ?? false;
+      clicks = parsedConfig?.clicks ?? false;
 
       initializeGlean();
     }
