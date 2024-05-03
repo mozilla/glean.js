@@ -31,6 +31,6 @@ use Glean.js on these platforms, **you still can**. You will need to use version
 - Web Extensions
 - Nodejs
 
-Deprecated platforms that we will not support again:
+Deprecated platforms that we *currently* do not plan on supporting again:
 
 - <a href="https://www.qt.io/product/qt-for-desktop" target="_blank">QT</a>
