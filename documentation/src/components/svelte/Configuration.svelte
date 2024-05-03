@@ -88,7 +88,7 @@
   /**
    * Clears all values from session storage and reloads the page.
    */
-  function clearSessionStorage() {
+  function resetGlean() {
     sessionStorage.clear();
     location.reload();
   }
@@ -219,7 +219,7 @@
     </p>
   {/if}
   <button disabled={initialized} on:click={initializeGlean}>Initialize</button>
-  <button on:click={clearSessionStorage}>Reset Glean</button>
+  <button on:click={resetGlean}>Reset Glean</button>
   <br />
   <br />
   <hr />
