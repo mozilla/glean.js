@@ -227,7 +227,9 @@
   <p>
     For the best demo experience open your browser console. All pings are sent
     to the Debug Ping Viewer. Data from this page is sent in real-time. You can
-    see <a href="https://debug-ping-preview.firebaseapp.com/pings/{debugTag}" target="_blank">Pings</a> or the <a href="https://debug-ping-preview.firebaseapp.com/stream/{debugTag}" target="_blank">Event Stream</a>.
+    see <a href="https://debug-ping-preview.firebaseapp.com/pings/{debugTag}" target="_blank">Pings</a>
+    or the <a href="https://debug-ping-preview.firebaseapp.com/stream/{debugTag}" target="_blank">Event Stream</a>
+    as they are received by the pipeline.
   </p>
   <h4>Page Loads</h4>
   <p>Record a page load event by reloading this page.</p>
