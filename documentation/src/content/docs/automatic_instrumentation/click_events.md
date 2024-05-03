@@ -38,8 +38,12 @@ An example HTML button that will fire a click event:
 
 ## Click event API
 
-Glean.js provides an API for collecting click events as an alternative to
-automatic instrumentation.
+Glean.js provides an API for manually collecting click events.
+
+When to use the `GleanMetrics.recordElementClick` API
+
+1. You want to trigger click events with dynamic custom data overrides.
+2. You have an existing handler used across multiple UI elements and you do not want to give every single element new HTML attributes.
 
 ### Usage
 

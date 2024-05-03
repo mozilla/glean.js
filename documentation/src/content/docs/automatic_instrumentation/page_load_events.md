@@ -27,8 +27,7 @@ Glean.initialize("app-name", true, {
 
 ## Page load event API
 
-Glean.js provides an API for collecting page load events as an alternative to
-automatic instrumentation.
+Glean.js provides an API for manually collecting page load events.
 
 When to use the `GleanMetrics.pageLoad` API
 
