@@ -285,7 +285,7 @@
   <Highlight language={javascript} code={configCode} langtag />
 </div>
 
-<style is:global>
+<style>
   .config-header {
     margin-top: 1rem;
   }
