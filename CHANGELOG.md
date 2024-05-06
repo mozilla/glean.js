@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.1...main)
 
+* [#1935](https://github.com/mozilla/glean.js/pull/1935): **BREAKING CHANGE**: Remove `migrateFromLegacyStorage` capability and configuration option. If your project currently sets the `migrateFromLegacyStorage` value, this will no longer work.
+
 # v5.0.1 (2024-04-30)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.0...v5.0.1)

@@ -58,18 +58,6 @@ export class DatetimeMetric extends Metric<DatetimeInternalRepresentation, strin
     });
   }
 
-  static fromRawDatetime(
-    isoString: string,
-    timezoneOffset: number,
-    timeUnit: TimeUnit
-  ): DatetimeMetric {
-    return new DatetimeMetric({
-      timeUnit,
-      timezone: timezoneOffset,
-      date: isoString
-    });
-  }
-
   /**
    * Gets the datetime data as a Date object.
    *
@@ -247,32 +235,6 @@ export class InternalDatetimeMetricType extends MetricType {
     }
 
     return truncatedDate;
-  }
-
-  /**
-   * Set a datetime metric from raw values.
-   *
-   * # Important
-   * This method should **never** be exposed to users. This is used solely
-   * for migrating IDB data to LocalStorage.
-   *
-   * @param isoString Raw isoString.
-   * @param timezone Raw timezone.
-   * @param timeUnit Raw timeUnit.
-   */
-  setRaw(isoString: string, timezone: number, timeUnit: TimeUnit) {
-    if (!this.shouldRecord(Context.uploadEnabled)) {
-      return;
-    }
-
-    try {
-      const metric = DatetimeMetric.fromRawDatetime(isoString, timezone, timeUnit);
-      Context.metricsDatabase.record(this, metric);
-    } catch (e) {
-      if (e instanceof MetricValidationError) {
-        e.recordError(this);
-      }
-    }
   }
 
   /// TESTING ///

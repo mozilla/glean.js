@@ -96,15 +96,6 @@ namespace Glean {
   }
 
   /**
-   * Initialize core metrics: client_id, first_run_date, os, etc.
-   *
-   * @param migrateFromLegacy Whether or not to migrate data from legacy storage.
-   */
-  function initializeCoreMetrics(migrateFromLegacy?: boolean): void {
-    Context.coreMetrics.initialize(migrateFromLegacy);
-  }
-
-  /**
    * Handles the changing of state from upload enabled to disabled.
    *
    * Should only be called when the state actually changes.
@@ -333,7 +324,7 @@ namespace Glean {
       // If upload is enabled,
       // just follow the normal code path to instantiate the core metrics.
       onUploadEnabled();
-      initializeCoreMetrics(config?.migrateFromLegacyStorage);
+      Context.coreMetrics.initialize();
 
       // Record a page load event if the client has auto page-load events enabled.
       if (config?.enableAutoPageLoadEvents) {
@@ -419,7 +410,7 @@ namespace Glean {
     if (Context.uploadEnabled !== flag) {
       if (flag) {
         onUploadEnabled();
-        initializeCoreMetrics(Context.config.migrateFromLegacyStorage);
+        Context.coreMetrics.initialize();
       } else {
         onUploadDisabled(false);
       }
