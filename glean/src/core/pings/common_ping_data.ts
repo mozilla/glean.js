@@ -16,8 +16,20 @@ export default interface CommonPingData {
   readonly reasonCodes?: string[];
 
   // Currently NOT IMPLEMENTED.
+  //
+  // NOTE: There are specific bugs for implementing each of these features. If
+  // these features are implemented later, please move the property out of the
+  // "NOT IMPLEMENTED" section and remove the bug.
+
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1895297
   readonly preciseTimestamps?: boolean;
+
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1895299
   readonly includeInfoSections?: boolean;
+
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1895300
   readonly enabled?: boolean;
+
+  // https://bugzilla.mozilla.org/show_bug.cgi?id=1895302
   readonly schedulesPings?: string[];
 }
