@@ -5,10 +5,11 @@ import svelte from "@astrojs/svelte";
 
 // https://astro.build/config
 export default defineConfig({
+  site: 'https://mozilla.github.io/glean.js/',
   integrations: [starlight({
     title: 'Glean.js',
     components: {
-      // Override the default `SocialIcons` component.
+      // Override the default `PageTitle` component.
       PageTitle: './src/components/CustomPageTitle.astro'
     },
     social: {

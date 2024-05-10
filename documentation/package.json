@@ -7,7 +7,8 @@
     "start": "astro dev",
     "build": "astro check && astro build",
     "preview": "astro preview",
-    "astro": "astro"
+    "astro": "astro",
+    "publish:docs": "NODE_DEBUG=gh-pages gh-pages --dotfiles --message \"[skip ci] Updates\" --dist dist/"
   },
   "dependencies": {
     "@astrojs/check": "^0.5.10",
@@ -15,6 +16,7 @@
     "@astrojs/svelte": "^5.2.0",
     "@mozilla/glean": "^5.0.0",
     "astro": "^4.3.5",
+    "gh-pages": "^6.1.1",
     "sharp": "^0.32.5",
     "svelte": "^4.2.12",
     "svelte-highlight": "^7.6.0",
