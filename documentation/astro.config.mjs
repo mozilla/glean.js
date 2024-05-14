@@ -5,7 +5,8 @@ import svelte from "@astrojs/svelte";
 
 // https://astro.build/config
 export default defineConfig({
-  site: 'https://mozilla.github.io/glean.js/',
+  site: 'https://mozilla.github.io',
+  base: '/glean.js',
   integrations: [starlight({
     title: 'Glean.js',
     components: {
