@@ -146,6 +146,9 @@ jobs:
           name: Build documentation
           command: npm --prefix ./documentation run build
       - run:
+          name: Disable jekyll builds
+          command: touch documentation/dist/.nojekyll
+      - run:
           name: Show contents
           command: ls -R documentation/dist
       - run:
