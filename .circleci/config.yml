@@ -240,9 +240,10 @@ workflows:
           context: data-sre-gleanjs
           filters:
             branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+              only:
+                - main
+                - release
+                - /^release-.*/
       - publish:
           context: data-sre-gleanjs
           filters:
