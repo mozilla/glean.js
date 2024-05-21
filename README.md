@@ -8,21 +8,17 @@
 
 All documentation is available online:
 
+### [The Glean.js Docs](https://mozilla.github.io/glean.js/)
+
+If you are using Glean.js in your project, this is the place to go.
+
 ### [The Glean Book](https://mozilla.github.io/glean/)
 
-If you are using Glean.js in your project, this is the place to go. 
-It contains user guides on getting started and other topics, as well as reference to Glean APIs.
+The Glean Book contains general information on the Glean ecosystem and about the SDKs on other platforms, as well as reference to Glean APIs (which are common to all the platforms).
 
 ### [Glean.js developer documentation](https://github.com/mozilla/glean.js/tree/main/docs)
 
 If you want to contribute to the Glean.js code base this is the place to go.
-
-### [Glean.js internal reference](https://mozilla.github.io/glean.js/)
-
-If you are looking for detailed documentation on the Glean APIs (internal or external) this is the place to go.
-
-_This documentation is auto generated from the doc comments throughout the Glean.js code base and
-the Glean book should be preferred over this documentation whenever possible._
 
 ## Contact
 
