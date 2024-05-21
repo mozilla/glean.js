@@ -14,7 +14,7 @@ If you are using Glean.js in your project, this is the place to go.
 
 ### [The Glean Book](https://mozilla.github.io/glean/)
 
-The Glean Book contains user guides on getting started and other topics, as well as reference to Glean APIs.
+The Glean Book contains general information on the Glean ecosystem and about the SDKs on other platforms, as well as reference to Glean APIs (which are common to all the platforms).
 
 ### [Glean.js developer documentation](https://github.com/mozilla/glean.js/tree/main/docs)
 
