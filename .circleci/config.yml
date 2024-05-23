@@ -98,8 +98,11 @@ jobs:
           name: Build library
           command: npm --prefix ./glean run build
       - run:
+          name: Install JavaScript documentation dependencies
+          command: npm --prefix ./documentation install
+      - run:
           name: Build docs
-          command: npm --prefix ./glean run build:docs
+          command: npm --prefix ./documentation run build
 
   browser-compat-smoke-tests:
     docker:
@@ -138,22 +141,22 @@ jobs:
             - "ea:d2:3c:e1:09:cf:1a:1d:85:d6:6e:1d:52:0a:58:41"
       - run:
           name: Install JavaScript dependencies
-          command: npm --prefix ./glean install
+          command: npm --prefix ./documentation install
       - run:
           name: Build documentation
-          command: npm --prefix ./glean run build:docs
+          command: npm --prefix ./documentation run build
       - run:
           name: Disable jekyll builds
-          command: touch glean/dist/docs/.nojekyll
+          command: touch documentation/dist/.nojekyll
       - run:
           name: Show contents
-          command: ls -R glean/dist/docs
+          command: ls -R documentation/dist
       - run:
           name: Setup SSH key and deploy docs to gh-pages branch
           command: |
             git config user.email "dataops+ci-bot@mozilla.com"
             git config user.name "dataops-ci-bot"
-            npm --prefix ./glean run publish:docs
+            npm --prefix ./documentation run publish:docs
 
   publish:
     docker:
@@ -240,9 +243,10 @@ workflows:
           context: data-sre-gleanjs
           filters:
             branches:
-              ignore: /.*/
-            tags:
-              only: /^v.*/
+              only:
+                - main
+                - release
+                - /^release-.*/
       - publish:
           context: data-sre-gleanjs
           filters:

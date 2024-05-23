@@ -61,10 +61,9 @@ We use [BrowserStack](https://www.browserstack.com/) to access all of these diff
 
 ### `docs-deploy`
 
-_Only runs when a new tag is created._
+_Only runs on the `release`, `release-.*` and `main` branches._
 
-This job builds and deploys the Glean.js documentation generated from JSDoc comments in the code.
-The documentation is published at: [https://mozilla.github.io/glean.js/](https://mozilla.github.io/glean.js/)
+This job builds and deploys the Glean.js documentation in the `/documentation` folder. The documentation is published at: [https://mozilla.github.io/glean.js/](https://mozilla.github.io/glean.js/).
 
 ### `publish`
 

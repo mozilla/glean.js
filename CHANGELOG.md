@@ -1,6 +1,13 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.2...main)
+
+# v5.0.2 (2024-05-23)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.1...v5.0.2)
+
+* [#1935](https://github.com/mozilla/glean.js/pull/1935): **BREAKING CHANGE**: Remove `migrateFromLegacyStorage` capability and configuration option. If your project currently sets the `migrateFromLegacyStorage` value, this will no longer work.
+* [#1942](https://github.com/mozilla/glean.js/pull/1942): Bumped `glean_parser` version to `14.1.2`.
 
 # v5.0.1 (2024-04-30)
 
@@ -28,7 +35,7 @@ This is the official release based on the v5.0.0-pre.0 release.
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v4.0.0...v4.1.0-pre.0)
 
-* [#1866](https://github.com/mozilla/glean.js/pull/1866): Added a new uploader that falls back to `fetch` if `navigator.sendBeacon` fails. 
+* [#1866](https://github.com/mozilla/glean.js/pull/1866): Added a new uploader that falls back to `fetch` if `navigator.sendBeacon` fails.
 * [#1876](https://github.com/mozilla/glean.js/pull/1876): **BREAKING CHANGE**: `navigator.sendBeacon` with fallback to `fetch` (see #1866) is now the default uploader. This can be changed manually.
 * [#1850](https://github.com/mozilla/glean.js/pull/1850): Automatically record basic session information (`session_id` & `session_count`) for web properties.
 

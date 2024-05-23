@@ -4,7 +4,7 @@ Plugins provide a way for the Glean JS SDK to support specialized use cases with
 the size of the library. Each plugin can be attached to a Glean core event to augment
 or modify its behavior.
 
-A Glean plugin is a class that extends the [`Plugin`](https://mozilla.github.io/glean.js/classes/plugins.default.html) class. Each plugin instance exposes an
+A Glean plugin is a class that extends the `Plugin` class. Each plugin instance exposes an
 `action` API, to be triggered by the event. The signature of the `action` API will depend on
 the event the plugin is attached to.
 
@@ -12,7 +12,7 @@ the event the plugin is attached to.
 
 Events denote a specific moment in code that may have a plugin attached to it.
 
-A Glean event is an instance of the [`CoreEvent`](https://mozilla.github.io/glean.js/classes/core_events.CoreEvent.html) class. These instances expose a `trigger` API,
+A Glean event is an instance of the `CoreEvent` class. These instances expose a `trigger` API,
 for triggering the action of a plugin that may be attached to it. Each event defines a different
 signature for the `trigger` API.
 
@@ -24,7 +24,7 @@ we should create a new plugin and event for it. However, when is that?
 Plugins should always be the choice when we are implementing a feature that has a very specialized
 use case and would be left unused by most users.
 
-The [`PingEncryptionPlugin`](https://mozilla.github.io/glean.js/classes/plugins_encryption.default.html)
+The `PingEncryptionPlugin`
 is a good example of that. That plugin encrypts all outgoing pings when enabled. It is a fairly large
 plugin due to the encryption dependencies it includes in the bundle and it is only used by a small
 amount of clients. It makes sense to make it a stand-alone feature.
