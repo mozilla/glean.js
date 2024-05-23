@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.1...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.2...main)
+
+# v5.0.2 (2024-05-23)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.1...v5.0.2)
 
 * [#1935](https://github.com/mozilla/glean.js/pull/1935): **BREAKING CHANGE**: Remove `migrateFromLegacyStorage` capability and configuration option. If your project currently sets the `migrateFromLegacyStorage` value, this will no longer work.
 * [#1942](https://github.com/mozilla/glean.js/pull/1942): Bumped `glean_parser` version to `14.1.2`.
