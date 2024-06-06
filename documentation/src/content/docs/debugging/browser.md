@@ -3,7 +3,7 @@ title: Debugging in the browser
 description: How to debug in the browser with Glean.js.
 ---
 
-All the available [debugging options](/debugging/options) are available in the browser. You can
+All the available [debugging options](./options) are available in the browser. You can
 enable these options using the `window.Glean` object.
 
 The debugging preferences are set in the browser's `sessionStorage`. Once set

@@ -64,4 +64,4 @@ GleanMetrics.recordElementClick({
 
 ## Try it out
 
-To see automatic click events in action, check out our [interactive playground](/playground).
+To see automatic click events in action, check out our [interactive playground](../playground).
