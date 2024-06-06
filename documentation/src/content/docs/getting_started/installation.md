@@ -7,7 +7,7 @@ description: Installing Glean.js in your project.
 npm i @mozilla/glean
 ```
 
-The way you import Glean changes depending on your platform. Please reference the [platforms](./platforms) page for more details about available platforms.
+The way you import Glean changes depending on your platform. Please reference the [platforms](/glean.js/getting_started/platforms) page for more details about available platforms.
 
 ## Web
 
