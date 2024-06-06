@@ -61,4 +61,4 @@ GleanMetrics.pageLoad({
 
 ## Try it out
 
-To see automatic page load events in action, check out our [interactive playground](/playground).
+To see automatic page load events in action, check out our [interactive playground](../playground).

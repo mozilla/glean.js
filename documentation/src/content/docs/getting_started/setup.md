@@ -26,9 +26,9 @@ Glean.initialize("app-name", uploadEnabled, config);
 
 Glean.js-specific configuration options:
 
-- `enableAutoPageLoadEvents`: Enables [automatic page load](/automatic_instrumentation/page_load_events) events.
-- `enableAutoElementClickEvents`: Enables [automatic click](/automatic_instrumentation/click_events) events.
-- `sessionLengthInMinutesOverride`: Overrides the default [session](/reference/sessions) length of 30 minutes.
+- `enableAutoPageLoadEvents`: Enables [automatic page load](../automatic_instrumentation/page_load_events) events.
+- `enableAutoElementClickEvents`: Enables [automatic click](../automatic_instrumentation/click_events) events.
+- `sessionLengthInMinutesOverride`: Overrides the default [session](../reference/sessions) length of 30 minutes.
 - `experimentationId`: Experimentation identifier to be set in all pings.
 
 <a href="https://mozilla.github.io/glean/book/reference/general/initializing.html#configuration" target="_blank">Full list of configuration options</a>
@@ -37,4 +37,4 @@ Glean.js-specific configuration options:
 
 Glean.js should be initialized **as soon as possible at the start of the application**. You should set all debugging options prior to `Glean.initialize`.
 
-[Example initialization](/debugging/options#usage)
+[Example initialization](../debugging/options#usage)
