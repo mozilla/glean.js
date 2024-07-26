@@ -20,6 +20,9 @@ window.Glean.setDebugViewTag("example-tag");
 
 // Tag pings with source tags.
 window.Glean.setSourceTags(["my-tag", "your-tag", "our-tag"]);
+
+// Open a new tab in the browser showing the Debug Ping Viewer with the active session in focus.
+window.Glean.debugSession();
 ```
 
 ## Try it out
