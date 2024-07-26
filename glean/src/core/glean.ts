@@ -527,6 +527,7 @@ declare global {
       setLogPings: (flag: boolean) => void;
       setDebugViewTag: (value: string) => void;
       setSourceTags: (value: string[]) => void;
+      debugSession: () => void;
     };
   }
 }
@@ -558,6 +559,21 @@ if (
         "Pings will be given the specified tags until the tab is closed."
       );
     },
+    debugSession: () => {
+      const sessionId = Context.metricsDatabase.getMetric(
+        CLIENT_INFO_STORAGE,
+        Context.coreMetrics.sessionId
+      );
+
+      if (!!sessionId && typeof sessionId === "string" && !!Context.config.debugViewTag) {
+        window.open(
+          `https://debug-ping-preview.firebaseapp.com/stream/${Context.config.debugViewTag}#${sessionId}`,
+          "_blank"
+        );
+      } else {
+        console.info("You must set a debug tag via `window.Glean.setDebugViewTag` before debugging your session.");
+      }
+    }
   };
 }
 
