@@ -82,7 +82,8 @@ export async function runWebTest(driver) {
         window.Glean &&
         window.Glean.setDebugViewTag &&
         window.Glean.setLogPings &&
-        window.Glean.setSourceTags
+        window.Glean.setSourceTags &&
+        window.Glean.debugSession
       ) {
         return true;
       }

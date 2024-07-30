@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.2...main)
 
+* [#1970](https://github.com/mozilla/glean.js/pull/1970): Add `window.Glean.debugSession` API for automatically opening a link to the Debug Ping Viewer with your current session selected.
+
 # v5.0.2 (2024-05-23)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.1...v5.0.2)
