@@ -3,7 +3,7 @@ title: Debugging in the browser
 description: How to debug in the browser with Glean.js.
 ---
 
-All the available [debugging options](/debugging/options) are available in the browser. You can
+All the available [debugging options](/glean.js/debugging/options) are available in the browser. You can
 enable these options using the `window.Glean` object.
 
 The debugging preferences are set in the browser's `sessionStorage`. Once set
@@ -20,6 +20,9 @@ window.Glean.setDebugViewTag("example-tag");
 
 // Tag pings with source tags.
 window.Glean.setSourceTags(["my-tag", "your-tag", "our-tag"]);
+
+// Open a new tab in the browser showing the Debug Ping Viewer with the active session in focus.
+window.Glean.debugSession();
 ```
 
 ## Try it out

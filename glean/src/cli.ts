@@ -28,7 +28,7 @@ const VIRTUAL_ENVIRONMENT_DIR = process.env.VIRTUAL_ENV || path.join(process.cwd
 
 // The version of glean_parser to install from PyPI.
 // Note: This should be _only_ MAJOR.MINOR
-const GLEAN_PARSER_VERSION = "14.1";
+const GLEAN_PARSER_VERSION = "14.5";
 
 // This script runs a given Python module as a "main" module, like
 // `python -m module`. However, it first checks that the installed
