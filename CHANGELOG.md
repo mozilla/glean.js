@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.2...main)
 
+* [#1971](https://github.com/mozilla/glean.js/pull/1971): Bumped `glean_parser` version to `14.5.0`.
 * [#1970](https://github.com/mozilla/glean.js/pull/1970): Add `window.Glean.debugSession` API for automatically opening a link to the Debug Ping Viewer with your current session selected.
 
 # v5.0.2 (2024-05-23)
