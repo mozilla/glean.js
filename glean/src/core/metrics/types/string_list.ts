@@ -129,7 +129,9 @@ class InternalStringListMetricType extends MetricType {
     return (v?: JSONValue): StringListMetric => {
       const metric = new StringListMetric([value]);
       try {
-        v && metric.concat(v);
+        if (v) {
+          metric.concat(v);
+        }
       } catch (e) {
         if (e instanceof MetricValidationError && e.type !== ErrorType.InvalidType) {
           // We only want to bubble up errors that are not invalid type,

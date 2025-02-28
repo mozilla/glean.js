@@ -100,7 +100,7 @@ class PingsDatabase {
     this.store.update([identifier], () => ping);
 
     // Notify the observer that a new ping has been added to the pings database.
-    this.observer && this.observer.update(identifier, ping);
+    this.observer?.update(identifier, ping);
   }
 
   /**
