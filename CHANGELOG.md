@@ -1,5 +1,7 @@
 # Unreleased changes
 
+* [#1977](https://github.com/mozilla/glean.js/pull/1977): Add try-catch around window.sessionStorage access to prevent uncaught error upon `import`.
+
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.3...main)
 
 # v5.0.3 (2024-08-02)
