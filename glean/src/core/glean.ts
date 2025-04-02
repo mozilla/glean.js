@@ -533,10 +533,19 @@ declare global {
 }
 
 // Only set `Glean` values whenever running inside of a browser.
-if (
-  typeof window !== "undefined" &&
-  typeof window.sessionStorage !== "undefined"
-) {
+// When cookies/localStorage/sessionStorage are disabled (at least in Firefox
+// and Chrome), an access attempt on the window.sessionStorage property will
+// throw an error ("The operation is insecure." in Firefox).
+// So try-catch is needed here.
+let hasStorage = false;
+try {
+  hasStorage = typeof window !== "undefined" &&
+  typeof window.sessionStorage !== "undefined";
+} catch (e) {
+  console.error("No session storage available", e);
+}
+
+if (hasStorage) {
   window.Glean = {
     setLogPings: (flag: boolean) => {
       setDebugOptionInSessionStorage(DebugOption.LogPings, flag);
