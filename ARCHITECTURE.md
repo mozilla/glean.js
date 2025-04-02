@@ -40,18 +40,19 @@ and the SDK will manage its storage so that data does not remain in storage afte
 
 The Glean SDK tries to do all of this is the least disruptive way possible to users.
 
-### async (Web Extensions)
+### Browser
+
+All of the SDKs tasks are executed synchronously, immediately as they are called. Errors will be caught without ever crashing the application.
+
+### Web Extensions
 
 All of the SDKs tasks are queued and executed asynchronously. The APIs exposed by the Glean SDK will only do
 the en-queuing of tasks, a quick synchronous operation. Internally, the Glean SDK will handle the
 queued tasks asynchronously, catching any errors thrown along the way so that Glean never
 crashes a users application.
 
-### sync (Browser)
-
-All of the SDKs tasks are executed synchronously, immediately as they are called. The APIs exposed by Glean
-are the same as the async implementation, but without queueing of any tasks. Errors will be caught without
-ever crashing the application.
+The web extension SDK is currently not being developed. If you want to use the SDK in your web extension
+please reference the [Glean.js user docs](https://mozilla.github.io/glean.js/getting_started/platforms/#deprecated-platforms).
 
 ## Code Map
 
@@ -87,9 +88,6 @@ of the library. That caused a huge issue with circular dependencies. The `contex
 created to mitigate that issue. This file houses the `Context` structure, a singleton that holds
 setters and getters to all of Glean's internal state. This file should avoid any imports that are
 not `import type`.
-
-`dispatcher.ts` is where Glean's dispatcher implementation lives. The dispatcher is the structure
-that manages Glean's task queue.
 
 `metrics/types` is where all of the specific metric type implementations are. Each metric type
 should be implemented in a single file and no other file types should be added to this folder,
@@ -132,15 +130,3 @@ exposed through the `@mozilla/glean/plugins/*` entry point.
 
 This file is what gets executed when a user that has installed Glean through npm invokes the `glean`
 command. It serves as a wrapper to call `glean_parser` commands more easily from JavaScript projects.
-
-### `async`/`sync` files
-
-There are certain places where we need different implementations for internal services based on the
-platform. In these instances, the service will have its own folder with the following folder structure:
-
-```
-├── service/
-├──── async.ts
-├──── shared.ts # Shared base class defining all available methods AND any reusable helper functions
-└──── sync.ts
-```
