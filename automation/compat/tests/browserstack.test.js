@@ -39,14 +39,14 @@ await new Promise(resolve => {
 // Run the test for both the latest version
 // and the minimum supported version of each browser.
 for (const browser of BROWSERS) {
-  for (const version of [ browser.minVersion, "latest" ]) {
+  for (const version of [browser.minVersion, "latest"]) {
     console.info(`Smoke testing @mozilla/glean/web in ${browser.name} (${version}).`);
     await (async function () {
       let driver;
       try {
         const capabilities = {
-          "browserName" : browser.name,
-          "browser_version" : version,
+          "browserName": browser.name,
+          "browser_version": version,
           "name": "Browser compatibility smoke test",
           "build": process.env.CIRCLE_JOB || "Local BrowserStack testing",
           "browserstack.networkLogs": "true",
@@ -57,7 +57,13 @@ for (const browser of BROWSERS) {
 
         driver = new webdriver.Builder()
           .usingServer(`https://${process.env.BROWSERSTACK_USER_NAME}:${process.env.BROWSERSTACK_ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub`)
-          .withCapabilities(capabilities)
+          .withCapabilities({
+            ...capabilities,
+            // Add W3C protocol version
+            'w3c': true,
+            // Add JSON Wire Protocol capabilities
+            'desiredCapabilities': capabilities
+          })
           .build();
 
         await runWebTest(driver);
@@ -66,7 +72,7 @@ for (const browser of BROWSERS) {
         await driver.executeScript(
           "browserstack_executor: {\"action\": \"setSessionStatus\", \"arguments\": {\"status\":\"passed\",\"reason\": \"Ping successfully sent!\"}}"
         );
-      } catch(_) {
+      } catch (_) {
         // Make sure the process exits with an error code
         process.exitCode = 1;
         // Marking the test as failed for Browserstack

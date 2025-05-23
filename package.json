@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "@mozilla/glean": "^5.0.4"
+  }
+}
