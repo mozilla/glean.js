@@ -21,7 +21,7 @@
   "license": "MPL-2.0",
   "devDependencies": {
     "@octokit/request": "^9.1.1",
-    "browserstack-local": "^1.5.5",
+    "browserstack-local": "^1.5.7",
     "geckodriver": "^4.4.1",
     "patch-package": "^8.0.0",
     "selenium-webdriver": "^4.22.0",
