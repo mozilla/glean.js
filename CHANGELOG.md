@@ -1,5 +1,7 @@
 # Unreleased changes
 
+* [#1993](https://github.com/mozilla/glean.js/pull/1993): Add try-catch around uses of sessionStorage and localStorage in core.
+
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.4...main)
 
 # v5.0.4 (2025-04-02)
