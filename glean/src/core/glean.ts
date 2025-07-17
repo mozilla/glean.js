@@ -47,16 +47,20 @@ const setDebugOptionInSessionStorage = (
 ) => {
   const key = `Glean.${option.toString()}`;
 
-  switch (option) {
-  case DebugOption.DebugTag:
-    sessionStorage.setItem(key, value as string);
-    break;
-  case DebugOption.LogPings:
-    sessionStorage.setItem(key, (value as boolean).toString());
-    break;
-  case DebugOption.SourceTags:
-    sessionStorage.setItem(key, (value as string[]).join(","));
-    break;
+  try {
+    switch (option) {
+    case DebugOption.DebugTag:
+      sessionStorage.setItem(key, value as string);
+      break;
+    case DebugOption.LogPings:
+      sessionStorage.setItem(key, (value as boolean).toString());
+      break;
+    case DebugOption.SourceTags:
+      sessionStorage.setItem(key, (value as string[]).join(","));
+      break;
+    }
+  } catch (e) {
+    console.warn(e);
   }
 };
 
@@ -69,7 +73,12 @@ const setDebugOptionInSessionStorage = (
 const getDebugOptionFromSessionStorage = (
   option: DebugOptionValue
 ): string | undefined => {
-  return sessionStorage.getItem(`Glean.${option.toString()}`) || undefined;
+  try {
+    return sessionStorage.getItem(`Glean.${option.toString()}`) || undefined;
+  } catch (e) {
+    console.warn(e);
+    return undefined;
+  }
 };
 
 namespace Glean {

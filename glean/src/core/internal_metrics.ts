@@ -209,8 +209,12 @@ export class CoreMetrics {
       this.generateNewSession();
     }
 
-    // Update the last-active timestamp in LocalStorage to the current time.
-    localStorage.setItem("glean_session_last_active", Date.now().toString());
+    try {
+      // Update the last-active timestamp in LocalStorage to the current time.
+      localStorage.setItem("glean_session_last_active", Date.now().toString());
+    } catch (e) {
+      console.warn(e);
+    }
   }
 
   /**
