@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.5...main)
 
+* [#2011](https://github.com/mozilla/glean.js/pull/2011): Bug 1987158 - Capture page `url`/`referrer`/`title` with `recordElementClick()`.
+
 # v5.0.5 (2025-07-17)
 
 * [#1993](https://github.com/mozilla/glean.js/pull/1993): Add try-catch around uses of sessionStorage and localStorage in core.
