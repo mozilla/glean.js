@@ -16,7 +16,7 @@ Glean.initialize("app-name", true, {
 });
 ```
 
-Glean.js will create a global click listener to catch all clicks for
+Glean.js will create a global click listener to catch all clicks (including in Shadow DOMs) for
 elements that include one of the following data attributes:
 
 - `data-glean-id`

@@ -157,7 +157,7 @@ namespace GleanMetrics {
    * @param event Event object.
    */
   export function handleClickEvent(event: Event) {
-    const clickedElement = event.target as Element;
+    const clickedElement = (event.composedPath()?.[0] || event.target) as Element;
     const closestElementWithClickAttributes: Element | null = clickedElement.closest("[data-glean-id], [data-glean-type], [data-glean-label]");
 
     if (!closestElementWithClickAttributes) {
