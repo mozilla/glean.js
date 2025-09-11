@@ -2,6 +2,7 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.5...main)
 
+* [#2013](https://github.com/mozilla/glean.js/pull/2011): Bug 1988206 - Record clicks on elements in Shadow DOM.
 * [#2011](https://github.com/mozilla/glean.js/pull/2011): Bug 1987158 - Capture page `url`/`referrer`/`title` with `recordElementClick()`.
 
 # v5.0.5 (2025-07-17)
