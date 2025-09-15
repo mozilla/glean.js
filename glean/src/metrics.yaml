@@ -539,6 +539,15 @@ glean:
       label:
         description: The label of the element clicked. For automatic collection, its value is the element's `data-glean-label` data attribute value.
         type: string
+      url:
+        description: The URL of the page where the element was clicked.
+        type: string
+      referrer:
+        description: The referrer of the page where the element was clicked.
+        type: string
+      title:
+        description: The title of the page where the element was clicked.
+        type: string
   page_id:
     type: uuid
     description: |

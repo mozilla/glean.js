@@ -21,6 +21,9 @@ type ElementClickEventContext = {
   id?: string;
   type?: string;
   label?: string;
+  url?: string;
+  referrer?: string;
+  title?: string;
 };
 
 /**
@@ -51,7 +54,7 @@ namespace GleanMetrics {
         disabled: false,
       },
       // extras defined in `src/metrics.yaml`.
-      ["id", "type", "label"]
+      ["id", "type", "label", "url", "referrer", "title"]
     ),
     pageId: new UUIDMetric(
       {
@@ -124,8 +127,24 @@ namespace GleanMetrics {
     const elementClickEventContext: ElementClickEventContext = {
       ...(dataset.gleanId && { id: dataset.gleanId }),
       ...(dataset.gleanType && { type: dataset.gleanType }),
-      ...(dataset.gleanLabel && { label: dataset.gleanLabel })
+      ...(dataset.gleanLabel && { label: dataset.gleanLabel }),
+      url:
+        (typeof window !== "undefined"
+          ? window.location.href
+          : "URL_NOT_PROVIDED_OR_AVAILABLE"
+        ),
+      referrer:
+        (typeof document !== "undefined"
+          ? document.referrer
+          : "REFERRER_NOT_PROVIDED_OR_AVAILABLE"
+        ),
+      title:
+        (typeof document !== "undefined"
+          ? document.title
+          : "TITLE_NOT_PROVIDED_OR_AVAILABLE"
+        ),
     };
+
     return elementClickEventContext;
   }
 
