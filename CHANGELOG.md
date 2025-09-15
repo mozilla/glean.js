@@ -1,8 +1,12 @@
 # Unreleased changes
 
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.6...main)
+
 # v5.0.6 (2025-09-15)
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.5...main)
+# v5.0.6 (2025-09-15)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.5...v5.0.6)
 
 * [#2010](https://github.com/mozilla/glean.js/pull/2010): Remove faulty check for sessionStorage to prevent uncaught error.
 * [#2011](https://github.com/mozilla/glean.js/pull/2011): Bug 1987158 - Capture page `url`/`referrer`/`title` with `recordElementClick()`.
