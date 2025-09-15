@@ -1,22 +1,23 @@
 # Unreleased changes
 
-* [#2010](https://github.com/mozilla/glean.js/pull/2010): Remove faulty check for sessionStorage to prevent uncaught error.
+# v5.0.6 (2025-09-15)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.5...main)
 
+* [#2010](https://github.com/mozilla/glean.js/pull/2010): Remove faulty check for sessionStorage to prevent uncaught error.
 * [#2011](https://github.com/mozilla/glean.js/pull/2011): Bug 1987158 - Capture page `url`/`referrer`/`title` with `recordElementClick()`.
 
 # v5.0.5 (2025-07-17)
 
-* [#1993](https://github.com/mozilla/glean.js/pull/1993): Add try-catch around uses of sessionStorage and localStorage in core.
-
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.4...v5.0.5)
+
+* [#1993](https://github.com/mozilla/glean.js/pull/1993): Add try-catch around uses of sessionStorage and localStorage in core.
 
 # v5.0.4 (2025-04-02)
 
-* [#1977](https://github.com/mozilla/glean.js/pull/1977): Add try-catch around window.sessionStorage access to prevent uncaught error upon `import`.
-
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.3...v5.0.4)
+
+* [#1977](https://github.com/mozilla/glean.js/pull/1977): Add try-catch around window.sessionStorage access to prevent uncaught error upon `import`.
 
 # v5.0.3 (2024-08-02)
 
