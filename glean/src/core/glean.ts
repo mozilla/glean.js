@@ -194,14 +194,6 @@ namespace Glean {
    * Fetch debug options from SessionStorage and set the Glean preInit debug options.
    */
   function setDebugOptionsFromSessionStorage() {
-    // If we cannot access browser APIs, we do nothing.
-    if (
-      typeof window === "undefined" ||
-      typeof window.sessionStorage === "undefined"
-    ) {
-      return;
-    }
-
     const logPings = getDebugOptionFromSessionStorage(DebugOption.LogPings);
     if (logPings) {
       preInitLogPings = extractBooleanFromString(logPings);
