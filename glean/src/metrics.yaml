@@ -461,6 +461,29 @@ glean.error:
     no_lint:
       - COMMON_PREFIX
 
+  invalid_type:
+    type: labeled_counter
+    description: |
+      Counts the number of times a metric set a value which was not of the
+      expected type.
+      The labels are the `category.name` identifier of the metric.
+
+      This error type is only recorded by the Glean JavaScript SDK.
+      This error may only happen in dynamically typed languages.
+    bugs:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1710828
+    data_reviews:
+      - https://bugzilla.mozilla.org/show_bug.cgi?id=1591912#c3
+    data_sensitivity:
+      - technical
+    notification_emails:
+      - glean-team@mozilla.com
+    expires: never
+    send_in_pings:
+      - all-pings
+    no_lint:
+      - COMMON_PREFIX
+
 glean:
   restarted:
     type: event
