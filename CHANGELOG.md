@@ -2,6 +2,8 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.6...main)
 
+* [#2030](https://github.com/mozilla/glean.js/pull/2030): Add "types" fields to the exports map so TypeScript 5 projects using "moduleResolution": "bundler" can correctly resolve subpath type definitions.
+
 # v5.0.6 (2025-09-15)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.5...v5.0.6)
