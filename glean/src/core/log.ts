@@ -31,7 +31,7 @@ export enum LoggingLevel {
  */
 export default function log(
   modulePath: string,
-  message: unknown | unknown[],
+  message: unknown,
   level = LoggingLevel.Debug
 ): void {
   const prefix = `(Glean.${modulePath})`;

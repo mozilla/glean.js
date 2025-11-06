@@ -35,9 +35,9 @@ function fetchSchema(): Promise<JSONObject> {
         try {
           // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
           resolve(JSON.parse(data));
-        } catch(e) {
+        } catch {
           console.error("Data received from the GLEAN_SCHEMA_URL is not valid JSON.\n\n", data);
-          reject();
+          reject(new Error("Invalid JSON received from GLEAN_SCHEMA_URL"));
         }
       });
     }).on("error", (err) => {
