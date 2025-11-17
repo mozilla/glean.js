@@ -1,18 +1,46 @@
 {
   "name": "@mozilla/glean",
-  "version": "5.0.6",
+  "version": "5.0.7",
   "description": "An implementation of the Glean SDK, a modern cross-platform telemetry client, for JavaScript environments.",
   "type": "module",
   "sideEffects": false,
   "exports": {
-    "./error": "./dist/core/error/error_type.js",
+    "./error": {
+      "types": "./dist/types/core/error/error_type.d.ts",
+      "import": "./dist/core/error/error_type.js",
+      "default": "./dist/core/error/error_type.js"
+    },
     "./package.json": "./package.json",
-    "./private/metrics/*": "./dist/core/metrics/types/*.js",
-    "./private/ping": "./dist/core/pings/ping_type.js",
-    "./uploader": "./dist/core/upload/uploader.js",
-    "./testing": "./dist/core/testing/index.js",
-    "./web": "./dist/entry/web.js",
-    "./metrics": "./dist/core/glean_metrics.js"
+    "./private/metrics/*": {
+      "types": "./dist/types/core/metrics/types/*.d.ts",
+      "import": "./dist/core/metrics/types/*.js",
+      "default": "./dist/core/metrics/types/*.js"
+    },
+    "./private/ping": {
+      "types": "./dist/types/core/pings/ping_type.d.ts",
+      "import": "./dist/core/pings/ping_type.js",
+      "default": "./dist/core/pings/ping_type.js"
+    },
+    "./uploader": {
+      "types": "./dist/types/core/upload/uploader.d.ts",
+      "import": "./dist/core/upload/uploader.js",
+      "default": "./dist/core/upload/uploader.js"
+    },
+    "./testing": {
+      "types": "./dist/types/core/testing/index.d.ts",
+      "import": "./dist/core/testing/index.js",
+      "default": "./dist/core/testing/index.js"
+    },
+    "./web": {
+      "types": "./dist/types/entry/web.d.ts",
+      "import": "./dist/entry/web.js",
+      "default": "./dist/entry/web.js"
+    },
+    "./metrics": {
+      "types": "./dist/types/core/glean_metrics.d.ts",
+      "import": "./dist/core/glean_metrics.js",
+      "default": "./dist/core/glean_metrics.js"
+    }
   },
   "typesVersions": {
     "*": {
