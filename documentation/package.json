@@ -12,10 +12,10 @@
   },
   "dependencies": {
     "@astrojs/check": "^0.5.10",
-    "@astrojs/starlight": "^0.21.2",
-    "@astrojs/svelte": "^5.2.0",
+    "@astrojs/starlight": "^0.36.2",
+    "@astrojs/svelte": "^7.2.2",
     "@mozilla/glean": "^5.0.0",
-    "astro": "^4.3.5",
+    "astro": "^5.15.9",
     "gh-pages": "^6.1.1",
     "sharp": "^0.32.5",
     "svelte": "^4.2.12",
