@@ -34,4 +34,6 @@ export default interface CommonPingData {
   readonly schedulesPings?: string[];
 
   readonly followsCollectionEnabled?: boolean;
+
+  readonly uploaderCapabilities?: string[];
 }
