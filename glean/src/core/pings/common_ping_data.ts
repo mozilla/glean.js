@@ -32,4 +32,8 @@ export default interface CommonPingData {
 
   // https://bugzilla.mozilla.org/show_bug.cgi?id=1895302
   readonly schedulesPings?: string[];
+
+  readonly followsCollectionEnabled?: boolean;
+
+  readonly uploaderCapabilities?: string[];
 }
