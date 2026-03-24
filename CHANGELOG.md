@@ -1,6 +1,10 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.7...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.8...main)
+
+# v5.0.8 (2026-03-12)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.7...v5.0.8)
 
 * [#2053](https://github.com/mozilla/glean.js/pull/2053): Bumped `glean_parser` version to `19.0`.
 
