@@ -9,8 +9,10 @@ jobs:
   lint:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v6
-      - name: Node setup
+      - &checkout
+        uses: actions/checkout@v6
+      - &node
+        name: Node setup
         uses: actions/setup-node@v6
         with:
           node-version: latest
@@ -32,3 +34,20 @@ jobs:
         run: npm --prefix ./glean run lint
       - name: Audit dependency tree
         run: npm --prefix ./glean audit --production
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - *node
+      - name: Install Firefox Dependencies
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-mozilla-daily/ppa
+          sudo apt update
+          sudo apt install firefox-trunk
+      - name: Install JS Dependencies
+        run: npm --prefix ./glean install
+      - name: Run Unit Tests
+        run: export PATH=.:$PATH && npm --prefix ./glean run test:unit
+      - name: Run Integration Tests
+        run: export PATH=.:$PATH && npm --prefix ./glean run test:integration
+
