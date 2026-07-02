@@ -51,3 +51,13 @@ jobs:
       - *install
       - name: Audit dependency tree
         run: npm --prefix ./glean audit --production
+  check-size:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - *node
+      - name: Get and post build sizes to GitHub PR
+        run: |
+          npm --prefix ./automation install
+          npm --prefix ./automation run link:glean
+          npm --prefix ./automation run size:report

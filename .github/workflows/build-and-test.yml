@@ -40,3 +40,14 @@ jobs:
         run: npm --prefix ./glean run test:unit
       - name: Run Integration Tests
         run: npm --prefix ./glean run test:integration
+  browser-compat-smoke-tests:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - *node
+      - *install
+      - name: Run browser compat smoke tests
+        run: |
+          npm --prefix ./automation install
+          npm --prefix ./automation run link:glean
+          npm --prefix ./automation run compat:test:browserstack
