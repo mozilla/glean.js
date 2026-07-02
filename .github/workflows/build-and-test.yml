@@ -1,0 +1,42 @@
+---
+name: Build and Test
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - &checkout
+        uses: actions/checkout@v6
+      - &node
+        name: Node setup
+        uses: actions/setup-node@v6
+        with:
+          node-version: latest
+      - &install
+        name: Install JS Dependencies
+        run: npm --prefix ./glean install
+      - name: Build library
+        run: npm --prefix ./glean run build
+      - name: Install JS documentation dependencies
+        run: npm --prefix ./documentation install
+      - name: Build docs
+        run: npm --prefix ./documentation run build
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - *node
+      - name: Install Firefox Dependencies
+        run: |
+          sudo add-apt-repository -y ppa:ubuntu-mozilla-daily/ppa
+          sudo apt update
+          sudo apt install firefox-trunk
+      - *install
+      - name: Run Unit Tests
+        run: npm --prefix ./glean run test:unit
+      - name: Run Integration Tests
+        run: npm --prefix ./glean run test:integration
