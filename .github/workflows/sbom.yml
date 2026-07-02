@@ -1,0 +1,22 @@
+name: ssdlc-sbom
+
+on:
+  release:
+    types: [published]
+  push:
+    branches:
+      - 'release/**' #if triggering on branches, update to your specific branch pattern
+    tags:
+      - 'release/**' #if triggering on tags, update to your specific tag pattern
+  workflow_dispatch:
+
+permissions: {}#See guidance on how to set appropriate actions at workflow or job level
+
+jobs:
+  sbom:
+    permissions:
+      actions: read
+      contents: write
+    uses: mozilla/ssdlc-actions/.github/workflows/ssdlc-sbom.yml@5cc2b20e42d53d1643853f12244fbec9ed2f2e0c
+    with:
+      sbom_name: ${{ github.event.release.tag_name || github.sha }}
