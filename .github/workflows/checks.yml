@@ -53,6 +53,8 @@ jobs:
         run: npm --prefix ./glean audit --production
   check-size:
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
     steps:
       - *checkout
       - *node
