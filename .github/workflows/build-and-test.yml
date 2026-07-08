@@ -15,7 +15,7 @@ jobs:
         name: Node setup
         uses: actions/setup-node@v6
         with:
-          node-version: latest
+          node-version: lts
       - &install
         name: Install JS Dependencies
         run: npm --prefix ./glean install
