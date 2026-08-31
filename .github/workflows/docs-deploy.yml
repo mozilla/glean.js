@@ -14,7 +14,7 @@ jobs:
       - name: Node setup
         uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: lts
       - name: Install JS Dependencies
         run: npm --prefix ./documentation install
 #      - add_ssh_keys:

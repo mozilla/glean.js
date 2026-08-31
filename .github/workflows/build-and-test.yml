@@ -15,7 +15,7 @@ jobs:
         name: Node setup
         uses: actions/setup-node@v7
         with:
-          node-version: 24
+          node-version: lts
       - &install
         name: Install JS Dependencies
         run: npm --prefix ./glean install
@@ -46,6 +46,13 @@ jobs:
       - *checkout
       - *node
       - *install
+      - name: BrowserStack Action
+        uses: 'browserstack/github-actions@master'
+        with:
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          build-name: BUILD_INFO
+          project-name: mozilla/glean.js
       - name: Run browser compat smoke tests
         run: |
           npm --prefix ./automation install
