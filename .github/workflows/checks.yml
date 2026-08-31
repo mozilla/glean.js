@@ -1,0 +1,65 @@
+---
+name: Checks
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - &checkout
+        uses: actions/checkout@v7
+      - &node
+        name: Node setup
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Check package-lock.json
+        run: |
+          npm install --prefix ./glean --package-lock-only
+          if ! git diff --exit-code HEAD -- glean/package-lock.json; then
+            echo "=================================================="
+            echo "The committed package-lock.json is out-dated."
+            echo "Please regenerate package-lock.json using"
+            echo "    npm i --package-lock-only"
+            echo "Commit the modified file and push."
+            echo "=================================================="
+            exit 1
+          fi
+      - &install
+        name: Install JS Dependencies
+        run: npm --prefix ./glean install
+      - name: Run linters
+        run: npm --prefix ./glean run lint
+  spellcheck:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - name: Upgrade packages
+        run: sudo apt update
+      - name: Install aspell
+        run: sudo apt install aspell aspell-en
+      - name: Check documentation spelling
+        run: bin/spellcheck.sh list
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - *checkout
+      - *node
+      - *install
+      - name: Audit dependency tree
+        run: npm --prefix ./glean audit --production
+  check-size:
+    runs-on: ubuntu-latest
+    permissions:
+      pull-requests: write
+    steps:
+      - *checkout
+      - *node
+      - name: Get and post build sizes to GitHub PR
+        run: |
+          npm --prefix ./automation install
+          npm --prefix ./automation run link:glean
+          npm --prefix ./automation run size:report

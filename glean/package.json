@@ -153,7 +153,7 @@
   "dependencies": {
     "fflate": "^0.8.0",
     "tslib": "^2.3.1",
-    "uuid": "^9.0.0"
+    "uuid": "^14.0.1"
   },
   "engines": {
     "node": ">=12.20.0",
