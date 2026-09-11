@@ -6,9 +6,10 @@ on:
     types: [published]
   push:
     branches:
-      - 'release/**' #if triggering on branches, update to your specific branch pattern
+      - 'release-v.*'
+      - 'release'
     tags:
-      - 'release/**' #if triggering on tags, update to your specific tag pattern
+      - 'v.*'
   workflow_dispatch:
 
 permissions: {}#See guidance on how to set appropriate actions at workflow or job level
