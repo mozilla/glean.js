@@ -6,10 +6,10 @@ on:
     types: [published]
   push:
     branches:
-      - 'release-v.*'
+      - 'release-v*'
       - 'release'
     tags:
-      - 'v.*'
+      - 'v*'
   workflow_dispatch:
 
 permissions: {}#See guidance on how to set appropriate actions at workflow or job level
