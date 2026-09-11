@@ -2,9 +2,13 @@
 name: Checks
 on:
   push:
-    branches: [main]
+    branches:
+      - main
+      - release
+      - /release-.*/
   pull_request:
-    branches: [main]
+    branches:
+      - main
 jobs:
   lint:
     runs-on: ubuntu-latest

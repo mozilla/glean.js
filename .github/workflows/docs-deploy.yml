@@ -11,15 +11,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          persist-credentials: true
       - name: Node setup
         uses: actions/setup-node@v7
         with:
           node-version: 24
       - name: Install JS Dependencies
         run: npm --prefix ./documentation install
-#      - add_ssh_keys:
-#          fingerprints:
-#            - "ea:d2:3c:e1:09:cf:1a:1d:85:d6:6e:1d:52:0a:58:41"
       - name: Build documentation
         run: npm --prefix ./documentation run build
       - name: Disable jekyll builds
