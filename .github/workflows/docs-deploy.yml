@@ -3,9 +3,7 @@ name: Docs Deploy
 on:
   push:
     branches:
-      - main
       - release
-      - /^release-.*/
 jobs:
   docs-deploy:
     runs-on: ubuntu-latest
@@ -25,8 +23,9 @@ jobs:
         run: touch documentation/dist/.nojekyll
       - name: Show contents
         run: ls -R documentation/dist
-      - name: Setup SSH key and deploy docs to gh-pages branch
+      - name: Deploy with gh-pages
         run: |
-          git config user.email "dataops+ci-bot@mozilla.com"
-          git config user.name "dataops-ci-bot"
-          npm --prefix ./documentation run publish:docs
+          git remote set-url origin https://git:${GITHUB_TOKEN}@github.com/${GITHUB_REPOSITORY}.git
+          npm --prefix ./documentation run publish:docs -- -u "dataops-ci-bot <dataops+ci-bot@mozilla.com>"
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
