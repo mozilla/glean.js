@@ -28,7 +28,9 @@ for (const store in stores) {
 
   describe(`storage/${store}`, function () {
     after(async function () {
-      !isUndefined(currentStore.afterAll) && await currentStore.afterAll();
+      if (!isUndefined(currentStore.afterAll)) {
+        await currentStore.afterAll();
+      }
     });
 
     describe("get", function () {
@@ -51,7 +53,9 @@ for (const store in stores) {
       };
 
       before(async function () {
-        !isUndefined(currentStore.before) && await currentStore.before();
+        if (!isUndefined(currentStore.before)) {
+          await currentStore.before();
+        }
         store = currentStore.initializeStore();
         store.update(["bip", "bling"], () => false);
         store.update(["bip", "bop", "blip"], () => "something, something!");
@@ -100,7 +104,9 @@ for (const store in stores) {
       const value = "something, something!";
 
       before(async function() {
-        !isUndefined(currentStore.before) && await currentStore.before();
+        if (!isUndefined(currentStore.before)) {
+          await currentStore.before();
+        }
         store = currentStore.initializeStore();
       });
 
@@ -125,7 +131,7 @@ for (const store in stores) {
         try {
           store.update([], () => "should never get here!");
           assert.ok(false, "Attempting to update with an empty index should fail.");
-        } catch (e) {
+        } catch {
           assert.ok(true);
         }
       });
@@ -137,7 +143,9 @@ for (const store in stores) {
       const value = "something, something!";
 
       before(async function() {
-        !isUndefined(currentStore.before) && await currentStore.before();
+        if (!isUndefined(currentStore.before)) {
+          await currentStore.before();
+        }
         store = currentStore.initializeStore();
       });
 

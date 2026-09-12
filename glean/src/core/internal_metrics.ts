@@ -200,7 +200,7 @@ export class CoreMetrics {
         if (isSessionInactive(Context.config.sessionLengthInMinutesOverride)) {
           this.generateNewSession();
         }
-      } catch (e) {
+      } catch {
         // Error parsing the last active timestamp, create a new session.
         this.generateNewSession();
       }
