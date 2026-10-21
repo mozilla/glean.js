@@ -21,7 +21,7 @@ export function unzipPingPayload(payload: Uint8Array | string): JSONObject {
   let parsedBody: JSONObject;
   if (!isString(payload)) {
     const decoder = new TextDecoder("utf8");
-    parsedBody = JSON.parse(decoder.decode(gunzipSync(payload))) as JSONObject;
+    parsedBody = JSON.parse(decoder.decode(gunzipSync(payload) as Uint8Array)) as JSONObject;
   } else {
     parsedBody = JSON.parse(payload) as JSONObject;
   }

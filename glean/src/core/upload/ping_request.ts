@@ -25,12 +25,12 @@ export default class PingRequest<BodyType extends string | Uint8Array> {
     // We prefer using `strToU8` instead of TextEncoder directly,
     // because it will polyfill TextEncoder if it's not present in the environment.
     // For example, IE doesn't provide TextEncoder.
-    const encodedBody = strToU8(this.payload as string);
+    const encodedBody = strToU8(this.payload as string) as Uint8Array;
 
     let finalBody: string | Uint8Array;
     const headers = this.headers;
     try {
-      finalBody = gzipSync(encodedBody);
+      finalBody = gzipSync(encodedBody) as Uint8Array;
       headers["Content-Encoding"] = "gzip";
       headers["Content-Length"] = finalBody.length.toString();
     } catch {
