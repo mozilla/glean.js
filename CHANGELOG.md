@@ -2,6 +2,9 @@
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.8...main)
 
+* [#2096](https://github.com/mozilla/glean.js/pull/2096): Bumped `glean_parser` version to `22.0`.
+  * `CommonMetricData` now accepts the optional `inSession` property emitted by `glean_parser` 20.0.1+. Session sampling is not yet supported by Glean.js, so it is currently ignored.
+
 # v5.0.8 (2026-03-12)
 
 [Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.7...v5.0.8)
