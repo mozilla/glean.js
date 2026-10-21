@@ -40,6 +40,11 @@ export interface CommonMetricData {
   // the Glean singleton is available (because metrics can be recorded before Glean
   // is initialized).
   dynamicLabel?: string;
+  // Whether or not the metric participates in session sampling.
+  //
+  // This is provided by glean_parser, but session sampling is not yet
+  // supported by Glean.js so it is currently ignored.
+  readonly inSession?: boolean;
 }
 
 /**

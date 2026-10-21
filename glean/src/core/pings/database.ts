@@ -276,7 +276,7 @@ export function isDeletionRequest(ping: PingInternalRepresentation): boolean {
  * @returns Size of the given ping in bytes.
  */
 export function getPingSize(ping: PingInternalRepresentation): number {
-  return strToU8(JSON.stringify(ping)).length;
+  return (strToU8(JSON.stringify(ping)) as Uint8Array).length;
 }
 
 /**
