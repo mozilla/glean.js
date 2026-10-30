@@ -45,19 +45,18 @@ jobs:
       - name: Run Integration Tests
         run: npm --prefix ./glean run test:integration
   browser-compat-smoke-tests:
-    if: false
     runs-on: ubuntu-latest
     steps:
       - *checkout
       - *node
       - *install
-#      - name: BrowserStack Action
-#        uses: 'browserstack/github-actions@master'
-#        with:
-#          username: ${{ secrets.BROWSERSTACK_USERNAME }}
-#          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
-#          build-name: BUILD_INFO
-#          project-name: mozilla/glean.js
+      - name: BrowserStack Action
+        uses: 'browserstack/github-actions/setup-env'
+        with:
+          username: ${{ secrets.BROWSERSTACK_USERNAME }}
+          access-key: ${{ secrets.BROWSERSTACK_ACCESS_KEY }}
+          build-name: BUILD_INFO
+          project-name: mozilla/glean.js
       - name: Run browser compat smoke tests
         run: |
           npm --prefix ./automation install
