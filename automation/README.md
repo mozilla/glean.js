@@ -80,5 +80,5 @@ and in the latest version of the browser:
 npm run compat:test:browserstack
 ```
 
-> **Note**: This script expects the `BROWSERSTACK_USER_NAME` and
+> **Note**: This script expects the `BROWSERSTACK_USERNAME` and
 > `BROWSERSTACK_ACCESS_KEY` environment variables to be set.

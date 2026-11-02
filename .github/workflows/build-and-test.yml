@@ -62,4 +62,3 @@ jobs:
           npm --prefix ./automation install
           npm --prefix ./automation run link:glean
           npm --prefix ./automation run compat:test:browserstack
-          echo "done"
