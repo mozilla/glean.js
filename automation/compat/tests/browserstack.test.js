@@ -44,16 +44,21 @@ for (const browser of BROWSERS) {
     await (async function () {
       let driver;
       try {
+        // Use W3C capabilities: selenium-webdriver drops any non-W3C key
+        // that isn't vendor-prefixed, so BrowserStack options must live
+        // under `bstack:options`.
         const capabilities = {
-          "browserName" : browser.name,
-          "browser_version" : version,
-          "name": "Browser compatibility smoke test",
-          "build": process.env.CIRCLE_JOB || "Local BrowserStack testing",
-          "browserstack.networkLogs": "true",
-          "browserstack.debug": "true",
-          "browserstack.console": "verbose",
-          "browserstack.local": "true",
-        }
+          "browserName": browser.name,
+          "browserVersion": version,
+          "bstack:options": {
+            "sessionName": "Browser compatibility smoke test",
+            "buildName": process.env.CIRCLE_JOB || "Local BrowserStack testing",
+            "networkLogs": "true",
+            "debug": "true",
+            "consoleLogs": "verbose",
+            "local": "true",
+          },
+        };
 
         driver = new webdriver.Builder()
           .usingServer(`https://${process.env.BROWSERSTACK_USERNAME}:${process.env.BROWSERSTACK_ACCESS_KEY}@hub-cloud.browserstack.com/wd/hub`)
