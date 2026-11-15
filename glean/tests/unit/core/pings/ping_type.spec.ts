@@ -11,6 +11,7 @@ import Glean from "../../../../src/core/glean";
 import { Context } from "../../../../src/core/context";
 import { stopGleanUploader } from "../../../utils";
 import type { JSONObject } from "../../../../src/core/utils";
+import { isObject } from "../../../../src/core/utils";
 import TestPlatform from "../../../../src/platform/test";
 import { testResetGlean } from "../../../../src/core/testing";
 import { testUninitializeGlean } from "../../../../src/core/testing";
@@ -71,7 +72,8 @@ describe("PingType", function () {
     assert.strictEqual(storedPings, undefined);
 
     ping2.submit();
-    storedPings = Context.pingsDatabase["store"].get() as JSONObject;
+    storedPings = Context.pingsDatabase["store"].get();
+    assert.ok(isObject(storedPings));
     assert.strictEqual(Object.keys(storedPings).length, 1);
   });
 

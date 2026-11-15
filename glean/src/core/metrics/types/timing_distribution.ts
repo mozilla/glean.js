@@ -106,7 +106,7 @@ export class TimingDistributionMetric extends Metric<
 
   payload(): TimingDistributionPayloadRepresentation {
     const hist = constructFunctionalHistogramFromValues(
-      this.inner as number[],
+      this.inner,
       LOG_BASE,
       BUCKETS_PER_MAGNITUDE
     );
@@ -125,7 +125,7 @@ class InternalTimingDistributionMetricType extends MetricType {
   constructor(meta: CommonMetricData, timeUnit: string) {
     super("timing_distribution", meta, TimingDistributionMetric);
 
-    this.timeUnit = timeUnit as TimeUnit;
+    this.timeUnit = timeUnit;
     this.startTimes = {};
     this.timerId = 0;
   }
@@ -368,7 +368,7 @@ export default class {
   #inner: InternalTimingDistributionMetricType;
 
   constructor(meta: CommonMetricData, timeUnit: string) {
-    this.#inner = new InternalTimingDistributionMetricType(meta, timeUnit as TimeUnit);
+    this.#inner = new InternalTimingDistributionMetricType(meta, timeUnit);
   }
 
   /**

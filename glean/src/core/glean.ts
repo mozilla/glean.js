@@ -33,7 +33,6 @@ enum DebugOption {
   SourceTags = "SourceTags",
   LogPings = "LogPings",
 }
-type DebugOptionValue = keyof typeof DebugOption;
 
 /**
  * Set the value of a debug option in SessionStorage.
@@ -42,7 +41,7 @@ type DebugOptionValue = keyof typeof DebugOption;
  * @param value The value of the debug option.
  */
 const setDebugOptionInSessionStorage = (
-  option: DebugOptionValue,
+  option: DebugOption,
   value: boolean | string | string[]
 ) => {
   const key = `Glean.${option.toString()}`;
@@ -71,7 +70,7 @@ const setDebugOptionInSessionStorage = (
  * @returns The stringified value.
  */
 const getDebugOptionFromSessionStorage = (
-  option: DebugOptionValue
+  option: DebugOption
 ): string | undefined => {
   try {
     return sessionStorage.getItem(`Glean.${option.toString()}`) || undefined;
