@@ -82,7 +82,7 @@ export class MemoryDistributionMetric extends Metric<
 
   payload(): MemoryDistributionPayloadRepresentation {
     const hist = constructFunctionalHistogramFromValues(
-      this.inner as number[],
+      this.inner,
       LOG_BASE,
       BUCKETS_PER_MAGNITUDE
     );
@@ -99,7 +99,7 @@ class InternalMemoryDistributionMetricType extends MetricType {
   constructor(meta: CommonMetricData, memoryUnit: string) {
     super("memory_distribution", meta, MemoryDistributionMetric);
 
-    this.memoryUnit = memoryUnit as MemoryUnit;
+    this.memoryUnit = memoryUnit;
   }
 
   accumulate(sample: number): void {
@@ -228,7 +228,7 @@ export default class {
   #inner: InternalMemoryDistributionMetricType;
 
   constructor(meta: CommonMetricData, memoryUnit: string) {
-    this.#inner = new InternalMemoryDistributionMetricType(meta, memoryUnit as MemoryUnit);
+    this.#inner = new InternalMemoryDistributionMetricType(meta, memoryUnit);
   }
 
   /**

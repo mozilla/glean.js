@@ -311,7 +311,7 @@ describe("EventsDatabase", function() {
     assert.ok(snapshot);
     assert.strictEqual(1, snapshot.length);
 
-    const e = new RecordedEvent(snapshot[0] as JSONObject);
+    const e = new RecordedEvent(snapshot[0]);
     assert.strictEqual(e.get().extra, undefined);
   });
 
@@ -386,7 +386,7 @@ describe("EventsDatabase", function() {
     // Make sure subsequent timestamps are strictly increasing.
     let prevTime = 0;
     for (const event of subsequentEvents) {
-      const e = new RecordedEvent(event as JSONObject).get();
+      const e = new RecordedEvent(event).get();
       assert.ok(e.timestamp > prevTime);
       prevTime = e.timestamp;
     }
@@ -450,7 +450,7 @@ describe("EventsDatabase", function() {
     // Make sure subsequent timestamps are strictly increasing.
     let prevTime = 0;
     for (const event of subsequentEvents) {
-      const e = new RecordedEvent(event as JSONObject).get();
+      const e = new RecordedEvent(event).get();
       assert.ok(e.timestamp > prevTime);
       prevTime = e.timestamp;
     }
@@ -513,7 +513,7 @@ describe("EventsDatabase", function() {
     // Make sure subsequent timestamps are strictly increasing.
     let prevTime = 0;
     for (const event of subsequentEvents) {
-      const e = new RecordedEvent(event as JSONObject).get();
+      const e = new RecordedEvent(event).get();
       assert.ok(e.timestamp > prevTime);
       prevTime = e.timestamp;
     }

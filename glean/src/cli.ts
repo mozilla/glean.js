@@ -157,7 +157,7 @@ async function checkPythonVenvExists(venvPath: string): Promise<boolean> {
     await access(venvPython, fs.constants.F_OK);
 
     return true;
-  } catch (e) {
+  } catch {
     return false;
   }
 }

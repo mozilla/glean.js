@@ -133,7 +133,7 @@ export function getSequenceNumber(ping: CommonPingData): number {
     try {
       const metric = new CounterMetric(currentSeqData);
       return metric.payload();
-    } catch (e) {
+    } catch {
       log(
         PINGS_MAKER_LOG_TAG,
         `Unexpected value found for sequence number in ping ${ping.name}. Ignoring.`,
