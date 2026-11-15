@@ -1,4 +1,4 @@
-personal_ws-1.1 en 82 
+personal_ws-1.1 en 101 
 API's
 APIs
 Astro
@@ -18,8 +18,8 @@ JSDoc
 JWK
 LocalStorage
 MPL
-Nodejs
 Nextjs
+Nodejs
 PingType
 PlatformInfo
 Programmatically
@@ -43,11 +43,13 @@ boolean
 booleans
 brizental
 brosa
+bundler
 changelog
 chutten
 ci
 compat
 config
+dashboarding
 datetime
 deserialize
 deserializing
@@ -55,7 +57,6 @@ dev
 dexter
 enqueued
 enum
-dashboarding
 falsy
 favicons
 firefox
@@ -73,6 +74,7 @@ linters
 localStorage
 md
 mdroettboom
+moduleResolution
 mozilla
 npm
 pre
@@ -80,12 +82,13 @@ prerelease
 queueing
 runtime
 schemas
-sendbeacon
 sendBeacon
+sendbeacon
 sessionStorage
 setRawNanos
 setUploadEnabled
 ssr
+subpath
 timespan
 travis
 unminified

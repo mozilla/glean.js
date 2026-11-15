@@ -36,6 +36,12 @@ An example HTML button that will fire a click event:
 </button>
 ```
 
+Glean also automatically captures the following values for click events:
+
+- url: `window.location.href`
+- referrer: `document.referrer`
+- title: `document.title`
+
 ## Click event API
 
 Glean.js provides an API for manually collecting click events.

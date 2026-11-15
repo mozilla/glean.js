@@ -1,6 +1,44 @@
 # Unreleased changes
 
-[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.3...main)
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.1.0...main)
+
+# v5.1.0 (2026-10-21)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.8...v5.1.0)
+
+* [#2096](https://github.com/mozilla/glean.js/pull/2096): Bumped `glean_parser` version to `22.0`.
+  * `CommonMetricData` now accepts the optional `inSession` property emitted by `glean_parser` 20.0.1+. Session sampling is not yet supported by Glean.js, so it is currently ignored.
+
+# v5.0.8 (2026-03-12)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.7...v5.0.8)
+
+* [#2053](https://github.com/mozilla/glean.js/pull/2053): Bumped `glean_parser` version to `19.0`.
+
+# v5.0.7 (2025-11-17)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.6...v5.0.7)
+
+* [#2030](https://github.com/mozilla/glean.js/pull/2030): Add "types" fields to the exports map so TypeScript 5 projects using "moduleResolution": "bundler" can correctly resolve subpath type definitions.
+
+# v5.0.6 (2025-09-15)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.5...v5.0.6)
+
+* [#2010](https://github.com/mozilla/glean.js/pull/2010): Remove faulty check for sessionStorage to prevent uncaught error.
+* [#2011](https://github.com/mozilla/glean.js/pull/2011): Bug 1987158 - Capture page `url`/`referrer`/`title` with `recordElementClick()`.
+
+# v5.0.5 (2025-07-17)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.4...v5.0.5)
+
+* [#1993](https://github.com/mozilla/glean.js/pull/1993): Add try-catch around uses of sessionStorage and localStorage in core.
+
+# v5.0.4 (2025-04-02)
+
+[Full changelog](https://github.com/mozilla/glean.js/compare/v5.0.3...v5.0.4)
+
+* [#1977](https://github.com/mozilla/glean.js/pull/1977): Add try-catch around window.sessionStorage access to prevent uncaught error upon `import`.
 
 # v5.0.3 (2024-08-02)
 

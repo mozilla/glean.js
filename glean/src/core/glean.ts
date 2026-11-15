@@ -47,16 +47,20 @@ const setDebugOptionInSessionStorage = (
 ) => {
   const key = `Glean.${option.toString()}`;
 
-  switch (option) {
-  case DebugOption.DebugTag:
-    sessionStorage.setItem(key, value as string);
-    break;
-  case DebugOption.LogPings:
-    sessionStorage.setItem(key, (value as boolean).toString());
-    break;
-  case DebugOption.SourceTags:
-    sessionStorage.setItem(key, (value as string[]).join(","));
-    break;
+  try {
+    switch (option) {
+    case DebugOption.DebugTag:
+      sessionStorage.setItem(key, value as string);
+      break;
+    case DebugOption.LogPings:
+      sessionStorage.setItem(key, (value as boolean).toString());
+      break;
+    case DebugOption.SourceTags:
+      sessionStorage.setItem(key, (value as string[]).join(","));
+      break;
+    }
+  } catch (e) {
+    console.warn(e);
   }
 };
 
@@ -69,7 +73,12 @@ const setDebugOptionInSessionStorage = (
 const getDebugOptionFromSessionStorage = (
   option: DebugOptionValue
 ): string | undefined => {
-  return sessionStorage.getItem(`Glean.${option.toString()}`) || undefined;
+  try {
+    return sessionStorage.getItem(`Glean.${option.toString()}`) || undefined;
+  } catch (e) {
+    console.warn(e);
+    return undefined;
+  }
 };
 
 namespace Glean {
@@ -185,14 +194,6 @@ namespace Glean {
    * Fetch debug options from SessionStorage and set the Glean preInit debug options.
    */
   function setDebugOptionsFromSessionStorage() {
-    // If we cannot access browser APIs, we do nothing.
-    if (
-      typeof window === "undefined" ||
-      typeof window.sessionStorage === "undefined"
-    ) {
-      return;
-    }
-
     const logPings = getDebugOptionFromSessionStorage(DebugOption.LogPings);
     if (logPings) {
       preInitLogPings = extractBooleanFromString(logPings);
@@ -533,10 +534,19 @@ declare global {
 }
 
 // Only set `Glean` values whenever running inside of a browser.
-if (
-  typeof window !== "undefined" &&
-  typeof window.sessionStorage !== "undefined"
-) {
+// When cookies/localStorage/sessionStorage are disabled (at least in Firefox
+// and Chrome), an access attempt on the window.sessionStorage property will
+// throw an error ("The operation is insecure." in Firefox).
+// So try-catch is needed here.
+let hasStorage = false;
+try {
+  hasStorage = typeof window !== "undefined" &&
+  typeof window.sessionStorage !== "undefined";
+} catch (e) {
+  console.error("No session storage available", e);
+}
+
+if (hasStorage) {
   window.Glean = {
     setLogPings: (flag: boolean) => {
       setDebugOptionInSessionStorage(DebugOption.LogPings, flag);

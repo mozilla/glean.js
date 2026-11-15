@@ -9,7 +9,12 @@
  * @returns {boolean} If the current session is inactive.
  */
 export function isSessionInactive(sessionLengthInMinutes = 30): boolean {
-  const lastActive = localStorage.getItem("glean_session_last_active");
+  let lastActive: string | null = null;
+  try {
+    lastActive = localStorage.getItem("glean_session_last_active");
+  } catch (e) {
+    console.warn(e);
+  }
   const lastActiveDate = new Date(Number(lastActive));
 
   // Subtract the session length from the current date.
